@@ -30,8 +30,13 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <div className="border border-dashed border-white mx-4 md:mx-6 mt-2 rounded-sm overflow-hidden">
+      <div className="border-[3px] border-dashed border-white mx-4 md:mx-6 mt-16 rounded-[20px] overflow-hidden relative z-10">
+        {/* Adding gradient effects from Figma */}
         <div className="relative">
+          {/* Background gradient effects */}
+          <div className="absolute -top-[200px] right-[25%] w-[400px] h-[400px] rounded-full bg-[#E8B08A]/40 blur-[300px] z-0"></div>
+          <div className="absolute -top-[100px] left-[10%] w-[300px] h-[300px] rounded-full bg-white/20 blur-[200px] z-0"></div>
+        
           <div className="relative w-full h-[500px] md:h-[600px]">
             <Image
               src="/images/hero-bg.png"
@@ -40,6 +45,19 @@ export default function Home() {
               className="object-cover"
               priority
             />
+            
+            {/* Shop Now button in the correct position - middle bottom */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+              <Link 
+                href="/shop" 
+                className="inline-flex items-center gap-2 bg-[#1F1F1F] text-white px-6 py-4 rounded-xl hover:bg-[#333] transition-colors"
+              >
+                <span>Shop Now</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </Link>
+            </div>
           </div>
 
           {/* Overlay Text Box */}
@@ -47,21 +65,19 @@ export default function Home() {
             <h2 className="text-white text-3xl md:text-4xl lg:text-5xl font-light leading-tight">
               Elevate ordinary walls with extraordinary galleries.
             </h2>
-            <div className="mt-6">
-              <Link href="/collection" className="inline-block bg-white px-6 py-2 text-sm uppercase tracking-wider">
-                View Collection
-              </Link>
-            </div>
           </div>
         </div>
 
         {/* Main Content */}
         <div className="p-6 md:p-10 bg-zinc-800">
+          {/* Adding dashed line to match Figma */}
+          <div className="border-t-2 border-dashed border-white w-full max-w-[80%] mb-8"></div>
+          
           <h1 className="text-white text-xl md:text-2xl uppercase tracking-wider mb-4">
             ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES
           </h1>
           <p className="text-gray-300 text-sm mb-8">
-            Explore a world of fashion at Stylevio.com, where trends meet affordability. Immerse yourself in the latest
+            Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest
             styles and seize exclusive promotions.
           </p>
 
