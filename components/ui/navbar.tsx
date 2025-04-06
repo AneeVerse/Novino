@@ -8,8 +8,15 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-[#312F30] z-50 py-6">
-      <div className="container mx-auto px-8 sm:px-12 flex justify-between items-center">
+    <nav className="fixed top-0 left-0 w-full z-50">
+      {/* Background with gradient effects matching Figma design */}
+      <div className="absolute inset-0 bg-[#312F30]">
+        {/* Gradient overlay elements that create the soft glow effects */}
+        <div className="absolute top-[-80px] left-[5%] w-[300px] h-[300px] rounded-full bg-[#E8B08A]/30 blur-[220px]"></div>
+        <div className="absolute top-[-150px] right-[10%] w-[400px] h-[400px] rounded-full bg-white/20 blur-[180px]"></div>
+      </div>
+      
+      <div className="relative container mx-auto px-8 sm:px-12 flex justify-between items-center py-6">
         {/* Left section - Hamburger and Products */}
         <div className="flex items-center space-x-4">
           {/* Custom hamburger button on left */}
