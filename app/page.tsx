@@ -63,24 +63,23 @@ export default function Home() {
 
         {/* Main Content */}
         <div className="p-6 md:p-10 bg-zinc-800">
-          {/* Adding dashed line to match Figma */}
-          <div className="border-t-2 border-dashed border-white w-full max-w-[80%] mb-8"></div>
-          
-          <h1 className="text-white text-xl md:text-2xl uppercase tracking-wider mb-4">
-            ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES
-          </h1>
-          <p className="text-gray-300 text-sm mb-8">
-            Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest
-            styles and seize exclusive promotions.
-          </p>
+          <div className="max-w-[1200px] mx-auto">
+            <div className="mb-20">
+              <h1 className="text-white text-[38px] font-medium font-roboto uppercase leading-none mb-8 text-center whitespace-nowrap">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
+              <p className="text-white/60 text-base leading-none text-center whitespace-nowrap">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
+            </div>
 
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-4 mb-10">
-            {["All", "Mens", "Womens", "Kids"].map((category) => (
-              <button key={category} className="border border-dashed border-gray-400 px-4 py-1 text-gray-300 text-sm">
-                {category}
-              </button>
-            ))}
+            {/* Category Filters */}
+            <div className="flex justify-center items-center gap-6 mb-20">
+              {["All", "Mens", "Womens", "Kids"].map((category) => (
+                <button 
+                  key={category} 
+                  className="min-w-[120px] border border-dashed border-white/20 px-6 py-2.5 text-white/40 text-sm font-light hover:text-white hover:border-white transition-colors"
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Gallery Grid */}
