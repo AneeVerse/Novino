@@ -19,9 +19,6 @@ const Navbar = () => {
               className="w-[82px] h-[63px] bg-white rounded-[12px] flex justify-center items-center"
               aria-label="Toggle menu"
             >
-              <span className="font-mono font-bold text-black text-lg">
-                ..
-              </span>
               <div className="absolute" style={{ bottom: '18px', left: '17px', width: '48px', height: '9px' }}>
                 <Image 
                   src="/icons/hamburger-line-1.svg" 
