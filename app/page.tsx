@@ -59,13 +59,6 @@ export default function Home() {
               </Link>
             </div>
           </div>
-
-          {/* Overlay Text Box */}
-          <div className="absolute right-0 bottom-0 bg-[#a08e7e] p-6 md:p-10 max-w-[400px]">
-            <h2 className="text-white text-3xl md:text-4xl lg:text-5xl font-light leading-tight">
-              Elevate ordinary walls with extraordinary galleries.
-            </h2>
-          </div>
         </div>
 
         {/* Main Content */}
