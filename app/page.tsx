@@ -10,15 +10,23 @@ import ProductTestimonial from "@/components/product-testimonial"
 
 export default function Home() {
   return (
-    <main className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A]">
+    <main className="min-h-screen relative overflow-hidden bg-[#2D2D2D]">
       {/* Background overlay for consistency */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Subtle vignette effect */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50"></div>
+        {/* Side gradients to match navbar */}
+        <div className="absolute left-0 top-0 w-1/3 h-full bg-gradient-to-r from-[#2D2D2D] to-transparent opacity-80"></div>
+        <div className="absolute right-0 top-0 w-1/3 h-full bg-gradient-to-l from-[#2D2D2D] to-transparent opacity-80"></div>
+        
+        {/* Subtle vertical gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#2D2D2D] via-[#353535] to-[#2D2D2D] opacity-50"></div>
+        
+        {/* Subtle ambient light effects */}
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-white/5 blur-[100px] mix-blend-plus-lighter"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-white/5 blur-[100px] mix-blend-plus-lighter"></div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex items-center justify-between p-4 md:p-6 relative z-10">
+      <nav className="flex items-center justify-between p-4 md:p-6 relative z-10 bg-[#2D2D2D]">
         <div className="flex items-center gap-6">
           <button className="text-white">
             <Menu size={24} />
@@ -69,7 +77,7 @@ export default function Home() {
         </div>
 
         {/* Main Content */}
-        <div className="p-6 md:p-10 bg-gradient-to-b from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A] backdrop-blur-sm">
+        <div className="p-6 md:p-10 bg-[#2D2D2D] backdrop-blur-sm">
           <div className="max-w-[1200px] mx-auto">
             <div className="mb-20">
               <h1 className="text-white text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-8 text-center whitespace-nowrap">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
@@ -101,12 +109,12 @@ export default function Home() {
           </div>
 
           {/* Product Testimonial Section */}
-          <div className="bg-gradient-to-b from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A] mb-16">
+          <div className="bg-[#2D2D2D] mb-16">
             <ProductTestimonial />
           </div>
 
           {/* Product Grid Section */}
-          <div className="border border-dashed border-white p-6 md:p-8 mb-16 bg-gradient-to-b from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A]">
+          <div className="border border-dashed border-white p-6 md:p-8 mb-16 bg-[#2D2D2D]">
             <div className="mb-6">
               <div className="text-sm text-gray-300">All Products</div>
               <h2 className="text-white text-2xl md:text-3xl font-light">Elevate Your Gallery</h2>
