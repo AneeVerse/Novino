@@ -25,8 +25,11 @@ export default function Home() {
         <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-white/5 blur-[100px] mix-blend-plus-lighter"></div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex items-center justify-between p-4 md:p-6 relative z-10 bg-[#2D2D2D]">
+      {/* Top padding matches bottom to center the navbar */}
+      <div className="pt-2"></div>
+
+      {/* Navigation with balanced vertical alignment */}
+      <nav className="flex items-center justify-between p-4 md:p-6 py-3 relative z-10 bg-[#2D2D2D]">
         <div className="flex items-center gap-6">
           <button className="text-white">
             <Menu size={24} />
@@ -44,8 +47,8 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <div className="border-[3px] border-dashed border-white mx-4 md:mx-6 mt-16 rounded-[20px] overflow-hidden relative z-10">
+      {/* Hero Section - reduced margin-top to balance with navbar */}
+      <div className="border-[3px] border-dashed border-white mx-4 md:mx-6 mt-6 rounded-[20px] overflow-hidden relative z-10">
         {/* Adding gradient effects from Figma */}
         <div className="relative">
           {/* Background gradient effects */}
