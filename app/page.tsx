@@ -6,12 +6,19 @@ import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
+import ProductTestimonial from "@/components/product-testimonial"
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-zinc-800">
+    <main className="min-h-screen relative overflow-hidden bg-gradient-to-b from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A]">
+      {/* Background overlay for consistency */}
+      <div className="fixed inset-0 pointer-events-none">
+        {/* Subtle vignette effect */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50"></div>
+      </div>
+
       {/* Navigation */}
-      <nav className="flex items-center justify-between p-4 md:p-6">
+      <nav className="flex items-center justify-between p-4 md:p-6 relative z-10">
         <div className="flex items-center gap-6">
           <button className="text-white">
             <Menu size={24} />
@@ -62,10 +69,10 @@ export default function Home() {
         </div>
 
         {/* Main Content */}
-        <div className="p-6 md:p-10 bg-zinc-800">
+        <div className="p-6 md:p-10 bg-gradient-to-b from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A] backdrop-blur-sm">
           <div className="max-w-[1200px] mx-auto">
             <div className="mb-20">
-              <h1 className="text-white text-[38px] font-medium font-roboto uppercase leading-none mb-8 text-center whitespace-nowrap">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
+              <h1 className="text-white text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-8 text-center whitespace-nowrap">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
               <p className="text-white/60 text-base leading-none text-center whitespace-nowrap">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
             </div>
 
@@ -93,53 +100,13 @@ export default function Home() {
             />
           </div>
 
-          {/* Testimonial Section with Brown Gradient */}
-          <div className="relative mb-16 bg-gradient-to-r from-[#6d5d4b] to-[#3d3630] rounded-sm overflow-hidden">
-            <div className="p-6 md:p-10">
-              <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
-                {/* Testimonial Image */}
-                <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden flex-shrink-0 bg-[#6d5d4b]">
-                  <Image src="/images/notebook-white.png" alt="Abstract art notebook" fill className="object-cover" />
-                </div>
-
-                {/* Testimonial Content */}
-                <div className="flex-1">
-                  <div className="text-gray-300 mb-2">Product Testimonials</div>
-
-                  {/* Stars */}
-                  <div className="flex mb-3">
-                    {Array(5)
-                      .fill(0)
-                      .map((_, i) => (
-                        <Star key={i} size={16} fill="white" color="white" />
-                      ))}
-                  </div>
-
-                  {/* Quote */}
-                  <blockquote className="text-white text-lg md:text-xl font-light mb-3">
-                    "I've been feeling pretty stressed with my skin lately, so I picked up a set of HOLOCENA skincare.
-                    Oh my goodness. It was AMAZING. My skin felt so soft and moisturized!"
-                  </blockquote>
-
-                  {/* Author */}
-                  <div className="text-gray-300 text-sm">Customer Review</div>
-                </div>
-
-                {/* Navigation Arrows */}
-                <div className="flex flex-col gap-2 absolute right-4 top-1/2 transform -translate-y-1/2">
-                  <button className="text-white p-1">
-                    <ChevronUp size={16} />
-                  </button>
-                  <button className="text-white p-1">
-                    <ChevronDown size={16} />
-                  </button>
-                </div>
-              </div>
-            </div>
+          {/* Product Testimonial Section */}
+          <div className="bg-gradient-to-b from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A] mb-16">
+            <ProductTestimonial />
           </div>
 
           {/* Product Grid Section */}
-          <div className="border border-dashed border-white p-6 md:p-8 mb-16">
+          <div className="border border-dashed border-white p-6 md:p-8 mb-16 bg-gradient-to-b from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A]">
             <div className="mb-6">
               <div className="text-sm text-gray-300">All Products</div>
               <h2 className="text-white text-2xl md:text-3xl font-light">Elevate Your Gallery</h2>
