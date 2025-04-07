@@ -22,21 +22,105 @@ export default function ProductTestimonial() {
       <div className="absolute inset-0 opacity-0 mix-blend-overlay pointer-events-none"></div>
 
       <div className="relative max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-24 px-4 md:px-8">
-        {/* Notebook Image in Circle */}
-        <div 
-          className="relative w-full max-w-[320px] aspect-square rounded-full overflow-hidden flex items-center justify-center"
-          style={{ 
-            background: "linear-gradient(135deg, #a08675 0%, #8a7363 100%)",
-            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.3), inset 0 2px 10px rgba(255, 255, 255, 0.2)" 
-          }}
-        >
-          <div className="relative w-[85%] h-[85%]">
-            <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/notebook-white-CXjriO1tbsWMnXEdnpoLjLagrUg6hR.png"
-              alt="Artistic notebook with abstract patterns"
-              fill
-              className="object-contain"
-            />
+        {/* Notebook Image in Circle with organic outer glow */}
+        <div className="relative w-full max-w-[320px]">
+          {/* Far extended sparse gradient */}
+          <div 
+            className="absolute -inset-32 z-0"
+            style={{
+              background: `
+                radial-gradient(
+                  ellipse 150% 120% at 70% 40%,
+                  rgba(99, 81, 72, 0.4) 0%,
+                  rgba(99, 81, 72, 0.2) 20%,
+                  rgba(99, 81, 72, 0.1) 40%,
+                  transparent 70%
+                ),
+                radial-gradient(
+                  ellipse 140% 140% at 30% 60%,
+                  rgba(99, 81, 72, 0.3) 0%,
+                  rgba(99, 81, 72, 0.15) 30%,
+                  transparent 60%
+                )
+              `,
+              filter: "blur(40px)",
+              transform: "rotate(-25deg)"
+            }}
+          ></div>
+          
+          {/* Mid-range sparse glow */}
+          <div 
+            className="absolute -inset-20 z-0"
+            style={{
+              background: `
+                radial-gradient(
+                  ellipse 130% 110% at 60% 45%,
+                  rgba(99, 81, 72, 0.5) 0%,
+                  rgba(99, 81, 72, 0.2) 40%,
+                  transparent 80%
+                ),
+                radial-gradient(
+                  ellipse 120% 130% at 40% 55%,
+                  rgba(99, 81, 72, 0.4) 10%,
+                  rgba(99, 81, 72, 0.1) 50%,
+                  transparent 90%
+                )
+              `,
+              filter: "blur(35px)",
+              transform: "rotate(15deg)"
+            }}
+          ></div>
+
+          {/* Closer asymmetric glow */}
+          <div 
+            className="absolute -inset-12 z-0"
+            style={{
+              background: `
+                radial-gradient(
+                  ellipse 120% 140% at 55% 40%,
+                  rgba(99, 81, 72, 0.6) 0%,
+                  rgba(99, 81, 72, 0.3) 30%,
+                  rgba(99, 81, 72, 0.1) 60%,
+                  transparent 90%
+                )
+              `,
+              filter: "blur(25px)",
+              transform: "rotate(-5deg)"
+            }}
+          ></div>
+        
+          {/* Image container */}
+          <div 
+            className="relative w-full aspect-square rounded-full overflow-hidden flex items-center justify-center z-10"
+            style={{ 
+              background: "linear-gradient(135deg, #635148 0%, #4A3C36 100%)",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4), inset 0 2px 15px rgba(255, 255, 255, 0.25)" 
+            }}
+          >
+            {/* Ambient glow inside the circle */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: `
+                  radial-gradient(
+                    ellipse 140% 140% at 60% 45%,
+                    rgba(99, 81, 72, 0.7) 0%,
+                    rgba(99, 81, 72, 0.4) 30%,
+                    rgba(99, 81, 72, 0.1) 60%,
+                    transparent 100%
+                  )
+                `
+              }}
+            ></div>
+            
+            <div className="relative w-[85%] h-[85%] z-10">
+              <Image
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/notebook-white-CXjriO1tbsWMnXEdnpoLjLagrUg6hR.png"
+                alt="Artistic notebook with abstract patterns"
+                fill
+                className="object-contain"
+              />
+            </div>
           </div>
         </div>
         {/* Testimonial Content */}
