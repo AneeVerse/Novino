@@ -10,19 +10,11 @@ import ProductTestimonial from "@/components/product-testimonial"
 
 export default function Home() {
   return (
-    <main className="min-h-screen relative overflow-hidden bg-[#2D2D2D]">
-      {/* Background overlay for consistency */}
+    <main className="relative min-h-screen bg-transparent">
+      {/* Background overlay simplified - removing gradients that aren't showing */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Side gradients to match navbar */}
-        <div className="absolute left-0 top-0 w-1/3 h-full bg-gradient-to-r from-[#2D2D2D] to-transparent opacity-80"></div>
-        <div className="absolute right-0 top-0 w-1/3 h-full bg-gradient-to-l from-[#2D2D2D] to-transparent opacity-80"></div>
-        
-        {/* Subtle vertical gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#2D2D2D] via-[#353535] to-[#2D2D2D] opacity-50"></div>
-        
-        {/* Subtle ambient light effects */}
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-white/5 blur-[100px] mix-blend-plus-lighter"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-white/5 blur-[100px] mix-blend-plus-lighter"></div>
+        {/* Base background color */}
+        <div className="absolute inset-0 bg-[#2D2D2D]"></div>
       </div>
 
       {/* Top padding matches bottom to center the navbar */}

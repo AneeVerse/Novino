@@ -4,19 +4,11 @@ import { Menu, X } from "lucide-react"
 
 export default function NavbarAndHero() {
   return (
-    <div className="relative min-h-screen bg-black">
-      {/* Super visible background gradient */}
+    <div className="relative min-h-screen bg-transparent">
+      {/* Simplified background without gradients */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Center gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#2D2D2D] via-[#3D3D3D] to-[#2D2D2D]"></div>
-        
-        {/* Side gradients */}
-        <div className="absolute -left-64 top-0 bottom-0 w-[800px] bg-gradient-to-r from-[#2D2D2D] to-transparent mix-blend-overlay"></div>
-        <div className="absolute -right-64 top-0 bottom-0 w-[800px] bg-gradient-to-l from-[#2D2D2D] to-transparent mix-blend-overlay"></div>
-        
-        {/* Glow effects */}
-        <div className="absolute top-64 left-1/4 w-[600px] h-[600px] rounded-full bg-white/10 blur-[80px] mix-blend-plus-lighter"></div>
-        <div className="absolute bottom-64 right-1/4 w-[600px] h-[600px] rounded-full bg-white/10 blur-[80px] mix-blend-plus-lighter"></div>
+        {/* Base background color */}
+        <div className="absolute inset-0 bg-[#2D2D2D]"></div>
       </div>
 
       {/* Fixed Navbar with glass effect */}
