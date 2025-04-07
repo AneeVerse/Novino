@@ -41,9 +41,10 @@ export default function NavbarAndHero() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <div className="relative pt-24 z-10">
-        <div className="border-[3px] border-dashed border-white mx-4 md:mx-6 rounded-[20px] overflow-hidden relative">
+        {/* Combined container with border for Hero and Gallery */}
+        <div className="mx-4 md:mx-6 mb-8 relative border-[3px] border-dashed border-white rounded-[20px] overflow-hidden">
+          {/* Hero Section */}
           <div className="relative">
             <div className="relative w-full h-[500px] md:h-[600px]">
               <Image
@@ -82,42 +83,67 @@ export default function NavbarAndHero() {
                 </Link>
               </div>
             </div>
+          </div>
 
-            {/* Main Content - transparent background to show the gradients */}
-            <div className="relative backdrop-blur-sm p-8 md:p-12 bg-black/30">
-              <div className="max-w-[1200px] mx-auto">
-                <div className="mb-20">
-                  <h1 className="text-white text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-8 text-center whitespace-nowrap">
-                    ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES
-                  </h1>
-                  <p className="text-white/60 text-base leading-none text-center">
-                    Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.
-                  </p>
-                </div>
+          {/* ELEVATE ORDINARY WALLS Section */}
+          <div className="relative backdrop-blur-sm p-8 md:p-12 bg-black/30">
+            <div className="max-w-[1200px] mx-auto">
+              <div className="mb-16">
+                <h1 className="text-white text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-8 text-center whitespace-nowrap">
+                  ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES
+                </h1>
+                <p className="text-white/60 text-base leading-none text-center">
+                  Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.
+                </p>
+              </div>
 
-                {/* Category Filters */}
-                <div className="flex justify-center items-center gap-6 mb-20">
-                  {["All", "Mens", "Womens", "Kids"].map((category) => (
-                    <button 
-                      key={category} 
-                      className="min-w-[120px] border border-dashed border-white/20 px-6 py-2.5 text-white/40 text-sm font-light hover:text-white hover:border-white transition-colors"
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
+              {/* Category Filters */}
+              <div className="flex justify-center items-center gap-6 mb-16">
+                {["All", "Mens", "Womens", "Kids"].map((category) => (
+                  <button 
+                    key={category} 
+                    className="min-w-[120px] border border-dashed border-white/20 px-6 py-2.5 text-white/40 text-sm font-light hover:text-white hover:border-white transition-colors"
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
 
-                {/* Gallery Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="aspect-[3/4] relative bg-zinc-800 rounded-lg overflow-hidden">
-                      <Image
-                        src={`/images/gallery-${i + 1}.png`}
-                        alt={`Gallery image ${i + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
+          {/* Gallery Grid - Now inside the border */}
+          <div className="relative backdrop-blur-sm p-8 md:p-12 bg-black/30">
+            {/* Gallery Grid - without border */}
+            <div className="p-4 md:p-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="aspect-[3/4] relative bg-zinc-800 rounded-lg overflow-hidden">
+                    <Image
+                      src={`/images/gallery-${i + 1}.png`}
+                      alt={`Gallery image ${i + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Product Testimonial Section - Now outside the border */}
+        <div className="mx-4 md:mx-6 mb-8 relative">
+          <div className="bg-black/30">
+            {/* ProductTestimonial component would be inserted here */}
+            <div className="p-8 md:p-12">
+              <div className="text-white text-center">
+                <h2 className="text-2xl md:text-3xl mb-4">Product Testimonials</h2>
+                <p className="mb-8 text-white/70">What our customers are saying about our products</p>
+                <div className="flex justify-center space-x-2 mb-6">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
                   ))}
                 </div>
               </div>
