@@ -10,10 +10,10 @@ export default function ProductTestimonial() {
         {/* Notebook Image in Circle */}
         <div className="relative w-full max-w-[500px] overflow-visible">
           {/* Gradient background effect - much more expanded */}
-          <div className="absolute -inset-52 bg-gradient-radial from-[#6b5750] via-[#3c3331]/90 to-transparent blur-[120px] z-0"></div>
-          <div className="absolute -inset-40 bg-gradient-to-br from-[#6b5750] via-[#6b5750]/95 to-transparent blur-[100px] z-0"></div>
-          <div className="absolute -inset-28 bg-gradient-to-r from-[#6b5750] via-[#3c3331]/95 to-transparent blur-[80px] z-0"></div>
-          <div className="absolute -inset-16 bg-gradient-to-tr from-[#6b5750] via-[#3c3331] to-transparent blur-[60px] z-0"></div>
+          <div className="absolute -inset-64 bg-gradient-radial from-[#6b5750] via-[#3c3331]/90 to-transparent blur-[160px] z-0"></div>
+          <div className="absolute -inset-48 bg-gradient-to-br from-[#6b5750] via-[#6b5750]/95 to-transparent blur-[140px] z-0"></div>
+          <div className="absolute -inset-32 bg-gradient-to-r from-[#6b5750] via-[#3c3331]/95 to-transparent blur-[120px] z-0"></div>
+          <div className="absolute -inset-16 bg-gradient-to-tr from-[#6b5750] via-[#3c3331] to-transparent blur-[100px] z-0"></div>
           <div
             className="relative w-full overflow-visible flex items-center justify-center z-10"
             style={{
