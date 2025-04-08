@@ -104,15 +104,15 @@ export default function Home() {
 
       {/* Product Grid Section */}
       <div className="mx-4 md:mx-6 relative z-10">
-        <div className="border border-dashed border-white p-6 md:p-8 mb-16 bg-[#2D2D2D]">
-          <div className="flex flex-col md:flex-row md:gap-8">
+        <div className="border border-dashed border-white p-8 md:p-12 mb-16 bg-[#2D2D2D]">
+          <div className="flex flex-col md:flex-row md:gap-16">
             {/* Left side: Categories and Title */}
-            <div className="md:w-1/3 mb-8 md:mb-0">
-              <div className="text-sm text-gray-300">All Products</div>
-              <h2 className="text-white text-2xl md:text-3xl font-light mb-8">Elevate Your Gallery</h2>
+            <div className="md:w-[40%] mb-8 md:mb-0">
+              <div className="text-sm text-gray-300 mb-2">All Products</div>
+              <h2 className="text-white text-4xl font-light mb-8">Elevate Your Gallery</h2>
 
-              {/* Category Filters - Displayed vertically on left side */}
-              <div className="flex flex-col gap-3">
+              {/* Category Filters - Displayed horizontally and wrapped */}
+              <div className="flex flex-wrap gap-3">
                 {[
                   { name: "All Products", active: true },
                   { name: "Books", active: false },
@@ -122,11 +122,11 @@ export default function Home() {
                 ].map((category) => (
                   <button
                     key={category.name}
-                    className={`border border-dashed rounded-full py-2 px-4 text-sm ${
+                    className={`${
                       category.active 
-                        ? "bg-white text-black border-transparent" 
-                        : "border-white/30 text-white hover:bg-white/10"
-                    }`}
+                        ? "bg-white text-black" 
+                        : "border border-white/30 text-white hover:bg-white/10"
+                    } px-6 py-2 text-sm rounded-full transition-colors`}
                   >
                     {category.name}
                   </button>
@@ -135,91 +135,91 @@ export default function Home() {
             </div>
 
             {/* Right side: Product Grid */}
-            <div className="md:w-2/3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="md:w-[60%]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div className="bg-white">
-                  <div className="relative aspect-square overflow-hidden">
-                    <Image src="/images/notebook-white.png" alt="GLASSWAVE" fill className="object-cover" />
+                  <div className="relative aspect-square overflow-hidden bg-white">
+                    <Image src="/images/notebook-white.png" alt="CLASSWING" fill className="object-contain p-4" />
                   </div>
-                  <div className="bg-zinc-900 p-3">
-                    <div className="text-gray-200 text-sm uppercase mb-1">GLASSWAVE</div>
+                  <div className="bg-zinc-800 p-4">
+                    <div className="text-white text-sm font-medium mb-2">CLASSWING</div>
                     <div className="flex justify-between items-center">
-                      <div className="text-white font-medium">$20</div>
-                      <div className="flex items-center gap-1">
+                      <div className="text-white text-lg font-medium">$20</div>
+                      <div className="flex items-center gap-2">
                         <div className="flex">
                           {Array(5)
                             .fill(0)
                             .map((_, i) => (
-                              <Star key={i} size={12} fill="white" color="white" />
+                              <Star key={i} size={14} fill="white" color="white" />
                             ))}
                         </div>
-                        <span className="text-gray-400 text-xs">5.0</span>
+                        <span className="text-white text-sm">5.0</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-white">
-                  <div className="relative aspect-square overflow-hidden">
-                    <Image src="/images/notebook-black.png" alt="HOLOCANE" fill className="object-cover" />
+                  <div className="relative aspect-square overflow-hidden bg-white">
+                    <Image src="/images/notebook-black.png" alt="HOLOCANE" fill className="object-contain p-4" />
                   </div>
-                  <div className="bg-zinc-900 p-3">
-                    <div className="text-gray-200 text-sm uppercase mb-1">HOLOCANE</div>
+                  <div className="bg-zinc-800 p-4">
+                    <div className="text-white text-sm font-medium mb-2">HOLOCANE</div>
                     <div className="flex justify-between items-center">
-                      <div className="text-white font-medium">$23</div>
-                      <div className="flex items-center gap-1">
+                      <div className="text-white text-lg font-medium">$23</div>
+                      <div className="flex items-center gap-2">
                         <div className="flex">
                           {Array(5)
                             .fill(0)
                             .map((_, i) => (
-                              <Star key={i} size={12} fill="white" color="white" />
+                              <Star key={i} size={14} fill="white" color="white" />
                             ))}
                         </div>
-                        <span className="text-gray-400 text-xs">5.0</span>
+                        <span className="text-white text-sm">5.0</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-white">
-                  <div className="relative aspect-square overflow-hidden">
-                    <Image src="/images/mug-white.png" alt="INAMORATA" fill className="object-cover" />
+                  <div className="relative aspect-square overflow-hidden bg-white">
+                    <Image src="/images/mug-white.png" alt="INAMORATA" fill className="object-contain p-4" />
                   </div>
-                  <div className="bg-zinc-900 p-3">
-                    <div className="text-gray-200 text-sm uppercase mb-1">INAMORATA</div>
+                  <div className="bg-zinc-800 p-4">
+                    <div className="text-white text-sm font-medium mb-2">INAMORATA</div>
                     <div className="flex justify-between items-center">
-                      <div className="text-white font-medium">$12</div>
-                      <div className="flex items-center gap-1">
+                      <div className="text-white text-lg font-medium">$12</div>
+                      <div className="flex items-center gap-2">
                         <div className="flex">
                           {Array(5)
                             .fill(0)
                             .map((_, i) => (
-                              <Star key={i} size={12} fill={i < 4 ? "white" : "none"} color="white" />
+                              <Star key={i} size={14} fill={i < 4 ? "white" : "none"} color="white" />
                             ))}
                         </div>
-                        <span className="text-gray-400 text-xs">4.5</span>
+                        <span className="text-white text-sm">4.5</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-white">
-                  <div className="relative aspect-square overflow-hidden">
-                    <Image src="/images/mug-black.png" alt="LIGHTCOOL" fill className="object-cover" />
+                  <div className="relative aspect-square overflow-hidden bg-white">
+                    <Image src="/images/mug-black.png" alt="LIGHTCOOL" fill className="object-contain p-4" />
                   </div>
-                  <div className="bg-zinc-900 p-3">
-                    <div className="text-gray-200 text-sm uppercase mb-1">LIGHTCOOL</div>
+                  <div className="bg-zinc-800 p-4">
+                    <div className="text-white text-sm font-medium mb-2">LIGHTCOOL</div>
                     <div className="flex justify-between items-center">
-                      <div className="text-white font-medium">$22.5</div>
-                      <div className="flex items-center gap-1">
+                      <div className="text-white text-lg font-medium">$22.5</div>
+                      <div className="flex items-center gap-2">
                         <div className="flex">
                           {Array(5)
                             .fill(0)
                             .map((_, i) => (
-                              <Star key={i} size={12} fill="white" color="white" />
+                              <Star key={i} size={14} fill="white" color="white" />
                             ))}
                         </div>
-                        <span className="text-gray-400 text-xs">5.0</span>
+                        <span className="text-white text-sm">5.0</span>
                       </div>
                     </div>
                   </div>
@@ -230,7 +230,7 @@ export default function Home() {
               <div className="flex justify-center mt-8">
                 <Link
                   href="/shop"
-                  className="flex items-center gap-2 bg-zinc-800 text-white px-4 py-2 text-sm hover:bg-zinc-700 transition-colors"
+                  className="flex items-center gap-2 border border-white/30 text-white px-6 py-2 text-sm hover:bg-white/10 transition-colors rounded-sm"
                 >
                   Shop now <ArrowRight size={16} />
                 </Link>
