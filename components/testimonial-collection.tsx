@@ -4,6 +4,7 @@ import { Twitter } from "lucide-react"
 export default function TestimonialCollection() {
   return (
     <div className="bg-gradient-to-b from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A] p-8 md:p-12 relative overflow-hidden">
+      {/* Main container with dashed border */}
       <div className="border border-dashed border-gray-500 rounded-lg p-8 relative">
         {/* Abstract design in top right */}
         <div className="absolute top-0 right-0 w-64 h-64">
@@ -16,7 +17,7 @@ export default function TestimonialCollection() {
           <p className="text-gray-400">At StyleLoom, our customers are the heartbeat of our brand.</p>
         </div>
 
-        {/* Testimonials grid */}
+        {/* Testimonials grid - updated to match the image */}
         <div className="grid md:grid-cols-3 gap-0">
           {/* Testimonial 1 */}
           <div className="border-r border-t border-dashed border-gray-500 p-6 relative">
@@ -55,14 +56,6 @@ export default function TestimonialCollection() {
               StyleLoom exceeded my expectations. The gown&apos;s quality and design made me feel like a queen. Fast
               shipping, too!
             </p>
-
-            {/* Bottom corner decoration */}
-            <div className="absolute bottom-4 left-4">
-              <div className="w-8 h-8 relative">
-                <div className="absolute w-8 h-0.5 bg-white rotate-45 origin-left"></div>
-                <div className="absolute w-8 h-0.5 bg-white -rotate-45 origin-left mt-6"></div>
-              </div>
-            </div>
           </div>
 
           {/* Testimonial 2 */}
@@ -140,14 +133,6 @@ export default function TestimonialCollection() {
               Adorable and comfortable! My daughter loves her new outfit. Thank you, StyleLoom, for dressing our little
               fashionista.
             </p>
-
-            {/* Bottom corner decoration */}
-            <div className="absolute bottom-4 right-4">
-              <div className="w-8 h-8 relative">
-                <div className="absolute w-8 h-0.5 bg-white rotate-45 origin-right"></div>
-                <div className="absolute w-8 h-0.5 bg-white -rotate-45 origin-right mt-6"></div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
