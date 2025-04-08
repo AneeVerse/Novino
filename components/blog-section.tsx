@@ -31,10 +31,10 @@ export default function BlogSection() {
   return (
     <div className="w-full bg-[#333333] py-20">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-20">
-          <h2 className="text-white text-5xl font-light mb-4">Blogs</h2>
-          <p className="text-white text-base">Find all the jewellery you will need here.</p>
+        {/* Header - Making sure it matches Figma design */}
+        <div className="text-center mb-20 relative z-50">
+          <h2 className="text-white text-5xl font-light mb-4 font-serif relative z-50">Blogs</h2>
+          <p className="text-white text-base opacity-90">Find all the jewellery you will need here.</p>
         </div>
 
         {/* Main Container */}
