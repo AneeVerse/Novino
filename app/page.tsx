@@ -26,9 +26,12 @@ export default function Home() {
         <div className="relative">
           {/* Adding gradient effects from Figma */}
           <div className="relative">
-            {/* Background gradient effects */}
-            <div className="absolute -top-[200px] right-[25%] w-[400px] h-[400px] rounded-full bg-[#E8B08A]/40 blur-[300px] z-0"></div>
-            <div className="absolute -top-[100px] left-[10%] w-[300px] h-[300px] rounded-full bg-white/20 blur-[200px] z-0"></div>
+            {/* Left side gradient effects */}
+            <div className="absolute left-0 top-0 w-[1000px] h-full">
+              <div className="absolute left-0 top-[20%] w-[800px] h-[800px] bg-gradient-to-r from-white/60 via-white/30 to-transparent blur-[100px]"></div>
+              <div className="absolute left-[10%] top-[40%] w-[600px] h-[600px] bg-gradient-to-r from-white/40 via-white/20 to-transparent blur-[120px]"></div>
+              <div className="absolute left-0 bottom-[10%] w-[700px] h-[500px] bg-gradient-to-r from-white/50 via-white/25 to-transparent blur-[150px]"></div>
+            </div>
           
             <div className="relative w-full h-[500px] md:h-[600px]">
               <Image
