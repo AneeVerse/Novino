@@ -8,7 +8,7 @@ export default function ProductTestimonial() {
     >
       <div className="relative max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-24 px-4 md:px-8 overflow-visible">
         {/* Notebook Image in Circle */}
-        <div className="relative w-full max-w-[500px] overflow-visible">
+        <div className="relative w-full max-w-[500px] overflow-visible -ml-16">
           {/* Gradient background effect - much more expanded */}
           <div className="absolute -inset-64 bg-gradient-radial from-[#6b5750] via-[#3c3331]/90 to-transparent blur-[160px] z-0"></div>
           <div className="absolute -inset-48 bg-gradient-to-br from-[#6b5750] via-[#6b5750]/95 to-transparent blur-[140px] z-0"></div>
@@ -38,7 +38,7 @@ export default function ProductTestimonial() {
         </div>
 
         {/* Testimonial Content */}
-        <div className="flex-1 text-white space-y-8 md:space-y-10" style={{ fontFamily: '"IvyMode", serif' }}>
+        <div className="flex-1 ml-auto relative left-24 text-white space-y-8 md:space-y-10" style={{ fontFamily: '"IvyMode", serif' }}>
           <h2 className="text-2xl md:text-3xl font-light tracking-wide" style={{ fontFamily: '"IvyMode", serif' }}>Product Testimonials</h2>
 
           {/* Star Rating */}
