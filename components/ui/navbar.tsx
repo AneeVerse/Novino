@@ -10,10 +10,13 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 w-full z-50">
       {/* Background with gradient effects matching Figma design */}
-      <div className="absolute inset-0 bg-[#312F30]">
-        {/* Gradient overlay elements that create the soft glow effects */}
-        <div className="absolute top-[-80px] left-[5%] w-[300px] h-[300px] rounded-full bg-[#E8B08A]/30 blur-[220px]"></div>
-        <div className="absolute top-[-150px] right-[10%] w-[400px] h-[400px] rounded-full bg-white/20 blur-[180px]"></div>
+      <div className="absolute inset-0 bg-[#2D2D2D]">
+        {/* Main gradient from dark to white */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#2D2D2D] via-[#2D2D2D] to-white/40"></div>
+        {/* Additional white gradient overlays for glow effects */}
+        <div className="absolute -top-[100px] -right-[100px] w-[800px] h-[800px] rounded-full bg-white/20 blur-[150px]"></div>
+        <div className="absolute top-[50%] -right-[100px] w-[600px] h-[600px] rounded-full bg-white/10 blur-[150px]"></div>
+        <div className="absolute -top-[50px] left-[10%] w-[400px] h-[400px] rounded-full bg-white/10 blur-[150px]"></div>
       </div>
       
       <div className="relative container mx-auto px-8 sm:px-12 flex justify-between items-center py-6">

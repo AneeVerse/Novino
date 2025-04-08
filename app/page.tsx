@@ -20,27 +20,8 @@ export default function Home() {
       {/* Top padding matches bottom to center the navbar */}
       <div className="pt-2"></div>
 
-      {/* Navigation with balanced vertical alignment */}
-      <nav className="flex items-center justify-between p-4 md:p-6 py-3 relative z-10 bg-[#2D2D2D]">
-        <div className="flex items-center gap-6">
-          <button className="text-white">
-            <Menu size={24} />
-          </button>
-          <div className="border border-dashed border-white px-3 py-1">
-            <span className="text-white text-sm">Products</span>
-          </div>
-        </div>
-        <div className="text-white text-xl font-light">Novino.io</div>
-        <div className="flex items-center gap-4">
-          <button className="text-white">
-            <X size={20} />
-          </button>
-          <button className="bg-white px-4 py-1 text-sm rounded-sm">Contact</button>
-        </div>
-      </nav>
-
       {/* Combined Container with border for Hero and Gallery */}
-      <div className="mx-4 md:mx-6 mt-6 mb-8 z-10 relative border-[3px] border-dashed border-white rounded-[20px] overflow-hidden">
+      <div className="mx-4 md:mx-6 mt-28 mb-8 z-10 relative border-[3px] border-dashed border-white rounded-[20px] overflow-hidden">
         {/* Hero Section */}
         <div className="relative">
           {/* Adding gradient effects from Figma */}
