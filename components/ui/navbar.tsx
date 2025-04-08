@@ -14,9 +14,9 @@ const Navbar = () => {
         {/* Main gradient from dark to white */}
         <div className="absolute inset-0 bg-gradient-to-tr from-[#2D2D2D] via-[#2D2D2D] to-white/40"></div>
         {/* Additional white gradient overlays for glow effects */}
-        <div className="absolute -top-[100px] -right-[100px] w-[800px] h-[800px] rounded-full bg-white/20 blur-[150px]"></div>
-        <div className="absolute top-[50%] -right-[100px] w-[600px] h-[600px] rounded-full bg-white/10 blur-[150px]"></div>
-        <div className="absolute -top-[50px] left-[10%] w-[400px] h-[400px] rounded-full bg-white/10 blur-[150px]"></div>
+        <div className="absolute -top-[50px] -right-[50px] w-[600px] h-[600px] rounded-full bg-white/20 blur-[100px]"></div>
+        <div className="absolute top-[30%] -right-[30px] w-[400px] h-[400px] rounded-full bg-white/10 blur-[80px]"></div>
+        <div className="absolute -top-[30px] left-[10%] w-[300px] h-[300px] rounded-full bg-white/10 blur-[80px]"></div>
       </div>
       
       <div className="relative container mx-auto px-8 sm:px-12 flex justify-between items-center py-6">
