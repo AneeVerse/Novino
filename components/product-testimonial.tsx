@@ -59,19 +59,6 @@ export default function ProductTestimonial() {
             <p className="text-base md:text-xl text-white/80" style={{ fontFamily: '"IvyMode", serif' }}>- Customer Review</p>
           </div>
         </div>
-
-        {/* Navigation Controls */}
-        <div className="absolute right-6 md:right-10 top-1/2 -translate-y-1/2 flex flex-col gap-6">
-          <button className="text-white/90 hover:text-white transition-colors">
-            <ChevronRight className="w-6 h-6" />
-          </button>
-          <button className="text-white/90 hover:text-white transition-colors">
-            <MoreVertical className="w-6 h-6" />
-          </button>
-          <button className="text-white/90 hover:text-white transition-colors">
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-        </div>
       </div>
     </section>
   )
