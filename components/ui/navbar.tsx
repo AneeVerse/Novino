@@ -21,7 +21,7 @@ const Navbar = () => {
       
       <div className="relative container mx-auto px-8 sm:px-12 flex justify-between items-center py-6">
         {/* Left section - Hamburger and Products */}
-        <div className="flex items-center space-x-4">
+        <div style={{ transform: 'translateX(-80px)' }} className="flex items-center space-x-8">
           {/* Custom hamburger button on left */}
           <div className="relative">
             <button
@@ -64,7 +64,7 @@ const Navbar = () => {
         </div>
         
         {/* Right section - Cart and Contact */}
-        <div className="flex items-center space-x-4">
+        <div style={{ transform: 'translateX(60px)' }} className="flex items-center space-x-8">
           {/* Cart button - Using Figma icon */}
           <button 
             className="flex items-center justify-center bg-[#1A1A1A] rounded-[12px] p-[18px]" 
