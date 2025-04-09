@@ -74,14 +74,20 @@ export default function Home() {
             </div>
 
             {/* Category Filters */}
-            <div className="flex justify-center items-center gap-6 mb-16">
+            <div className="flex flex-wrap justify-center items-center gap-6 mb-16">
               {["All", "Mens", "Womens", "Kids"].map((category) => (
-                <button 
-                  key={category} 
-                  className="min-w-[120px] border border-dashed border-white/20 px-6 py-2.5 text-white/40 text-sm font-light hover:text-white hover:border-white transition-colors"
-                >
-                  {category}
-                </button>
+                <div key={category} className="relative inline-block">
+                  <button 
+                    className="relative z-10 px-8 py-3.5 text-[#B3B3B2] font-normal text-[18px] font-['Roboto Mono'] hover:text-white transition-colors"
+                  >
+                    {category}
+                  </button>
+                  <div className="absolute inset-0 z-0 pointer-events-none">
+                    <svg width="100%" height="55" viewBox="0 0 100 55" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                      <rect x="1" y="1" width="98%" height="53" rx="10" stroke="white" strokeOpacity="1" strokeDasharray="5 5" style={{ mixBlendMode: "normal" }}/>
+                    </svg>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
