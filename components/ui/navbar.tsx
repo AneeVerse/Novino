@@ -21,29 +21,29 @@ const Navbar = () => {
       
       <div className="relative container mx-auto px-[50px] 2xl:px-[15px] flex justify-between items-center py-6">
         {/* Left section - Hamburger and Products */}
-        <div className="flex items-center space-x-8">
+        <div className="flex items-center space-x-6">
           {/* Custom hamburger button on left */}
           <div className="relative">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="w-[82px] h-[63px] bg-white rounded-[12px] flex justify-center items-center"
+              className="w-[70px] h-[54px] bg-white rounded-[10px] flex justify-center items-center"
               aria-label="Toggle menu"
             >
-              <div className="absolute" style={{ bottom: '18px', left: '17px', width: '48px', height: '9px' }}>
+              <div className="absolute" style={{ bottom: '16px', left: '15px', width: '40px', height: '8px' }}>
                 <Image 
                   src="/icons/hamburger-line-1.svg" 
                   alt="Menu" 
-                  width={48} 
-                  height={9}
+                  width={40} 
+                  height={8}
                   className="w-full h-auto"
                 />
               </div>
-              <div className="absolute" style={{ top: '18px', left: '17px', width: '48px', height: '9px' }}>
+              <div className="absolute" style={{ top: '16px', left: '15px', width: '40px', height: '8px' }}>
                 <Image 
                   src="/icons/hamburger-line-2.svg" 
                   alt="Menu" 
-                  width={48} 
-                  height={9}
+                  width={40} 
+                  height={8}
                   className="w-full h-auto"
                 />
               </div>
@@ -54,13 +54,13 @@ const Navbar = () => {
           <div className="relative">
             <Link 
               href="/products" 
-              className="font-mono font-bold text-lg text-white z-10 relative px-6 py-4 inline-block"
+              className="font-mono font-bold text-[15px] text-white z-10 relative px-5 py-[14px] inline-block"
             >
               Products
             </Link>
             <div className="absolute inset-0 -left-1 z-0 pointer-events-none">
-              <svg width="136" height="63" viewBox="0 0 136 63" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="1.41846" y="0.5" width="134" height="62" rx="11.5" stroke="white" strokeOpacity="1" strokeDasharray="5 5" style={{ mixBlendMode: "normal" }}/>
+              <svg width="120" height="54" viewBox="0 0 120 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1.41846" y="0.5" width="118" height="53" rx="10.5" stroke="white" strokeOpacity="1" strokeDasharray="5 5" style={{ mixBlendMode: "normal" }}/>
               </svg>
             </div>
           </div>
@@ -74,23 +74,23 @@ const Navbar = () => {
         </div>
         
         {/* Right section - Cart and Contact */}
-        <div className="flex items-center space-x-8">
+        <div className="flex items-center space-x-6">
           {/* Cart button - Using Figma icon */}
           <button 
-            className="flex items-center justify-center bg-[#1A1A1A] rounded-[12px] p-[18px]" 
+            className="flex items-center justify-center bg-[#1A1A1A] rounded-[10px] p-[15px]" 
             aria-label="Shopping Cart"
           >
             <Image 
               src="/icons/figma-cart-icon.svg"
               alt="Cart"
-              width={24}
-              height={24}
-              className="w-6 h-6"
+              width={22}
+              height={22}
+              className="w-[22px] h-[22px]"
             />
           </button>
           
           {/* Contact button */}
-          <button className="hidden md:flex font-mono font-bold text-[#0F0F0F] bg-white rounded-xl px-[30px] py-[18px]">
+          <button className="hidden md:flex font-mono font-bold text-[15px] text-[#0F0F0F] bg-white rounded-xl px-[24px] py-[14px]">
             Contact
           </button>
         </div>
