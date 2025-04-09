@@ -22,7 +22,7 @@ export default function Home() {
 
       {/* Combined Container with border for Hero and Gallery */}
       <div className="mx-4 md:mx-6 mt-28 mb-8 z-10 relative rounded-[20px]">
-        <div className="overflow-hidden">
+        <div className="overflow-hidden rounded-[20px]">
           {/* Hero Section */}
           <div className="relative">
             {/* Adding gradient effects from Figma */}
@@ -39,7 +39,7 @@ export default function Home() {
                   src="/images/hero-bg.png"
                   alt="Gallery wall with abstract art"
                   fill
-                  className="object-cover"
+                  className="object-cover rounded-[20px]"
                   priority
                 />
                 
@@ -61,7 +61,7 @@ export default function Home() {
         </div>
         <div className="absolute inset-0 z-50 pointer-events-none">
           <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1330 1179" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-            <rect x="2" y="2" width="1326" height="1175" rx="19" stroke="white" strokeWidth="2" strokeDasharray="16 4"/>
+            <rect x="2" y="2" width="1326" height="1175" rx="19" stroke="white" strokeWidth="2" strokeDasharray="16 4" strokeOpacity="1" style={{ mixBlendMode: "normal" }}/>
           </svg>
         </div>
 
