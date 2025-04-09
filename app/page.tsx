@@ -21,41 +21,48 @@ export default function Home() {
       <div className="pt-2"></div>
 
       {/* Combined Container with border for Hero and Gallery */}
-      <div className="mx-4 md:mx-6 mt-28 mb-8 z-10 relative border-[3px] border-dashed border-white rounded-[20px] overflow-hidden">
-        {/* Hero Section */}
-        <div className="relative">
-          {/* Adding gradient effects from Figma */}
+      <div className="mx-4 md:mx-6 mt-28 mb-8 z-10 relative rounded-[20px]">
+        <div className="overflow-hidden">
+          {/* Hero Section */}
           <div className="relative">
-            {/* Left side gradient effects */}
-            <div className="absolute left-0 top-0 w-[1000px] h-full">
-              <div className="absolute left-0 top-[20%] w-[800px] h-[800px] bg-gradient-to-r from-white/60 via-white/30 to-transparent blur-[100px]"></div>
-              <div className="absolute left-[10%] top-[40%] w-[600px] h-[600px] bg-gradient-to-r from-white/40 via-white/20 to-transparent blur-[120px]"></div>
-              <div className="absolute left-0 bottom-[10%] w-[700px] h-[500px] bg-gradient-to-r from-white/50 via-white/25 to-transparent blur-[150px]"></div>
-            </div>
-          
-            <div className="relative w-full h-[500px] md:h-[600px]">
-              <Image
-                src="/images/hero-bg.png"
-                alt="Gallery wall with abstract art"
-                fill
-                className="object-cover"
-                priority
-              />
-              
-              {/* Shop Now button in the correct position - middle bottom */}
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
-                <Link 
-                  href="/shop" 
-                  className="inline-flex items-center gap-2 bg-[#1F1F1F] text-white px-6 py-4 rounded-xl hover:bg-[#333] transition-colors"
-                >
-                  <span>Shop Now</span>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </Link>
+            {/* Adding gradient effects from Figma */}
+            <div className="relative">
+              {/* Left side gradient effects */}
+              <div className="absolute left-0 top-0 w-[1000px] h-full">
+                <div className="absolute left-0 top-[20%] w-[800px] h-[800px] bg-gradient-to-r from-white/60 via-white/30 to-transparent blur-[100px]"></div>
+                <div className="absolute left-[10%] top-[40%] w-[600px] h-[600px] bg-gradient-to-r from-white/40 via-white/20 to-transparent blur-[120px]"></div>
+                <div className="absolute left-0 bottom-[10%] w-[700px] h-[500px] bg-gradient-to-r from-white/50 via-white/25 to-transparent blur-[150px]"></div>
+              </div>
+            
+              <div className="relative w-full h-[500px] md:h-[600px]">
+                <Image
+                  src="/images/hero-bg.png"
+                  alt="Gallery wall with abstract art"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                
+                {/* Shop Now button in the correct position - middle bottom */}
+                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+                  <Link 
+                    href="/shop" 
+                    className="inline-flex items-center gap-2 bg-[#1F1F1F] text-white px-6 py-4 rounded-xl hover:bg-[#333] transition-colors"
+                  >
+                    <span>Shop Now</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+        <div className="absolute inset-0 z-50 pointer-events-none">
+          <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1330 1179" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <rect x="2" y="2" width="1326" height="1175" rx="19" stroke="white" strokeWidth="2" strokeDasharray="16 4"/>
+          </svg>
         </div>
 
         {/* ELEVATE ORDINARY WALLS Section */}
