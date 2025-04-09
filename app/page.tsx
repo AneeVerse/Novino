@@ -34,7 +34,7 @@ export default function Home() {
                 <div className="absolute left-0 bottom-[10%] w-full max-w-[70%] h-[50%] bg-gradient-to-r from-white/50 via-white/25 to-transparent blur-[150px]"></div>
               </div>
             
-              <div className="relative w-full h-[480px] md:h-[580px]">
+              <div className="relative w-full h-[580px] md:h-[680px]">
                 <Image
                   src="/images/hero-bg.png"
                   alt="Gallery wall with abstract art"
