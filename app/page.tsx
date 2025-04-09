@@ -10,7 +10,7 @@ import ProductTestimonial from "@/components/product-testimonial"
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-transparent">
+    <main className="relative min-h-screen bg-transparent overflow-x-hidden">
       {/* Background overlay simplified - removing gradients that aren't showing */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Base background color */}
@@ -28,10 +28,10 @@ export default function Home() {
             {/* Adding gradient effects from Figma */}
             <div className="relative">
               {/* Left side gradient effects */}
-              <div className="absolute left-0 top-0 w-[1000px] h-full">
-                <div className="absolute left-0 top-[20%] w-[800px] h-[800px] bg-gradient-to-r from-white/60 via-white/30 to-transparent blur-[100px]"></div>
-                <div className="absolute left-[10%] top-[40%] w-[600px] h-[600px] bg-gradient-to-r from-white/40 via-white/20 to-transparent blur-[120px]"></div>
-                <div className="absolute left-0 bottom-[10%] w-[700px] h-[500px] bg-gradient-to-r from-white/50 via-white/25 to-transparent blur-[150px]"></div>
+              <div className="absolute left-0 top-0 w-full max-w-full h-full">
+                <div className="absolute left-0 top-[20%] w-full max-w-[80%] h-[80%] bg-gradient-to-r from-white/60 via-white/30 to-transparent blur-[100px]"></div>
+                <div className="absolute left-[10%] top-[40%] w-full max-w-[60%] h-[60%] bg-gradient-to-r from-white/40 via-white/20 to-transparent blur-[120px]"></div>
+                <div className="absolute left-0 bottom-[10%] w-full max-w-[70%] h-[50%] bg-gradient-to-r from-white/50 via-white/25 to-transparent blur-[150px]"></div>
               </div>
             
               <div className="relative w-full h-[500px] md:h-[600px]">
@@ -69,8 +69,8 @@ export default function Home() {
         <div className="p-6 md:p-10 bg-[#2D2D2D] backdrop-blur-sm">
           <div className="max-w-[1200px] mx-auto">
             <div className="mb-16">
-              <h1 className="text-white text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-8 text-center whitespace-nowrap">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
-              <p className="text-white/60 text-base leading-none text-center whitespace-nowrap">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
+              <h1 className="text-white text-[28px] md:text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-8 text-center">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
+              <p className="text-white/60 text-base leading-normal text-center mx-auto max-w-3xl">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
             </div>
 
             {/* Category Filters */}

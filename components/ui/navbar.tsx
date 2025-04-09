@@ -50,10 +50,20 @@ const Navbar = () => {
             </button>
           </div>
           
-          {/* Products link */}
-          <Link href="/products" className="font-mono font-bold text-lg text-white border border-white border-dashed rounded-xl px-6 py-4">
-            Products
-          </Link>
+          {/* Products link with SVG border */}
+          <div className="relative">
+            <Link 
+              href="/products" 
+              className="font-mono font-bold text-lg text-white z-10 relative px-6 py-4 inline-block"
+            >
+              Products
+            </Link>
+            <div className="absolute inset-0 -left-1 z-0 pointer-events-none">
+              <svg width="136" height="63" viewBox="0 0 136 63" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1.41846" y="0.5" width="134" height="62" rx="11.5" stroke="white" strokeOpacity="1" strokeDasharray="5 5" style={{ mixBlendMode: "normal" }}/>
+              </svg>
+            </div>
+          </div>
         </div>
         
         {/* Center - Logo */}
