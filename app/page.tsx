@@ -17,11 +17,11 @@ export default function Home() {
         <div className="absolute inset-0 bg-[#2D2D2D]"></div>
       </div>
 
-      {/* Top padding matches bottom to center the navbar */}
-      <div className="pt-2"></div>
+      {/* Top padding for navbar spacing */}
+      <div className="pt-4"></div>
 
       {/* Combined Container with border for Hero and Gallery */}
-      <div className="mx-4 md:mx-6 mt-28 mb-8 z-10 relative rounded-[20px]">
+      <div className="mx-4 md:mx-6 mt-24 mb-8 z-10 relative rounded-[20px]">
         <div className="overflow-hidden rounded-[20px]">
           {/* Hero Section */}
           <div className="relative">
@@ -34,7 +34,7 @@ export default function Home() {
                 <div className="absolute left-0 bottom-[10%] w-full max-w-[70%] h-[50%] bg-gradient-to-r from-white/50 via-white/25 to-transparent blur-[150px]"></div>
               </div>
             
-              <div className="relative w-full h-[500px] md:h-[600px]">
+              <div className="relative w-full h-[480px] md:h-[580px]">
                 <Image
                   src="/images/hero-bg.png"
                   alt="Gallery wall with abstract art"
