@@ -19,7 +19,7 @@ const Navbar = () => {
         <div className="absolute -top-[30px] left-[10%] w-[300px] h-[300px] rounded-full bg-white/10 blur-[80px]"></div>
       </div>
       
-      <div className="relative container mx-auto px-[50px] flex justify-between items-center py-6">
+      <div className="relative container mx-auto px-[50px] 2xl:px-[15px] flex justify-between items-center py-6">
         {/* Left section - Hamburger and Products */}
         <div className="flex items-center space-x-8">
           {/* Custom hamburger button on left */}
