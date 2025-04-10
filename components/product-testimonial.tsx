@@ -35,27 +35,64 @@ export default function ProductTestimonial() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   
+  // Add debugging logs to diagnose the issue
+  useEffect(() => {
+    console.log("Component mounted - ready for interaction");
+  }, []);
+  
+  // Simplified approach to handle testimonial changes
   const changeTestimonial = (index: number) => {
-    if (isTransitioning) return;
+    console.log("changeTestimonial called with index:", index);
+    console.log("Current state - currentIndex:", currentIndex, "isTransitioning:", isTransitioning);
     
-    setIsTransitioning(true);
-    setTimeout(() => {
+    // Force reset isTransitioning if it's been true for too long (safety measure)
+    if (isTransitioning) {
+      console.log("Force resetting isTransitioning state");
+      setIsTransitioning(false);
+    }
+    
+    // Only proceed if trying to move to a different slide
+    if (index !== currentIndex) {
+      console.log("Condition passed, starting transition to index:", index);
+      setIsTransitioning(true);
       setCurrentIndex(index);
+      
+      // Reset the transition state after animation completes
+      console.log("Setting timeout to reset transition state after 600ms");
       setTimeout(() => {
+        console.log("Timeout completed, setting isTransitioning to false");
         setIsTransitioning(false);
-      }, 300);
-    }, 300);
+      }, 600);
+    } else {
+      console.log("Transition blocked - same index:", index === currentIndex);
+    }
   };
 
   const nextTestimonial = () => {
-    const nextIndex = currentIndex === testimonials.length - 1 ? 0 : currentIndex + 1;
+    console.log("Next button clicked");
+    const nextIndex = (currentIndex + 1) % testimonials.length;
+    console.log("Calculated next index:", nextIndex);
     changeTestimonial(nextIndex);
   };
 
   const prevTestimonial = () => {
-    const prevIndex = currentIndex === 0 ? testimonials.length - 1 : currentIndex - 1;
+    console.log("Previous button clicked");
+    const prevIndex = (currentIndex - 1 + testimonials.length) % testimonials.length;
+    console.log("Calculated previous index:", prevIndex);
     changeTestimonial(prevIndex);
   };
+  
+  // Safety timeout to reset isTransitioning if it gets stuck
+  useEffect(() => {
+    if (isTransitioning) {
+      const safetyTimer = setTimeout(() => {
+        setIsTransitioning(false);
+        console.log("Safety timeout: reset isTransitioning state");
+      }, 1000);
+      
+      return () => clearTimeout(safetyTimer);
+    }
+  }, [isTransitioning]);
 
   const current = testimonials[currentIndex];
 
@@ -95,7 +132,7 @@ export default function ProductTestimonial() {
         </div>
 
         {/* Testimonial Content */}
-        <div className="flex-1 ml-auto relative left-24 text-white" style={{ fontFamily: '"IvyMode", serif' }}>
+        <div className="flex-1 ml-auto relative text-white" style={{ fontFamily: '"IvyMode", serif' }}>
           <div className="flex">
             {/* Main content */}
             <div className="flex-1 space-y-8 md:space-y-10 pr-8">
@@ -120,20 +157,24 @@ export default function ProductTestimonial() {
             </div>
 
             {/* Navigation Controls */}
-            <div className="flex flex-col space-y-4 mt-6">
+            <div className="flex flex-col space-y-4 mt-6 z-20">
               {/* Right arrow (for next) */}
               <button 
                 onClick={nextTestimonial}
-                className="w-8 h-8 flex items-center justify-center relative cursor-pointer"
+                className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-white/10 rounded-full transition-colors"
                 disabled={isTransitioning}
                 aria-label="Next testimonial"
+                type="button"
               >
-                <Image
-                  src="/images/Arrow Right.png"
-                  alt="Next"
-                  width={24}
-                  height={24}
-                />
+                <div className="w-full h-full flex items-center justify-center">
+                  <Image
+                    src="/images/Arrow Right.png"
+                    alt="Next"
+                    width={24}
+                    height={24}
+                    style={{ pointerEvents: 'none' }}
+                  />
+                </div>
               </button>
               
               {/* Dots indicators */}
@@ -141,10 +182,11 @@ export default function ProductTestimonial() {
                 {testimonials.map((_, index) => (
                   <button 
                     key={index}
-                    onClick={() => !isTransitioning && changeTestimonial(index)}
-                    className={`w-2 h-2 rounded-full transition-all ${index === currentIndex ? 'bg-white scale-125' : 'bg-white/50'}`}
+                    onClick={() => changeTestimonial(index)}
+                    className={`w-3 h-3 rounded-full transition-all ${index === currentIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'}`}
                     aria-label={`Go to testimonial ${index + 1}`}
                     disabled={isTransitioning}
+                    type="button"
                   />
                 ))}
               </div>
@@ -152,16 +194,20 @@ export default function ProductTestimonial() {
               {/* Left arrow (for previous) */}
               <button 
                 onClick={prevTestimonial}
-                className="w-8 h-8 flex items-center justify-center relative cursor-pointer"
+                className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-white/10 rounded-full transition-colors"
                 disabled={isTransitioning}
                 aria-label="Previous testimonial"
+                type="button"
               >
-                <Image
-                  src="/images/Arrow Left.png"
-                  alt="Previous"
-                  width={24}
-                  height={24}
-                />
+                <div className="w-full h-full flex items-center justify-center">
+                  <Image
+                    src="/images/Arrow Left.png"
+                    alt="Previous"
+                    width={24}
+                    height={24}
+                    style={{ pointerEvents: 'none' }}
+                  />
+                </div>
               </button>
             </div>
           </div>
