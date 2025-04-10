@@ -18,7 +18,7 @@ export default function Home() {
   
   return (
     <main className="relative min-h-screen bg-transparent overflow-x-hidden">
-      {/* Background overlay simplified - removing gradients that aren't showing */}
+      {/* Background overlay with base color only */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Base background color */}
         <div className="absolute inset-0 bg-[#2D2D2D]"></div>
@@ -106,10 +106,6 @@ export default function Home() {
           borderRadius: '20px',
           borderSpacing: '8px',
         }}>
-          {/* Abstract gradient backgrounds to connect with upper sections */}
-          <div className="absolute left-0 top-0 w-full max-w-[80%] h-[60%] bg-gradient-to-r from-white/30 via-white/15 to-transparent blur-[100px] pointer-events-none"></div>
-          <div className="absolute right-0 bottom-0 w-[50%] h-[40%] bg-gradient-to-l from-white/20 via-white/10 to-transparent blur-[80px] pointer-events-none"></div>
-          
           <div className="flex flex-col md:flex-row md:gap-16 relative z-10">
             {/* Left side: Categories and Title */}
             <div className="md:w-[40%] mb-8 md:mb-0">
