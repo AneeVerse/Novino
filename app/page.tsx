@@ -28,17 +28,17 @@ export default function Home() {
       <div className="pt-4"></div>
 
       {/* Combined Container with border for Hero and Gallery */}
-      <div className="mx-4 md:mx-6 mt-24 mb-8 z-10 relative rounded-[20px]">
+      <div className="mx-4 md:mx-6 mt-24 mb-8 z-10 relative rounded-[20px] overflow-visible">
         <div className="overflow-hidden rounded-[20px]">
           {/* Hero Section */}
           <div className="relative">
-            {/* Adding gradient effects from Figma */}
+            {/* Adding gradient effects from Figma - making them more transparent */}
             <div className="relative">
-              {/* Left side gradient effects */}
-              <div className="absolute left-0 top-0 w-full max-w-full h-full">
-                <div className="absolute left-0 top-[20%] w-full max-w-[80%] h-[80%] bg-gradient-to-r from-white/60 via-white/30 to-transparent blur-[100px]"></div>
-                <div className="absolute left-[10%] top-[40%] w-full max-w-[60%] h-[60%] bg-gradient-to-r from-white/40 via-white/20 to-transparent blur-[120px]"></div>
-                <div className="absolute left-0 bottom-[10%] w-full max-w-[70%] h-[50%] bg-gradient-to-r from-white/50 via-white/25 to-transparent blur-[150px]"></div>
+              {/* Left side gradient effects with reduced opacity */}
+              <div className="absolute left-0 top-0 w-full max-w-full h-full opacity-30">
+                <div className="absolute left-0 top-[20%] w-full max-w-[80%] h-[80%] bg-gradient-to-r from-white/30 via-white/15 to-transparent blur-[100px]"></div>
+                <div className="absolute left-[10%] top-[40%] w-full max-w-[60%] h-[60%] bg-gradient-to-r from-white/20 via-white/10 to-transparent blur-[120px]"></div>
+                <div className="absolute left-0 bottom-[10%] w-full max-w-[70%] h-[50%] bg-gradient-to-r from-white/25 via-white/12 to-transparent blur-[150px]"></div>
               </div>
             
               <div className="relative w-full h-[580px] md:h-[680px]">
@@ -49,19 +49,6 @@ export default function Home() {
                   className="object-cover rounded-[20px]"
                   priority
                 />
-                
-                {/* Shop Now button in the correct position */}
-                <div className="absolute bottom-[40%] left-1/2 transform -translate-x-1/2 z-50">
-                  <Link 
-                    href="/shop" 
-                    className="box-border flex flex-row items-center justify-center p-[18px_24px] gap-1 isolate w-[148px] h-[63px] bg-white border border-dashed border-[#404040] rounded-xl hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="text-black text-base font-normal">Shop Now</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-black">
-                      <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
@@ -72,8 +59,25 @@ export default function Home() {
           </svg>
         </div>
 
-        {/* ELEVATE ORDINARY WALLS Section */}
-        <div className="p-6 md:p-10 bg-[#2D2D2D] backdrop-blur-sm">
+        {/* Remove the space div and position button between sections */}
+        {/* Create space between hero and ELEVATE section for button */}
+        <div className="relative h-16 -mt-8"> 
+          {/* Shop Now button positioned between sections */}
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100]">
+            <Link 
+              href="/shop" 
+              className="box-border flex flex-row items-center justify-center p-[18px_24px] gap-1 isolate w-[148px] h-[63px] bg-white border border-dashed border-[#404040] rounded-xl hover:bg-gray-50 transition-colors shadow-lg"
+            >
+              <span className="text-black text-base font-normal">Shop Now</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-black">
+                <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
+          </div>
+        </div>
+
+        {/* ELEVATE ORDINARY WALLS Section with transparent background */}
+        <div className="p-6 md:p-10 bg-[#2D2D2D]/80 backdrop-blur-sm">
           <div className="max-w-[1200px] mx-auto">
             <div className="mb-16">
               <h1 className="text-white text-[28px] md:text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-8 text-center">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
