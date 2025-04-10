@@ -11,10 +11,45 @@ import Footer from "@/components/footer"
 import ProductTestimonial from "@/components/product-testimonial"
 import MasonryGallery from "@/components/masonry-gallery"
 import ProductGrid from "@/components/product-grid"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+
+// Hero carousel images
+const heroImages = [
+  {
+    src: "/images/hero-bg.png",
+    alt: "Gallery wall with abstract art"
+  },
+  {
+    src: "/images/hero-bg-2.jpg", // You'll need to add these images
+    alt: "Abstract art gallery display"
+  },
+  {
+    src: "/images/hero-bg-3.jpg", // You'll need to add these images
+    alt: "Modern art gallery wall"
+  }
+];
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All Products");
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [isHeroTransitioning, setIsHeroTransitioning] = useState(false);
+  
+  // Hero carousel navigation
+  const nextHeroImage = () => {
+    if (!isHeroTransitioning) {
+      setIsHeroTransitioning(true);
+      setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
+      setTimeout(() => setIsHeroTransitioning(false), 500);
+    }
+  };
+
+  const prevHeroImage = () => {
+    if (!isHeroTransitioning) {
+      setIsHeroTransitioning(true);
+      setCurrentHeroIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+      setTimeout(() => setIsHeroTransitioning(false), 500);
+    }
+  };
   
   return (
     <main className="relative min-h-screen bg-transparent overflow-x-hidden">
@@ -42,13 +77,82 @@ export default function Home() {
               </div>
             
               <div className="relative w-full h-[580px] md:h-[680px]">
-                <Image
-                  src="/images/hero-bg.png"
-                  alt="Gallery wall with abstract art"
-                  fill
-                  className="object-cover rounded-[20px]"
-                  priority
-                />
+                {/* Carousel Images */}
+                {heroImages.map((image, index) => (
+                  <div 
+                    key={index}
+                    className={`absolute inset-0 transition-opacity duration-500 ${
+                      currentHeroIndex === index 
+                        ? 'opacity-100 z-10' 
+                        : 'opacity-0 z-0'
+                    }`}
+                  >
+                    <Image
+                      src={image.src}
+                      alt={image.alt}
+                      fill
+                      className="object-cover rounded-[20px]"
+                      priority={index === 0}
+                    />
+                  </div>
+                ))}
+
+                {/* Navigation Controls - Positioned at top right */}
+                <div className="absolute top-6 right-6 flex flex-col space-y-4 z-50">
+                  {/* Right Arrow (for next) */}
+                  <button 
+                    onClick={nextHeroImage}
+                    className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-black/30 rounded-full transition-all outline-none"
+                    aria-label="Next image"
+                    type="button"
+                    style={{ zIndex: 9999 }}
+                  >
+                    <Image
+                      src="/images/Arrow Right.png"
+                      alt="Next"
+                      width={24}
+                      height={24}
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  </button>
+                  
+                  {/* Dots indicators - visible but styling matches Figma */}
+                  <div className="flex flex-col space-y-3 items-center py-2">
+                    {heroImages.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`w-3 h-3 rounded-full transition-all ${
+                          currentHeroIndex === index ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'
+                        }`}
+                        onClick={() => {
+                          if (!isHeroTransitioning) {
+                            setIsHeroTransitioning(true);
+                            setCurrentHeroIndex(index);
+                            setTimeout(() => setIsHeroTransitioning(false), 500);
+                          }
+                        }}
+                        aria-label={`Go to slide ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Left Arrow (for previous) */}
+                  <button 
+                    onClick={prevHeroImage}
+                    className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-black/30 rounded-full transition-all outline-none"
+                    aria-label="Previous image"
+                    type="button"
+                    style={{ zIndex: 9999 }}
+                  >
+                    <Image
+                      src="/images/Arrow Left.png"
+                      alt="Previous"
+                      width={24}
+                      height={24}
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
