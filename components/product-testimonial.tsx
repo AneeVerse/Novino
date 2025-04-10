@@ -103,19 +103,15 @@ export default function ProductTestimonial() {
       <div className="relative max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-24 px-4 md:px-8 overflow-visible">
         {/* Product Image in Circle */}
         <div className="relative w-full max-w-[500px] overflow-visible -ml-16">
-          {/* Gradient background effect - much more expanded */}
-          <div className="absolute -inset-64 bg-gradient-radial from-[#6b5750] via-[#3c3331]/90 to-transparent blur-[160px] z-0"></div>
-          <div className="absolute -inset-48 bg-gradient-to-br from-[#6b5750] via-[#6b5750]/95 to-transparent blur-[140px] z-0"></div>
-          <div className="absolute -inset-32 bg-gradient-to-r from-[#6b5750] via-[#3c3331]/95 to-transparent blur-[120px] z-0"></div>
-          <div className="absolute -inset-16 bg-gradient-to-tr from-[#6b5750] via-[#3c3331] to-transparent blur-[100px] z-0"></div>
+          {/* Main circle container */}
           <div
             className="relative w-full overflow-visible flex items-center justify-center z-10"
             style={{
-              background: "#b8a99e",
+              background: "radial-gradient(circle, #c4b5aa 80%, #b8a99e 90%, rgba(184, 169, 158, 0.8) 95%, rgba(184, 169, 158, 0) 100%)",
               borderRadius: "50%",
               aspectRatio: "1 / 1.2",
               height: "auto",
-              boxShadow: "0 0 80px rgba(107, 87, 80, 0.8)"
+              boxShadow: "0 0 120px rgba(196, 181, 170, 0.7)"
             }}
           >
             <div className={`relative w-[95%] h-[95%] z-10 py-4 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
