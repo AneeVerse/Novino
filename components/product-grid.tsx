@@ -55,7 +55,7 @@ export default function ProductGrid({ category = "All Products" }: ProductGridPr
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
       {filteredProducts.map((product) => (
-        <div key={product.id} className="bg-white">
+        <div key={product.id} className="overflow-hidden" style={{ borderRadius: '4px', border: '2px solid white' }}>
           <div className="relative aspect-square overflow-hidden bg-white">
             <Image 
               src={product.image} 
