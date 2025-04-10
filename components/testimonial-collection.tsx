@@ -1,5 +1,4 @@
 import Image from "next/image"
-import { Twitter } from "lucide-react"
 
 export default function TestimonialCollection() {
   return (
@@ -60,7 +59,7 @@ export default function TestimonialCollection() {
                 <p className="text-gray-300 text-sm">New York, USA</p>
               </div>
               <div className="ml-auto">
-                <Twitter className="text-gray-300 h-5 w-5" />
+                <Image src="/images/Capa 2.png" alt="Twitter" width={20} height={20} className="object-contain" />
               </div>
             </div>
 
@@ -104,7 +103,7 @@ export default function TestimonialCollection() {
                 <p className="text-gray-300 text-sm">Mumbai, India</p>
               </div>
               <div className="ml-auto">
-                <Twitter className="text-gray-300 h-5 w-5" />
+                <Image src="/images/Capa 2.png" alt="Twitter" width={20} height={20} className="object-contain" />
               </div>
             </div>
 
@@ -147,7 +146,7 @@ export default function TestimonialCollection() {
                 <p className="text-gray-300 text-sm">London, UK</p>
               </div>
               <div className="ml-auto">
-                <Twitter className="text-gray-300 h-5 w-5" />
+                <Image src="/images/Capa 2.png" alt="Twitter" width={20} height={20} className="object-contain" />
               </div>
             </div>
 
