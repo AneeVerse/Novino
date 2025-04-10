@@ -4,8 +4,12 @@ import { Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 export default function Footer() {
   return (
     <footer className="border-t-2 border-dashed border-white/30 border-opacity-60 py-10 relative z-10 mt-16" style={{ borderSpacing: "6px", borderTopWidth: "2px" }}>
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+      <div className="container mx-auto px-6 relative">
+        {/* Gradient effects similar to the product section */}
+        <div className="absolute left-[10%] top-0 w-[60%] h-[50%] bg-gradient-to-r from-white/20 via-white/10 to-transparent blur-[100px] pointer-events-none"></div>
+        <div className="absolute right-[20%] bottom-0 w-[40%] h-[60%] bg-gradient-to-l from-white/15 via-white/10 to-transparent blur-[80px] pointer-events-none"></div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
           {/* Brand Column */}
           <div>
             <h3 className="text-white text-lg font-medium mb-4">Novino.io</h3>
@@ -138,7 +142,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Section */}
-        <div className="mt-10 pt-6 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center">
+        <div className="mt-10 pt-6 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center relative z-10">
           <div className="text-gray-300 text-sm font-medium mb-4 md:mb-0">Novino.io © 2000-2023, All Rights Reserved</div>
 
           <div className="flex gap-2">
