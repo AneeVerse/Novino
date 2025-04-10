@@ -45,7 +45,7 @@ export default function BlogSection() {
             <div className="flex-1 flex gap-6 items-start">
               {/* Image with decorative border */}
               <div className="relative">
-                <div className="border border-[#A47E3B] min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden z-10">
+                <div className="border border-[#A47E3B] w-[240px] h-[200px] relative overflow-hidden z-10">
                   <img 
                     src="/images/blog/Screenshot from 2025-04-08 15-32-04.png" 
                     alt="Diamond's Haven" 
@@ -53,7 +53,7 @@ export default function BlogSection() {
                   />
                 </div>
                 {/* Decorative box behind image */}
-                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[150px] h-[150px] z-0"></div>
+                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[240px] h-[200px] z-0"></div>
               </div>
               <div className="min-w-0 relative z-10">
                 <h3 className="text-white font-['Italiana'] font-normal text-[32px] leading-[38px] mb-3">Diamond's Haven</h3>
@@ -72,7 +72,7 @@ export default function BlogSection() {
             <div className="flex-1 flex gap-6 items-start">
               {/* Image with decorative border */}
               <div className="relative">
-                <div className="border border-[#A47E3B] min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden z-10">
+                <div className="border border-[#A47E3B] w-[240px] h-[200px] relative overflow-hidden z-10">
                   <img 
                     src="/images/blog/Screenshot from 2025-04-08 15-32-18.png" 
                     alt="Silver Wolf" 
@@ -80,7 +80,7 @@ export default function BlogSection() {
                   />
                 </div>
                 {/* Decorative box behind image */}
-                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[150px] h-[150px] z-0"></div>
+                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[240px] h-[200px] z-0"></div>
               </div>
               <div className="min-w-0 relative z-10">
                 <h3 className="text-white font-['Italiana'] font-normal text-[32px] leading-[38px] mb-3">Silver Wolf</h3>
@@ -113,7 +113,7 @@ export default function BlogSection() {
               </div>
               {/* Image with decorative border */}
               <div className="relative">
-                <div className="border border-[#A47E3B] min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden z-10">
+                <div className="border border-[#A47E3B] w-[240px] h-[200px] relative overflow-hidden z-10">
                   <img 
                     src="/images/blog/Screenshot from 2025-04-08 15-32-31.png" 
                     alt="Couple Paradise" 
@@ -121,7 +121,7 @@ export default function BlogSection() {
                   />
                 </div>
                 {/* Decorative box behind image */}
-                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[150px] h-[150px] z-0"></div>
+                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[240px] h-[200px] z-0"></div>
               </div>
             </div>
 
@@ -140,7 +140,7 @@ export default function BlogSection() {
               </div>
               {/* Image with decorative border */}
               <div className="relative">
-                <div className="border border-[#A47E3B] min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden z-10">
+                <div className="border border-[#A47E3B] w-[240px] h-[200px] relative overflow-hidden z-10">
                   <img 
                     src="/images/blog/Screenshot from 2025-04-08 15-32-42.png" 
                     alt="Gold Lava" 
@@ -148,7 +148,7 @@ export default function BlogSection() {
                   />
                 </div>
                 {/* Decorative box behind image */}
-                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[150px] h-[150px] z-0"></div>
+                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[240px] h-[200px] z-0"></div>
               </div>
             </div>
           </div>
