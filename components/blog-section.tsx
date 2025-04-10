@@ -43,17 +43,22 @@ export default function BlogSection() {
           <div className="flex flex-col md:flex-row gap-16 mb-20">
             {/* Left Item */}
             <div className="flex-1 flex gap-6 items-start">
-              <div className="border border-white/80 min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden">
-                <img 
-                  src="/images/blog/Screenshot from 2025-04-08 15-32-04.png" 
-                  alt="Diamond's Haven" 
-                  className="w-full h-full object-cover"
-                />
+              {/* Image with decorative border */}
+              <div className="relative">
+                <div className="border border-[#A47E3B] min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden z-10">
+                  <img 
+                    src="/images/blog/Screenshot from 2025-04-08 15-32-04.png" 
+                    alt="Diamond's Haven" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Decorative box behind image */}
+                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[150px] h-[150px] z-0"></div>
               </div>
               <div className="min-w-0 relative z-10">
                 <h3 className="text-white text-2xl font-light mb-3">Diamond's Haven</h3>
                 <p className="text-neutral-200 text-sm mb-4">Mesmerising jewellery collection that encapsulates the essence of timeless elegance & sophistication</p>
-                <a href="#" className="inline-block bg-[#F5F5F5] hover:bg-white text-black px-6 py-2 text-sm font-medium transition-colors">
+                <a href="#" className="inline-block bg-white text-black px-6 py-2 text-sm font-medium transition-colors border border-black">
                   VIEW DETAILS
                 </a>
               </div>
@@ -61,17 +66,22 @@ export default function BlogSection() {
 
             {/* Right Item */}
             <div className="flex-1 flex gap-6 items-start">
-              <div className="border border-white/80 min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden">
-                <img 
-                  src="/images/blog/Screenshot from 2025-04-08 15-32-18.png" 
-                  alt="Silver Wolf" 
-                  className="w-full h-full object-cover"
-                />
+              {/* Image with decorative border */}
+              <div className="relative">
+                <div className="border border-[#A47E3B] min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden z-10">
+                  <img 
+                    src="/images/blog/Screenshot from 2025-04-08 15-32-18.png" 
+                    alt="Silver Wolf" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Decorative box behind image */}
+                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[150px] h-[150px] z-0"></div>
               </div>
               <div className="min-w-0 relative z-10">
                 <h3 className="text-white text-2xl font-light mb-3">Silver Wolf</h3>
                 <p className="text-neutral-200 text-sm mb-4">Enchanting jewellery collection that echoes the untamed spirit of the wild</p>
-                <a href="#" className="inline-block bg-[#F5F5F5] hover:bg-white text-black px-6 py-2 text-sm font-medium transition-colors">
+                <a href="#" className="inline-block bg-white text-black px-6 py-2 text-sm font-medium transition-colors border border-black">
                   VIEW DETAILS
                 </a>
               </div>
@@ -85,16 +95,21 @@ export default function BlogSection() {
               <div className="min-w-0 relative z-10">
                 <h3 className="text-white text-2xl font-light mb-3">Couple Paradise</h3>
                 <p className="text-neutral-200 text-sm mb-4">Captivating jewellery collection that celebrates the eternal bond of love</p>
-                <a href="#" className="inline-block bg-[#F5F5F5] hover:bg-white text-black px-6 py-2 text-sm font-medium transition-colors">
+                <a href="#" className="inline-block bg-white text-black px-6 py-2 text-sm font-medium transition-colors border border-black">
                   VIEW DETAILS
                 </a>
               </div>
-              <div className="border border-white/80 min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden">
-                <img 
-                  src="/images/blog/Screenshot from 2025-04-08 15-32-31.png" 
-                  alt="Couple Paradise" 
-                  className="w-full h-full object-cover"
-                />
+              {/* Image with decorative border */}
+              <div className="relative">
+                <div className="border border-[#A47E3B] min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden z-10">
+                  <img 
+                    src="/images/blog/Screenshot from 2025-04-08 15-32-31.png" 
+                    alt="Couple Paradise" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Decorative box behind image */}
+                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[150px] h-[150px] z-0"></div>
               </div>
             </div>
 
@@ -103,16 +118,21 @@ export default function BlogSection() {
               <div className="min-w-0 relative z-10">
                 <h3 className="text-white text-2xl font-light mb-3">Gold Lava</h3>
                 <p className="text-neutral-200 text-sm mb-4">Radiant jewellery collection that captures the essence of molten gold</p>
-                <a href="#" className="inline-block bg-[#F5F5F5] hover:bg-white text-black px-6 py-2 text-sm font-medium transition-colors">
+                <a href="#" className="inline-block bg-white text-black px-6 py-2 text-sm font-medium transition-colors border border-black">
                   VIEW DETAILS
                 </a>
               </div>
-              <div className="border border-white/80 min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden">
-                <img 
-                  src="/images/blog/Screenshot from 2025-04-08 15-32-42.png" 
-                  alt="Gold Lava" 
-                  className="w-full h-full object-cover"
-                />
+              {/* Image with decorative border */}
+              <div className="relative">
+                <div className="border border-[#A47E3B] min-w-[150px] max-w-[150px] h-[150px] relative overflow-hidden z-10">
+                  <img 
+                    src="/images/blog/Screenshot from 2025-04-08 15-32-42.png" 
+                    alt="Gold Lava" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Decorative box behind image */}
+                <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[150px] h-[150px] z-0"></div>
               </div>
             </div>
           </div>
