@@ -188,7 +188,7 @@ export default function Home() {
         </div>
 
         {/* ELEVATE ORDINARY WALLS Section with transparent background */}
-        <div className="p-6 md:p-10 bg-[#2D2D2D]/80 backdrop-blur-sm">
+        <div className="p-6 md:p-10">
           <div className="max-w-[1200px] mx-auto">
             <div className="mb-16">
               <h1 className="text-white text-[28px] md:text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-8 text-center">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
@@ -198,7 +198,7 @@ export default function Home() {
         </div>
 
         {/* Gallery Grid - Now inside the border */}
-        <div className="p-6 md:p-10 bg-[#2D2D2D] backdrop-blur-sm">
+        <div className="p-6 md:p-10">
           {/* Gallery Grid - Replaced with MasonryGallery component */}
           <div className="relative w-full mb-8">
             <MasonryGallery />
