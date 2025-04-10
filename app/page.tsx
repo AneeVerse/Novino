@@ -7,6 +7,7 @@ import WardrobeSection from "@/components/wardrobe-section"
 import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
 import ProductTestimonial from "@/components/product-testimonial"
+import MasonryGallery from "@/components/masonry-gallery"
 
 export default function Home() {
   return (
@@ -43,8 +44,8 @@ export default function Home() {
                   priority
                 />
                 
-                {/* Shop Now button in the correct position - middle bottom */}
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+                {/* Shop Now button in the correct position */}
+                <div className="absolute bottom-[40%] left-1/2 transform -translate-x-1/2 z-50">
                   <Link 
                     href="/shop" 
                     className="box-border flex flex-row items-center justify-center p-[18px_24px] gap-1 isolate w-[148px] h-[63px] bg-white border border-dashed border-[#404040] rounded-xl hover:bg-gray-50 transition-colors"
@@ -72,38 +73,14 @@ export default function Home() {
               <h1 className="text-white text-[28px] md:text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-8 text-center">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
               <p className="text-white/60 text-base leading-normal text-center mx-auto max-w-3xl">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
             </div>
-
-            {/* Category Filters */}
-            <div className="flex flex-wrap justify-center items-center gap-6 mb-16">
-              {["All", "Mens", "Womens", "Kids"].map((category) => (
-                <div key={category} className="relative inline-block">
-                  <button 
-                    className="relative z-10 px-8 py-3.5 text-[#B3B3B2] font-normal text-[18px] font-['Roboto Mono'] hover:text-white transition-colors"
-                  >
-                    {category}
-                  </button>
-                  <div className="absolute inset-0 z-0 pointer-events-none">
-                    <svg width="100%" height="55" viewBox="0 0 100 55" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                      <rect x="1" y="1" width="98%" height="53" rx="10" stroke="white" strokeOpacity="1" strokeDasharray="5 5" style={{ mixBlendMode: "normal" }}/>
-                    </svg>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 
         {/* Gallery Grid - Now inside the border */}
         <div className="p-6 md:p-10 bg-[#2D2D2D] backdrop-blur-sm">
-          {/* Gallery Grid */}
+          {/* Gallery Grid - Replaced with MasonryGallery component */}
           <div className="relative w-full mb-8">
-            <Image
-              src="/images/gallery-grid.png"
-              alt="Gallery of abstract art pieces"
-              width={1200}
-              height={800}
-              className="w-full h-auto"
-            />
+            <MasonryGallery />
           </div>
         </div>
       </div>

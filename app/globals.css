@@ -62,3 +62,50 @@ body {
   }
 }
 
+/* Add these styles for the Masonry gallery */
+.my-masonry-grid {
+  display: flex;
+  margin-left: -20px; /* gutter size offset */
+  width: auto;
+}
+
+.my-masonry-grid_column {
+  padding-left: 20px; /* gutter size */
+  background-clip: padding-box;
+}
+
+/* Style your items */
+.my-masonry-grid_column > div {
+  margin-bottom: 20px;
+  transform: translateZ(0); /* Fix for Safari flickering */
+}
+
+/* Image hover animations */
+.gallery-image-container {
+  overflow: hidden;
+  position: relative;
+}
+
+.gallery-image {
+  transition: transform 0.5s ease;
+}
+
+.gallery-image-container:hover .gallery-image {
+  transform: scale(1.05);
+}
+
+.gallery-image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+  padding: 20px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.gallery-image-container:hover .gallery-image-overlay {
+  transform: translateY(0);
+}
+
