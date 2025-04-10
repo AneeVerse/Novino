@@ -2,7 +2,7 @@ import Image from "next/image"
 
 export default function TestimonialCollection() {
   return (
-    <div className="p-8 md:p-12 relative overflow-hidden">
+    <div className="mx-4 md:mx-8 mb-16 relative overflow-hidden">
       {/* Main container with dashed border - matched to Figma */}
       <div className="relative p-8 flex flex-col items-start" style={{ 
         boxSizing: 'border-box',
