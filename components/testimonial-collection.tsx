@@ -4,27 +4,29 @@ import { Twitter } from "lucide-react"
 export default function TestimonialCollection() {
   return (
     <div className="p-8 md:p-12 relative overflow-hidden">
-      {/* Main container with dashed border */}
-      <div className="relative p-8 rounded-lg" style={{ 
-        border: "2px dashed rgba(255, 255, 255, 0.6)",
-        borderSpacing: "8px"
+      {/* Main container with dashed border - matched to Figma */}
+      <div className="relative p-8 flex flex-col items-start" style={{ 
+        boxSizing: 'border-box',
+        border: '2px dashed #FFFFFF',
+        borderRadius: '20px',
+        borderSpacing: '8px',
       }}>
         {/* Corner accents using the provided images */}
-        <div className="absolute bottom-0 left-0 w-16 h-16">
+        <div className="absolute bottom-0 left-0 w-12 h-12">
           <Image 
             src="/images/Abstract Design (1).png" 
             alt="Corner design" 
-            width={50} 
-            height={50} 
+            width={40} 
+            height={40} 
             className="object-contain"
           />
         </div>
-        <div className="absolute bottom-0 right-0 w-16 h-16">
+        <div className="absolute bottom-0 right-0 w-12 h-12">
           <Image 
             src="/images/Abstract Design.png" 
             alt="Corner design" 
-            width={50} 
-            height={70} 
+            width={40} 
+            height={40} 
             className="object-contain"
           />
         </div>
@@ -40,10 +42,15 @@ export default function TestimonialCollection() {
           <p className="text-gray-300">At StyleLoom, our customers are the heartbeat of our brand.</p>
         </div>
 
-        {/* Testimonials grid with dashed borders */}
-        <div className="grid md:grid-cols-3 gap-0">
+        {/* Testimonials grid with dashed borders - corrected to match Figma */}
+        <div className="grid grid-cols-1 md:grid-cols-3 w-full">
           {/* Testimonial 1 */}
-          <div className="border-r border-t border-white/30 p-6 relative" style={{ borderStyle: "dashed" }}>
+          <div className="p-6" style={{ 
+            borderTop: '2px dashed #FFFFFF',
+            borderRight: '2px dashed #FFFFFF',
+            borderLeft: 'none',
+            borderBottom: 'none'
+          }}>
             <div className="flex items-center mb-4">
               <div className="mr-3">
                 <Image src="/images/testimonals/sarah-thompson.png" alt="Sarah Thompson" width={70} height={70} className="rounded-full" />
@@ -82,7 +89,12 @@ export default function TestimonialCollection() {
           </div>
 
           {/* Testimonial 2 */}
-          <div className="border-r border-t border-white/30 p-6" style={{ borderStyle: "dashed" }}>
+          <div className="p-6" style={{ 
+            borderTop: '2px dashed #FFFFFF',
+            borderRight: '2px dashed #FFFFFF',
+            borderLeft: 'none',
+            borderBottom: 'none'
+          }}>
             <div className="flex items-center mb-4">
               <div className="mr-3">
                 <Image src="/images/testimonals/rajesh-patel.png" alt="Rajesh Patel" width={70} height={70} className="rounded-full" />
@@ -120,7 +132,12 @@ export default function TestimonialCollection() {
           </div>
 
           {/* Testimonial 3 */}
-          <div className="border-t border-white/30 p-6 relative" style={{ borderStyle: "dashed" }}>
+          <div className="p-6" style={{ 
+            borderTop: '2px dashed #FFFFFF',
+            borderRight: 'none',
+            borderLeft: 'none',
+            borderBottom: 'none'
+          }}>
             <div className="flex items-center mb-4">
               <div className="mr-3">
                 <Image src="/images/testimonals/emily-walker.png" alt="Emily Walker" width={70} height={70} className="rounded-full" />
