@@ -56,7 +56,7 @@ export default function ProductGrid({ category = "All Products" }: ProductGridPr
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
       {filteredProducts.map((product) => (
         <div key={product.id} className="overflow-hidden" style={{ borderRadius: '4px', border: '2px solid white' }}>
-          <div className="relative aspect-square overflow-hidden bg-white">
+          <div className="relative aspect-square overflow-hidden">
             <Image 
               src={product.image} 
               alt={product.name} 
@@ -64,7 +64,7 @@ export default function ProductGrid({ category = "All Products" }: ProductGridPr
               className="object-contain p-4" 
             />
           </div>
-          <div className="bg-zinc-800 p-4">
+          <div className="p-4">
             <div className="text-white text-sm font-medium mb-2">{product.name}</div>
             <div className="flex justify-between items-center">
               <div className="text-white text-lg font-medium">{product.price}</div>

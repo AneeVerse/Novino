@@ -215,7 +215,7 @@ export default function Home() {
 
       {/* Product Grid Section */}
       <div className="mx-4 md:mx-6 relative z-10">
-        <div className="p-8 md:p-12 mb-16 bg-[#2D2D2D] relative overflow-hidden" style={{ 
+        <div className="p-8 md:p-12 mb-16 relative overflow-hidden" style={{ 
           boxSizing: 'border-box',
           border: '2px dashed #FFFFFF',
           borderRadius: '20px',
