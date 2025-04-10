@@ -30,7 +30,7 @@ const blogs = [
 export default function BlogSection() {
   return (
     <div className="w-full bg-[#333333] py-20">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="mx-4 md:mx-8 max-w-full">
         {/* Header - Making sure it matches Figma design */}
         <div className="text-center mb-20 relative z-50">
           <h2 className="text-white text-5xl font-light mb-4 font-['Italiana'] relative z-50">Blogs</h2>
@@ -38,9 +38,9 @@ export default function BlogSection() {
         </div>
 
         {/* Main Container */}
-        <div className="max-w-6xl mx-auto">
+        <div className="mx-auto">
           {/* First Row */}
-          <div className="flex flex-col md:flex-row gap-16 mb-20">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-16 mb-20">
             {/* Left Item */}
             <div className="flex-1 flex gap-6 items-start">
               {/* Image with decorative border */}
@@ -97,7 +97,7 @@ export default function BlogSection() {
           </div>
 
           {/* Second Row */}
-          <div className="flex flex-col md:flex-row gap-16">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-16">
             {/* Left Item */}
             <div className="flex-1 flex gap-6 items-start">
               <div className="min-w-0 relative z-10">

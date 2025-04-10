@@ -28,6 +28,11 @@ export default function VideoSection() {
           playsInline
         />
 
+        {/* Dark overlay on the poster image - only show when video is not playing */}
+        {!isPlaying && (
+          <div className="absolute inset-0 bg-black/50" onClick={togglePlay}></div>
+        )}
+
         {/* Play button overlay - only show when video is not playing */}
         {!isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center cursor-pointer" onClick={togglePlay}>
