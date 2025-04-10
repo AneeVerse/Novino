@@ -10,21 +10,21 @@ export default function TestimonialCollection() {
         borderSpacing: "8px"
       }}>
         {/* Corner accents using the provided images */}
-        <div className="absolute bottom-0 left-0 w-20 h-20">
+        <div className="absolute bottom-0 left-0 w-16 h-16">
           <Image 
             src="/images/Abstract Design (1).png" 
             alt="Corner design" 
-            width={80} 
-            height={80} 
+            width={50} 
+            height={50} 
             className="object-contain"
           />
         </div>
-        <div className="absolute bottom-0 right-0 w-20 h-20">
+        <div className="absolute bottom-0 right-0 w-16 h-16">
           <Image 
             src="/images/Abstract Design.png" 
             alt="Corner design" 
-            width={80} 
-            height={80} 
+            width={50} 
+            height={70} 
             className="object-contain"
           />
         </div>
