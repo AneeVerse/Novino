@@ -10,13 +10,13 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 w-full z-50">
       {/* Background with blur and transparency effects */}
-      <div className="absolute inset-0 bg-[#2D2D2D]/70 backdrop-blur-md">
+      <div className="absolute inset-0 bg-[#2D2D2D]/70 backdrop-blur-md h-full overflow-hidden">
         {/* Subtle gradient from dark to white */}
         <div className="absolute inset-0 bg-gradient-to-tr from-[#2D2D2D]/60 via-[#2D2D2D]/50 to-white/20"></div>
-        {/* Additional white gradient overlays for glow effects */}
-        <div className="absolute -top-[50px] -right-[50px] w-[600px] h-[600px] rounded-full bg-white/10 blur-[100px]"></div>
-        <div className="absolute top-[30%] -right-[30px] w-[400px] h-[400px] rounded-full bg-white/5 blur-[80px]"></div>
-        <div className="absolute -top-[30px] left-[10%] w-[300px] h-[300px] rounded-full bg-white/5 blur-[80px]"></div>
+        {/* Additional white gradient overlays for glow effects - constrained to navbar height */}
+        <div className="absolute -top-[50px] -right-[50px] w-[400px] h-[200px] rounded-full bg-white/10 blur-[100px] pointer-events-none"></div>
+        <div className="absolute top-[30%] -right-[30px] w-[300px] h-[150px] rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
+        <div className="absolute -top-[30px] left-[10%] w-[300px] h-[150px] rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
       </div>
       
       <div className="relative container mx-auto px-[50px] 2xl:px-[15px] flex justify-between items-center py-6">
