@@ -58,7 +58,11 @@ export default function BlogSection() {
               <div className="min-w-0 relative z-10">
                 <h3 className="text-white text-2xl font-light mb-3">Diamond's Haven</h3>
                 <p className="text-neutral-200 text-sm mb-4">Mesmerising jewellery collection that encapsulates the essence of timeless elegance & sophistication</p>
-                <a href="#" className="inline-block bg-white text-black px-6 py-2 text-sm font-medium transition-colors border border-black">
+                <a 
+                  href="#" 
+                  className="inline-flex flex-row justify-center items-center p-5 gap-2.5 w-[140px] h-[55px] bg-[#FFF4E9] text-black text-sm font-medium"
+                  style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
+                >
                   VIEW DETAILS
                 </a>
               </div>
@@ -81,7 +85,11 @@ export default function BlogSection() {
               <div className="min-w-0 relative z-10">
                 <h3 className="text-white text-2xl font-light mb-3">Silver Wolf</h3>
                 <p className="text-neutral-200 text-sm mb-4">Enchanting jewellery collection that echoes the untamed spirit of the wild</p>
-                <a href="#" className="inline-block bg-white text-black px-6 py-2 text-sm font-medium transition-colors border border-black">
+                <a 
+                  href="#" 
+                  className="inline-flex flex-row justify-center items-center p-5 gap-2.5 w-[140px] h-[55px] bg-[#FFF4E9] text-black text-sm font-medium"
+                  style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
+                >
                   VIEW DETAILS
                 </a>
               </div>
@@ -95,7 +103,11 @@ export default function BlogSection() {
               <div className="min-w-0 relative z-10">
                 <h3 className="text-white text-2xl font-light mb-3">Couple Paradise</h3>
                 <p className="text-neutral-200 text-sm mb-4">Captivating jewellery collection that celebrates the eternal bond of love</p>
-                <a href="#" className="inline-block bg-white text-black px-6 py-2 text-sm font-medium transition-colors border border-black">
+                <a 
+                  href="#" 
+                  className="inline-flex flex-row justify-center items-center p-5 gap-2.5 w-[140px] h-[55px] bg-[#FFF4E9] text-black text-sm font-medium"
+                  style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
+                >
                   VIEW DETAILS
                 </a>
               </div>
@@ -118,7 +130,11 @@ export default function BlogSection() {
               <div className="min-w-0 relative z-10">
                 <h3 className="text-white text-2xl font-light mb-3">Gold Lava</h3>
                 <p className="text-neutral-200 text-sm mb-4">Radiant jewellery collection that captures the essence of molten gold</p>
-                <a href="#" className="inline-block bg-white text-black px-6 py-2 text-sm font-medium transition-colors border border-black">
+                <a 
+                  href="#" 
+                  className="inline-flex flex-row justify-center items-center p-5 gap-2.5 w-[140px] h-[55px] bg-[#FFF4E9] text-black text-sm font-medium"
+                  style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
+                >
                   VIEW DETAILS
                 </a>
               </div>
