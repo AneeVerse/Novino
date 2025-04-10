@@ -5,25 +5,25 @@ const blogs = [
     id: 1,
     title: "Diamond's Haven",
     description: "Mesmerising jewellery collection that encapsulates the essence of timeless elegance & sophistication",
-    image: "/images/blog/Screenshot from 2025-04-08 15-32-04.png",
+    image: "/images/blog/Rectangle 13.png",
   },
   {
     id: 2,
     title: "Silver Wolf",
     description: "Enchanting jewellery collection that echoes the untamed spirit of the wild",
-    image: "/images/blog/Screenshot from 2025-04-08 15-32-18.png",
+    image: "/images/blog/Rectangle 12.png",
   },
   {
     id: 3,
     title: "Couple Paradise",
     description: "Captivating jewellery collection that celebrates the eternal bond of love",
-    image: "/images/blog/Screenshot from 2025-04-08 15-32-31.png",
+    image: "/images/blog/Rectangle 15.png",
   },
   {
     id: 4,
     title: "Gold Lava",
     description: "Radiant jewellery collection that captures the essence of molten gold",
-    image: "/images/blog/Screenshot from 2025-04-08 15-32-42.png",
+    image: "/images/blog/Rectangle 14.png",
   },
 ]
 
@@ -47,7 +47,7 @@ export default function BlogSection() {
               <div className="relative">
                 <div className="border border-[#A47E3B] w-[240px] h-[200px] relative overflow-hidden z-10">
                   <img 
-                    src="/images/blog/Screenshot from 2025-04-08 15-32-04.png" 
+                    src="/images/blog/Rectangle 13.png" 
                     alt="Diamond's Haven" 
                     className="w-full h-full object-cover"
                   />
@@ -74,7 +74,7 @@ export default function BlogSection() {
               <div className="relative">
                 <div className="border border-[#A47E3B] w-[240px] h-[200px] relative overflow-hidden z-10">
                   <img 
-                    src="/images/blog/Screenshot from 2025-04-08 15-32-18.png" 
+                    src="/images/blog/Rectangle 12.png" 
                     alt="Silver Wolf" 
                     className="w-full h-full object-cover"
                   />
@@ -115,7 +115,7 @@ export default function BlogSection() {
               <div className="relative">
                 <div className="border border-[#A47E3B] w-[240px] h-[200px] relative overflow-hidden z-10">
                   <img 
-                    src="/images/blog/Screenshot from 2025-04-08 15-32-31.png" 
+                    src="/images/blog/Rectangle 15.png" 
                     alt="Couple Paradise" 
                     className="w-full h-full object-cover"
                   />
@@ -142,7 +142,7 @@ export default function BlogSection() {
               <div className="relative">
                 <div className="border border-[#A47E3B] w-[240px] h-[200px] relative overflow-hidden z-10">
                   <img 
-                    src="/images/blog/Screenshot from 2025-04-08 15-32-42.png" 
+                    src="/images/blog/Rectangle 14.png" 
                     alt="Gold Lava" 
                     className="w-full h-full object-cover"
                   />
