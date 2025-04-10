@@ -20,12 +20,12 @@ const heroImages = [
     alt: "Gallery wall with abstract art"
   },
   {
-    src: "/images/hero-bg-2.jpg", // You'll need to add these images
-    alt: "Abstract art gallery display"
+    src: "/images/hero-2.png", 
+    alt: "Colorful painting of a couple walking at night"
   },
   {
-    src: "/images/hero-bg-3.jpg", // You'll need to add these images
-    alt: "Modern art gallery wall"
+    src: "/images/hero3.png",
+    alt: "Abstract geometric painting with orange and blue"
   }
 ];
 
