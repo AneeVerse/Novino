@@ -208,7 +208,7 @@ export default function Home() {
 
       {/* Product Testimonial Section - Now outside the border */}
       <div className="mx-4 md:mx-6 mb-8 relative z-10">
-        <div className="bg-[#2D2D2D]">
+        <div>
           <ProductTestimonial />
         </div>
       </div>
