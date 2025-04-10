@@ -63,7 +63,7 @@ export default function Home() {
         {/* Create space between hero and ELEVATE section for button */}
         <div className="relative h-16 -mt-8"> 
           {/* Shop Now button positioned between sections */}
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100]">
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-[70%] z-[100]">
             <Link 
               href="/shop" 
               className="box-border flex flex-row items-center justify-center p-[18px_24px] gap-1 isolate w-[148px] h-[63px] bg-white border border-dashed border-[#404040] rounded-xl hover:bg-gray-50 transition-colors shadow-lg"
