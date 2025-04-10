@@ -5,19 +5,19 @@ export default function Footer() {
   return (
     <footer className="bg-zinc-900/80 backdrop-blur-sm border-t border-dashed border-zinc-700 py-10">
       <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Brand Column */}
           <div>
             <h3 className="text-white text-lg mb-4">Novino.io</h3>
             <p className="text-gray-400 text-sm mb-4">
-              Elevate your space with our curated collection of abstract art and designer home goods.
+              We have clothes that suits your style and which you're proud to wear. From women to men.
             </p>
             <div className="flex gap-3">
               <Link href="#" className="text-gray-400 hover:text-white">
-                <Facebook size={18} />
+                <Twitter size={18} />
               </Link>
               <Link href="#" className="text-gray-400 hover:text-white">
-                <Twitter size={18} />
+                <Facebook size={18} />
               </Link>
               <Link href="#" className="text-gray-400 hover:text-white">
                 <Instagram size={18} />
@@ -39,17 +39,17 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="#" className="text-gray-400 hover:text-white text-sm">
-                  Careers
+                  Features
                 </Link>
               </li>
               <li>
                 <Link href="#" className="text-gray-400 hover:text-white text-sm">
-                  Site Map
+                  Works
                 </Link>
               </li>
               <li>
                 <Link href="#" className="text-gray-400 hover:text-white text-sm">
-                  Contact
+                  Career
                 </Link>
               </li>
             </ul>
@@ -82,7 +82,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* FAQ & Resources Column */}
+          {/* FAQ Column */}
           <div>
             <h3 className="text-white text-lg mb-4">FAQ</h3>
             <ul className="space-y-2">
@@ -107,8 +107,11 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-
-            <h3 className="text-white text-lg mt-6 mb-4">RESOURCES</h3>
+          </div>
+          
+          {/* Resources Column */}
+          <div>
+            <h3 className="text-white text-lg mb-4">RESOURCES</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="#" className="text-gray-400 hover:text-white text-sm">
@@ -136,14 +139,10 @@ export default function Footer() {
 
         {/* Bottom Section */}
         <div className="mt-10 pt-6 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-gray-400 text-sm mb-4 md:mb-0">© Novino.io 2023-2025. All Rights Reserved.</div>
+          <div className="text-gray-400 text-sm mb-4 md:mb-0">Novino.io © 2000-2023, All Rights Reserved</div>
 
           <div className="flex gap-2">
-            <img src="/placeholder.svg?height=20&width=30" alt="Visa" className="h-6" />
-            <img src="/placeholder.svg?height=20&width=30" alt="Mastercard" className="h-6" />
-            <img src="/placeholder.svg?height=20&width=30" alt="Amex" className="h-6" />
-            <img src="/placeholder.svg?height=20&width=30" alt="PayPal" className="h-6" />
-            <img src="/placeholder.svg?height=20&width=30" alt="Apple Pay" className="h-6" />
+            <img src="/images/Frame 53.png" alt="Payment Methods" className="h-8" />
           </div>
         </div>
       </div>
