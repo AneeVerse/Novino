@@ -57,6 +57,23 @@ export default function Home() {
       <div className="fixed inset-0 pointer-events-none">
         {/* Base background color */}
         <div className="absolute inset-0 bg-[#2D2D2D]"></div>
+        
+        {/* Left side gradient effects with reduced opacity */}
+        <div className="absolute left-0 top-0 w-full max-w-full h-full opacity-30">
+          <div className="absolute left-0 top-[20%] w-full max-w-[80%] h-[80%] bg-gradient-to-r from-white/30 via-white/15 to-transparent blur-[100px]"></div>
+          <div className="absolute left-[10%] top-[40%] w-full max-w-[60%] h-[60%] bg-gradient-to-r from-white/20 via-white/10 to-transparent blur-[120px]"></div>
+          <div className="absolute left-0 bottom-[10%] w-full max-w-[70%] h-[50%] bg-gradient-to-r from-white/25 via-white/12 to-transparent blur-[150px]"></div>
+        </div>
+        
+        {/* Right side gradient effects - extended higher up with increased intensity */}
+        <div className="absolute right-0 top-0 w-full max-w-full h-full opacity-50">
+          {/* Navbar-level gradient with higher intensity */}
+          <div className="absolute right-0 -top-[5%] w-full max-w-[100%] h-[30%] bg-gradient-to-l from-white/50 via-white/25 to-transparent blur-[80px]"></div>
+          <div className="absolute right-0 top-0 w-full max-w-[90%] h-[40%] bg-gradient-to-l from-white/40 via-white/20 to-transparent blur-[120px]"></div>
+          <div className="absolute right-0 top-[10%] w-full max-w-[80%] h-[60%] bg-gradient-to-l from-white/30 via-white/15 to-transparent blur-[100px]"></div>
+          <div className="absolute right-[5%] top-[30%] w-full max-w-[60%] h-[60%] bg-gradient-to-l from-white/20 via-white/10 to-transparent blur-[120px]"></div>
+          <div className="absolute right-0 bottom-[10%] w-full max-w-[70%] h-[50%] bg-gradient-to-l from-white/25 via-white/12 to-transparent blur-[150px]"></div>
+        </div>
       </div>
 
       {/* Top padding for navbar spacing */}
@@ -67,92 +84,82 @@ export default function Home() {
         <div className="overflow-hidden rounded-[20px]">
           {/* Hero Section */}
           <div className="relative">
-            {/* Adding gradient effects from Figma - making them more transparent */}
-            <div className="relative">
-              {/* Left side gradient effects with reduced opacity */}
-              <div className="absolute left-0 top-0 w-full max-w-full h-full opacity-30">
-                <div className="absolute left-0 top-[20%] w-full max-w-[80%] h-[80%] bg-gradient-to-r from-white/30 via-white/15 to-transparent blur-[100px]"></div>
-                <div className="absolute left-[10%] top-[40%] w-full max-w-[60%] h-[60%] bg-gradient-to-r from-white/20 via-white/10 to-transparent blur-[120px]"></div>
-                <div className="absolute left-0 bottom-[10%] w-full max-w-[70%] h-[50%] bg-gradient-to-r from-white/25 via-white/12 to-transparent blur-[150px]"></div>
-              </div>
-            
-              <div className="relative w-full h-[580px] md:h-[680px]">
-                {/* Carousel Images */}
-                {heroImages.map((image, index) => (
-                  <div 
-                    key={index}
-                    className={`absolute inset-0 transition-opacity duration-500 ${
-                      currentHeroIndex === index 
-                        ? 'opacity-100 z-10' 
-                        : 'opacity-0 z-0'
-                    }`}
-                  >
-                    <Image
-                      src={image.src}
-                      alt={image.alt}
-                      fill
-                      className="object-cover rounded-[20px]"
-                      priority={index === 0}
-                    />
-                  </div>
-                ))}
-
-                {/* Navigation Controls - Positioned at top right */}
-                <div className="absolute top-6 right-6 flex flex-col space-y-4 z-50">
-                  {/* Right Arrow (for next) */}
-                  <button 
-                    onClick={nextHeroImage}
-                    className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-black/30 rounded-full transition-all outline-none"
-                    aria-label="Next image"
-                    type="button"
-                    style={{ zIndex: 9999 }}
-                  >
-                    <Image
-                      src="/images/Arrow Right.png"
-                      alt="Next"
-                      width={24}
-                      height={24}
-                      style={{ pointerEvents: 'none' }}
-                    />
-                  </button>
-                  
-                  {/* Dots indicators - visible but styling matches Figma */}
-                  <div className="flex flex-col space-y-3 items-center py-2">
-                    {heroImages.map((_, index) => (
-                      <button
-                        key={index}
-                        className={`w-3 h-3 rounded-full transition-all ${
-                          currentHeroIndex === index ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'
-                        }`}
-                        onClick={() => {
-                          if (!isHeroTransitioning) {
-                            setIsHeroTransitioning(true);
-                            setCurrentHeroIndex(index);
-                            setTimeout(() => setIsHeroTransitioning(false), 500);
-                          }
-                        }}
-                        aria-label={`Go to slide ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                  
-                  {/* Left Arrow (for previous) */}
-                  <button 
-                    onClick={prevHeroImage}
-                    className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-black/30 rounded-full transition-all outline-none"
-                    aria-label="Previous image"
-                    type="button"
-                    style={{ zIndex: 9999 }}
-                  >
-                    <Image
-                      src="/images/Arrow Left.png"
-                      alt="Previous"
-                      width={24}
-                      height={24}
-                      style={{ pointerEvents: 'none' }}
-                    />
-                  </button>
+            <div className="relative w-full h-[580px] md:h-[680px]">
+              {/* Carousel Images */}
+              {heroImages.map((image, index) => (
+                <div 
+                  key={index}
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    currentHeroIndex === index 
+                      ? 'opacity-100 z-10' 
+                      : 'opacity-0 z-0'
+                  }`}
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    className="object-cover rounded-[20px]"
+                    priority={index === 0}
+                  />
                 </div>
+              ))}
+
+              {/* Navigation Controls - Positioned at top right */}
+              <div className="absolute top-6 right-6 flex flex-col space-y-4 z-50">
+                {/* Right Arrow (for next) */}
+                <button 
+                  onClick={nextHeroImage}
+                  className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-black/30 rounded-full transition-all outline-none"
+                  aria-label="Next image"
+                  type="button"
+                  style={{ zIndex: 9999 }}
+                >
+                  <Image
+                    src="/images/Arrow Right.png"
+                    alt="Next"
+                    width={24}
+                    height={24}
+                    style={{ pointerEvents: 'none' }}
+                  />
+                </button>
+                
+                {/* Dots indicators - visible but styling matches Figma */}
+                <div className="flex flex-col space-y-3 items-center py-2">
+                  {heroImages.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`w-3 h-3 rounded-full transition-all ${
+                        currentHeroIndex === index ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'
+                      }`}
+                      onClick={() => {
+                        if (!isHeroTransitioning) {
+                          setIsHeroTransitioning(true);
+                          setCurrentHeroIndex(index);
+                          setTimeout(() => setIsHeroTransitioning(false), 500);
+                        }
+                      }}
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+                
+                {/* Left Arrow (for previous) */}
+                <button 
+                  onClick={prevHeroImage}
+                  className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-black/30 rounded-full transition-all outline-none"
+                  aria-label="Previous image"
+                  type="button"
+                  style={{ zIndex: 9999 }}
+                >
+                  <Image
+                    src="/images/Arrow Left.png"
+                    alt="Previous"
+                    width={24}
+                    height={24}
+                    style={{ pointerEvents: 'none' }}
+                  />
+                </button>
               </div>
             </div>
           </div>

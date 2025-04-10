@@ -1,22 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Track scroll position to change navbar transparency
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    // Add scroll event listener
+    window.addEventListener("scroll", handleScroll);
+    
+    // Check initial scroll position
+    handleScroll();
+    
+    // Remove event listener on cleanup
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50">
-      {/* Background with blur and transparency effects */}
-      <div className="absolute inset-0 bg-[#2D2D2D]/70 backdrop-blur-md h-full overflow-hidden">
-        {/* Subtle gradient from dark to white */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#2D2D2D]/60 via-[#2D2D2D]/50 to-white/20"></div>
-        {/* Additional white gradient overlays for glow effects - constrained to navbar height */}
-        <div className="absolute -top-[50px] -right-[50px] w-[400px] h-[200px] rounded-full bg-white/10 blur-[100px] pointer-events-none"></div>
-        <div className="absolute top-[30%] -right-[30px] w-[300px] h-[150px] rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
-        <div className="absolute -top-[30px] left-[10%] w-[300px] h-[150px] rounded-full bg-white/5 blur-[80px] pointer-events-none"></div>
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+      scrolled ? "backdrop-filter backdrop-blur-md" : ""
+    }`}>
+      {/* Dynamic background based on scroll position */}
+      <div className={`absolute inset-0 h-full overflow-hidden transition-opacity duration-300 ${
+        scrolled ? "opacity-100" : "opacity-0"
+      }`}>
+        {/* Background styling only visible when scrolled */}
+        <div className="absolute inset-0 bg-[#2D2D2D]/80 backdrop-blur-md"></div>
+        
+        {/* Right side gradient - only visible when scrolled */}
+        <div className="absolute right-0 top-0 w-full max-w-full h-full opacity-50 pointer-events-none">
+          <div className="absolute right-0 -top-[5%] w-full max-w-[100%] h-[30%] bg-gradient-to-l from-white/50 via-white/25 to-transparent blur-[80px]"></div>
+          <div className="absolute right-0 top-0 w-full max-w-[90%] h-[40%] bg-gradient-to-l from-white/40 via-white/20 to-transparent blur-[120px]"></div>
+        </div>
+        
+        {/* Left side gradient - only visible when scrolled */}
+        <div className="absolute left-0 top-0 w-full max-w-full h-full opacity-30 pointer-events-none">
+          <div className="absolute left-0 top-[20%] w-full max-w-[80%] h-[80%] bg-gradient-to-r from-white/30 via-white/15 to-transparent blur-[100px]"></div>
+        </div>
       </div>
       
       <div className="relative container mx-auto px-[50px] 2xl:px-[15px] flex justify-between items-center py-6">
