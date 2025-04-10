@@ -33,7 +33,7 @@ export default function BlogSection() {
       <div className="max-w-7xl mx-auto px-6">
         {/* Header - Making sure it matches Figma design */}
         <div className="text-center mb-20 relative z-50">
-          <h2 className="text-white text-5xl font-light mb-4 font-serif relative z-50">Blogs</h2>
+          <h2 className="text-white text-5xl font-light mb-4 font-['Italiana'] relative z-50">Blogs</h2>
           <p className="text-white text-base opacity-90">Find all the jewellery you will need here.</p>
         </div>
 
@@ -56,7 +56,7 @@ export default function BlogSection() {
                 <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[150px] h-[150px] z-0"></div>
               </div>
               <div className="min-w-0 relative z-10">
-                <h3 className="text-white text-2xl font-light mb-3">Diamond's Haven</h3>
+                <h3 className="text-white font-['Italiana'] font-normal text-[32px] leading-[38px] mb-3">Diamond's Haven</h3>
                 <p className="text-neutral-200 text-sm mb-4">Mesmerising jewellery collection that encapsulates the essence of timeless elegance & sophistication</p>
                 <a 
                   href="#" 
@@ -83,7 +83,7 @@ export default function BlogSection() {
                 <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-[150px] h-[150px] z-0"></div>
               </div>
               <div className="min-w-0 relative z-10">
-                <h3 className="text-white text-2xl font-light mb-3">Silver Wolf</h3>
+                <h3 className="text-white font-['Italiana'] font-normal text-[32px] leading-[38px] mb-3">Silver Wolf</h3>
                 <p className="text-neutral-200 text-sm mb-4">Enchanting jewellery collection that echoes the untamed spirit of the wild</p>
                 <a 
                   href="#" 
@@ -101,7 +101,7 @@ export default function BlogSection() {
             {/* Left Item */}
             <div className="flex-1 flex gap-6 items-start">
               <div className="min-w-0 relative z-10">
-                <h3 className="text-white text-2xl font-light mb-3">Couple Paradise</h3>
+                <h3 className="text-white font-['Italiana'] font-normal text-[32px] leading-[38px] mb-3">Couple Paradise</h3>
                 <p className="text-neutral-200 text-sm mb-4">Captivating jewellery collection that celebrates the eternal bond of love</p>
                 <a 
                   href="#" 
@@ -128,7 +128,7 @@ export default function BlogSection() {
             {/* Right Item */}
             <div className="flex-1 flex gap-6 items-start">
               <div className="min-w-0 relative z-10">
-                <h3 className="text-white text-2xl font-light mb-3">Gold Lava</h3>
+                <h3 className="text-white font-['Italiana'] font-normal text-[32px] leading-[38px] mb-3">Gold Lava</h3>
                 <p className="text-neutral-200 text-sm mb-4">Radiant jewellery collection that captures the essence of molten gold</p>
                 <a 
                   href="#" 
