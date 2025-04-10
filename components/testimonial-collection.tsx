@@ -5,7 +5,30 @@ export default function TestimonialCollection() {
   return (
     <div className="p-8 md:p-12 relative overflow-hidden">
       {/* Main container with dashed border */}
-      <div className="border border-dashed border-white/30 rounded-lg p-8 relative">
+      <div className="relative p-8 rounded-lg" style={{ 
+        border: "2px dashed rgba(255, 255, 255, 0.6)",
+        borderSpacing: "8px"
+      }}>
+        {/* Corner accents using the provided images */}
+        <div className="absolute bottom-0 left-0 w-20 h-20">
+          <Image 
+            src="/images/Abstract Design (1).png" 
+            alt="Corner design" 
+            width={80} 
+            height={80} 
+            className="object-contain"
+          />
+        </div>
+        <div className="absolute bottom-0 right-0 w-20 h-20">
+          <Image 
+            src="/images/Abstract Design.png" 
+            alt="Corner design" 
+            width={80} 
+            height={80} 
+            className="object-contain"
+          />
+        </div>
+
         {/* Abstract design in top right */}
         <div className="absolute top-0 right-0 w-64 h-64">
           <Image src="/images/abstract-design.png" alt="Abstract design" width={300} height={300} className="object-contain" />
@@ -17,10 +40,10 @@ export default function TestimonialCollection() {
           <p className="text-gray-300">At StyleLoom, our customers are the heartbeat of our brand.</p>
         </div>
 
-        {/* Testimonials grid - updated to match the image */}
+        {/* Testimonials grid with dashed borders */}
         <div className="grid md:grid-cols-3 gap-0">
           {/* Testimonial 1 */}
-          <div className="border-r border-t border-dashed border-white/30 p-6 relative">
+          <div className="border-r border-t border-white/30 p-6 relative" style={{ borderStyle: "dashed" }}>
             <div className="flex items-center mb-4">
               <div className="mr-3">
                 <Image src="/images/testimonals/sarah-thompson.png" alt="Sarah Thompson" width={70} height={70} className="rounded-full" />
@@ -59,7 +82,7 @@ export default function TestimonialCollection() {
           </div>
 
           {/* Testimonial 2 */}
-          <div className="border-r border-t border-dashed border-white/30 p-6">
+          <div className="border-r border-t border-white/30 p-6" style={{ borderStyle: "dashed" }}>
             <div className="flex items-center mb-4">
               <div className="mr-3">
                 <Image src="/images/testimonals/rajesh-patel.png" alt="Rajesh Patel" width={70} height={70} className="rounded-full" />
@@ -97,7 +120,7 @@ export default function TestimonialCollection() {
           </div>
 
           {/* Testimonial 3 */}
-          <div className="border-t border-dashed border-white/30 p-6 relative">
+          <div className="border-t border-white/30 p-6 relative" style={{ borderStyle: "dashed" }}>
             <div className="flex items-center mb-4">
               <div className="mr-3">
                 <Image src="/images/testimonals/emily-walker.png" alt="Emily Walker" width={70} height={70} className="rounded-full" />
