@@ -15,20 +15,20 @@ export default function WardrobeSection() {
         />
         
         {/* Content overlay */}
-        <div className="absolute inset-0 flex flex-col md:flex-row items-center justify-between p-8 md:p-12">
+        <div className="absolute inset-0 flex flex-col md:flex-row items-center p-8 md:p-12">
           {/* Left content section */}
-          <div className="md:w-2/3 z-10">
-            <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">ELEVATE YOUR WARDROBE</h2>
-            <p className="text-gray-200 text-base md:text-lg max-w-2xl">
-              Don't miss out – experience the epitome of fashion by clicking 'Shop Now' and embrace a world of chic elegance delivered to your doorstep. Your style journey begins here.
+          <div className="md:w-3/5 z-10">
+            <h2 className="text-black text-3xl md:text-4xl font-bold mb-4">ELEVATE YOUR WARDROBE</h2>
+            <p className="text-black text-base md:text-lg max-w-2xl">
+              Don't miss out – experience the epitome of fashion by clicking 'Buy Now' and embrace a world of chic elegance delivered to your doorstep. Your style journey begins here.
             </p>
           </div>
 
-          {/* Button section */}
-          <div className="mt-6 md:mt-0 md:w-1/3 flex justify-center md:justify-end z-10">
+          {/* Button section - aligned with circle */}
+          <div className="md:absolute md:right-36 md:top-1/2 md:-translate-y-1/2 mt-6 md:mt-0 z-10">
             <Link
               href="/shop"
-              className="bg-white text-black px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2"
             >
               Shop Now
               <span className="inline-block transform rotate-45">↗</span>
