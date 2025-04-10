@@ -66,7 +66,7 @@ export default function Home() {
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-[70%] z-[100]">
             <Link 
               href="/shop" 
-              className="box-border flex flex-row items-center justify-center p-[18px_24px] gap-1 isolate w-[148px] h-[63px] bg-white border border-dashed border-[#404040] rounded-xl hover:bg-gray-50 transition-colors shadow-lg"
+              className="box-border flex flex-row items-center justify-center p-[18px_24px] gap-1 isolate w-[160px] h-[63px] bg-white border border-dashed border-[#404040] rounded-xl hover:bg-gray-50 transition-colors shadow-lg"
             >
               <span className="text-black text-base font-normal">Shop Now</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-black">
