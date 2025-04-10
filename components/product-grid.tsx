@@ -5,64 +5,83 @@ import { Star } from "lucide-react"
 const products = [
   {
     id: 1,
-    name: "GLASSWAVE",
-    price: "$29",
+    name: "CLASSWING",
+    price: "$20",
     rating: 5.0,
     reviews: 50,
     image: "/images/notebook-white.png",
+    category: "Books"
   },
   {
     id: 2,
-    name: "HOLOCENA",
+    name: "HOLOCANE",
     price: "$23",
-    rating: 4.9,
-    reviews: 41,
+    rating: 5.0,
+    reviews: 50,
     image: "/images/notebook-black.png",
+    category: "Books"
   },
   {
     id: 3,
-    name: "RHAPSODY",
-    price: "$15",
-    rating: 4.8,
+    name: "INAMORATA",
+    price: "$12",
+    rating: 4.5,
     reviews: 45,
     image: "/images/mug-white.png",
+    category: "Mugs"
   },
   {
     id: 4,
-    name: "LIGHTWORK",
+    name: "LIGHTCOOL",
     price: "$22.5",
     rating: 5.0,
     reviews: 50,
     image: "/images/mug-black.png",
+    category: "Mugs"
   },
 ]
 
-export default function ProductGrid() {
+// Define props type for ProductGrid
+type ProductGridProps = {
+  category?: string;
+}
+
+export default function ProductGrid({ category = "All Products" }: ProductGridProps) {
+  // Filter products based on category prop
+  const filteredProducts = category === "All Products" 
+    ? products 
+    : products.filter(product => product.category === category);
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {products.map((product) => (
-        <div key={product.id} className="bg-zinc-900 group">
-          <div className="relative aspect-square overflow-hidden">
-            <Image
-              src={product.image || "/placeholder.svg"}
-              alt={product.name}
-              fill
-              className="object-cover transition-transform group-hover:scale-105"
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+      {filteredProducts.map((product) => (
+        <div key={product.id} className="bg-white">
+          <div className="relative aspect-square overflow-hidden bg-white">
+            <Image 
+              src={product.image} 
+              alt={product.name} 
+              fill 
+              className="object-contain p-4" 
             />
           </div>
-          <div className="p-3">
-            <div className="text-gray-400 text-xs uppercase mb-1">{product.name}</div>
-            <div className="flex justify-between items-center mb-2">
-              <div className="text-white font-medium">{product.price}</div>
-              <div className="flex items-center gap-1">
+          <div className="bg-zinc-800 p-4">
+            <div className="text-white text-sm font-medium mb-2">{product.name}</div>
+            <div className="flex justify-between items-center">
+              <div className="text-white text-lg font-medium">{product.price}</div>
+              <div className="flex items-center gap-2">
                 <div className="flex">
                   {Array(5)
                     .fill(0)
                     .map((_, i) => (
-                      <Star key={i} size={12} fill="white" color="white" />
+                      <Star 
+                        key={i} 
+                        size={14} 
+                        fill={i < product.rating || Math.round(product.rating) === 5 ? "white" : "none"} 
+                        color="white" 
+                      />
                     ))}
                 </div>
-                <span className="text-gray-400 text-xs">{product.reviews}</span>
+                <span className="text-white text-sm">{product.rating}</span>
               </div>
             </div>
           </div>

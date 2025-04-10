@@ -1,8 +1,13 @@
+"use client"
+
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import ProductGrid from "@/components/product-grid"
+import { useState } from "react"
+import { useEffect } from "react"
 
 export default function ShopPage() {
+  // Use client-side state for category filtering
   return (
     <main className="min-h-screen bg-zinc-800 p-6 md:p-10">
       <Link href="/" className="flex items-center text-white mb-8 hover:underline">
@@ -39,11 +44,11 @@ export default function ShopPage() {
       </div>
 
       <h2 className="text-white text-2xl mb-6">Featured Products</h2>
-      <ProductGrid />
+      <ProductGrid category="All Products" />
 
       <div className="mt-12">
         <h2 className="text-white text-2xl mb-6">New Arrivals</h2>
-        <ProductGrid />
+        <ProductGrid category="All Products" />
       </div>
     </main>
   )

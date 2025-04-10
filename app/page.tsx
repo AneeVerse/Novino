@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
 import { Menu, X, Star, ArrowRight, ChevronUp, ChevronDown } from "lucide-react"
@@ -8,8 +10,12 @@ import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
 import ProductTestimonial from "@/components/product-testimonial"
 import MasonryGallery from "@/components/masonry-gallery"
+import ProductGrid from "@/components/product-grid"
+import { useState } from "react"
 
 export default function Home() {
+  const [activeCategory, setActiveCategory] = useState("All Products");
+  
   return (
     <main className="relative min-h-screen bg-transparent overflow-x-hidden">
       {/* Background overlay simplified - removing gradients that aren't showing */}
@@ -104,11 +110,11 @@ export default function Home() {
               {/* Category Filters - Displayed horizontally and wrapped */}
               <div className="flex flex-wrap gap-3">
                 {[
-                  { name: "All Products", active: true },
-                  { name: "Books", active: false },
-                  { name: "Mugs", active: false },
-                  { name: "Costar", active: false },
-                  { name: "Feeds", active: false },
+                  { name: "All Products", active: activeCategory === "All Products" },
+                  { name: "Books", active: activeCategory === "Books" },
+                  { name: "Mugs", active: activeCategory === "Mugs" },
+                  { name: "Costar", active: activeCategory === "Costar" },
+                  { name: "Feeds", active: activeCategory === "Feeds" },
                 ].map((category) => (
                   <button
                     key={category.name}
@@ -117,6 +123,7 @@ export default function Home() {
                         ? "bg-white text-black" 
                         : "border border-white/30 text-white hover:bg-white/10"
                     } px-6 py-2 text-sm rounded-full transition-colors`}
+                    onClick={() => setActiveCategory(category.name)}
                   >
                     {category.name}
                   </button>
@@ -126,96 +133,8 @@ export default function Home() {
 
             {/* Right side: Product Grid */}
             <div className="md:w-[60%]">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                <div className="bg-white">
-                  <div className="relative aspect-square overflow-hidden bg-white">
-                    <Image src="/images/notebook-white.png" alt="CLASSWING" fill className="object-contain p-4" />
-                  </div>
-                  <div className="bg-zinc-800 p-4">
-                    <div className="text-white text-sm font-medium mb-2">CLASSWING</div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-white text-lg font-medium">$20</div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex">
-                          {Array(5)
-                            .fill(0)
-                            .map((_, i) => (
-                              <Star key={i} size={14} fill="white" color="white" />
-                            ))}
-                        </div>
-                        <span className="text-white text-sm">5.0</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white">
-                  <div className="relative aspect-square overflow-hidden bg-white">
-                    <Image src="/images/notebook-black.png" alt="HOLOCANE" fill className="object-contain p-4" />
-                  </div>
-                  <div className="bg-zinc-800 p-4">
-                    <div className="text-white text-sm font-medium mb-2">HOLOCANE</div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-white text-lg font-medium">$23</div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex">
-                          {Array(5)
-                            .fill(0)
-                            .map((_, i) => (
-                              <Star key={i} size={14} fill="white" color="white" />
-                            ))}
-                        </div>
-                        <span className="text-white text-sm">5.0</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white">
-                  <div className="relative aspect-square overflow-hidden bg-white">
-                    <Image src="/images/mug-white.png" alt="INAMORATA" fill className="object-contain p-4" />
-                  </div>
-                  <div className="bg-zinc-800 p-4">
-                    <div className="text-white text-sm font-medium mb-2">INAMORATA</div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-white text-lg font-medium">$12</div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex">
-                          {Array(5)
-                            .fill(0)
-                            .map((_, i) => (
-                              <Star key={i} size={14} fill={i < 4 ? "white" : "none"} color="white" />
-                            ))}
-                        </div>
-                        <span className="text-white text-sm">4.5</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white">
-                  <div className="relative aspect-square overflow-hidden bg-white">
-                    <Image src="/images/mug-black.png" alt="LIGHTCOOL" fill className="object-contain p-4" />
-                  </div>
-                  <div className="bg-zinc-800 p-4">
-                    <div className="text-white text-sm font-medium mb-2">LIGHTCOOL</div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-white text-lg font-medium">$22.5</div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex">
-                          {Array(5)
-                            .fill(0)
-                            .map((_, i) => (
-                              <Star key={i} size={14} fill="white" color="white" />
-                            ))}
-                        </div>
-                        <span className="text-white text-sm">5.0</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+              <ProductGrid category={activeCategory} />
+              
               {/* Shop Now Button */}
               <div className="flex justify-center mt-8">
                 <Link
