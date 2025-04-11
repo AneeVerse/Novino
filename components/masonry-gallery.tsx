@@ -28,18 +28,18 @@ export default function MasonryGallery() {
   const breakpointColumnsObj = {
     default: 3,
     1100: 3,
-    700: 2,
+    768: 2,
     500: 1
   };
 
   return (
     <div className="w-full">
       {/* Category Filters */}
-      <div className="flex flex-wrap justify-center items-center gap-6 mb-16">
+      <div className="flex flex-wrap justify-center items-center gap-2 xs:gap-3 sm:gap-6 mb-8 sm:mb-16">
         {Object.keys(categories).map((category) => (
           <div key={category} className="relative inline-block">
             <button 
-              className={`relative z-10 px-8 py-3.5 font-normal text-[18px] font-['Roboto Mono'] transition-colors ${
+              className={`relative z-10 px-4 sm:px-8 py-2 sm:py-3.5 font-normal text-sm sm:text-[18px] font-['Roboto Mono'] transition-colors ${
                 activeCategory === category ? "text-white" : "text-[#B3B3B2] hover:text-white"
               }`}
               onClick={() => setActiveCategory(category as CategoryType)}
@@ -47,7 +47,7 @@ export default function MasonryGallery() {
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </button>
             <div className="absolute inset-0 z-0 pointer-events-none">
-              <svg width="100%" height="55" viewBox="0 0 100 55" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+              <svg width="100%" height="100%" viewBox="0 0 100 55" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
                 <rect 
                   x="1" y="1" 
                   width="98%" height="53" 
@@ -77,7 +77,7 @@ export default function MasonryGallery() {
           else if (categories.kids.includes(imageNum)) imageCategory = "Kids";
           
           return (
-            <div key={imageNum} className="overflow-hidden gallery-image-container">
+            <div key={imageNum} className="overflow-hidden gallery-image-container mb-4">
               <div className="relative border border-dashed border-white/30 rounded-md overflow-hidden">
                 <Image
                   src={`/images/grid-gallery/bg3 ${imageNum}.png`}
@@ -91,13 +91,64 @@ export default function MasonryGallery() {
                   <span className="inline-block bg-white/90 text-black text-xs px-2 py-1 rounded mb-2">
                     {imageCategory}
                   </span>
-                  <h3 className="text-white text-sm font-medium">Abstract Art {imageNum}</h3>
+                  <h3 className="text-white text-xs sm:text-sm font-medium">Abstract Art {imageNum}</h3>
                 </div>
               </div>
             </div>
           );
         })}
       </Masonry>
+
+      {/* Add some CSS for the masonry grid */}
+      <style jsx global>{`
+        .my-masonry-grid {
+          display: flex;
+          width: auto;
+          margin-left: -16px; /* Adjust this to control horizontal spacing */
+        }
+        
+        .my-masonry-grid_column {
+          padding-left: 16px; /* Adjust for horizontal spacing */
+        }
+        
+        .gallery-image-container {
+          transition: transform 0.3s ease-in-out;
+        }
+        
+        .gallery-image-container:hover {
+          transform: translateY(-5px);
+        }
+        
+        .gallery-image-overlay {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 12px;
+          background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+          opacity: 0;
+          transition: opacity 0.3s ease-in-out;
+        }
+        
+        .gallery-image-container:hover .gallery-image-overlay {
+          opacity: 1;
+        }
+        
+        @media (max-width: 640px) {
+          .my-masonry-grid {
+            margin-left: -8px; /* Less spacing for mobile */
+          }
+          
+          .my-masonry-grid_column {
+            padding-left: 8px; /* Less spacing for mobile */
+          }
+          
+          .gallery-image-overlay {
+            padding: 8px;
+            opacity: 1; /* Always show overlay on mobile for better UX */
+          }
+        }
+      `}</style>
     </div>
   );
 } 

@@ -98,11 +98,11 @@ export default function ProductTestimonial() {
 
   return (
     <section
-      className="relative w-full py-16 md:py-24 overflow-visible bg-transparent"
+      className="relative w-full py-8 sm:py-16 md:py-24 overflow-visible bg-transparent"
     >
-      <div className="relative max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-24 px-4 md:px-8 overflow-visible">
+      <div className="relative max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-12 lg:gap-24 px-4 md:px-8 overflow-visible">
         {/* Product Image in Circle */}
-        <div className="relative w-full max-w-[500px] overflow-visible -ml-16">
+        <div className="relative w-full max-w-[300px] sm:max-w-[400px] md:max-w-[500px] overflow-visible -ml-4 sm:-ml-8 md:-ml-16">
           {/* Main circle container */}
           <div
             className="relative w-full overflow-visible flex items-center justify-center z-10"
@@ -131,33 +131,33 @@ export default function ProductTestimonial() {
         <div className="flex-1 ml-auto relative text-white" style={{ fontFamily: '"IvyMode", serif' }}>
           <div className="flex">
             {/* Main content */}
-            <div className="flex-1 space-y-8 md:space-y-10 pr-8">
-              <h2 className="text-2xl md:text-3xl font-light tracking-wide" style={{ fontFamily: '"IvyMode", serif' }}>Product Testimonials</h2>
+            <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-10 pr-4 sm:pr-8">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-wide" style={{ fontFamily: '"IvyMode", serif' }}>Product Testimonials</h2>
 
               {/* Star Rating */}
-              <div className="flex gap-3.5">
+              <div className="flex gap-2 sm:gap-3.5">
                 {[...Array(5)].map((_, i) => (
-                  <svg key={i} width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                  <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill="white" className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                   </svg>
                 ))}
               </div>
 
               {/* Testimonial Quote */}
-              <div className="space-y-4">
-                <blockquote className={`text-2xl md:text-[40px] font-normal leading-tight transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`} style={{ fontFamily: '"IvyMode", serif' }}>
+              <div className="space-y-3 sm:space-y-4">
+                <blockquote className={`text-lg sm:text-2xl md:text-3xl lg:text-[40px] font-normal leading-tight transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`} style={{ fontFamily: '"IvyMode", serif' }}>
                   "{current.quote}"
                 </blockquote>
-                <p className={`text-base md:text-xl text-white/80 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`} style={{ fontFamily: '"IvyMode", serif' }}>- {current.author}</p>
+                <p className={`text-sm sm:text-base md:text-lg lg:text-xl text-white/80 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`} style={{ fontFamily: '"IvyMode", serif' }}>- {current.author}</p>
               </div>
             </div>
 
             {/* Navigation Controls */}
-            <div className="flex flex-col space-y-4 mt-6 z-20">
+            <div className="flex flex-col space-y-4 mt-2 md:mt-6 z-20">
               {/* Right arrow (for next) */}
               <button 
                 onClick={nextTestimonial}
-                className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-white/10 rounded-full transition-colors"
+                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center relative cursor-pointer hover:bg-white/10 rounded-full transition-colors"
                 disabled={isTransitioning}
                 aria-label="Next testimonial"
                 type="button"
@@ -166,20 +166,21 @@ export default function ProductTestimonial() {
                   <Image
                     src="/images/Arrow Right.png"
                     alt="Next"
-                    width={24}
-                    height={24}
+                    width={16}
+                    height={16}
+                    className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"
                     style={{ pointerEvents: 'none' }}
                   />
                 </div>
               </button>
               
               {/* Dots indicators */}
-              <div className="flex flex-col space-y-2 items-center py-2">
+              <div className="flex flex-col space-y-1.5 sm:space-y-2 items-center py-1 sm:py-2">
                 {testimonials.map((_, index) => (
                   <button 
                     key={index}
                     onClick={() => changeTestimonial(index)}
-                    className={`w-3 h-3 rounded-full transition-all ${index === currentIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'}`}
+                    className={`w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full transition-all ${index === currentIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'}`}
                     aria-label={`Go to testimonial ${index + 1}`}
                     disabled={isTransitioning}
                     type="button"
@@ -190,7 +191,7 @@ export default function ProductTestimonial() {
               {/* Left arrow (for previous) */}
               <button 
                 onClick={prevTestimonial}
-                className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-white/10 rounded-full transition-colors"
+                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center relative cursor-pointer hover:bg-white/10 rounded-full transition-colors"
                 disabled={isTransitioning}
                 aria-label="Previous testimonial"
                 type="button"
@@ -199,16 +200,15 @@ export default function ProductTestimonial() {
                   <Image
                     src="/images/Arrow Left.png"
                     alt="Previous"
-                    width={24}
-                    height={24}
+                    width={16}
+                    height={16}
+                    className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"
                     style={{ pointerEvents: 'none' }}
                   />
                 </div>
               </button>
             </div>
           </div>
-          
-          {/* Hidden dot indicators removed since we now have visible ones */}
         </div>
       </div>
     </section>

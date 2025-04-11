@@ -80,11 +80,11 @@ export default function Home() {
       <div className="pt-4"></div>
 
       {/* Combined Container with border for Hero and Gallery */}
-      <div className="mx-4 md:mx-6 mt-24 mb-8 z-10 relative rounded-[20px] overflow-visible">
+      <div className="mx-4 md:mx-8 mt-16 sm:mt-24 mb-16 z-10 relative rounded-[20px] overflow-visible">
         <div className="overflow-hidden rounded-[20px]">
           {/* Hero Section */}
           <div className="relative">
-            <div className="relative w-full h-[580px] md:h-[680px]">
+            <div className="relative w-full h-[400px] sm:h-[480px] md:h-[580px] lg:h-[680px]">
               {/* Carousel Images */}
               {heroImages.map((image, index) => (
                 <div 
@@ -106,11 +106,11 @@ export default function Home() {
               ))}
 
               {/* Navigation Controls - Positioned at top right */}
-              <div className="absolute top-6 right-6 flex flex-col space-y-4 z-50">
+              <div className="absolute top-4 sm:top-6 right-4 sm:right-6 flex flex-col space-y-4 z-50">
                 {/* Right Arrow (for next) */}
                 <button 
                   onClick={nextHeroImage}
-                  className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-black/30 rounded-full transition-all outline-none"
+                  className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center relative cursor-pointer hover:bg-black/30 rounded-full transition-all outline-none"
                   aria-label="Next image"
                   type="button"
                   style={{ zIndex: 9999 }}
@@ -118,18 +118,19 @@ export default function Home() {
                   <Image
                     src="/images/Arrow Right.png"
                     alt="Next"
-                    width={24}
-                    height={24}
+                    width={20}
+                    height={20}
+                    className="w-5 h-5 sm:w-6 sm:h-6"
                     style={{ pointerEvents: 'none' }}
                   />
                 </button>
                 
                 {/* Dots indicators - visible but styling matches Figma */}
-                <div className="flex flex-col space-y-3 items-center py-2">
+                <div className="flex flex-col space-y-2 sm:space-y-3 items-center py-1 sm:py-2">
                   {heroImages.map((_, index) => (
                     <button
                       key={index}
-                      className={`w-3 h-3 rounded-full transition-all ${
+                      className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all ${
                         currentHeroIndex === index ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'
                       }`}
                       onClick={() => {
@@ -147,7 +148,7 @@ export default function Home() {
                 {/* Left Arrow (for previous) */}
                 <button 
                   onClick={prevHeroImage}
-                  className="w-12 h-12 flex items-center justify-center relative cursor-pointer hover:bg-black/30 rounded-full transition-all outline-none"
+                  className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center relative cursor-pointer hover:bg-black/30 rounded-full transition-all outline-none"
                   aria-label="Previous image"
                   type="button"
                   style={{ zIndex: 9999 }}
@@ -155,8 +156,9 @@ export default function Home() {
                   <Image
                     src="/images/Arrow Left.png"
                     alt="Previous"
-                    width={24}
-                    height={24}
+                    width={20}
+                    height={20}
+                    className="w-5 h-5 sm:w-6 sm:h-6"
                     style={{ pointerEvents: 'none' }}
                   />
                 </button>
@@ -172,15 +174,15 @@ export default function Home() {
 
         {/* Remove the space div and position button between sections */}
         {/* Create space between hero and ELEVATE section for button */}
-        <div className="relative h-16 -mt-8"> 
+        <div className="relative h-12 sm:h-16 -mt-6 sm:-mt-8"> 
           {/* Shop Now button positioned between sections */}
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-[70%] z-[100]">
             <Link 
               href="/shop" 
-              className="box-border flex flex-row items-center justify-center p-[18px_24px] gap-1 isolate w-[160px] h-[63px] bg-white border border-dashed border-[#404040] rounded-xl hover:bg-gray-50 transition-colors shadow-lg"
+              className="box-border flex flex-row items-center justify-center p-[14px_20px] sm:p-[18px_24px] gap-1 isolate w-[140px] sm:w-[160px] h-[55px] sm:h-[63px] bg-white border border-dashed border-[#404040] rounded-xl hover:bg-gray-50 transition-colors shadow-lg"
             >
-              <span className="text-black text-base font-normal">Shop Now</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-black">
+              <span className="text-black text-sm sm:text-base font-normal">Shop Now</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-black">
                 <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </Link>
@@ -188,47 +190,50 @@ export default function Home() {
         </div>
 
         {/* ELEVATE ORDINARY WALLS Section with transparent background */}
-        <div className="p-6 md:p-10">
+        <div className="p-4 sm:p-6 md:p-10">
           <div className="max-w-[1200px] mx-auto">
-            <div className="mb-16">
-              <h1 className="text-white text-[28px] md:text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-8 text-center">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
-              <p className="text-white/60 text-base leading-normal text-center mx-auto max-w-3xl">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
+            <div className="mb-8 sm:mb-16">
+              <h1 className="text-white text-[24px] sm:text-[28px] md:text-[38px] font-medium font-roboto uppercase leading-[1.171875em] mb-4 sm:mb-8 text-center">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h1>
+              <p className="text-white/60 text-sm sm:text-base leading-normal text-center mx-auto max-w-3xl">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
             </div>
           </div>
         </div>
 
         {/* Gallery Grid - Now inside the border */}
-        <div className="p-6 md:p-10">
+        <div className="p-4 sm:p-6 md:p-10">
           {/* Gallery Grid - Replaced with MasonryGallery component */}
-          <div className="relative w-full mb-8">
+          <div className="relative w-full mb-6 sm:mb-8">
             <MasonryGallery />
           </div>
         </div>
       </div>
 
       {/* Product Testimonial Section - Now outside the border */}
-      <div className="mx-4 md:mx-6 mb-8 relative z-10">
+      <div className="mx-4 md:mx-8 mb-16 relative z-10">
         <div>
           <ProductTestimonial />
         </div>
       </div>
 
+      {/* Add spacing between product testimonial and product grid */}
+      <div className="mb-8"></div>
+
       {/* Product Grid Section */}
-      <div className="mx-4 md:mx-6 relative z-10">
-        <div className="p-8 md:p-12 mb-16 relative overflow-hidden" style={{ 
+      <div className="mx-4 md:mx-8 relative z-10">
+        <div className="p-6 sm:p-8 md:p-10 mb-16 relative overflow-hidden" style={{ 
           boxSizing: 'border-box',
           border: '2px dashed #FFFFFF',
           borderRadius: '20px',
-          borderSpacing: '8px',
+          borderSpacing: '8px'
         }}>
-          <div className="flex flex-col md:flex-row md:gap-16 relative z-10">
+          <div className="flex flex-col md:flex-row md:gap-8 lg:gap-10 relative z-10">
             {/* Left side: Categories and Title */}
-            <div className="md:w-[40%] mb-8 md:mb-0">
-              <div className="text-sm text-gray-300 mb-2">All Products</div>
-              <h2 className="text-white text-4xl font-light mb-8">Elevate Your Gallery</h2>
+            <div className="w-full md:w-[30%] mb-8 md:mb-0">
+              <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">All Products</div>
+              <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8">Elevate Your Gallery</h2>
 
               {/* Category Filters - Displayed horizontally and wrapped */}
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 {[
                   { name: "All Products", active: activeCategory === "All Products" },
                   { name: "Books", active: activeCategory === "Books" },
@@ -242,7 +247,7 @@ export default function Home() {
                       category.active 
                         ? "bg-white text-black" 
                         : "border border-white/30 text-white hover:bg-white/10"
-                    } px-6 py-2 text-sm rounded-full transition-colors`}
+                    } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors mb-2`}
                     onClick={() => setActiveCategory(category.name)}
                   >
                     {category.name}
@@ -252,29 +257,28 @@ export default function Home() {
             </div>
 
             {/* Right side: Product Grid */}
-            <div className="md:w-[60%]">
+            <div className="w-full md:w-[70%]">
               <ProductGrid category={activeCategory} />
-              
-              {/* Shop Now Button */}
-              <div className="flex justify-center mt-8">
-                <Link
-                  href="/shop"
-                  className="flex items-center gap-2 border border-white/30 text-white px-6 py-2 text-sm hover:bg-white/10 transition-colors rounded-sm"
-                >
-                  Shop now <ArrowRight size={16} />
-                </Link>
-              </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Add spacing between product grid and video section */}
+      <div className="mb-16"></div>
+      
       {/* Video Section */}
       <VideoSection />
 
+      {/* Add spacing between video section and testimonial collection */}
+      <div className="mb-8"></div>
+      
       {/* Testimonial Collection Section */}
       <TestimonialCollection />
 
+      {/* Add spacing between testimonial collection and blog section */}
+      <div className="mb-8"></div>
+      
       {/* Blog Section */}
       <BlogSection />
 

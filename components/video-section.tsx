@@ -16,7 +16,7 @@ export default function VideoSection() {
   }
 
   return (
-    <div className="relative mb-16 mx-4 md:mx-6">
+    <div className="mx-4 md:mx-8 mb-16 relative">
       <div className="relative aspect-video w-full overflow-hidden rounded-lg">
         <video 
           ref={videoRef}

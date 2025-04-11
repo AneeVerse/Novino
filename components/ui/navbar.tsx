@@ -53,17 +53,17 @@ const Navbar = () => {
         </div>
       </div>
       
-      <div className="relative container mx-auto px-[50px] 2xl:px-[15px] flex justify-between items-center py-6">
+      <div className="relative container mx-auto px-4 sm:px-6 md:px-[50px] 2xl:px-[15px] flex justify-between items-center py-3 sm:py-4 md:py-6">
         {/* Left section - Hamburger and Products */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-3 sm:space-x-6">
           {/* Custom hamburger button on left */}
           <div className="relative">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="w-[70px] h-[54px] bg-white rounded-[10px] flex justify-center items-center"
+              className="w-[50px] h-[40px] sm:w-[60px] sm:h-[48px] md:w-[70px] md:h-[54px] bg-white rounded-[8px] sm:rounded-[10px] flex justify-center items-center"
               aria-label="Toggle menu"
             >
-              <div className="absolute" style={{ bottom: '16px', left: '15px', width: '40px', height: '8px' }}>
+              <div className="absolute bottom-[12px] left-[12px] sm:bottom-[14px] sm:left-[13px] md:bottom-[16px] md:left-[15px] w-[30px] h-[6px] sm:w-[35px] sm:h-[7px] md:w-[40px] md:h-[8px]">
                 <Image 
                   src="/icons/hamburger-line-1.svg" 
                   alt="Menu" 
@@ -72,7 +72,7 @@ const Navbar = () => {
                   className="w-full h-auto"
                 />
               </div>
-              <div className="absolute" style={{ top: '16px', left: '15px', width: '40px', height: '8px' }}>
+              <div className="absolute top-[12px] left-[12px] sm:top-[14px] sm:left-[13px] md:top-[16px] md:left-[15px] w-[30px] h-[6px] sm:w-[35px] sm:h-[7px] md:w-[40px] md:h-[8px]">
                 <Image 
                   src="/icons/hamburger-line-2.svg" 
                   alt="Menu" 
@@ -85,15 +85,15 @@ const Navbar = () => {
           </div>
           
           {/* Products link with SVG border */}
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <Link 
               href="/products" 
-              className="font-mono font-bold text-[15px] text-white z-10 relative px-5 py-[14px] inline-block"
+              className="font-mono font-bold text-[13px] sm:text-[14px] md:text-[15px] text-white z-10 relative px-3 sm:px-4 md:px-5 py-[10px] sm:py-[12px] md:py-[14px] inline-block"
             >
               Products
             </Link>
             <div className="absolute inset-0 -left-1 z-0 pointer-events-none">
-              <svg width="120" height="54" viewBox="0 0 120 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="100%" height="100%" viewBox="0 0 120 54" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
                 <rect x="1.41846" y="0.5" width="118" height="53" rx="10.5" stroke="white" strokeOpacity="1" strokeDasharray="5 5" style={{ mixBlendMode: "normal" }}/>
               </svg>
             </div>
@@ -102,16 +102,16 @@ const Navbar = () => {
         
         {/* Center - Logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
-          <Link href="/" className="text-2xl font-bold font-mono text-white">
+          <Link href="/" className="text-lg sm:text-xl md:text-2xl font-bold font-mono text-white">
             Novino.io
           </Link>
         </div>
         
         {/* Right section - Cart and Contact */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-3 sm:space-x-6">
           {/* Cart button - Using Figma icon */}
           <button 
-            className="flex items-center justify-center bg-[#1A1A1A] rounded-[10px] p-[15px]" 
+            className="flex items-center justify-center bg-[#1A1A1A] rounded-[8px] sm:rounded-[10px] p-[10px] sm:p-[12px] md:p-[15px]" 
             aria-label="Shopping Cart"
           >
             <Image 
@@ -119,7 +119,7 @@ const Navbar = () => {
               alt="Cart"
               width={22}
               height={22}
-              className="w-[22px] h-[22px]"
+              className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px] md:w-[22px] md:h-[22px]"
             />
           </button>
           
@@ -131,21 +131,26 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="absolute top-full left-0 w-full bg-white py-4 shadow-lg">
+          <div className="absolute top-full left-0 w-full bg-[#2D2D2D]/95 backdrop-blur-md py-4 shadow-lg z-50">
             <div className="container mx-auto px-4">
               <ul className="space-y-4">
                 <li>
-                  <Link href="/" className="text-lg font-mono">
+                  <Link href="/" className="text-base sm:text-lg font-mono text-white hover:text-white/70 transition-colors block py-2">
                     Home
                   </Link>
                 </li>
                 <li>
-                  <Link href="/products" className="text-lg font-mono">
+                  <Link href="/products" className="text-base sm:text-lg font-mono text-white hover:text-white/70 transition-colors block py-2">
                     Products
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="text-lg font-mono">
+                  <Link href="/art" className="text-base sm:text-lg font-mono text-white hover:text-white/70 transition-colors block py-2">
+                    Art Gallery
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-base sm:text-lg font-mono text-white hover:text-white/70 transition-colors block py-2">
                     Contact
                   </Link>
                 </li>
