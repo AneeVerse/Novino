@@ -128,7 +128,7 @@ export default function TestimonialCollection() {
           </div>
 
           {/* Testimonial 3 - Now visible on mobile */}
-          <div className="p-4 sm:p-6 border-2 border-dashed border-white md:border-t-2 md:border-r-0 md:border-l-1 md:border-b-0 rounded-lg md:rounded-none max-md:border-l-0" style={{ 
+          <div className="p-4 sm:p-6 border-2 border-dashed border-white md:border-t-2 md:border-r-0 md:border-l-0 md:border-b-0 rounded-lg md:rounded-none max-md:border-r-0 max-md:border-l-0" style={{ 
             borderTop: '2px dashed #FFFFFF',
             borderRight: 'none',
             borderBottom: 'none'
