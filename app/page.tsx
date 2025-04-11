@@ -147,9 +147,11 @@ export default function Home() {
           </div>
         </div>
         <div className="absolute inset-0 z-50 pointer-events-none">
-          <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1330 1179" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+          <svg className="w-full h-full hidden sm:block" preserveAspectRatio="none" viewBox="0 0 1330 1179" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
             <rect x="2" y="2" width="1326" height="1175" rx="19" stroke="white" strokeWidth="2" strokeDasharray="16 4" strokeOpacity="1" style={{ mixBlendMode: "normal" }}/>
           </svg>
+          {/* Mobile border using regular div with border for better mobile display */}
+          <div className="absolute inset-0 sm:hidden rounded-[20px] border-2 border-dashed border-white border-opacity-100" style={{ mixBlendMode: "normal" }}></div>
         </div>
 
         {/* Remove the space div and position button between sections */}
