@@ -106,7 +106,7 @@ export default function Home() {
               ))}
 
               {/* Navigation Controls - Positioned at top right */}
-              <div className="absolute top-4 sm:top-6 right-4 sm:right-6 flex flex-col space-y-4 z-50">
+              <div className="absolute top-4 sm:top-6 right-4 sm:right-6 flex flex-col space-y-2 z-50">
                 {/* Right Arrow (for next) */}
                 <button 
                   onClick={nextHeroImage}
@@ -124,26 +124,6 @@ export default function Home() {
                     style={{ pointerEvents: 'none' }}
                   />
                 </button>
-                
-                {/* Dots indicators - visible but styling matches Figma */}
-                <div className="flex flex-col space-y-2 sm:space-y-3 items-center py-1 sm:py-2">
-                  {heroImages.map((_, index) => (
-                    <button
-                      key={index}
-                      className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all ${
-                        currentHeroIndex === index ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'
-                      }`}
-                      onClick={() => {
-                        if (!isHeroTransitioning) {
-                          setIsHeroTransitioning(true);
-                          setCurrentHeroIndex(index);
-                          setTimeout(() => setIsHeroTransitioning(false), 500);
-                        }
-                      }}
-                      aria-label={`Go to slide ${index + 1}`}
-                    />
-                  ))}
-                </div>
                 
                 {/* Left Arrow (for previous) */}
                 <button 
