@@ -95,11 +95,11 @@ export default function ProductTestimonial() {
           <div
             className="relative w-full overflow-visible flex items-center justify-center z-10"
             style={{
-              background: "radial-gradient(circle, #c4b5aa 80%, #b8a99e 90%, rgba(184, 169, 158, 0.8) 95%, rgba(184, 169, 158, 0) 100%)",
+              background: "radial-gradient(circle, rgba(196, 181, 170, 0.95) 65%, rgba(196, 181, 170, 0.8) 80%, rgba(196, 181, 170, 0.5) 90%, rgba(196, 181, 170, 0.2) 95%, rgba(196, 181, 170, 0) 100%)",
               borderRadius: "50%",
               aspectRatio: "1 / 1.2",
               height: "auto",
-              boxShadow: "0 0 120px rgba(196, 181, 170, 0.7)"
+              boxShadow: "0 0 60px rgba(196, 181, 170, 0.3)"
             }}
           >
             <div className="relative w-[95%] h-[95%] z-10 py-4 overflow-hidden">
