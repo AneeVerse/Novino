@@ -37,49 +37,38 @@ export default function ProductTestimonial() {
   
   // Add debugging logs to diagnose the issue
   useEffect(() => {
-    console.log("Component mounted - ready for interaction");
+    // Component mounted
   }, []);
   
   // Simplified approach to handle testimonial changes
   const changeTestimonial = (index: number) => {
-    console.log("changeTestimonial called with index:", index);
-    console.log("Current state - currentIndex:", currentIndex, "isTransitioning:", isTransitioning);
-    
-    // Force reset isTransitioning if it's been true for too long (safety measure)
-    if (isTransitioning) {
-      console.log("Force resetting isTransitioning state");
-      setIsTransitioning(false);
-    }
-    
-    // Only proceed if trying to move to a different slide
-    if (index !== currentIndex) {
-      console.log("Condition passed, starting transition to index:", index);
+    if (index !== currentIndex && !isTransitioning) {
       setIsTransitioning(true);
-      setCurrentIndex(index);
       
       // Reset the transition state after animation completes
-      console.log("Setting timeout to reset transition state after 600ms");
       setTimeout(() => {
-        console.log("Timeout completed, setting isTransitioning to false");
-        setIsTransitioning(false);
-      }, 600);
-    } else {
-      console.log("Transition blocked - same index:", index === currentIndex);
+        setCurrentIndex(index);
+        
+        // Short delay before removing the transition class to ensure smooth animation
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 200);
+      }, 300);
     }
   };
 
   const nextTestimonial = () => {
-    console.log("Next button clicked");
-    const nextIndex = (currentIndex + 1) % testimonials.length;
-    console.log("Calculated next index:", nextIndex);
-    changeTestimonial(nextIndex);
+    if (!isTransitioning) {
+      const nextIndex = (currentIndex + 1) % testimonials.length;
+      changeTestimonial(nextIndex);
+    }
   };
 
   const prevTestimonial = () => {
-    console.log("Previous button clicked");
-    const prevIndex = (currentIndex - 1 + testimonials.length) % testimonials.length;
-    console.log("Calculated previous index:", prevIndex);
-    changeTestimonial(prevIndex);
+    if (!isTransitioning) {
+      const prevIndex = (currentIndex - 1 + testimonials.length) % testimonials.length;
+      changeTestimonial(prevIndex);
+    }
   };
   
   // Safety timeout to reset isTransitioning if it gets stuck
@@ -87,7 +76,6 @@ export default function ProductTestimonial() {
     if (isTransitioning) {
       const safetyTimer = setTimeout(() => {
         setIsTransitioning(false);
-        console.log("Safety timeout: reset isTransitioning state");
       }, 1000);
       
       return () => clearTimeout(safetyTimer);
@@ -114,24 +102,27 @@ export default function ProductTestimonial() {
               boxShadow: "0 0 120px rgba(196, 181, 170, 0.7)"
             }}
           >
-            <div className={`relative w-[95%] h-[95%] z-10 py-4 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-              <Image
-                src={current.image}
-                alt={current.altText}
-                fill
-                className="object-contain"
-                priority
-                sizes="(max-width: 768px) 100vw, 500px"
-              />
+            <div className="relative w-[95%] h-[95%] z-10 py-4 overflow-hidden">
+              <div className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+                <Image
+                  src={current.image}
+                  alt={current.altText}
+                  fill
+                  className="object-contain"
+                  priority
+                  sizes="(max-width: 768px) 100vw, 500px"
+                  style={{ transform: 'translateZ(0)' }}
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Testimonial Content */}
-        <div className="flex-1 ml-auto relative text-white" style={{ fontFamily: '"IvyMode", serif' }}>
-          <div className="flex">
+        <div className="flex-1 ml-auto relative text-white h-[400px] md:h-[450px] lg:h-[500px] flex items-center" style={{ fontFamily: '"IvyMode", serif' }}>
+          <div className="flex w-full">
             {/* Main content */}
-            <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-10 pr-4 sm:pr-8">
+            <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-10 pr-4 sm:pr-8 relative">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-wide" style={{ fontFamily: '"IvyMode", serif' }}>Product Testimonials</h2>
 
               {/* Star Rating */}
@@ -144,16 +135,18 @@ export default function ProductTestimonial() {
               </div>
 
               {/* Testimonial Quote */}
-              <div className="space-y-3 sm:space-y-4">
-                <blockquote className={`text-lg sm:text-2xl md:text-3xl lg:text-[40px] font-normal leading-tight transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`} style={{ fontFamily: '"IvyMode", serif' }}>
-                  "{current.quote}"
-                </blockquote>
-                <p className={`text-sm sm:text-base md:text-lg lg:text-xl text-white/80 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`} style={{ fontFamily: '"IvyMode", serif' }}>- {current.author}</p>
+              <div className="relative h-[250px] sm:h-[260px] md:h-[280px] lg:h-[300px]">
+                <div className={`absolute inset-0 flex flex-col justify-center transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+                  <blockquote className="text-lg sm:text-2xl md:text-3xl lg:text-[40px] font-normal leading-tight" style={{ fontFamily: '"IvyMode", serif' }}>
+                    "{current.quote}"
+                  </blockquote>
+                  <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/80 mt-3 sm:mt-4" style={{ fontFamily: '"IvyMode", serif' }}>- {current.author}</p>
+                </div>
               </div>
             </div>
 
             {/* Navigation Controls */}
-            <div className="flex flex-col space-y-4 mt-2 md:mt-6 z-20">
+            <div className="flex flex-col h-[300px] justify-between items-center py-4">
               {/* Right arrow (for next) */}
               <button 
                 onClick={nextTestimonial}
@@ -175,7 +168,7 @@ export default function ProductTestimonial() {
               </button>
               
               {/* Dots indicators */}
-              <div className="flex flex-col space-y-1.5 sm:space-y-2 items-center py-1 sm:py-2">
+              <div className="flex flex-col space-y-4 items-center">
                 {testimonials.map((_, index) => (
                   <button 
                     key={index}
