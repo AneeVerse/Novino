@@ -1,4 +1,5 @@
 import { useRef, useState } from "react"
+import Image from "next/image"
 
 export default function VideoSection() {
   const [isPlaying, setIsPlaying] = useState(false)
@@ -37,10 +38,18 @@ export default function VideoSection() {
         {/* Play button overlay - show when video is not playing */}
         {!isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center cursor-pointer" onClick={togglePlay}>
-            <div className="bg-white bg-opacity-80 rounded-full p-4 hover:bg-opacity-100 transition-all transform hover:scale-110">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 4L18 12L6 20V4Z" fill="black" stroke="black" strokeWidth="2" strokeLinejoin="round"/>
-              </svg>
+            <div className="relative flex items-center justify-center transition-all transform hover:scale-110">
+              <Image
+                src="/images/Ellipse 6.svg"
+                alt="Play Button"
+                width={80}
+                height={80}
+              />
+              <div className="absolute" style={{ marginLeft: "4px" }}>
+                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 4L18 12L6 20V4Z" fill="#FFF4E9" stroke="#FFF4E9" strokeWidth="2" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </div>
           </div>
         )}
@@ -48,11 +57,19 @@ export default function VideoSection() {
         {/* Pause button overlay - only show when video is playing */}
         {isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity" onClick={togglePlay}>
-            <div className="bg-white bg-opacity-80 rounded-full p-4 hover:bg-opacity-100 transition-all transform hover:scale-110">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="6" y="4" width="4" height="16" rx="1" fill="black"/>
-                <rect x="14" y="4" width="4" height="16" rx="1" fill="black"/>
-              </svg>
+            <div className="relative flex items-center justify-center transition-all transform hover:scale-110">
+              <Image
+                src="/images/Ellipse 6.svg"
+                alt="Pause Button"
+                width={80}
+                height={80}
+              />
+              <div className="absolute">
+                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="6" y="4" width="4" height="16" rx="1" fill="#FFF4E9"/>
+                  <rect x="14" y="4" width="4" height="16" rx="1" fill="#FFF4E9"/>
+                </svg>
+              </div>
             </div>
           </div>
         )}

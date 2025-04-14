@@ -74,6 +74,18 @@ export default function Home() {
           <div className="absolute right-[5%] top-[30%] w-full max-w-[60%] h-[60%] bg-gradient-to-l from-white/20 via-white/10 to-transparent blur-[120px]"></div>
           <div className="absolute right-0 bottom-[10%] w-full max-w-[70%] h-[50%] bg-gradient-to-l from-white/25 via-white/12 to-transparent blur-[150px]"></div>
         </div>
+        
+        {/* New colored gradient positioned to appear near the product testimonial section */}
+        <div className="absolute left-0 top-[110%] w-full max-w-full h-[60%] opacity-60 pointer-events-none">
+          <div className="absolute left-0 top-0 w-full max-w-[80%] h-[100%] bg-gradient-to-r from-[#8A2BE2]/40 via-[#FF69B4]/30 to-transparent blur-[120px]"></div>
+          <div className="absolute left-[5%] top-[20%] w-full max-w-[60%] h-[70%] bg-gradient-to-r from-[#FF69B4]/30 via-[#8A2BE2]/20 to-transparent blur-[100px]"></div>
+        </div>
+        
+        {/* Additional colored gradient specifically for product testimonial section */}
+        <div className="absolute left-0 w-full max-w-full h-full pointer-events-none">
+          <div className="absolute left-0 top-[1000px] w-full max-w-[90%] h-[600px] bg-gradient-to-r from-[#8A2BE2]/70 via-[#FF69B4]/50 to-transparent blur-[120px] opacity-80"></div>
+          <div className="absolute left-[5%] top-[1100px] w-full max-w-[70%] h-[500px] bg-gradient-to-r from-[#FF69B4]/60 via-[#8A2BE2]/40 to-transparent blur-[100px] opacity-70"></div>
+        </div>
       </div>
 
       {/* Top padding for navbar spacing */}
