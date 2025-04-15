@@ -18,6 +18,9 @@ export default function BlogsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Set the body background color
+    document.body.style.backgroundColor = "#333333";
+    
     const fetchBlogs = async () => {
       try {
         const response = await fetch('/api/blogs');
@@ -42,15 +45,22 @@ export default function BlogsPage() {
     };
     
     fetchBlogs();
+    
+    // Cleanup function to reset body background
+    return () => {
+      document.body.style.backgroundColor = "";
+    };
   }, []);
 
   if (isLoading) {
     return (
-      <div className="w-full bg-[#333333] min-h-screen py-10 sm:py-16">
-        <div className="mx-4 md:mx-8 max-w-7xl">
-          <div className="text-center mb-10">
-            <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-light font-['Italiana']">Our Blogs</h1>
-            <p className="text-white text-sm sm:text-base mt-4">Loading blogs...</p>
+      <div className="min-h-screen w-full">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="pt-16 sm:pt-20 md:pt-24">
+            <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20 px-4 md:px-8">
+              <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-light font-['Italiana']">Our Blogs</h1>
+              <p className="text-white text-sm sm:text-base mt-4">Loading blogs...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -58,8 +68,8 @@ export default function BlogsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#333333] w-full">
-      <div className="max-w-[1440px] mx-auto w-full">
+    <div className="min-h-screen w-full">
+      <div className="max-w-[1440px] mx-auto">
         <div className="pt-16 sm:pt-20 md:pt-24">
           <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20 px-4 md:px-8">
             <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-light font-['Italiana']">Our Blogs</h1>
