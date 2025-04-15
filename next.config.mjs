@@ -21,6 +21,15 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: [
+      'res.cloudinary.com',
+      'images.unsplash.com',
+      'img.freepik.com',
+      'i.imgur.com',
+      'lh3.googleusercontent.com',
+      'githubusercontent.com',
+      'cloudinary.com',
+    ],
   },
   experimental: {
     webpackBuildWorker: true,

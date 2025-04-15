@@ -111,3 +111,176 @@ body {
   transform: translateY(0);
 }
 
+/* SunEditor Custom Styles for Dark Theme */
+.suneditor {
+  background-color: #333333 !important;
+  color: white !important;
+}
+
+.suneditor .se-toolbar {
+  background-color: #444444 !important;
+  border-bottom: 1px solid #555555 !important;
+}
+
+.suneditor .se-btn-tray button {
+  color: #cccccc !important;
+}
+
+.suneditor .se-btn-tray button:hover {
+  background-color: #555555 !important;
+}
+
+.suneditor .se-wrapper {
+  background-color: #333333 !important;
+  border: none !important;
+}
+
+.suneditor .se-wrapper-inner {
+  background-color: #333333 !important;
+}
+
+.suneditor .se-container {
+  border-color: #444444 !important;
+}
+
+.suneditor .se-resizing-bar {
+  background-color: #444444 !important;
+}
+
+/* Style for the editable content area */
+.suneditor .se-wrapper .se-wrapper-inner .se-container .se-container-editor {
+  color: white !important;
+  background-color: #333333 !important;
+}
+
+/* Make sure editor content is visible in dark mode */
+.sun-editor-editable {
+  background-color: #333333 !important;
+  color: white !important;
+}
+
+/* Dropdown menus */
+.suneditor .se-list-layer {
+  background-color: #444444 !important;
+  border-color: #555555 !important;
+}
+
+.suneditor .se-list-layer button {
+  color: white !important;
+}
+
+.suneditor .se-list-layer button:hover {
+  background-color: #555555 !important;
+}
+
+/* Blog content rich text styling */
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  color: white;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-weight: 600;
+}
+
+.prose h1 {
+  font-size: 2em;
+}
+
+.prose h2 {
+  font-size: 1.5em;
+}
+
+.prose h3 {
+  font-size: 1.25em;
+}
+
+.prose p {
+  margin-bottom: 1.25em;
+  line-height: 1.7;
+}
+
+.prose ul, .prose ol {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin-bottom: 0.5em;
+}
+
+.prose ul li {
+  list-style-type: disc;
+}
+
+.prose ol li {
+  list-style-type: decimal;
+}
+
+.prose a {
+  color: #A47E3B;
+  text-decoration: underline;
+}
+
+.prose a:hover {
+  color: #8a6a31;
+}
+
+.prose blockquote {
+  border-left: 4px solid #A47E3B;
+  padding-left: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+  margin-bottom: 1.25em;
+}
+
+.prose pre {
+  background-color: #222222;
+  border-radius: 0.375rem;
+  padding: 1em;
+  overflow-x: auto;
+  margin-bottom: 1.25em;
+}
+
+.prose code {
+  background-color: #222222;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-family: monospace;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+  margin-bottom: 1.25em;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.25em;
+}
+
+.prose table th,
+.prose table td {
+  border: 1px solid #444444;
+  padding: 0.75em;
+  text-align: left;
+}
+
+.prose table th {
+  background-color: #222222;
+}
+
+.prose figure {
+  margin-bottom: 1.25em;
+}
+
+.prose figcaption {
+  text-align: center;
+  font-size: 0.875em;
+  color: #888888;
+  margin-top: 0.5em;
+}
+
