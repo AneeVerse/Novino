@@ -104,11 +104,10 @@ export default function TestimonialCollection() {
   return (
     <div className="mx-4 md:mx-8 mb-16 relative overflow-hidden">
       {/* Main container with dashed border - matched to Figma */}
-      <div className="relative p-4 sm:p-8 flex flex-col items-start" style={{ 
+      <div className="relative flex flex-col items-start" style={{ 
         boxSizing: 'border-box',
         border: '2px dashed #FFFFFF',
         borderRadius: '20px',
-        borderSpacing: '8px',
       }}>
         {/* Corner accents using the provided images */}
         <div className="absolute bottom-0 left-0 w-8 sm:w-12 h-8 sm:h-12">
@@ -136,21 +135,24 @@ export default function TestimonialCollection() {
         </div>
 
         {/* Header section */}
-        <div className="max-w-2xl mb-6 sm:mb-12 relative z-10">
-          <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">THE STYLELOOM TESTIMONIAL COLLECTION.</h1>
-          <p className="text-gray-300 text-sm sm:text-base">At StyleLoom, our customers are the heartbeat of our brand.</p>
+        <div className="w-full p-4 sm:p-8">
+          <div className="max-w-2xl mb-6 sm:mb-12 relative z-10">
+            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">THE STYLELOOM TESTIMONIAL COLLECTION.</h1>
+            <p className="text-gray-300 text-sm sm:text-base">At StyleLoom, our customers are the heartbeat of our brand.</p>
+          </div>
         </div>
 
-        {/* Testimonials grid with dashed borders - corrected to match Figma */}
-        <div className="grid grid-cols-1 md:grid-cols-3 w-full gap-4 sm:gap-6 md:gap-0">
+        {/* Testimonials grid with dashed borders */}
+        <div className="grid grid-cols-1 md:grid-cols-3 w-full">
           {displayTestimonials.map((testimonial, index) => (
             <div 
               key={testimonial.id}
-              className={`p-4 sm:p-6 border-2 border-dashed border-white md:border-t-2 md:border-r-0 md:border-l-0 md:border-b-0 rounded-lg md:rounded-none max-md:border-r-0 max-md:border-l-0 ${
-                index === 0 ? "style={{ borderRight: 'none', borderLeft: 'none', borderBottom: 'none' }}" : 
-                index === 1 ? "style={{ borderTop: '2px dashed #FFFFFF', borderBottom: 'none' }}" : 
-                "style={{ borderTop: '2px dashed #FFFFFF', borderRight: 'none', borderBottom: 'none' }}"
+              className={`p-4 sm:p-8 border-t-2 border-dashed border-white ${
+                index === 0 ? "md:border-r-2 md:border-r-dashed md:border-r-white" : 
+                index === 1 ? "md:border-r-2 md:border-r-dashed md:border-r-white" : 
+                ""
               }`}
+              style={{ minHeight: '100%' }}
             >
               <div className="flex items-center mb-4">
                 <div className="mr-3">
@@ -183,7 +185,7 @@ export default function TestimonialCollection() {
                 ))}
               </div>
 
-              <p className="text-white text-sm sm:text-base">
+              <p className="text-white text-sm sm:text-base break-words whitespace-normal">
                 {testimonial.comment}
               </p>
             </div>

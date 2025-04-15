@@ -109,8 +109,17 @@ export default function BlogSection() {
       <div className="mx-4 md:mx-8 max-w-full">
         {/* Header - Making sure it matches Figma design */}
         <div className="text-center mb-10 sm:mb-16 md:mb-20 relative z-50">
-          <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light mb-2 sm:mb-4 font-['Italiana'] relative z-50">Blogs</h2>
-          <p className="text-white text-sm sm:text-base opacity-90">Find all the jewellery you will need here.</p>
+          <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light font-['Italiana'] relative z-50 mb-2">Blogs</h2>
+          <p className="text-white text-sm sm:text-base opacity-90 mb-4">Find all the jewellery you will need here.</p>
+          <div className="absolute top-0 right-4 sm:right-8 z-50">
+            <Link 
+              href="/blogs"
+              className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer"
+              style={{ borderRadius: '10px' }}
+            >
+              View All
+            </Link>
+          </div>
         </div>
 
         {/* Main Container */}
