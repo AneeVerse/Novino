@@ -95,7 +95,7 @@ export default function Home() {
       </div>
 
       {/* Rest of the page content */}
-      <div className="container mx-auto px-4 sm:px-6 md:px-[50px] mt-16 z-10 relative">
+      <div className="container mx-auto px-2 sm:px-3 md:px-[20px] mt-16 z-10 relative">
         {/* ELEVATE ORDINARY WALLS Section */}
         <div className="mb-16">
           <div className="max-w-[1200px] mx-auto">
@@ -106,11 +106,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Gallery Grid */}
-        <div className="mb-16">
-          <div className="relative w-full">
-            <MasonryGallery />
-          </div>
+        {/* Gallery Grid - with negative margins to make it wider */}
+        <div className="mb-16 relative -mx-2 sm:-mx-4 md:-mx-[20px]">
+          <MasonryGallery />
         </div>
 
         {/* Product Testimonial Section */}
