@@ -143,7 +143,7 @@ export default function Home() {
       <div className="container mx-auto px-2 sm:px-3 md:px-[20px] mt-16 z-10 relative">
         {/* ELEVATE ORDINARY WALLS Section */}
         <div className="mb-16">
-          <div className="max-w-[1200px] mx-auto">
+          <div className="max-w-[1200px] mx-auto pl-8">
             <div className="mb-8 sm:mb-16">
               <h2 className="text-white text-[24px] sm:text-[28px] md:text-[38px] font-medium uppercase leading-[1.171875em] mb-4 sm:mb-8 text-center">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h2>
               <p className="text-white/60 text-sm sm:text-base leading-normal text-center mx-auto max-w-3xl">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
@@ -172,30 +172,32 @@ export default function Home() {
             <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
               {/* Left side: Categories and Title */}
               <div className="w-full md:w-1/2 mb-8 md:mb-0">
-                <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">All Products</div>
-                <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8">Elevate Your Gallery</h2>
+                <div className="pl-10">
+                  <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">All Products</div>
+                  <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8">Elevate Your Gallery</h2>
 
-                {/* Category Filters - Displayed horizontally and wrapped */}
-                <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
-                  {[
-                    { name: "All Products", active: activeCategory === "All Products" },
-                    { name: "Books", active: activeCategory === "Books" },
-                    { name: "Mugs", active: activeCategory === "Mugs" },
-                    { name: "Costar", active: activeCategory === "Costar" },
-                    { name: "Feeds", active: activeCategory === "Feeds" },
-                  ].map((category) => (
-                    <button
-                      key={category.name}
-                      className={`${
-                        category.active 
-                          ? "bg-white text-black" 
-                          : "border border-white/30 text-white hover:bg-white/10"
-                      } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors`}
-                      onClick={() => setActiveCategory(category.name)}
-                    >
-                      {category.name}
-                    </button>
-                  ))}
+                  {/* Category Filters - Displayed horizontally and wrapped */}
+                  <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
+                    {[
+                      { name: "All Products", active: activeCategory === "All Products" },
+                      { name: "Books", active: activeCategory === "Books" },
+                      { name: "Mugs", active: activeCategory === "Mugs" },
+                      { name: "Costar", active: activeCategory === "Costar" },
+                      { name: "Feeds", active: activeCategory === "Feeds" },
+                    ].map((category) => (
+                      <button
+                        key={category.name}
+                        className={`${
+                          category.active 
+                            ? "bg-white text-black" 
+                            : "border border-white/30 text-white hover:bg-white/10"
+                        } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors`}
+                        onClick={() => setActiveCategory(category.name)}
+                      >
+                        {category.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 
                 {/* Two cards below filter on left side - now horizontal */}
