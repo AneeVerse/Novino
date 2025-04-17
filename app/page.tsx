@@ -294,14 +294,14 @@ export default function Home() {
           <TestimonialCollection />
         </div>
 
-        {/* Wardrobe Section */}
-        <div className="mb-16">
-          <WardrobeSection />
-        </div>
-
         {/* Blog Section */}
         <div className="mb-16">
           <BlogSection />
+        </div>
+
+        {/* Wardrobe Section */}
+        <div className="mb-16">
+          <WardrobeSection />
         </div>
 
         {/* Footer Section */}

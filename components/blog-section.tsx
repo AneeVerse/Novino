@@ -88,8 +88,8 @@ export default function BlogSection() {
   // Display loading state (optional)
   if (isLoading) {
     return (
-      <div className="w-full bg-[#333333] py-10 sm:py-16 md:py-20">
-        <div className="mx-4 md:mx-8 max-w-full">
+      <div className="w-full py-10 sm:py-16 md:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
           <div className="text-center mb-10 sm:mb-16 md:mb-20 relative z-50">
             <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light mb-2 sm:mb-4 font-['Italiana'] relative z-50">Blogs</h2>
             <p className="text-white text-sm sm:text-base opacity-90">Loading blog content...</p>
@@ -105,8 +105,8 @@ export default function BlogSection() {
   const secondRow = displayBlogs.slice(2, 4);
 
   return (
-    <div className="w-full bg-[#333333] py-10 sm:py-16 md:py-20">
-      <div className="mx-4 md:mx-8 max-w-full">
+    <div className="w-full py-10 sm:py-16 md:py-20">
+      <div className="max-w-[2400px] mx-2">
         {/* Header - Making sure it matches Figma design */}
         <div className="text-center mb-10 sm:mb-16 md:mb-20 relative z-50">
           <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light font-['Italiana'] relative z-50 mb-2">Blogs</h2>
@@ -123,7 +123,7 @@ export default function BlogSection() {
         </div>
 
         {/* Main Container */}
-        <div className="mx-auto">
+        <div className="w-full">
           {/* First Row */}
           <div className="flex flex-col md:flex-row gap-8 md:gap-16 mb-12 sm:mb-16 md:mb-20">
             {firstRow.map((blog, index) => (
