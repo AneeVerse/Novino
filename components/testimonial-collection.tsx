@@ -82,7 +82,7 @@ export default function TestimonialCollection() {
   // Display loading state
   if (isLoading) {
     return (
-      <div className="mx-4 md:mx-8 mb-16 relative overflow-hidden">
+      <div className="mx-2 mb-16 relative overflow-hidden">
         <div className="relative p-4 sm:p-8 flex flex-col items-start" style={{ 
           boxSizing: 'border-box',
           border: '2px dashed #FFFFFF',
@@ -102,9 +102,9 @@ export default function TestimonialCollection() {
   const displayTestimonials = testimonials.slice(0, 3);
 
   return (
-    <div className="mx-4 md:mx-8 mb-16 relative overflow-hidden">
+    <div className="mx-2 mb-16 relative overflow-hidden">
       {/* Main container with dashed border - matched to Figma */}
-      <div className="relative flex flex-col items-start" style={{ 
+      <div className="relative flex flex-col items-start w-full" style={{ 
         boxSizing: 'border-box',
         border: '2px dashed #FFFFFF',
         borderRadius: '20px',
@@ -167,7 +167,7 @@ export default function TestimonialCollection() {
                 </div>
               </div>
 
-              <div className="flex text-yellow-400 mb-3 sm:mb-4">
+              <div className="flex mb-3 sm:mb-4" style={{ color: '#E8B08A' }}>
                 {[...Array(testimonial.rating)].map((_, i) => (
                   <svg
                     key={i}

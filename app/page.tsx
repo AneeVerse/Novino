@@ -283,12 +283,17 @@ export default function Home() {
       </div>
 
       {/* Video Section - Full width */}
-      <div className="relative w-full h-[730px] bg-[#2D2D2D]">
+      <div className="relative w-full h-[730px] bg-[#2D2D2D] mb-32">
         <VideoSection />
       </div>
 
       {/* New container for remaining sections */}
       <div className="container mx-auto px-0 z-10 relative">
+        {/* Testimonial Collection */}
+        <div className="mb-16">
+          <TestimonialCollection />
+        </div>
+
         {/* Wardrobe Section */}
         <div className="mb-16">
           <WardrobeSection />
@@ -297,11 +302,6 @@ export default function Home() {
         {/* Blog Section */}
         <div className="mb-16">
           <BlogSection />
-        </div>
-
-        {/* Testimonial Collection */}
-        <div className="mb-16">
-          <TestimonialCollection />
         </div>
 
         {/* Footer Section */}
