@@ -179,8 +179,48 @@ export default function Home() {
             backgroundPosition: "center"
           }}>
             <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
+              {/* Right side: Product Grid (Moved up first to be displayed first) */}
+              <div className="w-full md:w-1/2 order-1 md:order-2">
+                <div className="grid grid-cols-2 gap-8">
+                  {filteredProducts.slice(0, 2).map((product) => (
+                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
+                      <div className="relative aspect-square overflow-hidden">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-4" 
+                        />
+                      </div>
+                      <div className="p-4 bg-[#333333]">
+                        <div className="text-white text-xs uppercase font-medium">{product.name}</div>
+                        <div className="text-white text-sm font-medium mt-1">{product.price}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-8 mt-8">
+                  {filteredProducts.slice(2, 4).map((product) => (
+                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
+                      <div className="relative aspect-square overflow-hidden">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-4" 
+                        />
+                      </div>
+                      <div className="p-4 bg-[#333333]">
+                        <div className="text-white text-xs uppercase font-medium">{product.name}</div>
+                        <div className="text-white text-sm font-medium mt-1">{product.price}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Left side: Categories and Title */}
-              <div className="w-full md:w-1/2 mb-8 md:mb-0">
+              <div className="w-full md:w-1/2 mb-8 md:mb-0 order-2 md:order-1">
                 <div className="pl-10">
                   <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">All Products</div>
                   <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8">Elevate Your Gallery</h2>
@@ -211,46 +251,6 @@ export default function Home() {
                 
                 {/* Two cards below filter on left side - now horizontal */}
                 <div className="grid grid-cols-2 gap-4 mt-[205px]">
-                  {filteredProducts.slice(0, 2).map((product) => (
-                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1">{product.price}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right side: Product Grid */}
-              <div className="w-full md:w-1/2">
-                <div className="grid grid-cols-2 gap-8">
-                  {filteredProducts.slice(2, 4).map((product) => (
-                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1">{product.price}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-2 gap-8 mt-8">
                   {filteredProducts.slice(4, 6).map((product) => (
                     <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
                       <div className="relative aspect-square overflow-hidden">
