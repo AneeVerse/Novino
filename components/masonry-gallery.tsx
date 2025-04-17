@@ -99,7 +99,7 @@ export default function MasonryGallery() {
           
           return (
             <div key={imageNum} className="overflow-hidden gallery-image-container mb-3">
-              <div className="relative border border-white/20 rounded-sm overflow-hidden">
+              <div className="relative border-0 rounded-sm overflow-hidden">
                 <Image
                   src={`/images/grid-gallery/bg3 ${imgIndex}.png`}
                   alt={`Abstract art ${imgIndex}`}
