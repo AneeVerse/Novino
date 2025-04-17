@@ -141,7 +141,7 @@ export default function Home() {
           ></div>
           <h1 
             className="text-white text-[150px] md:text-[200px] lg:text-[280px] font-dm-serif-display leading-none absolute w-full text-center"
-            style={{ fontFamily: 'DM Serif Display, serif', top: '50%', left: '50%', transform: 'translate(-50%, 44%)' }}
+            style={{ fontFamily: 'DM Serif Display, serif', top: '50%', left: '50%', transform: 'translate(-50%, 50%)' }}
           >
             NOVINO
           </h1>
