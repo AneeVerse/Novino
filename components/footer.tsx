@@ -3,7 +3,7 @@ import { Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="mx-2 sm:mx-4 md:mx-8 border-t-2 border-dashed border-white/30 border-opacity-60 py-6 sm:py-10 relative z-10 mt-8 sm:mt-16" style={{ borderSpacing: "6px", borderTopWidth: "2px" }}>
+    <footer className="relative mx-2 max-w-[2400px]">
       <div className="relative">
         {/* Gradient effects similar to the product section */}
         <div className="absolute left-[10%] top-0 w-[60%] h-[50%] bg-gradient-to-r from-white/20 via-white/10 to-transparent blur-[100px] pointer-events-none"></div>

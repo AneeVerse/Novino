@@ -3,7 +3,7 @@ import Link from "next/link"
 
 export default function WardrobeSection() {
   return (
-    <div className="relative mx-4 md:mx-8 mb-16 overflow-hidden rounded-3xl">
+    <div className="relative mx-2 mb-16 overflow-hidden rounded-3xl max-w-[2400px]">
       {/* Full background image */}
       <div className="relative w-full h-[333px]">
         <Image 
