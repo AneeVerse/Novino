@@ -145,10 +145,10 @@ export default function Home() {
       </div>
 
       {/* Rest of the page content */}
-      <div className="container mx-auto px-2 sm:px-3 md:px-[20px] mt-16 z-10 relative">
+      <div className="container mx-auto px-0 mt-16 z-10 relative">
         {/* ELEVATE ORDINARY WALLS Section */}
         <div className="mb-16">
-          <div className="max-w-[1200px] mx-auto pl-8">
+          <div className="max-w-[2400px] mx-auto pl-8">
             <div className="mb-8 sm:mb-16">
               <h2 className="text-white text-[24px] sm:text-[28px] md:text-[38px] font-medium uppercase leading-[1.171875em] mb-4 sm:mb-8 text-center">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h2>
               <p className="text-white/60 text-sm sm:text-base leading-normal text-center mx-auto max-w-3xl">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
@@ -157,7 +157,7 @@ export default function Home() {
         </div>
 
         {/* Gallery Grid - with negative margins to make it wider */}
-        <div className="mb-16 relative -mx-2 sm:-mx-4 md:-mx-[20px]">
+        <div className="mb-16 relative">
           <MasonryGallery />
         </div>
 
@@ -168,7 +168,7 @@ export default function Home() {
 
         {/* Product Grid Section */}
         <div className="mb-16 relative z-10">
-          <div className="p-8 relative overflow-hidden" style={{ 
+          <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto" style={{ 
             boxSizing: 'border-box',
             border: '2px dashed #FFFFFF',
             borderRadius: '20px',
