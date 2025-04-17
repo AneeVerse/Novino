@@ -98,8 +98,7 @@ export default function ProductTestimonial() {
               background: "radial-gradient(circle, rgba(196, 181, 170, 0.95) 65%, rgba(196, 181, 170, 0.8) 80%, rgba(196, 181, 170, 0.5) 90%, rgba(196, 181, 170, 0.2) 95%, rgba(196, 181, 170, 0) 100%)",
               borderRadius: "50%",
               aspectRatio: "1 / 1.2",
-              height: "auto",
-              boxShadow: "0 0 60px rgba(196, 181, 170, 0.3)"
+              height: "auto"
             }}
           >
             <div className="relative w-[95%] h-[95%] z-10 py-4 overflow-hidden">
@@ -125,13 +124,13 @@ export default function ProductTestimonial() {
             <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 pr-4 sm:pr-6 relative">
               {/* Background blur effect */}
               <div 
-                className="absolute -top-10 -left-64 z-0" 
+                className="absolute -top-40 -left-64 z-0" 
                 style={{ 
-                  width: '80%',
-                  height: '120%',
+                  width: '100%',
+                  height: '180%',
                   background: '#E8B08A',
                   filter: 'blur(60px)',
-                  opacity: 0.3,
+                  opacity: 0.2,
                   borderRadius: '30%',
                   transform: 'translate(-55%, 5%) rotate(-5deg)'
                 }}
