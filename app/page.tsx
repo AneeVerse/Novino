@@ -171,7 +171,7 @@ export default function Home() {
         </div>
 
         {/* Product Grid Section */}
-        <div className="mb-16 relative z-10">
+        <div className="mb-16 relative z-10 font-['Roboto_Mono']">
           <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto" style={{ 
             backgroundImage: "url('/Container (2).png')",
             backgroundSize: "100% 100%", 
@@ -193,8 +193,8 @@ export default function Home() {
                         />
                       </div>
                       <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1">{product.price}</div>
+                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
+                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
                       </div>
                     </div>
                   ))}
@@ -211,8 +211,8 @@ export default function Home() {
                         />
                       </div>
                       <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1">{product.price}</div>
+                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
+                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
                       </div>
                     </div>
                   ))}
@@ -222,8 +222,8 @@ export default function Home() {
               {/* Left side: Categories and Title */}
               <div className="w-full md:w-1/2 mb-8 md:mb-0 order-2 md:order-1">
                 <div className="pl-10">
-                  <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">All Products</div>
-                  <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8">Elevate Your Gallery</h2>
+                  <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono']">All Products</div>
+                  <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono']">Elevate Your Gallery</h2>
 
                   {/* Category Filters - Displayed horizontally and wrapped */}
                   <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
@@ -240,7 +240,7 @@ export default function Home() {
                           category.active 
                             ? "bg-white text-black" 
                             : "border border-white/30 text-white hover:bg-white/10"
-                        } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors`}
+                        } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors font-['Roboto_Mono']`}
                         onClick={() => setActiveCategory(category.name)}
                       >
                         {category.name}
@@ -262,8 +262,8 @@ export default function Home() {
                         />
                       </div>
                       <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1">{product.price}</div>
+                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
+                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
                       </div>
                     </div>
                   ))}
@@ -273,7 +273,7 @@ export default function Home() {
             
             {/* Shop Now Button */}
             <div className="mt-16 flex justify-center">
-              <button className="border border-white bg-transparent text-white px-3 py-1.5 text-xs flex items-center gap-1 hover:bg-white/10 transition-colors">
+              <button className="border border-white bg-transparent text-white px-3 py-1.5 text-xs flex items-center gap-1 hover:bg-white/10 transition-colors font-['Roboto_Mono']">
                 Shop now
                 <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M13.3536 4.35356C13.5488 4.15829 13.5488 3.84171 13.3536 3.64645L10.1716 0.464468C9.97631 0.269205 9.65973 0.269205 9.46447 0.464468C9.2692 0.65973 9.2692 0.976312 9.46447 1.17157L12.2929 4.00001L9.46447 6.82843C9.2692 7.02369 9.2692 7.34027 9.46447 7.53554C9.65973 7.7308 9.97631 7.7308 10.1716 7.53554L13.3536 4.35356ZM-4.37114e-08 4.5L13 4.5L13 3.5L4.37114e-08 3.5L-4.37114e-08 4.5Z" fill="white"/>
