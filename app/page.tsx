@@ -163,15 +163,15 @@ export default function Home() {
 
         {/* Product Grid Section */}
         <div className="mb-16 relative z-10">
-          <div className="p-6 sm:p-8 md:p-10 relative overflow-hidden" style={{ 
+          <div className="p-8 relative overflow-hidden" style={{ 
             boxSizing: 'border-box',
             border: '2px dashed #FFFFFF',
             borderRadius: '20px',
             borderSpacing: '8px'
           }}>
-            <div className="flex flex-col md:flex-row md:gap-8 lg:gap-10 relative z-10">
+            <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
               {/* Left side: Categories and Title */}
-              <div className="w-full md:w-[40%] mb-8 md:mb-0">
+              <div className="w-full md:w-1/2 mb-8 md:mb-0">
                 <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">All Products</div>
                 <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8">Elevate Your Gallery</h2>
 
@@ -190,7 +190,7 @@ export default function Home() {
                         category.active 
                           ? "bg-white text-black" 
                           : "border border-white/30 text-white hover:bg-white/10"
-                      } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors mb-2`}
+                      } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors`}
                       onClick={() => setActiveCategory(category.name)}
                     >
                       {category.name}
@@ -199,18 +199,18 @@ export default function Home() {
                 </div>
                 
                 {/* Two cards below filter on left side - now horizontal */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 mt-[260px]">
                   {products.slice(0, 2).map((product) => (
-                    <div key={product.id} className="bg-white">
+                    <div key={product.id} className="bg-white w-full">
                       <div className="relative aspect-square overflow-hidden">
                         <Image
                           src={product.image}
                           alt={product.name}
                           fill
-                          className="object-contain p-2" 
+                          className="object-contain p-4" 
                         />
                       </div>
-                      <div className="p-3 bg-[#333333]">
+                      <div className="p-4 bg-[#333333]">
                         <div className="text-white text-xs uppercase font-medium">{product.name}</div>
                         <div className="text-white text-sm font-medium mt-1">{product.price}</div>
                       </div>
@@ -220,19 +220,19 @@ export default function Home() {
               </div>
 
               {/* Right side: Product Grid */}
-              <div className="w-full md:w-[60%]">
-                <div className="grid grid-cols-2 gap-6 px-4">
+              <div className="w-full md:w-1/2">
+                <div className="grid grid-cols-2 gap-4">
                   {products.slice(2, 6).map((product) => (
-                    <div key={product.id} className="bg-white h-full" style={{maxWidth: "70%"}}>
+                    <div key={product.id} className="bg-white w-full">
                       <div className="relative aspect-square overflow-hidden">
                         <Image
                           src={product.image}
                           alt={product.name}
                           fill
-                          className="object-contain p-2" 
+                          className="object-contain p-4" 
                         />
                       </div>
-                      <div className="p-3 bg-[#333333]">
+                      <div className="p-4 bg-[#333333]">
                         <div className="text-white text-xs uppercase font-medium">{product.name}</div>
                         <div className="text-white text-sm font-medium mt-1">{product.price}</div>
                       </div>
