@@ -173,10 +173,10 @@ export default function Home() {
         {/* Product Grid Section */}
         <div className="mb-16 relative z-10">
           <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto" style={{ 
-            boxSizing: 'border-box',
-            border: '2px dashed #FFFFFF',
-            borderRadius: '20px',
-            borderSpacing: '8px'
+            backgroundImage: "url('/Container (2).png')",
+            backgroundSize: "100% 100%", 
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center"
           }}>
             <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
               {/* Left side: Categories and Title */}
