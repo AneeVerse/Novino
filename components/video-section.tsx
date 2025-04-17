@@ -47,7 +47,7 @@ export default function VideoSection() {
             />
             <div className="absolute" style={{ marginLeft: "8px" }}>
               <svg width="160" height="160" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 4L18 12L6 20V4Z" fill="#FFF4E9" stroke="#FFF4E9" strokeWidth="2" strokeLinejoin="round"/>
+                <path d="M6 4L18 12L6 20V4Z" fill="#E8B08A" stroke="#E8B08A" strokeWidth="2" strokeLinejoin="round"/>
               </svg>
             </div>
           </div>
@@ -66,8 +66,8 @@ export default function VideoSection() {
             />
             <div className="absolute">
               <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="6" y="4" width="4" height="16" rx="1" fill="#FFF4E9"/>
-                <rect x="14" y="4" width="4" height="16" rx="1" fill="#FFF4E9"/>
+                <rect x="6" y="4" width="4" height="16" rx="1" fill="#E8B08A"/>
+                <rect x="14" y="4" width="4" height="16" rx="1" fill="#E8B08A"/>
               </svg>
             </div>
           </div>

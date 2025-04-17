@@ -31,20 +31,22 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 h-[80px] backdrop-filter backdrop-blur-md bg-[#2D2D2D]/70`}>
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 h-[80px] ${
+      scrolled ? 'backdrop-filter backdrop-blur-md bg-[#2D2D2D]/70' : 'bg-transparent'
+    }`}>
       <div className="relative w-[1440px] mx-auto h-full flex justify-between items-center">
         {/* Left section - Menu items (Desktop) */}
         <div className="hidden md:flex items-center space-x-6 h-full pl-6">
-          <Link href="/paintings" className="text-white uppercase tracking-wider text-sm font-medium">
+          <Link href="/paintings" className={`uppercase tracking-wider text-sm font-medium font-roboto-mono ${scrolled ? 'text-white' : 'text-black'}`}>
             PAINTINGS
           </Link>
-          <Link href="/artefacts" className="text-white uppercase tracking-wider text-sm font-medium">
+          <Link href="/artefacts" className={`uppercase tracking-wider text-sm font-medium font-roboto-mono ${scrolled ? 'text-white' : 'text-black'}`}>
             ARTEFACTS
           </Link>
-          <Link href="/journey" className="text-white uppercase tracking-wider text-sm font-medium">
+          <Link href="/journey" className={`uppercase tracking-wider text-sm font-medium font-roboto-mono ${scrolled ? 'text-white' : 'text-black'}`}>
             JOURNEY
           </Link>
-          <Link href="/journal" className="text-white uppercase tracking-wider text-sm font-medium">
+          <Link href="/journal" className={`uppercase tracking-wider text-sm font-medium font-roboto-mono ${scrolled ? 'text-white' : 'text-black'}`}>
             JOURNAL
           </Link>
         </div>
@@ -53,7 +55,7 @@ const Navbar = () => {
         <div className="md:hidden">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-white"
+            className={scrolled ? 'text-white' : 'text-black'}
             aria-label="Toggle menu"
           >
             <svg
@@ -76,14 +78,14 @@ const Navbar = () => {
         
         {/* Center - Logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
-          <Link href="/" className="text-white text-2xl font-bold">
+          <Link href="/" className={`text-2xl font-bold font-roboto-mono ${scrolled ? 'text-white' : 'text-black'}`}>
             Novino<span className="text-[#AE876D]">.</span>io
           </Link>
         </div>
         
         {/* Right section - Authentication */}
         <div className="flex items-center space-x-4 pr-6">
-          <Link href="/auth/login" className="text-white">
+          <Link href="/auth/login" className={scrolled ? 'text-white' : 'text-black'}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -99,7 +101,7 @@ const Navbar = () => {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </Link>
-          <Link href="/cart" className="text-white">
+          <Link href="/cart" className={scrolled ? 'text-white' : 'text-black'}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -124,22 +126,22 @@ const Navbar = () => {
             <div className="container mx-auto px-4">
               <ul className="space-y-4">
                 <li>
-                  <Link href="/paintings" className="text-base font-medium text-white hover:text-white/70 transition-colors block py-2 uppercase">
+                  <Link href="/paintings" className="text-base font-medium font-roboto-mono text-white hover:text-white/70 transition-colors block py-2 uppercase">
                     Paintings
                   </Link>
                 </li>
                 <li>
-                  <Link href="/artefacts" className="text-base font-medium text-white hover:text-white/70 transition-colors block py-2 uppercase">
+                  <Link href="/artefacts" className="text-base font-medium font-roboto-mono text-white hover:text-white/70 transition-colors block py-2 uppercase">
                     Artefacts
                   </Link>
                 </li>
                 <li>
-                  <Link href="/journey" className="text-base font-medium text-white hover:text-white/70 transition-colors block py-2 uppercase">
+                  <Link href="/journey" className="text-base font-medium font-roboto-mono text-white hover:text-white/70 transition-colors block py-2 uppercase">
                     Journey
                   </Link>
                 </li>
                 <li>
-                  <Link href="/journal" className="text-base font-medium text-white hover:text-white/70 transition-colors block py-2 uppercase">
+                  <Link href="/journal" className="text-base font-medium font-roboto-mono text-white hover:text-white/70 transition-colors block py-2 uppercase">
                     Journal
                   </Link>
                 </li>

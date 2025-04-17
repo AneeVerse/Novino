@@ -88,7 +88,7 @@ export default function Home() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentHeroIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
-    }, 5000); // Change image every 5 seconds
+    }, 10000); // Change image every 10 seconds
 
     return () => clearInterval(timer);
   }, []);
@@ -101,10 +101,13 @@ export default function Home() {
         {heroImages.map((image, index) => (
           <div 
             key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
+            style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.1, 1)' }}
+            className={`absolute inset-0 transition-all duration-[4500ms] transform ${
               currentHeroIndex === index 
-                ? 'opacity-100 z-10' 
-                : 'opacity-0 z-0'
+                ? 'opacity-100 z-10 translate-x-0 scale-100' 
+                : index === ((currentHeroIndex - 1 + heroImages.length) % heroImages.length)
+                  ? 'opacity-0 z-0 translate-x-[80%] scale-105'
+                  : 'opacity-0 z-0 -translate-x-[80%] scale-105'
             }`}
           >
             <Image
