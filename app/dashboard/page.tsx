@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import BlogForm from '@/components/blog-form';
 import TestimonialForm from '@/components/testimonial-form';
@@ -31,15 +30,12 @@ interface Testimonial {
   createdAt: string;
 }
 
-export default function Dashboard() {
-  const searchParams = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  
+function DashboardContent() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState(tabParam || 'blogs');
+  const [activeTab, setActiveTab] = useState('overview');
   
   // State for forms
   const [showBlogForm, setShowBlogForm] = useState(false);
@@ -50,13 +46,6 @@ export default function Dashboard() {
   // Form modes
   const [blogFormMode, setBlogFormMode] = useState<'add' | 'edit'>('add');
   const [testimonialFormMode, setTestimonialFormMode] = useState<'add' | 'edit'>('add');
-  
-  // Update activeTab when URL param changes
-  useEffect(() => {
-    if (tabParam) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
 
   // Function to fetch data from API
   const fetchData = async () => {
@@ -103,95 +92,24 @@ export default function Dashboard() {
       setIsLoading(false);
     }
   };
-  
-  // Hardcoded sample data for fallback
-  const sampleBlogs = [
-    {
-      id: '1',
-      title: "Diamond's Haven",
-      description: "Mesmerising jewellery collection that encapsulates the essence of timeless elegance & sophistication",
-      image: "/images/blog/Rectangle 13.png",
-      content: "<p>Welcome to Diamond's Haven, where timeless elegance meets exquisite craftsmanship.</p>",
-      createdAt: "2023-04-15T10:30:00Z"
-    },
-    {
-      id: '2',
-      title: "Silver Wolf",
-      description: "Enchanting jewellery collection that echoes the untamed spirit of the wild",
-      image: "/images/blog/Rectangle 12.png",
-      content: "<p>Discover the untamed beauty of our Silver Wolf collection.</p>",
-      createdAt: "2023-04-14T09:15:00Z"
-    },
-    {
-      id: '3',
-      title: "Couple Paradise",
-      description: "Captivating jewellery collection that celebrates the eternal bond of love",
-      image: "/images/blog/Rectangle 15.png",
-      content: "<p>Celebrate your eternal bond with our Couple Paradise collection.</p>",
-      createdAt: "2023-04-13T14:45:00Z"
-    },
-    {
-      id: '4',
-      title: "Gold Lava",
-      description: "Radiant jewellery collection that captures the essence of molten gold",
-      image: "/images/blog/Rectangle 14.png",
-      content: "<p>Feel the warmth of molten gold with our Gold Lava collection.</p>",
-      createdAt: "2023-04-12T11:20:00Z"
-    }
-  ];
-  
-  const sampleTestimonials = [
-    {
-      id: '1',
-      name: "Sarah Thompson",
-      location: "New York, USA",
-      avatar: "/images/testimonals/sarah-thompson.png",
-      rating: 5,
-      comment: "StyleLoom exceeded my expectations. The gown's quality and design made me feel like a queen. Fast shipping, too!",
-      createdAt: "2023-03-10T10:30:00Z"
-    },
-    {
-      id: '2',
-      name: "Rajesh Patel",
-      location: "Mumbai, India",
-      avatar: "/images/testimonals/rajesh-patel.png",
-      rating: 5,
-      comment: "Absolutely love the style and warmth of the jacket. A perfect blend of fashion and functionality!",
-      createdAt: "2023-03-08T09:15:00Z"
-    },
-    {
-      id: '3',
-      name: "Emily Walker",
-      location: "London, UK",
-      avatar: "/images/testimonals/emily-walker.png",
-      rating: 5,
-      comment: "Adorable and comfortable! My daughter loves her new outfit. Thank you, StyleLoom, for dressing our little fashionista.",
-      createdAt: "2023-03-05T14:45:00Z"
-    }
-  ];
 
-  // Add new blog handler
-  const handleAddBlog = () => {
-    setCurrentBlog(undefined);
-    setBlogFormMode('add');
-    setShowBlogForm(true);
-  };
-  
-  // Edit blog handler
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Function to handle editing a blog
   const handleEditBlog = (blog: Blog) => {
     setCurrentBlog(blog);
     setBlogFormMode('edit');
     setShowBlogForm(true);
   };
-  
-  // Delete blog handler
-  const handleDeleteBlog = async (blogId: string) => {
-    if (!window.confirm('Are you sure you want to delete this blog?')) {
-      return;
-    }
+
+  // Function to handle deleting a blog
+  const handleDeleteBlog = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this blog?')) return;
     
     try {
-      const response = await fetch(`/api/blogs/${blogId}`, {
+      const response = await fetch(`/api/blogs/${id}`, {
         method: 'DELETE',
       });
       
@@ -199,36 +117,27 @@ export default function Dashboard() {
         throw new Error('Failed to delete blog');
       }
       
-      // Refresh data after deletion
-      fetchData();
-    } catch (err: any) {
+      // Remove the blog from the state
+      setBlogs(blogs.filter(blog => blog.id !== id));
+    } catch (err) {
       console.error('Error deleting blog:', err);
-      alert(err.message || 'Failed to delete blog');
+      alert('Failed to delete blog. Please try again.');
     }
   };
-  
-  // Add new testimonial handler
-  const handleAddTestimonial = () => {
-    setCurrentTestimonial(undefined);
-    setTestimonialFormMode('add');
-    setShowTestimonialForm(true);
-  };
-  
-  // Edit testimonial handler
+
+  // Function to handle editing a testimonial
   const handleEditTestimonial = (testimonial: Testimonial) => {
     setCurrentTestimonial(testimonial);
     setTestimonialFormMode('edit');
     setShowTestimonialForm(true);
   };
-  
-  // Delete testimonial handler
-  const handleDeleteTestimonial = async (testimonialId: string) => {
-    if (!window.confirm('Are you sure you want to delete this testimonial?')) {
-      return;
-    }
+
+  // Function to handle deleting a testimonial
+  const handleDeleteTestimonial = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this testimonial?')) return;
     
     try {
-      const response = await fetch(`/api/testimonials/${testimonialId}`, {
+      const response = await fetch(`/api/testimonials/${id}`, {
         method: 'DELETE',
       });
       
@@ -236,18 +145,13 @@ export default function Dashboard() {
         throw new Error('Failed to delete testimonial');
       }
       
-      // Refresh data after deletion
-      fetchData();
-    } catch (err: any) {
+      // Remove the testimonial from the state
+      setTestimonials(testimonials.filter(testimonial => testimonial.id !== id));
+    } catch (err) {
       console.error('Error deleting testimonial:', err);
-      alert(err.message || 'Failed to delete testimonial');
+      alert('Failed to delete testimonial. Please try again.');
     }
   };
-
-  useEffect(() => {
-    // Fetch data from API
-    fetchData();
-  }, []);
 
   if (isLoading) {
     return (
@@ -276,13 +180,39 @@ export default function Dashboard() {
 
   return (
     <div>
+      {/* Navigation Tabs */}
+      <div className="flex space-x-4 mb-6">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`px-4 py-2 rounded ${activeTab === 'overview' ? 'bg-[#A47E3B] text-white' : 'bg-[#222222] text-white/70 hover:bg-[#333333]'}`}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => setActiveTab('blogs')}
+          className={`px-4 py-2 rounded ${activeTab === 'blogs' ? 'bg-[#A47E3B] text-white' : 'bg-[#222222] text-white/70 hover:bg-[#333333]'}`}
+        >
+          Blogs
+        </button>
+        <button
+          onClick={() => setActiveTab('testimonials')}
+          className={`px-4 py-2 rounded ${activeTab === 'testimonials' ? 'bg-[#A47E3B] text-white' : 'bg-[#222222] text-white/70 hover:bg-[#333333]'}`}
+        >
+          Testimonials
+        </button>
+      </div>
+
       {/* Content based on active tab */}
       {activeTab === 'blogs' && (
         <div>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-white">Manage Blogs</h1>
             <button 
-              onClick={handleAddBlog}
+              onClick={() => {
+                setCurrentBlog(undefined);
+                setBlogFormMode('add');
+                setShowBlogForm(true);
+              }}
               className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
             >
               Add New Blog
@@ -360,7 +290,11 @@ export default function Dashboard() {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-white">Manage Testimonials</h1>
             <button 
-              onClick={handleAddTestimonial}
+              onClick={() => {
+                setCurrentTestimonial(undefined);
+                setTestimonialFormMode('add');
+                setShowTestimonialForm(true);
+              }}
               className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
             >
               Add New Testimonial
@@ -449,12 +383,12 @@ export default function Dashboard() {
                   <div className="text-3xl font-bold text-white">{blogs.length}</div>
                   <div className="text-white/70">Total Blogs</div>
                 </div>
-                <Link 
-                  href="/dashboard?tab=blogs"
+                <button 
+                  onClick={() => setActiveTab('blogs')}
                   className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
                 >
                   Manage Blogs
-                </Link>
+                </button>
               </div>
             </div>
             
@@ -465,12 +399,12 @@ export default function Dashboard() {
                   <div className="text-3xl font-bold text-white">{testimonials.length}</div>
                   <div className="text-white/70">Total Testimonials</div>
                 </div>
-                <Link 
-                  href="/dashboard?tab=testimonials"
+                <button 
+                  onClick={() => setActiveTab('testimonials')}
                   className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
                 >
                   Manage Testimonials
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -530,5 +464,41 @@ export default function Dashboard() {
         />
       )}
     </div>
+  );
+}
+
+// Sample data for fallback
+const sampleBlogs: Blog[] = [
+  {
+    id: '1',
+    title: 'Sample Blog Post 1',
+    description: 'This is a sample blog post description.',
+    content: 'Sample content goes here...',
+    image: '/images/blog-placeholder.jpg',
+    createdAt: new Date().toISOString()
+  },
+  // ... more sample blogs if needed
+];
+
+const sampleTestimonials: Testimonial[] = [
+  {
+    id: '1',
+    name: 'John Doe',
+    location: 'New York',
+    avatar: '/images/avatar-placeholder.jpg',
+    rating: 5,
+    comment: 'This is a sample testimonial comment.',
+    createdAt: new Date().toISOString()
+  },
+  // ... more sample testimonials if needed
+];
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-[70vh]">
+      <div className="text-white text-xl">Loading dashboard...</div>
+    </div>}>
+      <DashboardContent />
+    </Suspense>
   );
 } 

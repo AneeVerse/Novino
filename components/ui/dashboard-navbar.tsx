@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function DashboardNavbar() {
+function DashboardNavbarContent() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -206,5 +207,13 @@ export default function DashboardNavbar() {
         </div>
       )}
     </nav>
+  );
+}
+
+export default function DashboardNavbar() {
+  return (
+    <Suspense fallback={<div className="w-full bg-[#222222] border-b border-[#333333] h-16"></div>}>
+      <DashboardNavbarContent />
+    </Suspense>
   );
 } 

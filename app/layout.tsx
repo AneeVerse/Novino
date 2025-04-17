@@ -25,7 +25,13 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} ${!isDashboard ? 'px-4 sm:px-6 md:px-[50px]' : ''}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {isDashboard ? <DashboardNavbar /> : <Navbar />}
+          {isDashboard ? (
+            <div className="w-full">
+              <DashboardNavbar />
+            </div>
+          ) : (
+            <Navbar />
+          )}
           {children}
         </ThemeProvider>
       </body>

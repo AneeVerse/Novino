@@ -18,9 +18,6 @@ export default function BlogsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Set the body background color
-    document.body.style.backgroundColor = "#333333";
-    
     const fetchBlogs = async () => {
       try {
         const response = await fetch('/api/blogs');
@@ -45,16 +42,17 @@ export default function BlogsPage() {
     };
     
     fetchBlogs();
-    
-    // Cleanup function to reset body background
-    return () => {
-      document.body.style.backgroundColor = "";
-    };
   }, []);
+
+  const containerStyle = {
+    backgroundColor: "#333333",
+    minHeight: "100vh",
+    width: "100%"
+  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full">
+      <div style={containerStyle}>
         <div className="max-w-[1440px] mx-auto">
           <div className="pt-16 sm:pt-20 md:pt-24">
             <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20 px-4 md:px-8">
@@ -68,7 +66,7 @@ export default function BlogsPage() {
   }
 
   return (
-    <div className="min-h-screen w-full">
+    <div style={containerStyle}>
       <div className="max-w-[1440px] mx-auto">
         <div className="pt-16 sm:pt-20 md:pt-24">
           <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20 px-4 md:px-8">
