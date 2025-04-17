@@ -58,16 +58,10 @@ export default function VideoSection() {
       {isPlaying && (
         <div className="absolute inset-0 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity" onClick={togglePlay}>
           <div className="relative flex items-center justify-center transition-all transform hover:scale-110">
-            <Image
-              src="/images/Ellipse 6.svg"
-              alt="Pause Button"
-              width={80}
-              height={80}
-            />
             <div className="absolute">
-              <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="6" y="4" width="4" height="16" rx="1" fill="#E8B08A"/>
-                <rect x="14" y="4" width="4" height="16" rx="1" fill="#E8B08A"/>
+              <svg width="160" height="160" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="6" y="4" width="4" height="16" rx="1" fill="#E8B08A" stroke="#E8B08A" strokeWidth="1"/>
+                <rect x="14" y="4" width="4" height="16" rx="1" fill="#E8B08A" stroke="#E8B08A" strokeWidth="1"/>
               </svg>
             </div>
           </div>

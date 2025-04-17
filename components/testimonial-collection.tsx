@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image"
+import "@fontsource/roboto-mono"
 
 interface Testimonial {
   id: string;
@@ -90,8 +91,8 @@ export default function TestimonialCollection() {
           borderSpacing: '8px',
         }}>
           <div className="max-w-2xl mb-6 sm:mb-12 relative z-10">
-            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">THE STYLELOOM TESTIMONIAL COLLECTION.</h1>
-            <p className="text-gray-300 text-sm sm:text-base">Loading testimonials...</p>
+            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4 font-['Roboto_Mono']">THE STYLELOOM TESTIMONIAL COLLECTION.</h1>
+            <p className="text-gray-300 text-sm sm:text-base font-['Roboto_Mono']">Loading testimonials...</p>
           </div>
         </div>
       </div>
@@ -104,7 +105,7 @@ export default function TestimonialCollection() {
   return (
     <div className="mx-2 mb-16 relative overflow-hidden">
       {/* Main container with dashed border - matched to Figma */}
-      <div className="relative flex flex-col items-start w-full" style={{ 
+      <div className="relative flex flex-col items-start w-full overflow-hidden" style={{ 
         boxSizing: 'border-box',
         border: '2px dashed #FFFFFF',
         borderRadius: '20px',
@@ -129,16 +130,23 @@ export default function TestimonialCollection() {
           />
         </div>
 
-        {/* Abstract design in top right */}
-        <div className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64">
-          <Image src="/images/abstract-design.png" alt="Abstract design" width={300} height={300} className="object-contain" />
+        {/* Abstract design in top right - adjusted positioning */}
+        <div className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 overflow-hidden">
+          <Image 
+            src="/images/abstract-design.png" 
+            alt="Abstract design" 
+            width={400} 
+            height={400} 
+            className="object-contain max-w-full" 
+            style={{ position: 'absolute', right: '-15%', top: '-4%' }}
+          />
         </div>
 
         {/* Header section */}
         <div className="w-full p-4 sm:p-8">
           <div className="max-w-2xl mb-6 sm:mb-12 relative z-10">
-            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">THE STYLELOOM TESTIMONIAL COLLECTION.</h1>
-            <p className="text-gray-300 text-sm sm:text-base">At StyleLoom, our customers are the heartbeat of our brand.</p>
+            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4 font-['Roboto_Mono']">THE STYLELOOM TESTIMONIAL COLLECTION.</h1>
+            <p className="text-gray-300 text-sm sm:text-base font-['Roboto_Mono']">At StyleLoom, our customers are the heartbeat of our brand.</p>
           </div>
         </div>
 
@@ -159,8 +167,8 @@ export default function TestimonialCollection() {
                   <Image src={testimonial.avatar} alt={testimonial.name} width={50} height={50} className="rounded-full w-10 h-10 sm:w-[50px] sm:h-[50px]" />
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold text-sm sm:text-base">{testimonial.name}</h3>
-                  <p className="text-gray-300 text-xs sm:text-sm">{testimonial.location}</p>
+                  <h3 className="text-white font-semibold text-sm sm:text-base font-['Roboto_Mono']">{testimonial.name}</h3>
+                  <p className="text-gray-300 text-xs sm:text-sm font-['Roboto_Mono']">{testimonial.location}</p>
                 </div>
                 <div className="ml-auto">
                   <Image src={testimonial.socialIcon || "/images/Capa 2.png"} alt="Social icon" width={16} height={16} className="object-contain w-4 h-4 sm:w-5 sm:h-5" />
@@ -185,7 +193,7 @@ export default function TestimonialCollection() {
                 ))}
               </div>
 
-              <p className="text-white text-sm sm:text-base break-words whitespace-normal">
+              <p className="text-white text-sm sm:text-base break-words whitespace-normal font-['Roboto_Mono']">
                 {testimonial.comment}
               </p>
             </div>
