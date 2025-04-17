@@ -123,10 +123,24 @@ export default function ProductTestimonial() {
           <div className="flex w-full">
             {/* Main content */}
             <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 pr-4 sm:pr-6 relative">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-wide" style={{ fontFamily: '"IvyMode", serif' }}>Product Testimonials</h2>
+              {/* Background blur effect */}
+              <div 
+                className="absolute -top-10 -left-64 z-0" 
+                style={{ 
+                  width: '80%',
+                  height: '120%',
+                  background: '#E8B08A',
+                  filter: 'blur(60px)',
+                  opacity: 0.3,
+                  borderRadius: '30%',
+                  transform: 'translate(-55%, 5%) rotate(-5deg)'
+                }}
+              ></div>
+            
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-wide relative z-10" style={{ fontFamily: '"IvyMode", serif' }}>Product Testimonials</h2>
 
               {/* Star Rating */}
-              <div className="flex space-x-3 sm:space-x-4">
+              <div className="flex space-x-3 sm:space-x-4 relative z-10">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} width="24" height="24" viewBox="0 0 24 24" fill="white" className="w-5 h-5 sm:w-6 sm:h-6" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
@@ -135,7 +149,7 @@ export default function ProductTestimonial() {
               </div>
 
               {/* Testimonial Quote */}
-              <div className="relative min-h-[180px] sm:min-h-[200px] md:min-h-[220px]">
+              <div className="relative min-h-[180px] sm:min-h-[200px] md:min-h-[220px] z-10">
                 <div className={`absolute inset-0 flex flex-col justify-center transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
                   <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight" style={{ fontFamily: '"IvyMode", serif' }}>
                     "{current.quote}"
