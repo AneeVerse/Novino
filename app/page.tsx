@@ -199,9 +199,9 @@ export default function Home() {
                 </div>
                 
                 {/* Two cards below filter on left side - now horizontal */}
-                <div className="grid grid-cols-2 gap-4 mt-[260px]">
+                <div className="grid grid-cols-2 gap-4 mt-[205px]">
                   {products.slice(0, 2).map((product) => (
-                    <div key={product.id} className="bg-white w-full">
+                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
                       <div className="relative aspect-square overflow-hidden">
                         <Image
                           src={product.image}
@@ -221,9 +221,27 @@ export default function Home() {
 
               {/* Right side: Product Grid */}
               <div className="w-full md:w-1/2">
-                <div className="grid grid-cols-2 gap-4">
-                  {products.slice(2, 6).map((product) => (
-                    <div key={product.id} className="bg-white w-full">
+                <div className="grid grid-cols-2 gap-8">
+                  {products.slice(2, 4).map((product) => (
+                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
+                      <div className="relative aspect-square overflow-hidden">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-4" 
+                        />
+                      </div>
+                      <div className="p-4 bg-[#333333]">
+                        <div className="text-white text-xs uppercase font-medium">{product.name}</div>
+                        <div className="text-white text-sm font-medium mt-1">{product.price}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-8 mt-8">
+                  {products.slice(4, 6).map((product) => (
+                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
                       <div className="relative aspect-square overflow-hidden">
                         <Image
                           src={product.image}
