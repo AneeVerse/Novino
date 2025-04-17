@@ -2,6 +2,8 @@
 
 import Image from "next/image"
 import { useState, useEffect } from "react"
+import "@fontsource/roboto-mono"
+import "@fontsource/dm-serif-display"
 
 // Testimonial data
 const testimonials = [
@@ -102,7 +104,7 @@ export default function ProductTestimonial() {
             }}
           >
             <div className="relative w-[95%] h-[95%] z-10 py-4 overflow-hidden">
-              <div className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+              <div className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`} style={{ transform: 'translateX(10px) translateZ(0)' }}>
                 <Image
                   src={current.image}
                   alt={current.altText}
@@ -118,7 +120,7 @@ export default function ProductTestimonial() {
         </div>
 
         {/* Testimonial Content */}
-        <div className="flex-1 relative text-white h-auto sm:h-[350px] md:h-[400px] flex items-center mt-6 md:mt-0" style={{ fontFamily: '"IvyMode", serif' }}>
+        <div className="flex-1 relative text-white h-auto sm:h-[350px] md:h-[400px] flex items-center mt-6 md:mt-0" style={{ fontFamily: '"Roboto Mono", monospace' }}>
           <div className="flex w-full">
             {/* Main content */}
             <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 pr-4 sm:pr-6 relative">
@@ -136,7 +138,7 @@ export default function ProductTestimonial() {
                 }}
               ></div>
             
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-wide relative z-10" style={{ fontFamily: '"IvyMode", serif' }}>Product Testimonials</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-wide relative z-10" style={{ fontFamily: '"Roboto Mono", monospace' }}>Product Testimonials</h2>
 
               {/* Star Rating */}
               <div className="flex space-x-3 sm:space-x-4 relative z-10">
@@ -150,10 +152,10 @@ export default function ProductTestimonial() {
               {/* Testimonial Quote */}
               <div className="relative min-h-[180px] sm:min-h-[200px] md:min-h-[220px] z-10">
                 <div className={`absolute inset-0 flex flex-col justify-center transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-                  <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight" style={{ fontFamily: '"IvyMode", serif' }}>
+                  <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight" style={{ fontFamily: '"DM Serif Display", serif' }}>
                     "{current.quote}"
                   </blockquote>
-                  <p className="text-sm sm:text-base md:text-lg text-white/80 mt-2 sm:mt-3" style={{ fontFamily: '"IvyMode", serif' }}>- {current.author}</p>
+                  <p className="text-sm sm:text-base md:text-lg text-white/80 mt-2 sm:mt-3" style={{ fontFamily: '"Roboto Mono", monospace' }}>- {current.author}</p>
                 </div>
               </div>
             </div>
