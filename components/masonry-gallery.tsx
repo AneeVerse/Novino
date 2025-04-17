@@ -36,7 +36,12 @@ export default function MasonryGallery() {
 
   return (
     // Add border around the entire gallery
-    <div className="w-full border-2 border-dashed border-white/70 rounded-[20px] p-3 sm:p-4">
+    <div className="w-full p-3 sm:p-4 relative" style={{ 
+      backgroundImage: "url('/Container (2).png')",
+      backgroundSize: "100% 100%",
+      backgroundRepeat: "no-repeat",
+      backgroundOrigin: "border-box",
+    }}>
       {/* Category Filters */}
       <div className="flex flex-wrap justify-center items-center gap-2 xs:gap-3 sm:gap-4 mb-8 mt-8 relative">
         {Object.keys(categories).map((category) => (
@@ -57,7 +62,7 @@ export default function MasonryGallery() {
                   rx="10" 
                   stroke="white" 
                   strokeOpacity="1" 
-                  strokeDasharray="5 5" 
+                  strokeDasharray="16 4" 
                   style={{ mixBlendMode: "normal" }}
                 />
               </svg>
