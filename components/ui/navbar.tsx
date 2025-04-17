@@ -32,7 +32,7 @@ const Navbar = () => {
 
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 h-[80px] backdrop-filter backdrop-blur-md bg-[#2D2D2D]/70`}>
-      <div className="relative w-[1450px] mx-auto h-full flex justify-between items-center">
+      <div className="relative w-[1440px] mx-auto h-full flex justify-between items-center">
         {/* Left section - Menu items (Desktop) */}
         <div className="hidden md:flex items-center space-x-6 h-full pl-6">
           <Link href="/paintings" className="text-white uppercase tracking-wider text-sm font-medium">
@@ -77,7 +77,7 @@ const Navbar = () => {
         {/* Center - Logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
           <Link href="/" className="text-white text-2xl font-bold">
-            Novino.io
+            Novino<span className="text-[#AE876D]">.</span>io
           </Link>
         </div>
         
