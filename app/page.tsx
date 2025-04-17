@@ -79,6 +79,11 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All Products");
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
+  // Filter products based on active category
+  const filteredProducts = products.filter(product => 
+    activeCategory === "All Products" ? true : product.category === activeCategory
+  );
+
   // Auto-rotate hero images
   useEffect(() => {
     const timer = setInterval(() => {
@@ -202,7 +207,7 @@ export default function Home() {
                 
                 {/* Two cards below filter on left side - now horizontal */}
                 <div className="grid grid-cols-2 gap-4 mt-[205px]">
-                  {products.slice(0, 2).map((product) => (
+                  {filteredProducts.slice(0, 2).map((product) => (
                     <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
                       <div className="relative aspect-square overflow-hidden">
                         <Image
@@ -224,7 +229,7 @@ export default function Home() {
               {/* Right side: Product Grid */}
               <div className="w-full md:w-1/2">
                 <div className="grid grid-cols-2 gap-8">
-                  {products.slice(2, 4).map((product) => (
+                  {filteredProducts.slice(2, 4).map((product) => (
                     <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
                       <div className="relative aspect-square overflow-hidden">
                         <Image
@@ -242,7 +247,7 @@ export default function Home() {
                   ))}
                 </div>
                 <div className="grid grid-cols-2 gap-8 mt-8">
-                  {products.slice(4, 6).map((product) => (
+                  {filteredProducts.slice(4, 6).map((product) => (
                     <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
                       <div className="relative aspect-square overflow-hidden">
                         <Image
