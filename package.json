@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@fontsource/dm-serif-display": "^5.2.5",
+    "@fontsource/italiana": "^5.2.5",
+    "@fontsource/mulish": "^5.2.5",
     "@fontsource/roboto-mono": "^5.2.5",
     "@hookform/resolvers": "^3.9.1",
     "@next/font": "^14.2.15",

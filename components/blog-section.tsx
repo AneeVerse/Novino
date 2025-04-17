@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import Image from "next/image"
 import Link from "next/link"
 import { getValidImageUrl } from "@/lib/imageUtils"
+import "@fontsource/italiana"
+import "@fontsource/dm-serif-display"
+import "@fontsource/roboto-mono"
+import "@fontsource/mulish"
 
 interface Blog {
   id: string;
@@ -91,8 +95,8 @@ export default function BlogSection() {
       <div className="w-full py-10 sm:py-16 md:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
           <div className="text-center mb-10 sm:mb-16 md:mb-20 relative z-50">
-            <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light mb-2 sm:mb-4 font-['Italiana'] relative z-50">Blogs</h2>
-            <p className="text-white text-sm sm:text-base opacity-90">Loading blog content...</p>
+            <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light mb-2 sm:mb-4 font-['DM_Serif_Display'] relative z-50">Blogs</h2>
+            <p className="text-white text-sm sm:text-base opacity-90 font-['Roboto_Mono']">Loading blog content...</p>
           </div>
         </div>
       </div>
@@ -109,8 +113,8 @@ export default function BlogSection() {
       <div className="max-w-[2400px] mx-2">
         {/* Header - Making sure it matches Figma design */}
         <div className="text-center mb-10 sm:mb-16 md:mb-20 relative z-50">
-          <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light font-['Italiana'] relative z-50 mb-2">Blogs</h2>
-          <p className="text-white text-sm sm:text-base opacity-90 mb-4">Find all the jewellery you will need here.</p>
+          <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light font-['DM_Serif_Display'] relative z-50 mb-2">Blogs</h2>
+          <p className="text-white text-sm sm:text-base opacity-90 mb-4 font-['Roboto_Mono']">Find all the jewellery you will need here.</p>
           <div className="absolute top-0 right-4 sm:right-8 z-50">
             <Link 
               href="/blogs"
@@ -142,10 +146,10 @@ export default function BlogSection() {
                 </div>
                 <div className="min-w-0 relative z-10 text-center sm:text-left">
                   <h3 className="text-white font-['Italiana'] font-normal text-2xl sm:text-[28px] md:text-[32px] leading-tight mb-2 sm:mb-3">{blog.title}</h3>
-                  <p className="text-neutral-200 text-xs sm:text-sm mb-4">{blog.description}</p>
+                  <p className="text-neutral-200 text-xs sm:text-sm mb-4 font-['Mulish']">{blog.description}</p>
                   <Link 
                     href={`/blogs/${blog.slug || blog.id}`} 
-                    className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#FFF4E9] text-black text-xs sm:text-sm font-medium"
+                    className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#FFF4E9] text-black text-xs sm:text-sm font-medium font-['Mulish']"
                     style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
                   >
                     VIEW DETAILS
@@ -174,10 +178,10 @@ export default function BlogSection() {
                   </div>
                   <div className="min-w-0 relative z-10 text-center sm:text-right order-2 sm:order-1">
                     <h3 className="text-white font-['Italiana'] font-normal text-2xl sm:text-[28px] md:text-[32px] leading-tight mb-2 sm:mb-3">{blog.title}</h3>
-                    <p className="text-neutral-200 text-xs sm:text-sm mb-4">{blog.description}</p>
+                    <p className="text-neutral-200 text-xs sm:text-sm mb-4 font-['Mulish']">{blog.description}</p>
                     <Link 
                       href={`/blogs/${blog.slug || blog.id}`} 
-                      className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#FFF4E9] text-black text-xs sm:text-sm font-medium"
+                      className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#FFF4E9] text-black text-xs sm:text-sm font-medium font-['Mulish']"
                       style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
                     >
                       VIEW DETAILS
