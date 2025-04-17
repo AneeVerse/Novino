@@ -69,6 +69,22 @@ export default function Home() {
 
         {/* NOVINO text overlay */}
         <div className="absolute inset-0 z-20">
+          {/* Semi-transparent light effect behind text */}
+          <div 
+            className="absolute w-full text-center" 
+            style={{ 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, 44%)',
+              height: '270px',
+              background: '#E8B08A',
+              filter: 'blur(60px)',
+              opacity: 0.4,
+              width: '50%',
+              zIndex: -1,
+              bottom: 'auto'
+            }}
+          ></div>
           <h1 
             className="text-white text-[150px] md:text-[200px] lg:text-[280px] font-dm-serif-display leading-none absolute w-full text-center"
             style={{ fontFamily: 'DM Serif Display, serif', top: '50%', left: '50%', transform: 'translate(-50%, 44%)' }}
