@@ -17,63 +17,62 @@ export default function VideoSection() {
   }
 
   return (
-    <div className="mx-4 md:mx-8 mb-16 relative">
-      <div className="relative w-full overflow-hidden rounded-lg">
-        <video 
-          ref={videoRef}
-          className="w-full h-auto object-contain"
-          src="/video/videoplayback (1).mp4"
-          poster="/images/gallery-grid.png"
-          onClick={togglePlay}
-          controls={false}
-          playsInline
-          muted={false}
-        />
+    <div className="absolute inset-0 w-full h-full">
+      <video 
+        ref={videoRef}
+        className="absolute inset-0 w-full h-full object-cover"
+        src="/video/videoplayback (1).mp4"
+        poster="/images/hero-section/bg02.png"
+        onClick={togglePlay}
+        controls={false}
+        playsInline
+        muted={false}
+      />
 
-        {/* Dark overlay on the poster image - only show when video is not playing */}
-        {!isPlaying && (
-          <div className="absolute inset-0 bg-black/50" onClick={togglePlay}></div>
-        )}
+      {/* Dark overlay on the poster image - only show when video is not playing */}
+      {!isPlaying && (
+        <div className="absolute inset-0 bg-black/50" onClick={togglePlay}></div>
+      )}
 
-        {/* Play button overlay - show when video is not playing */}
-        {!isPlaying && (
-          <div className="absolute inset-0 flex items-center justify-center cursor-pointer" onClick={togglePlay}>
-            <div className="relative flex items-center justify-center transition-all transform hover:scale-110">
-              <Image
-                src="/images/Ellipse 6.svg"
-                alt="Play Button"
-                width={80}
-                height={80}
-              />
-              <div className="absolute" style={{ marginLeft: "4px" }}>
-                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M6 4L18 12L6 20V4Z" fill="#FFF4E9" stroke="#FFF4E9" strokeWidth="2" strokeLinejoin="round"/>
-                </svg>
-              </div>
+      {/* Play button overlay - show when video is not playing */}
+      {!isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center cursor-pointer" onClick={togglePlay}>
+          <div className="relative flex items-center justify-center transition-all transform hover:scale-105">
+            <Image
+              src="/images/Ellipse 6.svg"
+              alt="Play Button"
+              width={320}
+              height={320}
+              className="w-[320px] h-[320px]"
+            />
+            <div className="absolute" style={{ marginLeft: "8px" }}>
+              <svg width="160" height="160" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 4L18 12L6 20V4Z" fill="#FFF4E9" stroke="#FFF4E9" strokeWidth="2" strokeLinejoin="round"/>
+              </svg>
             </div>
           </div>
-        )}
-        
-        {/* Pause button overlay - only show when video is playing */}
-        {isPlaying && (
-          <div className="absolute inset-0 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity" onClick={togglePlay}>
-            <div className="relative flex items-center justify-center transition-all transform hover:scale-110">
-              <Image
-                src="/images/Ellipse 6.svg"
-                alt="Pause Button"
-                width={80}
-                height={80}
-              />
-              <div className="absolute">
-                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="6" y="4" width="4" height="16" rx="1" fill="#FFF4E9"/>
-                  <rect x="14" y="4" width="4" height="16" rx="1" fill="#FFF4E9"/>
-                </svg>
-              </div>
+        </div>
+      )}
+      
+      {/* Pause button overlay - only show when video is playing */}
+      {isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity" onClick={togglePlay}>
+          <div className="relative flex items-center justify-center transition-all transform hover:scale-110">
+            <Image
+              src="/images/Ellipse 6.svg"
+              alt="Pause Button"
+              width={80}
+              height={80}
+            />
+            <div className="absolute">
+              <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="6" y="4" width="4" height="16" rx="1" fill="#FFF4E9"/>
+                <rect x="14" y="4" width="4" height="16" rx="1" fill="#FFF4E9"/>
+              </svg>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

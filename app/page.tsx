@@ -279,11 +279,16 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Video Section */}
-        <div className="mb-16">
-          <VideoSection />
-        </div>
+        {/* Move out of container for full width */}
+      </div>
 
+      {/* Video Section - Full width */}
+      <div className="relative w-full h-[730px] bg-[#2D2D2D]">
+        <VideoSection />
+      </div>
+
+      {/* New container for remaining sections */}
+      <div className="container mx-auto px-0 z-10 relative">
         {/* Wardrobe Section */}
         <div className="mb-16">
           <WardrobeSection />
