@@ -32,9 +32,9 @@ const Navbar = () => {
 
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 h-[80px] backdrop-filter backdrop-blur-md bg-[#2D2D2D]/70`}>
-      <div className="relative container mx-auto h-full flex justify-between items-center px-4 sm:px-6 md:px-[50px]">
+      <div className="relative w-[1450px] mx-auto h-full flex justify-between items-center">
         {/* Left section - Menu items (Desktop) */}
-        <div className="hidden md:flex items-center space-x-8 h-full">
+        <div className="hidden md:flex items-center space-x-6 h-full pl-6">
           <Link href="/paintings" className="text-white uppercase tracking-wider text-sm font-medium">
             PAINTINGS
           </Link>
@@ -82,7 +82,7 @@ const Navbar = () => {
         </div>
         
         {/* Right section - Authentication */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 pr-6">
           <Link href="/auth/login" className="text-white">
             <svg
               xmlns="http://www.w3.org/2000/svg"
