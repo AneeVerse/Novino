@@ -152,7 +152,7 @@ export default function BlogSection() {
                   <p className="text-neutral-200 text-xs sm:text-sm mb-4 font-['Mulish']">{blog.description}</p>
                   <Link 
                     href={`/blogs/${blog.slug || blog.id}`} 
-                    className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#FFF4E9] text-black text-xs sm:text-sm font-medium font-['Mulish']"
+                    className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#E8B08A] text-white text-xs sm:text-sm font-medium font-['Mulish']"
                     style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
                   >
                     VIEW DETAILS
@@ -184,7 +184,7 @@ export default function BlogSection() {
                     <p className="text-neutral-200 text-xs sm:text-sm mb-4 font-['Mulish']">{blog.description}</p>
                     <Link 
                       href={`/blogs/${blog.slug || blog.id}`} 
-                      className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#FFF4E9] text-black text-xs sm:text-sm font-medium font-['Mulish']"
+                      className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#E8B08A] text-white text-xs sm:text-sm font-medium font-['Mulish']"
                       style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
                     >
                       VIEW DETAILS
