@@ -31,9 +31,9 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 h-[80px] ${
+    <nav className={`fixed top-0 left-0 w-full z-[1000] transition-all duration-300 h-[80px] ${
       scrolled ? 'backdrop-filter backdrop-blur-md bg-[#2D2D2D]/70' : 'bg-transparent'
-    }`}>
+    }`} style={{ position: 'fixed' }}>
       <div className="relative w-[1440px] mx-auto h-full flex justify-between items-center">
         {/* Left section - Menu items (Desktop) */}
         <div className="hidden md:flex items-center space-x-6 h-full pl-6">
@@ -122,7 +122,7 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="absolute top-full left-0 w-full bg-[#2D2D2D]/95 backdrop-blur-md py-4 shadow-lg z-50">
+          <div className="absolute top-full left-0 w-full bg-[#2D2D2D]/95 backdrop-blur-md py-4 shadow-lg z-[1001]">
             <div className="container mx-auto px-4">
               <ul className="space-y-4">
                 <li>
