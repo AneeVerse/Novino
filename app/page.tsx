@@ -127,7 +127,7 @@ export default function Home() {
       if (autoplayRef.current) clearTimeout(autoplayRef.current);
       autoplayRef.current = setTimeout(() => {
         emblaApi.scrollNext();
-      }, 5000); // 5 seconds between slides
+      }, 10000); // 10 seconds between slides
     };
 
     // Start autoplay
@@ -198,35 +198,6 @@ export default function Home() {
           </h1>
         </div>
 
-        {/* Navigation Arrows */}
-        <button 
-          onClick={scrollPrev} 
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 rounded-full"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <button 
-          onClick={scrollNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 rounded-full"
-          aria-label="Next slide"
-        >
-          <ChevronRight size={24} />
-        </button>
-
-        {/* Pagination Dots */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
-          {Array.from({ length: totalSlides }).map((_, index) => (
-            <button
-              key={index}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                currentSlide === index ? "w-8 bg-white" : "w-2 bg-white/50"
-              }`}
-              onClick={() => emblaApi?.scrollTo(index)}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
       </div>
 
       {/* Clear separation from the hero section with negative margin to prevent overlap */}
