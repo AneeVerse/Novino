@@ -86,7 +86,7 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [totalSlides, setTotalSlides] = useState(heroImages.length);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
-  const [animationKey, setAnimationKey] = useState(0);
+  const [showText, setShowText] = useState(false);
 
   // Filter products based on active category
   const filteredProducts = products.filter(product => 
@@ -101,20 +101,29 @@ export default function Home() {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
+  // Initial load - delay text appearance
+  useEffect(() => {
+    // Delay showing text on initial load
+    const timer = setTimeout(() => {
+      setShowText(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   // Handle automatic sliding and slide tracking
   useEffect(() => {
     if (!emblaApi) return;
 
     const onSelect = () => {
       setCurrentSlide(emblaApi.selectedScrollSnap());
-      // Force animation to restart by changing key
-      setAnimationKey(prev => prev + 1);
+      // No text animation on slide change
     };
 
     emblaApi.on('select', onSelect);
     setTotalSlides(emblaApi.scrollSnapList().length);
 
-    // Initial animation
+    // Initial selection
     onSelect();
 
     return () => {
@@ -194,9 +203,8 @@ export default function Home() {
             }}
           ></div>
           <h1 
-            key={animationKey}
-            className="text-white text-[150px] md:text-[200px] lg:text-[280px] font-dm-serif-display leading-none absolute w-full text-center animate-rise-up"
-            style={{ fontFamily: 'DM Serif Display, serif', top: '50%', left: '50%', transform: 'translate(-50%, 50%)' }}
+            className={`text-white text-[150px] md:text-[200px] lg:text-[280px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            style={{ fontFamily: 'DM Serif Display, serif', top: '50%', left: '50%', transform: 'translate(-50%, 200%)' }}
           >
             NOVINO
           </h1>
@@ -373,9 +381,13 @@ export default function Home() {
         @keyframes riseUp {
           0% {
             transform: translate(-50%, 200%);
+            visibility: visible;
+            opacity: 1;
           }
           100% {
             transform: translate(-50%, 50%);
+            visibility: visible;
+            opacity: 1;
           }
         }
         
