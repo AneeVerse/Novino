@@ -31,22 +31,20 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-[1000] transition-all duration-300 h-[80px] ${
-      scrolled ? 'backdrop-filter backdrop-blur-md bg-[#2D2D2D]/70' : 'bg-transparent'
-    }`} style={{ position: 'fixed' }}>
+    <nav className="fixed top-0 left-0 w-full z-[1000] backdrop-filter backdrop-blur-md bg-[#2D2D2D]/70 h-[80px]" style={{ position: 'fixed' }}>
       <div className="relative w-[1440px] mx-auto h-full flex justify-between items-center">
         {/* Left section - Menu items (Desktop) */}
         <div className="hidden md:flex items-center space-x-6 h-full pl-6">
-          <Link href="/paintings" className={`uppercase tracking-wider text-sm font-medium font-roboto-mono ${scrolled ? 'text-white' : 'text-black'}`}>
+          <Link href="/paintings" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
             PAINTINGS
           </Link>
-          <Link href="/artefacts" className={`uppercase tracking-wider text-sm font-medium font-roboto-mono ${scrolled ? 'text-white' : 'text-black'}`}>
+          <Link href="/artefacts" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
             ARTEFACTS
           </Link>
-          <Link href="/journey" className={`uppercase tracking-wider text-sm font-medium font-roboto-mono ${scrolled ? 'text-white' : 'text-black'}`}>
+          <Link href="/journey" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
             JOURNEY
           </Link>
-          <Link href="/journal" className={`uppercase tracking-wider text-sm font-medium font-roboto-mono ${scrolled ? 'text-white' : 'text-black'}`}>
+          <Link href="/journal" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
             JOURNAL
           </Link>
         </div>
@@ -55,7 +53,7 @@ const Navbar = () => {
         <div className="md:hidden">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className={scrolled ? 'text-white' : 'text-black'}
+            className="text-white"
             aria-label="Toggle menu"
           >
             <svg
@@ -78,14 +76,14 @@ const Navbar = () => {
         
         {/* Center - Logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
-          <Link href="/" className={`text-2xl font-bold font-roboto-mono ${scrolled ? 'text-white' : 'text-black'}`}>
+          <Link href="/" className="text-2xl font-bold font-roboto-mono text-white">
             Novino<span className="text-[#AE876D]">.</span>io
           </Link>
         </div>
         
         {/* Right section - Authentication */}
         <div className="flex items-center space-x-4 pr-6">
-          <Link href="/auth/login" className={scrolled ? 'text-white' : 'text-black'}>
+          <Link href="/auth/login" className="text-white">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -101,7 +99,7 @@ const Navbar = () => {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </Link>
-          <Link href="/cart" className={scrolled ? 'text-white' : 'text-black'}>
+          <Link href="/cart" className="text-white">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
