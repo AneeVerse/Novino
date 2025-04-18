@@ -155,7 +155,7 @@ export default function ProductTestimonial() {
                   <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight" style={{ fontFamily: '"DM Serif Display", serif' }}>
                     "{current.quote}"
                   </blockquote>
-                  <p className="text-sm sm:text-base md:text-lg text-white/80 mt-2 sm:mt-3" style={{ fontFamily: '"Roboto Mono", monospace' }}>- {current.author}</p>
+                  <p className="text-sm sm:text-base md:text-lg text-white/80 mt-2 sm:mt-3 italic" style={{ fontFamily: '"Roboto Mono", monospace', fontStyle: 'italic' }}>- {current.author}</p>
                 </div>
               </div>
             </div>
