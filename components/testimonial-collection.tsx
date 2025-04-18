@@ -105,11 +105,10 @@ export default function TestimonialCollection() {
   return (
     <div className="mx-2 mb-16 relative overflow-visible">
       {/* Main container with dashed border - matched to Figma */}
-      <div className="relative flex flex-col items-start w-full" style={{ 
+      <div className="relative flex flex-col items-start w-full overflow-visible" style={{ 
         boxSizing: 'border-box',
         border: '2px dashed #FFFFFF',
         borderRadius: '20px',
-        overflow: 'visible'
       }}>
         {/* Middle overlay */}
         <div className="absolute top-[120%] left-[50%] w-[3000px] h-[300%] pointer-events-none" style={{
@@ -146,15 +145,24 @@ export default function TestimonialCollection() {
           />
         </div>
 
-        {/* Abstract design in top right - adjusted positioning */}
-        <div className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 overflow-hidden">
+        {/* Abstract design in top right - controllable positioning */}
+        <div className="absolute top-[-2px] -right-12 w-40 h-40 sm:w-64 sm:h-64 overflow-visible" style={{
+          // You can adjust these values to move the container
+          transform: 'translate(var(--container-x, 0px), var(--container-y, 0px))'
+        }}>
           <Image 
             src="/images/abstract-design.png" 
             alt="Abstract design" 
-            width={400} 
-            height={400} 
-            className="object-contain max-w-full" 
-            style={{ position: 'absolute', right: '-15%', top: '-4%' }}
+            width={250} 
+            height={250} 
+            className="object-contain max-w-none" 
+            style={{ 
+              position: 'absolute',
+              // You can adjust these values to move the image within the container
+              right: '50px',  // Positive moves left, negative moves right
+              top: '0px',    // Positive moves down, negative moves up
+              transform: 'translate(var(--image-x, 0px), var(--image-y, 0px))'
+            }}
           />
         </div>
 
