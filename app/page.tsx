@@ -329,9 +329,11 @@ export default function Home() {
                 </div>
                 
                 {/* Two cards below filter on left side - now horizontal */}
-                <div className="grid grid-cols-2 gap-4 mt-[205px]">
+                {/* To move cards UP/DOWN: adjust mt-[230px] value
+                    To change card size: adjust max-w-[90%] value (larger % = bigger cards) */}
+                <div className="grid grid-cols-2 gap-8 mt-[215px] pl-10">
                   {filteredProducts.slice(4, 6).map((product) => (
-                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
+                    <div key={product.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
                       <div className="relative aspect-square overflow-hidden">
                         <Image
                           src={product.image}
