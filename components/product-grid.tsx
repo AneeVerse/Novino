@@ -95,14 +95,22 @@ export default function ProductGrid({
       overflow: "visible"
     }}>
       {/* Bottom right overlay */}
-      <div className="absolute bottom-[-90%] -right-[850px] w-[2000px] h-[220%] pointer-events-none" style={{
+      <div className="absolute -bottom-[-13%] -right-[-600px] w-[1000px] h-[120%] pointer-events-none" style={{
         zIndex: 20
       }}>
+        {/* 
+          POSITIONING GUIDE:
+          - To move RIGHT: increase the right value (make it less negative) e.g. -right-[650px]
+          - To move LEFT: decrease the right value (make it more negative) e.g. -right-[1050px]
+          - To move UP: increase the bottom value (make it less negative) e.g. bottom-[-50%]
+          - To move DOWN: decrease the bottom value (make it more negative) e.g. bottom-[-130%]
+          - You can also adjust width and height with w-[2000px] and h-[220%]
+        */}
         <Image 
-          src="/Ellipse 5.png"
-          alt="Bottom right overlay effect"
+          src="/Ellipse 3.png"
+          alt="Background overlay effect"
           fill
-          style={{ objectFit: 'contain', opacity: 0.8 }}
+          style={{ objectFit: 'contain', opacity: 0.9 }}
           priority
           className="mix-blend-screen"
         />
@@ -174,7 +182,7 @@ export default function ProductGrid({
           </div>
           
           {/* Two cards below filter on left side - now horizontal */}
-          <div className="grid grid-cols-2 gap-8 mt-[165px] pl-10">
+          <div className="grid grid-cols-2 gap-8 mt-[215px] pl-10">
             {filteredProducts.slice(4, 6).map((product) => (
               <div key={product.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
                 <div className="relative aspect-square overflow-hidden">
