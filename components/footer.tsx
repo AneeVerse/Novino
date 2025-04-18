@@ -15,10 +15,11 @@ export default function Footer() {
           backgroundPosition: "center"
         }}>
           {/* White overlay */}
-          <div className="fixed bottom-[-50vh] -right-[10px] w-[1500px] h-[150vh] pointer-events-none" style={{
+          <div className="absolute bottom-[-100%] -right-[10px] w-[1500px] h-[300%] pointer-events-none" style={{
             zIndex: 5,
             transform: 'rotate(90deg)',
-            opacity: 0.6
+            opacity: 0.6,
+            position: 'absolute'
           }}>
             <Image 
               src="/Ellipse 4.png"
