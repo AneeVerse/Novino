@@ -182,7 +182,7 @@ export default function ProductGrid({
           </div>
           
           {/* Two cards below filter on left side - now horizontal */}
-          <div className="grid grid-cols-2 gap-8 mt-[215px] pl-10">
+          <div className="grid grid-cols-2 gap-8 mt-[165px] pl-10">
             {filteredProducts.slice(4, 6).map((product) => (
               <div key={product.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
                 <div className="relative aspect-square overflow-hidden">
