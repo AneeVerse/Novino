@@ -226,19 +226,6 @@ export default function Home() {
 
         {/* Gallery Grid - with negative margins to make it wider */}
         <div className="mb-16 relative">
-          <div className="absolute -right-[10%] top-0 bottom-0 z-10 w-[40%] pointer-events-none">
-            <Image 
-              src="/Ellipse 4.png"
-              alt="Decorative overlay"
-              fill
-              className="object-cover"
-              style={{ 
-                objectPosition: 'right',
-                mixBlendMode: 'soft-light',
-                transform: 'scale(1.4)'
-              }}
-            />
-          </div>
           <MasonryGallery />
         </div>
 
@@ -325,11 +312,90 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
+                
+                {/* Two cards below filter on left side - now horizontal */}
+                <div className="grid grid-cols-2 gap-4 mt-[205px]">
+                  {filteredProducts.slice(4, 6).map((product) => (
+                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
+                      <div className="relative aspect-square overflow-hidden">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-4" 
+                        />
+                      </div>
+                      <div className="p-4 bg-[#333333]">
+                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
+                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
+            </div>
+            
+            {/* Shop Now Button */}
+            <div className="mt-16 flex justify-center">
+              <button className="border border-white bg-transparent text-white px-3 py-1.5 text-xs flex items-center gap-1 hover:bg-white/10 transition-colors font-['Roboto_Mono']">
+                Shop now
+                <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M13.3536 4.35356C13.5488 4.15829 13.5488 3.84171 13.3536 3.64645L10.1716 0.464468C9.97631 0.269205 9.65973 0.269205 9.46447 0.464468C9.2692 0.65973 9.2692 0.976312 9.46447 1.17157L12.2929 4.00001L9.46447 6.82843C9.2692 7.02369 9.2692 7.34027 9.46447 7.53554C9.65973 7.7308 9.97631 7.7308 10.1716 7.53554L13.3536 4.35356ZM-4.37114e-08 4.5L13 4.5L13 3.5L4.37114e-08 3.5L-4.37114e-08 4.5Z" fill="white"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Move out of container for full width */}
       </div>
+
+      {/* Video Section - Full width */}
+      <div className="relative w-full h-[730px] bg-[#2D2D2D] mb-32">
+        <VideoSection />
+      </div>
+
+      {/* New container for remaining sections */}
+      <div className="container mx-auto px-0 z-10 relative">
+        {/* Testimonial Collection */}
+        <div className="mb-16">
+          <TestimonialCollection />
+        </div>
+
+        {/* Blog Section */}
+        <div className="mb-16">
+          <BlogSection />
+        </div>
+
+        {/* Wardrobe Section */}
+        <div className="mb-16">
+          <WardrobeSection />
+        </div>
+
+        {/* Footer Section */}
+        <Footer />
+      </div>
+
+      {/* Add custom animation styles */}
+      <style jsx global>{`
+        @keyframes riseUp {
+          0% {
+            transform: translate(-50%, 200%);
+            visibility: visible;
+            opacity: 1;
+          }
+          100% {
+            transform: translate(-50%, 50%);
+            visibility: visible;
+            opacity: 1;
+          }
+        }
+        
+        .animate-rise-up {
+          animation: riseUp 2s ease-out forwards;
+        }
+      `}</style>
     </main>
-  )
+  );
 }
+
