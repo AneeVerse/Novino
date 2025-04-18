@@ -86,6 +86,7 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [totalSlides, setTotalSlides] = useState(heroImages.length);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
+  const [animationKey, setAnimationKey] = useState(0);
 
   // Filter products based on active category
   const filteredProducts = products.filter(product => 
@@ -106,12 +107,14 @@ export default function Home() {
 
     const onSelect = () => {
       setCurrentSlide(emblaApi.selectedScrollSnap());
+      // Force animation to restart by changing key
+      setAnimationKey(prev => prev + 1);
     };
 
     emblaApi.on('select', onSelect);
     setTotalSlides(emblaApi.scrollSnapList().length);
 
-    // Initial selection
+    // Initial animation
     onSelect();
 
     return () => {
@@ -191,7 +194,8 @@ export default function Home() {
             }}
           ></div>
           <h1 
-            className="text-white text-[150px] md:text-[200px] lg:text-[280px] font-dm-serif-display leading-none absolute w-full text-center"
+            key={animationKey}
+            className="text-white text-[150px] md:text-[200px] lg:text-[280px] font-dm-serif-display leading-none absolute w-full text-center animate-rise-up"
             style={{ fontFamily: 'DM Serif Display, serif', top: '50%', left: '50%', transform: 'translate(-50%, 50%)' }}
           >
             NOVINO
@@ -363,6 +367,22 @@ export default function Home() {
         {/* Footer Section */}
         <Footer />
       </div>
+
+      {/* Add custom animation styles */}
+      <style jsx global>{`
+        @keyframes riseUp {
+          0% {
+            transform: translate(-50%, 200%);
+          }
+          100% {
+            transform: translate(-50%, 50%);
+          }
+        }
+        
+        .animate-rise-up {
+          animation: riseUp 2s ease-out forwards;
+        }
+      `}</style>
     </main>
   );
 }
