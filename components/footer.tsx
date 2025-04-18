@@ -168,14 +168,13 @@ export default function Footer() {
           </div>
 
           {/* Bottom Section */}
-          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-zinc-800 flex flex-col relative z-10">
-            <div className="flex justify-between items-center mb-4">
-              <div className="text-gray-300 text-xs sm:text-sm font-medium text-left font-satoshi">Novino.io © 2000-2023, All Rights Reserved</div>
-              <div className="text-gray-300 text-xs sm:text-sm font-medium text-right font-satoshi">Designed & Managed By Aneeverse.com</div>
-            </div>
-
-            <div className="flex justify-center w-full mb-6">
-              <img src="/images/Frame 53.png" alt="Payment Methods" className="h-6 sm:h-8" />
+          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 flex flex-col relative z-10">
+            <div className="flex justify-between items-center">
+              <div className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Novino.io © 2000-2023, All Rights Reserved</div>
+              <div className="flex items-center justify-center mx-4">
+                <img src="/images/Frame 53.png" alt="Payment Methods" className="h-6 sm:h-8" />
+              </div>
+              <div className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Designed & Managed By Aneeverse.com</div>
             </div>
           </div>
 
