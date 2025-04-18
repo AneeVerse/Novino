@@ -1,17 +1,34 @@
 import Link from "next/link"
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 import "@fontsource/roboto-mono"
+import Image from "next/image"
 
 // Using local import for Satoshi font since npm package isn't available
 export default function Footer() {
   return (
-    <footer className="relative mx-2 mb-8 max-w-[2400px]">
+    <footer className="relative mx-2 mb-8 max-w-[2400px] overflow-visible">
       <div className="relative p-8" style={{ 
         backgroundImage: "url('/footer.png')",
         backgroundSize: "100% 100%", 
         backgroundRepeat: "no-repeat",
-        backgroundPosition: "center"
+        backgroundPosition: "center",
+        overflow: "visible"
       }}>
+        {/* White overlay */}
+        <div className="absolute bottom-[-60%] -right-[300px] w-[2000px] h-[250%] pointer-events-none" style={{
+          zIndex: 5,
+          transform: 'rotate(90deg)'
+        }}>
+          <Image 
+            src="/Ellipse 4.png"
+            alt="Footer overlay effect"
+            fill
+            style={{ objectFit: 'contain', opacity: 0.6 }}
+            priority
+            className="mix-blend-screen"
+          />
+        </div>
+
         {/* Gradient effects similar to the product section */}
         <div className="absolute left-[10%] top-0 w-[60%] h-[50%] bg-gradient-to-r from-white/20 via-white/10 to-transparent blur-[100px] pointer-events-none"></div>
         <div className="absolute right-[20%] bottom-0 w-[40%] h-[60%] bg-gradient-to-l from-white/15 via-white/10 to-transparent blur-[80px] pointer-events-none"></div>

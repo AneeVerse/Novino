@@ -103,13 +103,29 @@ export default function TestimonialCollection() {
   const displayTestimonials = testimonials.slice(0, 3);
 
   return (
-    <div className="mx-2 mb-16 relative overflow-hidden">
+    <div className="mx-2 mb-16 relative overflow-visible">
       {/* Main container with dashed border - matched to Figma */}
-      <div className="relative flex flex-col items-start w-full overflow-hidden" style={{ 
+      <div className="relative flex flex-col items-start w-full" style={{ 
         boxSizing: 'border-box',
         border: '2px dashed #FFFFFF',
         borderRadius: '20px',
+        overflow: 'visible'
       }}>
+        {/* Middle overlay */}
+        <div className="absolute top-[120%] left-[50%] w-[3000px] h-[300%] pointer-events-none" style={{
+          transform: 'translate(-50%, -50%)',
+          zIndex: 5
+        }}>
+          <Image 
+            src="/Ellipse 9.png"
+            alt="Middle overlay effect"
+            fill
+            style={{ objectFit: 'contain', opacity: 0.6 }}
+            priority
+            className="mix-blend-screen"
+          />
+        </div>
+
         {/* Corner accents using the provided images */}
         <div className="absolute bottom-0 left-0 w-8 sm:w-12 h-8 sm:h-12">
           <Image 
