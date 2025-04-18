@@ -8,8 +8,8 @@ import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
-import ProductTestimonial from "@/components/product-testimonial"
 import MasonryGallery from "@/components/masonry-gallery"
+import ProductGrid from "@/components/product-grid"
 import { useState, useEffect, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
 
@@ -75,8 +75,10 @@ const products = [
   }
 ];
 
+// Categories for the product grid
+const categories = ["All Artefacts", "Egyptian", "Asian", "European", "American"];
+
 export default function ArtefactsPage() {
-  const [activeCategory, setActiveCategory] = useState("All Artefacts");
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
     duration: 50
@@ -85,11 +87,6 @@ export default function ArtefactsPage() {
   const [totalSlides, setTotalSlides] = useState(heroImages.length);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const [showText, setShowText] = useState(false);
-
-  // Filter products based on active category
-  const filteredProducts = products.filter(product => 
-    activeCategory === "All Artefacts" ? true : product.category === activeCategory
-  );
 
   // Initial load - delay text appearance
   useEffect(() => {
@@ -202,10 +199,21 @@ export default function ArtefactsPage() {
 
       {/* Clear separation from the hero section with negative margin to prevent overlap */}
       <div className="container mx-auto px-0 mt-4 z-50 relative" style={{ marginTop: '2rem', clear: 'both' }}>
-        {/* ELEVATE ORDINARY WALLS Section */}
+        {/* Product Grid Section */}
+        <div className="mb-16 relative z-10 font-['Roboto_Mono']">
+          <ProductGrid 
+            title="Ancient Civilizations" 
+            subtitle="Featured Collection" 
+            products={products}
+            categories={categories}
+            viewAllText="View all artefacts"
+          />
+        </div>
+
+        {/* DISCOVER EXTRAORDINARY ARTIFACTS Section */}
         <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
-          <div className="max-w-[2400px] mx-auto pl-8">
-            <div className="mb-8 sm:mb-16 p-6 rounded bg-[#2D2D2D]" style={{ position: 'relative', zIndex: 30 }}>
+          <div className="max-w-[2400px] mx-auto">
+            <div className="mb-8 sm:mb-16 p-6 rounded" style={{ position: 'relative', zIndex: 30 }}>
               <h2 className="text-white text-[24px] sm:text-[28px] md:text-[38px] font-medium uppercase leading-[1.171875em] mb-4 sm:mb-8 text-center font-['Roboto_Mono']">DISCOVER EXTRAORDINARY ARTIFACTS WITH HISTORICAL SIGNIFICANCE</h2>
               <p className="text-white text-sm sm:text-base leading-normal text-center mx-auto max-w-3xl font-['Roboto_Mono']">Explore our curated collection of rare artifacts with cultural and historical importance from civilizations around the world.</p>
             </div>
@@ -215,137 +223,6 @@ export default function ArtefactsPage() {
         {/* Gallery Grid - with negative margins to make it wider */}
         <div className="mb-16 relative">
           <MasonryGallery />
-        </div>
-
-        {/* Product Testimonial Section */}
-        <div className="mb-16 relative z-10">
-          <ProductTestimonial />
-        </div>
-
-        {/* Product Grid Section */}
-        <div className="mb-16 relative z-10 font-['Roboto_Mono']">
-          <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto" style={{ 
-            backgroundImage: "url('/Container (2).png')",
-            backgroundSize: "100% 100%", 
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "center",
-            overflow: "visible"
-          }}>
-            {/* Bottom right overlay */}
-            <div className="absolute bottom-[-90%] -right-[850px] w-[2000px] h-[220%] pointer-events-none" style={{
-              zIndex: 20
-            }}>
-              <Image 
-                src="/Ellipse 5.png"
-                alt="Bottom right overlay effect"
-                fill
-                style={{ objectFit: 'contain', opacity: 0.8 }}
-                priority
-                className="mix-blend-screen"
-              />
-            </div>
-
-            <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
-              {/* Right side: Product Grid */}
-              <div className="w-full md:w-1/2 order-1 md:order-2">
-                <div className="grid grid-cols-2 gap-8">
-                  {filteredProducts.slice(0, 2).map((product) => (
-                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-2 gap-8 mt-8">
-                  {filteredProducts.slice(2, 4).map((product) => (
-                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Left side: Categories and Title */}
-              <div className="w-full md:w-1/2 mb-8 md:mb-0 order-2 md:order-1">
-                <div className="pl-10">
-                  <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono']">Featured Collection</div>
-                  <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono']">Ancient Civilizations</h2>
-
-                  {/* Category Filters */}
-                  <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
-                    {[
-                      { name: "All Artefacts", active: activeCategory === "All Artefacts" },
-                      { name: "Egyptian", active: activeCategory === "Egyptian" },
-                      { name: "Asian", active: activeCategory === "Asian" },
-                      { name: "European", active: activeCategory === "European" },
-                      { name: "American", active: activeCategory === "American" },
-                    ].map((category) => (
-                      <button
-                        key={category.name}
-                        className={`${
-                          category.active 
-                            ? "bg-white text-black" 
-                            : "border border-white/30 text-white hover:bg-white/10"
-                        } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors font-['Roboto_Mono']`}
-                        onClick={() => setActiveCategory(category.name)}
-                      >
-                        {category.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Two cards below filter on left side */}
-                <div className="grid grid-cols-2 gap-8 mt-[215px] pl-10">
-                  {filteredProducts.slice(4, 6).map((product) => (
-                    <div key={product.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            {/* View All Button */}
-            <div className="mt-16 flex justify-center">
-              <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono']" style={{ borderRadius: '10px' }}>
-                View all artefacts
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -374,7 +251,7 @@ export default function ArtefactsPage() {
         {/* Footer Section */}
         <Footer />
       </div>
-
+      
       {/* Add custom animation styles */}
       <style jsx global>{`
         @keyframes riseUp {

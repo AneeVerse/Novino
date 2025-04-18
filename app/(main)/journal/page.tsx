@@ -10,6 +10,7 @@ import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
 import ProductTestimonial from "@/components/product-testimonial"
 import MasonryGallery from "@/components/masonry-gallery"
+import ProductGrid from "@/components/product-grid"
 import { useState, useEffect, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
 
@@ -74,6 +75,9 @@ const articles = [
     category: "Collecting"
   }
 ];
+
+// Categories for the article grid
+const categories = ["All Articles", "Digital Art", "Interviews", "Collecting", "History", "Events"];
 
 export default function JournalPage() {
   const [activeCategory, setActiveCategory] = useState("All Articles");
@@ -223,130 +227,14 @@ export default function JournalPage() {
         </div>
 
         {/* Articles Grid Section */}
-        <div className="mb-16 relative z-10 font-['Roboto_Mono']">
-          <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto" style={{ 
-            backgroundImage: "url('/Container (2).png')",
-            backgroundSize: "100% 100%", 
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "center",
-            overflow: "visible"
-          }}>
-            {/* Bottom right overlay */}
-            <div className="absolute bottom-[-90%] -right-[850px] w-[2000px] h-[220%] pointer-events-none" style={{
-              zIndex: 20
-            }}>
-              <Image 
-                src="/Ellipse 5.png"
-                alt="Bottom right overlay effect"
-                fill
-                style={{ objectFit: 'contain', opacity: 0.8 }}
-                priority
-                className="mix-blend-screen"
-              />
-            </div>
-
-            <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
-              {/* Right side: Articles Grid */}
-              <div className="w-full md:w-1/2 order-1 md:order-2">
-                <div className="grid grid-cols-2 gap-8">
-                  {filteredArticles.slice(0, 2).map((article) => (
-                    <div key={article.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={article.image}
-                          alt={article.title}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{article.title}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{article.date}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-2 gap-8 mt-8">
-                  {filteredArticles.slice(2, 4).map((article) => (
-                    <div key={article.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={article.image}
-                          alt={article.title}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{article.title}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{article.date}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Left side: Categories and Title */}
-              <div className="w-full md:w-1/2 mb-8 md:mb-0 order-2 md:order-1">
-                <div className="pl-10">
-                  <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono']">Art Journal</div>
-                  <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono']">Latest Articles</h2>
-
-                  {/* Category Filters */}
-                  <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
-                    {[
-                      { name: "All Articles", active: activeCategory === "All Articles" },
-                      { name: "Digital Art", active: activeCategory === "Digital Art" },
-                      { name: "Interviews", active: activeCategory === "Interviews" },
-                      { name: "Collecting", active: activeCategory === "Collecting" },
-                      { name: "History", active: activeCategory === "History" },
-                      { name: "Events", active: activeCategory === "Events" },
-                    ].map((category) => (
-                      <button
-                        key={category.name}
-                        className={`${
-                          category.active 
-                            ? "bg-white text-black" 
-                            : "border border-white/30 text-white hover:bg-white/10"
-                        } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors font-['Roboto_Mono']`}
-                        onClick={() => setActiveCategory(category.name)}
-                      >
-                        {category.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Two articles below filter on left side */}
-                <div className="grid grid-cols-2 gap-8 mt-[215px] pl-10">
-                  {filteredArticles.slice(4, 6).map((article) => (
-                    <div key={article.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={article.image}
-                          alt={article.title}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{article.title}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{article.date}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            {/* View All Button */}
-            <div className="mt-16 flex justify-center">
-              <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono']" style={{ borderRadius: '10px' }}>
-                View all articles
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </button>
-            </div>
-          </div>
+        <div className="mb-16 mt-10 relative z-10 font-['Roboto_Mono']">
+          <ProductGrid 
+            title="Latest Articles" 
+            subtitle="Art Journal" 
+            products={articles}
+            categories={categories}
+            viewAllText="View all articles"
+          />
         </div>
       </div>
 

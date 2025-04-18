@@ -1,5 +1,8 @@
-import Image from "next/image"
+"use client"
+
 import { useState } from "react"
+import Image from "next/image"
+import { ArrowRight } from "lucide-react"
 
 // Product data
 const products = [
@@ -50,46 +53,156 @@ const products = [
 // Note: The filter buttons should be in the parent component
 // This component only renders the product grid
 
-// Define props type for ProductGrid
-type ProductGridProps = {
-  category?: string;
+interface Product {
+  id: number;
+  name?: string;
+  title?: string;
+  price?: string;
+  date?: string;
+  role?: string;
+  image: string;
+  category: string;
 }
 
-export default function ProductGrid({ category = "All Products" }: ProductGridProps) {
-  // Filter products based on category
-  const filteredProducts = category === "All Products" 
-    ? products 
-    : products.filter(product => product.category === category);
+interface ProductGridProps {
+  title?: string;
+  subtitle?: string;
+  products?: Product[];
+  categories?: string[];
+  viewAllText?: string;
+}
+
+export default function ProductGrid({ 
+  title = "Elevate Your Gallery", 
+  subtitle = "All Products", 
+  products: propProducts = products, 
+  categories: propCategories = ["All Products", "Books", "Mugs", "Costar", "Feeds"],
+  viewAllText = "View all" 
+}: ProductGridProps) {
+  const [activeCategory, setActiveCategory] = useState<string>(propCategories[0]);
+  
+  // Filter products based on active category
+  const filteredProducts = propProducts.filter(product => 
+    activeCategory === propCategories[0] ? true : product.category === activeCategory
+  );
 
   return (
-    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
-      {filteredProducts.map((product) => (
-        <div key={product.id} className="bg-white">
-          <div className="relative aspect-square overflow-hidden">
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              className="object-contain p-2" 
-            />
+    <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto font-['Roboto_Mono']" style={{ 
+      backgroundImage: "url('/Container (2).png')",
+      backgroundSize: "100% 100%", 
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "center",
+      overflow: "visible"
+    }}>
+      {/* Bottom right overlay */}
+      <div className="absolute bottom-[-90%] -right-[850px] w-[2000px] h-[220%] pointer-events-none" style={{
+        zIndex: 20
+      }}>
+        <Image 
+          src="/Ellipse 5.png"
+          alt="Bottom right overlay effect"
+          fill
+          style={{ objectFit: 'contain', opacity: 0.8 }}
+          priority
+          className="mix-blend-screen"
+        />
+      </div>
+
+      <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
+        {/* Right side: Product Grid */}
+        <div className="w-full md:w-1/2 order-1 md:order-2">
+          <div className="grid grid-cols-2 gap-8">
+            {filteredProducts.slice(0, 2).map((product) => (
+              <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
+                <div className="relative aspect-square overflow-hidden">
+                  <Image
+                    src={product.image}
+                    alt={(product.name || product.title || "Product") as string}
+                    fill
+                    className="object-contain p-4" 
+                  />
+                </div>
+                <div className="p-4 bg-[#333333]">
+                  <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
+                  <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="p-3 bg-[#333333]">
-            <div className="text-white text-xs uppercase font-medium">{product.name}</div>
-            <div className="text-white text-sm font-medium mt-1">{product.price}</div>
+          <div className="grid grid-cols-2 gap-8 mt-8">
+            {filteredProducts.slice(2, 4).map((product) => (
+              <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
+                <div className="relative aspect-square overflow-hidden">
+                  <Image
+                    src={product.image}
+                    alt={(product.name || product.title || "Product") as string}
+                    fill
+                    className="object-contain p-4" 
+                  />
+                </div>
+                <div className="p-4 bg-[#333333]">
+                  <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
+                  <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
+
+        {/* Left side: Categories and Title */}
+        <div className="w-full md:w-1/2 mb-8 md:mb-0 order-2 md:order-1">
+          <div className="pl-10">
+            <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono']">{subtitle}</div>
+            <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono']">{title}</h2>
+
+            {/* Category Filters - Displayed horizontally and wrapped */}
+            <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
+              {propCategories.map((category) => (
+                <button
+                  key={category}
+                  className={`${
+                    category === activeCategory 
+                      ? "bg-white text-black" 
+                      : "border border-white/30 text-white hover:bg-white/10"
+                  } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors font-['Roboto_Mono']`}
+                  onClick={() => setActiveCategory(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Two cards below filter on left side - now horizontal */}
+          <div className="grid grid-cols-2 gap-8 mt-[165px] pl-10">
+            {filteredProducts.slice(4, 6).map((product) => (
+              <div key={product.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
+                <div className="relative aspect-square overflow-hidden">
+                  <Image
+                    src={product.image}
+                    alt={(product.name || product.title || "Product") as string}
+                    fill
+                    className="object-contain p-4" 
+                  />
+                </div>
+                <div className="p-4 bg-[#333333]">
+                  <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
+                  <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
       
-      {/* Shop Now Button */}
-      <div className="md:col-span-2 mt-4 flex justify-center">
-        <button className="border border-white bg-transparent text-white px-3 py-1.5 text-xs flex items-center gap-1 hover:bg-white/10 transition-colors">
-          Shop now
-          <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M13.3536 4.35356C13.5488 4.15829 13.5488 3.84171 13.3536 3.64645L10.1716 0.464468C9.97631 0.269205 9.65973 0.269205 9.46447 0.464468C9.2692 0.65973 9.2692 0.976312 9.46447 1.17157L12.2929 4.00001L9.46447 6.82843C9.2692 7.02369 9.2692 7.34027 9.46447 7.53554C9.65973 7.7308 9.97631 7.7308 10.1716 7.53554L13.3536 4.35356ZM-4.37114e-08 4.5L13 4.5L13 3.5L4.37114e-08 3.5L-4.37114e-08 4.5Z" fill="white"/>
-          </svg>
+      {/* View All Button */}
+      <div className="mt-16 flex justify-center">
+        <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono']" style={{ borderRadius: '10px' }}>
+          {viewAllText}
+          <ArrowRight className="ml-2 w-4 h-4" />
         </button>
       </div>
     </div>
-  )
+  );
 }
 

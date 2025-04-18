@@ -10,6 +10,7 @@ import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
 import ProductTestimonial from "@/components/product-testimonial"
 import MasonryGallery from "@/components/masonry-gallery"
+import ProductGrid from "@/components/product-grid"
 import { useState, useEffect, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
 
@@ -35,39 +36,48 @@ const teamMembers = [
     id: 1,
     name: "ALEXANDRA CHEN",
     role: "Founder & Curator",
-    image: "/images/mug-black.png"
+    image: "/images/mug-black.png",
+    category: "Founders"
   },
   {
     id: 2,
     name: "MARCUS THOMPSON",
     role: "Co-Founder & Art Director",
-    image: "/images/mug-white.png"
+    image: "/images/mug-white.png",
+    category: "Founders"
   },
   {
     id: 3,
     name: "SARAH KIM",
     role: "Co-Founder & Operations",
-    image: "/images/cycle1.png"
+    image: "/images/cycle1.png",
+    category: "Founders"
   },
   {
     id: 4,
     name: "JAMES WILSON",
     role: "Lead Curator",
-    image: "/images/cycle2.png"
+    image: "/images/cycle2.png",
+    category: "Curators"
   },
   {
     id: 5,
     name: "ELENA RODRIGUEZ",
     role: "Marketing Director",
-    image: "/images/notebook-white.png"
+    image: "/images/notebook-white.png",
+    category: "Management"
   },
   {
     id: 6,
     name: "MICHAEL CHANG",
     role: "Art Consultant",
-    image: "/images/notebook-black.png"
+    image: "/images/notebook-black.png",
+    category: "Consultants"
   }
 ];
+
+// Categories for the team grid
+const categories = ["All Team", "Founders", "Curators", "Management", "Consultants"];
 
 export default function JourneyPage() {
   const [activeCategory, setActiveCategory] = useState("All Team");
@@ -212,115 +222,14 @@ export default function JourneyPage() {
         </div>
 
         {/* Team Grid Section */}
-        <div className="mb-16 relative z-10 font-['Roboto_Mono']">
-          <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto" style={{ 
-            backgroundImage: "url('/Container (2).png')",
-            backgroundSize: "100% 100%", 
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "center",
-            overflow: "visible"
-          }}>
-            {/* Bottom right overlay */}
-            <div className="absolute bottom-[-90%] -right-[850px] w-[2000px] h-[220%] pointer-events-none" style={{
-              zIndex: 20
-            }}>
-              <Image 
-                src="/Ellipse 5.png"
-                alt="Bottom right overlay effect"
-                fill
-                style={{ objectFit: 'contain', opacity: 0.8 }}
-                priority
-                className="mix-blend-screen"
-              />
-            </div>
-
-            <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
-              {/* Right side: Team Grid */}
-              <div className="w-full md:w-1/2 order-1 md:order-2">
-                <div className="grid grid-cols-2 gap-8">
-                  {teamMembers.slice(0, 2).map((member) => (
-                    <div key={member.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={member.image}
-                          alt={member.name}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{member.name}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{member.role}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-2 gap-8 mt-8">
-                  {teamMembers.slice(2, 4).map((member) => (
-                    <div key={member.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={member.image}
-                          alt={member.name}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{member.name}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{member.role}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Left side: Our Team Title */}
-              <div className="w-full md:w-1/2 mb-8 md:mb-0 order-2 md:order-1">
-                <div className="pl-10">
-                  <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono']">Our Team</div>
-                  <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono']">Meet the Visionaries</h2>
-
-                  <div className="text-white text-base mb-8 font-['Roboto_Mono'] max-w-md">
-                    <p className="mb-4">
-                      Our passionate team of art enthusiasts, curators, and experts work together to bring extraordinary art to your walls.
-                    </p>
-                    <p>
-                      With backgrounds spanning fine arts, gallery management, and art history, our team ensures that every piece in our collection meets the highest standards of quality and artistic value.
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Two team members below on left side */}
-                <div className="grid grid-cols-2 gap-8 mt-[75px] pl-10">
-                  {teamMembers.slice(4, 6).map((member) => (
-                    <div key={member.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={member.image}
-                          alt={member.name}
-                          fill
-                          className="object-contain p-4" 
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{member.name}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{member.role}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            {/* Our Values Button */}
-            <div className="mt-16 flex justify-center">
-              <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono']" style={{ borderRadius: '10px' }}>
-                Learn about our values
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </button>
-            </div>
-          </div>
+        <div className="mb-16 mt-10 relative z-10 font-['Roboto_Mono']">
+          <ProductGrid 
+            title="Meet the Visionaries" 
+            subtitle="Our Team" 
+            products={teamMembers}
+            categories={categories}
+            viewAllText="Learn about our values"
+          />
         </div>
       </div>
 
