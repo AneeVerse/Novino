@@ -121,8 +121,8 @@ export default function Home() {
           </div>
         ))}
 
-        {/* NOVINO text overlay */}
-        <div className="absolute inset-0 z-20">
+        {/* NOVINO text overlay - IMPORTANT: limit its position to stay above the hero section only */}
+        <div className="absolute inset-0 z-20 overflow-hidden" style={{ height: '730px', maxHeight: '730px' }}>
           {/* Semi-transparent light effect behind text */}
           <div 
             className="absolute w-full text-center" 
@@ -148,14 +148,14 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Rest of the page content */}
-      <div className="container mx-auto px-0 mt-16 z-10 relative">
+      {/* Clear separation from the hero section with negative margin to prevent overlap */}
+      <div className="container mx-auto px-0 mt-4 z-50 relative" style={{ marginTop: '2rem', clear: 'both' }}>
         {/* ELEVATE ORDINARY WALLS Section */}
-        <div className="mb-16">
+        <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
           <div className="max-w-[2400px] mx-auto pl-8">
-            <div className="mb-8 sm:mb-16">
+            <div className="mb-8 sm:mb-16 p-6 rounded bg-[#2D2D2D]" style={{ position: 'relative', zIndex: 30 }}>
               <h2 className="text-white text-[24px] sm:text-[28px] md:text-[38px] font-medium uppercase leading-[1.171875em] mb-4 sm:mb-8 text-center font-['Roboto_Mono']">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h2>
-              <p className="text-white/60 text-sm sm:text-base leading-normal text-center mx-auto max-w-3xl font-['Roboto_Mono']">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
+              <p className="text-white text-sm sm:text-base leading-normal text-center mx-auto max-w-3xl font-['Roboto_Mono']">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
             </div>
           </div>
         </div>
