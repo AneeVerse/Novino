@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Menu, X, Star, ArrowRight, ChevronUp, ChevronDown } from "lucide-react"
+import { Menu, X, Star, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
 import VideoSection from "@/components/video-section"
 import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
@@ -10,7 +10,8 @@ import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
 import ProductTestimonial from "@/components/product-testimonial"
 import MasonryGallery from "@/components/masonry-gallery"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
+import useEmblaCarousel from 'embla-carousel-react'
 import "@fontsource/dm-serif-display"
 import "@fontsource/roboto-mono"
 
@@ -78,48 +79,98 @@ const products = [
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All Products");
-  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    loop: true, 
+    duration: 50
+  });
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [totalSlides, setTotalSlides] = useState(heroImages.length);
+  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
 
   // Filter products based on active category
   const filteredProducts = products.filter(product => 
     activeCategory === "All Products" ? true : product.category === activeCategory
   );
 
-  // Auto-rotate hero images
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentHeroIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
-    }, 10000); // Change image every 10 seconds
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
 
-    return () => clearInterval(timer);
-  }, []);
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  // Handle automatic sliding and slide tracking
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const onSelect = () => {
+      setCurrentSlide(emblaApi.selectedScrollSnap());
+    };
+
+    emblaApi.on('select', onSelect);
+    setTotalSlides(emblaApi.scrollSnapList().length);
+
+    // Initial selection
+    onSelect();
+
+    return () => {
+      emblaApi.off('select', onSelect);
+    };
+  }, [emblaApi]);
+
+  // Setup autoplay
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const startAutoplay = () => {
+      if (autoplayRef.current) clearTimeout(autoplayRef.current);
+      autoplayRef.current = setTimeout(() => {
+        emblaApi.scrollNext();
+      }, 5000); // 5 seconds between slides
+    };
+
+    // Start autoplay
+    startAutoplay();
+
+    // Reset on slide change
+    emblaApi.on('select', startAutoplay);
+    emblaApi.on('pointerDown', () => {
+      if (autoplayRef.current) clearTimeout(autoplayRef.current);
+    });
+    emblaApi.on('pointerUp', startAutoplay);
+
+    return () => {
+      if (autoplayRef.current) clearTimeout(autoplayRef.current);
+      emblaApi.off('select', startAutoplay);
+      emblaApi.off('pointerDown', () => {});
+      emblaApi.off('pointerUp', startAutoplay);
+    };
+  }, [emblaApi]);
   
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
       {/* Hero Section - Full width that extends to the top */}
       <div className="relative w-full h-[730px]">
-        {/* Carousel Images */}
-        {heroImages.map((image, index) => (
-          <div 
-            key={index}
-            style={{ transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.1, 1)' }}
-            className={`absolute inset-0 transition-all duration-[4500ms] transform ${
-              currentHeroIndex === index 
-                ? 'opacity-100 z-10 translate-x-0 scale-100' 
-                : index === ((currentHeroIndex - 1 + heroImages.length) % heroImages.length)
-                  ? 'opacity-0 z-0 translate-x-[80%] scale-105'
-                  : 'opacity-0 z-0 -translate-x-[80%] scale-105'
-            }`}
-          >
-            <Image
-              src={image.src}
-              alt={image.alt}
-              fill
-              className="object-cover"
-              priority={index === 0}
-            />
+        {/* Embla Carousel */}
+        <div className="overflow-hidden w-full h-full" ref={emblaRef}>
+          <div className="flex h-full">
+            {heroImages.map((image, index) => (
+              <div 
+                key={index}
+                className="relative flex-[0_0_100%] min-w-0 h-full"
+              >
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  className="object-cover"
+                  priority={index === 0}
+                />
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
 
         {/* NOVINO text overlay - IMPORTANT: limit its position to stay above the hero section only */}
         <div className="absolute inset-0 z-20 overflow-hidden" style={{ height: '730px', maxHeight: '730px' }}>
@@ -145,6 +196,36 @@ export default function Home() {
           >
             NOVINO
           </h1>
+        </div>
+
+        {/* Navigation Arrows */}
+        <button 
+          onClick={scrollPrev} 
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 rounded-full"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <button 
+          onClick={scrollNext}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 rounded-full"
+          aria-label="Next slide"
+        >
+          <ChevronRight size={24} />
+        </button>
+
+        {/* Pagination Dots */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+          {Array.from({ length: totalSlides }).map((_, index) => (
+            <button
+              key={index}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                currentSlide === index ? "w-8 bg-white" : "w-2 bg-white/50"
+              }`}
+              onClick={() => emblaApi?.scrollTo(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
         </div>
       </div>
 
