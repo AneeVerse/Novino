@@ -240,8 +240,23 @@ export default function Home() {
             backgroundImage: "url('/Container (2).png')",
             backgroundSize: "100% 100%", 
             backgroundRepeat: "no-repeat",
-            backgroundPosition: "center"
+            backgroundPosition: "center",
+            overflow: "visible"
           }}>
+            {/* Bottom right overlay */}
+            <div className="absolute bottom-[-90%] -right-[850px] w-[2000px] h-[220%] pointer-events-none" style={{
+              zIndex: 20
+            }}>
+              <Image 
+                src="/Ellipse 5.png"
+                alt="Bottom right overlay effect"
+                fill
+                style={{ objectFit: 'contain', opacity: 0.8 }}
+                priority
+                className="mix-blend-screen"
+              />
+            </div>
+
             <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
               {/* Right side: Product Grid (Moved up first to be displayed first) */}
               <div className="w-full md:w-1/2 order-1 md:order-2">

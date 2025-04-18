@@ -41,7 +41,36 @@ export default function MasonryGallery() {
       backgroundSize: "100% 100%",
       backgroundRepeat: "no-repeat",
       backgroundOrigin: "border-box",
+      overflow: "visible"
     }}>
+      {/* Left side overlay */}
+      <div className="absolute top-[-20%] -left-[300px] w-[800px] h-[120%] pointer-events-none" style={{
+        zIndex: 20
+      }}>
+        <Image 
+          src="/Ellipse 2 (1).png"
+          alt="Left overlay effect"
+          fill
+          style={{ objectFit: 'contain', opacity: 0.8 }}
+          priority
+          className="mix-blend-screen"
+        />
+      </div>
+
+      {/* Right side overlay */}
+      <div className="absolute top-[5%] -right-[300px] w-[800px] h-[120%] pointer-events-none" style={{
+        zIndex: 20
+      }}>
+        <Image 
+          src="/Ellipse 4.png"
+          alt="Right overlay effect"
+          fill
+          style={{ objectFit: 'contain', opacity: 0.8 }}
+          priority
+          className="mix-blend-screen"
+        />
+      </div>
+      
       {/* Category Filters */}
       <div className="flex flex-wrap justify-center items-center gap-2 xs:gap-3 sm:gap-4 mb-8 mt-8 relative">
         {Object.keys(categories).map((category) => (
