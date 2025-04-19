@@ -1,0 +1,66 @@
+[
+  {
+    "id": 1,
+    "name": "ABSTRACT ELEGANCE",
+    "price": "$2,327",
+    "image": "/images/painting/2.1.png",
+    "category": "Oil",
+    "height": 1
+  },
+  {
+    "id": 2,
+    "name": "CHROMATIC VISION",
+    "price": "$1,875",
+    "image": "/images/painting/2.2.png",
+    "category": "Oil",
+    "height": 1
+  },
+  {
+    "id": 3,
+    "name": "URBAN CANVAS",
+    "price": "$1,850",
+    "image": "/images/painting/3.png",
+    "category": "Acrylic",
+    "height": 1.5
+  },
+  {
+    "id": 4,
+    "name": "MODERN EXPRESSION",
+    "price": "$2,100",
+    "image": "/images/painting/4.1.png",
+    "category": "Acrylic", 
+    "height": 1
+  },
+  {
+    "id": 5,
+    "name": "TRANQUIL MOMENTS",
+    "price": "$1,950",
+    "image": "/images/painting/4.2.png",
+    "category": "Watercolor",
+    "height": 1
+  },
+  {
+    "id": 6,
+    "name": "DYNAMIC FUSION",
+    "price": "$2,750",
+    "image": "/images/painting/5.1.png",
+    "category": "Mixed Media",
+    "height": 1.2
+  },
+  {
+    "id": 7,
+    "name": "BOLD IMPRESSION",
+    "price": "$2,480",
+    "image": "/images/painting/5.2.png",
+    "category": "Watercolor",
+    "height": 1
+  },
+  {
+    "id": 8,
+    "name": "GEOMETRIC HARMONY",
+    "price": "$2,200",
+    "image": "/images/painting/6.png",
+    "category": "Mixed Media",
+    "height": 1
+  }
+] 

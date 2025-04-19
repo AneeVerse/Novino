@@ -1,79 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { ArrowRight } from "lucide-react"
-
-// Product data
-const products = [
-  {
-    id: 1,
-    name: "LA-DE-DA 450 PENDANT",
-    price: "from $2,327",
-    image: "/images/painting/image 5.png",
-    category: "Mugs",
-    height: 1 // Standard height
-  },
-  {
-    id: 2,
-    name: "LA-DE-DA CANDLE",
-    price: "$120",
-    image: "/images/painting/image 7.png",
-    category: "Mugs",
-    height: 1 // Standard height
-  },
-  {
-    id: 3,
-    name: "HEIRLOOM PENDANT",
-    price: "$1,850",
-    image: "/images/painting/image 6.png",
-    category: "Feeds",
-    height: 1.5 // Taller image
-  },
-  {
-    id: 4,
-    name: "DOME TABLE LAMP",
-    price: "$780",
-    image: "/images/painting/image 8.png",
-    category: "Feeds",
-    height: 1 // Standard height
-  },
-  {
-    id: 5,
-    name: "BRASS PENDANT",
-    price: "$950",
-    image: "/images/painting/image 6.png",
-    category: "Books",
-    height: 1 // Standard height
-  },
-  {
-    id: 6,
-    name: "MODERN SCONCE",
-    price: "$480",
-    image: "/images/painting/Screenshot 2025-04-17 023229 1.png",
-    category: "Books",
-    height: 1 // Standard height
-  },
-  {
-    id: 7,
-    name: "WALL LIGHT",
-    price: "$380",
-    image: "/images/painting/Screenshot 2025-04-17 023229 2.png",
-    category: "Mugs",
-    height: 1.2 // Slightly taller
-  },
-  {
-    id: 8,
-    name: "PENDANT LAMP",
-    price: "$595",
-    image: "/images/painting/Screenshot 2025-04-17 023229 3.png",
-    category: "Feeds",
-    height: 1.3 // Taller image
-  }
-]
-
-// Note: The filter buttons should be in the parent component
-// This component only renders the product grid
+import React from "react"
+import productData from "@/public/data/painting-products.json"
 
 interface Product {
   id: number;
@@ -98,19 +29,43 @@ interface ProductGridProps {
 export default function ProductGrid({ 
   title = "Elevate Your Gallery", 
   subtitle = "All Products", 
-  products: propProducts = products, 
-  categories: propCategories = ["All Products", "Books", "Mugs", "Costar", "Feeds"],
+  products: propProducts = productData, 
+  categories: propCategories = ["All Paintings", "Oil", "Acrylic", "Watercolor", "Mixed Media"],
   viewAllText = "View all" 
 }: ProductGridProps) {
-  const [activeCategory, setActiveCategory] = useState<string>(propCategories[0]);
+  const [activeCategory, setActiveCategory] = useState<string>("All Paintings");
   
-  // Filter products based on active category
-  const filteredProducts = propProducts.filter(product => 
-    activeCategory === propCategories[0] ? true : product.category === activeCategory
-  );
+  // Simple direct filtering approach
+  const filteredProducts = React.useMemo(() => {
+    console.log("FILTERING - Active Category:", activeCategory);
+    console.log("FILTERING - Products before filter:", propProducts);
+    
+    // For categories other than "All Paintings", strictly filter by category
+    if (activeCategory !== "All Paintings") {
+      const filtered = propProducts.filter(product => product.category === activeCategory);
+      console.log(`FILTERING - Found ${filtered.length} products in category "${activeCategory}":`, filtered);
+      return filtered;
+    }
+    
+    // For "All Paintings", return all products but ensure no duplicate images
+    const uniqueProducts: Product[] = [];
+    const imageSet = new Set<string>();
+    
+    propProducts.forEach(product => {
+      if (!imageSet.has(product.image)) {
+        imageSet.add(product.image);
+        uniqueProducts.push(product);
+      }
+    });
+    
+    console.log(`FILTERING - Found ${uniqueProducts.length} unique products for "All Paintings"`, uniqueProducts);
+    return uniqueProducts;
+  }, [propProducts, activeCategory]);
 
-  // For debugging
-  console.log("Filtered products:", filteredProducts);
+  useEffect(() => {
+    console.log("COMPONENT - Active Category changed to:", activeCategory);
+    console.log("COMPONENT - Filtered Products:", filteredProducts);
+  }, [activeCategory, filteredProducts]);
 
   return (
     <div className="p-8 relative overflow-visible max-w-[2400px] mx-auto font-['Roboto_Mono'] min-h-[800px]" style={{ 
@@ -172,71 +127,64 @@ export default function ProductGrid({
           overflow: 'visible' // Allow content to overflow
         }}>
           <div className="grid grid-cols-2 gap-4" style={{ overflow: 'visible' }}>
-            {/* 
-              First row - two images side by side 
-              CUSTOMIZATION:
-              - Change height from 250px to any value
-              - For top margin: add "mt-4" or larger value
-              - For alignment: add "ml-auto" (right) or "mx-auto" (center)
-            */}
+            {/* First row - images 0 and 1 (2.1.png and 2.2.png) */}
             <div className="mb-4" style={{ 
-              // Left image position adjustments
-              paddingRight: '20px', // Added right padding to move closer to center
-              transform: 'translateX(-75px)', // Move left by 40px
+              paddingRight: '20px',
+              transform: 'translateX(-75px)',
             }}>
               <div className="relative" style={{ 
                 height: '520px', 
-                width: '620px', // Set specific width
-                marginLeft: 'auto', // Push toward center
+                width: '620px',
+                marginLeft: 'auto',
               }}>
-                <Image
-                  src={filteredProducts[0]?.image || "/images/painting/image 5.png"}
-                  alt={(filteredProducts[0]?.name || "Product 1") as string}
-                  fill
-                  style={{ 
-                    objectFit: 'contain',
-                    // objectPosition: 'left center' // Uncomment to align image left
-                  }}
-                  priority
-                />
+                {filteredProducts[0] ? (
+                  <Image
+                    src={filteredProducts[0].image}
+                    alt={(filteredProducts[0].name || "Product 1") as string}
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-white">No product available</p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="mb-4" style={{ 
-              // Right image position adjustments
-              paddingLeft: '20px', // Added left padding to move closer to center
-              transform: 'translateX(-75px)', // Move left by 40px
+              paddingLeft: '20px',
+              transform: 'translateX(-75px)',
             }}>
               <div className="relative" style={{ 
                 height: '520px',
-                width: '620px', // Set specific width
-                marginRight: 'auto', // Push toward center
+                width: '620px',
+                marginRight: 'auto',
               }}>
-                <Image
-                  src={filteredProducts[3]?.image || "/images/painting/image 8.png"}
-                  alt={(filteredProducts[3]?.name || "Product 4") as string}
-                  fill
-                  style={{ 
-                    objectFit: 'contain',
-                    // objectPosition: 'right center' // Uncomment to align image right
-                  }}
-                  priority
-                />
+                {filteredProducts[1] ? (
+                  <Image
+                    src={filteredProducts[1].image}
+                    alt={(filteredProducts[1].name || "Product 2") as string}
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-white">No product available</p>
+                  </div>
+                )}
               </div>
             </div>
             
-            {/* 
-              Second row - full width image
-              CUSTOMIZATION:
-              - Increase height for taller image
-              - Add translate or margin to adjust vertical position
-            */}
+            {/* Second row - image 2 (3.png) full width */}
             <div className="col-span-2 mb-4" style={{ 
-              transform: 'translateY(-30px)', // Move up by 30px
+              transform: 'translateY(-30px)',
               display: 'flex',
               justifyContent: 'center',
-              overflow: 'visible', // Allow content to overflow
-              maxWidth: 'none', // Remove any max-width constraints
-              width: '100vw', // Use full viewport width
+              overflow: 'visible',
+              maxWidth: 'none',
+              width: '100vw',
               position: 'relative',
               left: '50%',
               right: '50%',
@@ -245,122 +193,140 @@ export default function ProductGrid({
             }}>
               <div className="relative" style={{ 
                 height: '600px',
-                width: '59.5vw', // Use viewport width instead of fixed pixels
-                transform: 'translateX(26px)', // Move right by 30px
-                maxWidth: 'none', // Remove any max-width constraints
+                width: '59.5vw',
+                transform: 'translateX(26px)',
+                maxWidth: 'none',
               }}>
-                <Image
-                  src={filteredProducts[1]?.image || "/images/painting/image 7.png"}
-                  alt={(filteredProducts[1]?.name || "Red Pendant") as string}
-                  fill
-                  sizes="90vw"
-                  style={{ 
-                    objectFit: 'contain',
-                    maxWidth: 'none', // Remove any max-width constraints
-                    width: '100%',
-                    height: '100%',
-                  }}
-                  priority
-                />
+                {filteredProducts[2] ? (
+                  <Image
+                    src={filteredProducts[2].image}
+                    alt={(filteredProducts[2].name || "Product 3") as string}
+                    fill
+                    sizes="90vw"
+                    style={{ 
+                      objectFit: 'contain',
+                      maxWidth: 'none',
+                      width: '100%',
+                      height: '100%',
+                    }}
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-white">No product available</p>
+                  </div>
+                )}
               </div>
             </div>
             
-            {/* 
-              Third row - two standard images
-              CUSTOMIZATION: Same options as first row
-            */}
+            {/* Third row - images 3 and 4 (4.1.png and 4.2.png) */}
             <div className="mb-4" style={{ 
-              // Left image position adjustments
-              paddingRight: '20px', // Added right padding to move closer to center
-              transform: 'translate(-75px, -50px)', // Move left and further up
+              paddingRight: '20px',
+              transform: 'translate(-75px, -50px)',
             }}>
               <div className="relative" style={{ 
                 height: '520px',
-                width: '620px', // Set specific width
-                marginLeft: 'auto', // Push toward center
+                width: '620px',
+                marginLeft: 'auto',
               }}>
-                <Image
-                  src={filteredProducts[2]?.image || "/images/painting/Screenshot 2025-04-17 023229 3.png"}
-                  alt={(filteredProducts[2]?.name || "Product 3") as string}
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  priority
-                />
+                {filteredProducts[3] ? (
+                  <Image
+                    src={filteredProducts[3].image}
+                    alt={(filteredProducts[3].name || "Product 4") as string}
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-white">No product available</p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="mb-4" style={{ 
-              // Right image position adjustments
-              paddingLeft: '20px', // Added left padding to move closer to center
-              transform: 'translate(-75px, -50px)', // Move left and further up
+              paddingLeft: '20px',
+              transform: 'translate(-75px, -50px)',
             }}>
               <div className="relative" style={{ 
                 height: '520px',
-                width: '620px', // Set specific width
-                marginRight: 'auto', // Push toward center
+                width: '620px',
+                marginRight: 'auto',
               }}>
-                <Image
-                  src={filteredProducts[4]?.image || "/images/painting/Screenshot 2025-04-17 023229 2.png"}
-                  alt={(filteredProducts[4]?.name || "Product 5") as string}
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  priority
-                />
-              </div>
-            </div>
-            
-            {/* 
-              New row - two additional vertical images between rows 3 and 4
-            */}
-            <div className="mb-4" style={{ 
-              // Left image position adjustments
-              paddingRight: '20px', // Added right padding to move closer to center
-              transform: 'translate(-75px, -45px)', // Move down by reducing negative Y value
-            }}>
-              <div className="relative" style={{ 
-                height: '520px',
-                width: '620px', // Set specific width
-                marginLeft: 'auto', // Push toward center
-              }}>
-                <Image
-                  src={filteredProducts[6]?.image || "/images/painting/Screenshot 2025-04-17 023229 3.png"}
-                  alt={(filteredProducts[6]?.name || "Additional Image 1") as string}
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  priority
-                />
-              </div>
-            </div>
-            <div className="mb-4" style={{ 
-              // Right image position adjustments
-              paddingLeft: '20px', // Added left padding to move closer to center
-              transform: 'translate(-75px, -45px)', // Move down by reducing negative Y value
-            }}>
-              <div className="relative" style={{ 
-                height: '520px',
-                width: '620px', // Set specific width
-                marginRight: 'auto', // Push toward center
-              }}>
-                <Image
-                  src={filteredProducts[7]?.image || "/images/painting/Screenshot 2025-04-17 023229 1.png"}
-                  alt={(filteredProducts[7]?.name || "Additional Image 2") as string}
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  priority
-                />
+                {filteredProducts[4] ? (
+                  <Image
+                    src={filteredProducts[4].image}
+                    alt={(filteredProducts[4].name || "Product 5") as string}
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-white">No product available</p>
+                  </div>
+                )}
               </div>
             </div>
             
-            {/* 
-              Fourth row - image 6.png alone spanning full width
-              CUSTOMIZATION: Same options as second row
-            */}
+            {/* Fourth row - images 5 and 6 (5.1.png and 5.2.png) */}
+            <div className="mb-4" style={{ 
+              paddingRight: '20px',
+              transform: 'translate(-75px, -40px)',
+            }}>
+              <div className="relative" style={{ 
+                height: '520px',
+                width: '620px',
+                marginLeft: 'auto',
+              }}>
+                {filteredProducts[5] ? (
+                  <Image
+                    src={filteredProducts[5].image}
+                    alt={(filteredProducts[5].name || "Product 6") as string}
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-white">No product available</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="mb-4" style={{ 
+              paddingLeft: '20px',
+              transform: 'translate(-75px, -40px)',
+            }}>
+              <div className="relative" style={{ 
+                height: '520px',
+                width: '620px',
+                marginRight: 'auto',
+              }}>
+                {filteredProducts[6] ? (
+                  <Image
+                    src={filteredProducts[6].image}
+                    alt={(filteredProducts[6].name || "Product 7") as string}
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-white">No product available</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Fifth row - image 7 (6.png) full width */}
             <div className="col-span-2 mb-4" style={{ 
-              transform: 'translateY(-80px)', // Move up even further
+              transform: 'translateY(-60px)',
               display: 'flex',
               justifyContent: 'center',
-              overflow: 'visible', // Allow content to overflow
-              maxWidth: 'none', // Remove any max-width constraints
-              width: '100vw', // Use full viewport width
+              overflow: 'visible',
+              maxWidth: 'none',
+              width: '100vw',
               position: 'relative',
               left: '50%',
               right: '50%',
@@ -369,23 +335,29 @@ export default function ProductGrid({
             }}>
               <div className="relative" style={{ 
                 height: '600px',
-                width: '59.5vw', // Same as second row
-                transform: 'translateX(26px)', // Same as second row
-                maxWidth: 'none', // Remove any max-width constraints
+                width: '59.5vw',
+                transform: 'translateX(26px)',
+                maxWidth: 'none',
               }}>
-                <Image
-                  src="/images/painting/image 6.png"
-                  alt="LA-DE-DA Product"
-                  fill
-                  sizes="59.5vw"
-                  style={{ 
-                    objectFit: 'contain',
-                    maxWidth: 'none', // Remove any max-width constraints
-                    width: '100%',
-                    height: '100%',
-                  }}
-                  priority
-                />
+                {filteredProducts[7] ? (
+                  <Image
+                    src={filteredProducts[7].image}
+                    alt={(filteredProducts[7].name || "Product 8") as string}
+                    fill
+                    sizes="59.5vw"
+                    style={{ 
+                      objectFit: 'contain',
+                      maxWidth: 'none',
+                      width: '100%',
+                      height: '100%',
+                    }}
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-white">No product available</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
