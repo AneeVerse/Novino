@@ -206,7 +206,7 @@ export default function JournalPage() {
       <div className="container mx-auto px-0 mt-4 z-50 relative">
         {/* Blog Section */}
         <div className="mb-16 relative z-10">
-          <BlogSection />
+          <BlogSection showViewAllButton={false} />
         </div>
 
         {/* Product Testimonial Section */}
@@ -222,6 +222,7 @@ export default function JournalPage() {
             products={articles}
             categories={categories}
             viewAllText="View all articles"
+            showViewAllButton={false}
           />
         </div>
       </div>

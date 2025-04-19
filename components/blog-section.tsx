@@ -18,6 +18,10 @@ interface Blog {
   image: string;
 }
 
+interface BlogSectionProps {
+  showViewAllButton?: boolean;
+}
+
 // Fallback sample blogs
 const sampleBlogs = [
   {
@@ -50,7 +54,7 @@ const sampleBlogs = [
   },
 ];
 
-export default function BlogSection() {
+export default function BlogSection({ showViewAllButton = true }: BlogSectionProps) {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -115,18 +119,20 @@ export default function BlogSection() {
         <div className="text-center mb-10 sm:mb-16 md:mb-20 relative z-50">
           <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light font-['DM_Serif_Display'] relative z-50 mb-2">Blogs</h2>
           <p className="text-white text-sm sm:text-base opacity-90 mb-4 font-['Roboto_Mono']">Find all the jewellery you will need here.</p>
-          <div className="absolute top-0 right-4 sm:right-8 z-50">
-            <Link 
-              href="/blogs"
-              className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer gap-2"
-              style={{ borderRadius: '10px' }}
-            >
-              View All
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Link>
-          </div>
+          {showViewAllButton && (
+            <div className="absolute top-0 right-4 sm:right-8 z-50">
+              <Link 
+                href="/journal"
+                className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer gap-2"
+                style={{ borderRadius: '10px' }}
+              >
+                View All
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Main Container */}

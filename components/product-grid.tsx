@@ -70,6 +70,7 @@ interface ProductGridProps {
   products?: Product[];
   categories?: string[];
   viewAllText?: string;
+  showViewAllButton?: boolean;
 }
 
 export default function ProductGrid({ 
@@ -77,7 +78,8 @@ export default function ProductGrid({
   subtitle = "All Products", 
   products: propProducts = products, 
   categories: propCategories = ["All Products", "Books", "Mugs", "Costar", "Feeds"],
-  viewAllText = "View all" 
+  viewAllText = "View all",
+  showViewAllButton = true
 }: ProductGridProps) {
   const [activeCategory, setActiveCategory] = useState<string>(propCategories[0]);
   
@@ -204,12 +206,14 @@ export default function ProductGrid({
       </div>
       
       {/* View All Button */}
-      <div className="mt-16 flex justify-center relative z-30">
-        <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/20 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono'] font-medium" style={{ borderRadius: '10px' }}>
-          {viewAllText}
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </button>
-      </div>
+      {showViewAllButton && (
+        <div className="mt-16 flex justify-center relative z-30">
+          <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/20 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono'] font-medium" style={{ borderRadius: '10px' }}>
+            {viewAllText}
+            <ArrowRight className="ml-2 w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
