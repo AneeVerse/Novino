@@ -120,7 +120,7 @@ export default function ProductGrid({
       backgroundPosition: "center"
     }}>
       {/* Bottom right overlay */}
-      <div className="absolute -bottom-[-13%] -right-[-600px] w-[1000px] h-[120%] pointer-events-none" style={{
+      <div className="absolute -bottom-[-30%] -right-[-600px] w-[1000px] h-[120%] pointer-events-none" style={{
         zIndex: 5
       }}>
         {/* 
