@@ -206,7 +206,7 @@ export default function JournalPage() {
       <div className="container mx-auto px-0 mt-4 z-50 relative">
         {/* Blog Section */}
         <div className="mb-16 relative z-10">
-          <BlogSection showViewAllButton={false} />
+          <BlogSection showViewAllButton={false} showAllBlogs={true} />
         </div>
 
         {/* Product Testimonial Section */}
@@ -214,17 +214,6 @@ export default function JournalPage() {
           <ProductTestimonial />
         </div>
 
-        {/* Articles Grid Section */}
-        <div className="mb-16 mt-10 relative z-10 font-['Roboto_Mono']">
-          <ProductGrid 
-            title="Latest Articles" 
-            subtitle="Art Journal" 
-            products={articles}
-            categories={categories}
-            viewAllText="View all articles"
-            showViewAllButton={false}
-          />
-        </div>
       </div>
 
       {/* Video Section - Full width */}
