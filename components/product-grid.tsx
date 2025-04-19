@@ -95,7 +95,7 @@ export default function ProductGrid({
       overflow: "visible"
     }}>
       {/* Bottom right overlay */}
-      <div className="absolute -bottom-[-13%] -right-[-600px] w-[1000px] h-[120%] pointer-events-none" style={{
+      <div className="absolute -bottom-[-13%] -right-[-600px] w-[1300px] h-[120%] pointer-events-none" style={{
         zIndex: 5
       }}>
         {/* 
