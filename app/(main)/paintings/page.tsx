@@ -8,8 +8,6 @@ import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
-import ProductTestimonial from "@/components/product-testimonial"
-import MasonryGallery from "@/components/masonry-gallery"
 import ProductGrid from "@/components/product-grid"
 import { useState, useEffect, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
@@ -204,30 +202,10 @@ export default function PaintingsPage() {
         </div>
       </div>
 
-      {/* Clear separation from the hero section with negative margin to prevent overlap */}
-      <div className="container mx-auto px-0 mt-4 z-50 relative" style={{ marginTop: '2rem', clear: 'both' }}>
-        {/* ELEVATE ORDINARY WALLS Section */}
-        <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
-          <div className="max-w-[2400px] mx-auto pl-8">
-            <div className="mb-8 sm:mb-16 p-6 rounded bg-[#2D2D2D]" style={{ position: 'relative', zIndex: 30 }}>
-              <h2 className="text-white text-[24px] sm:text-[28px] md:text-[38px] font-medium uppercase leading-[1.171875em] mb-4 sm:mb-8 text-center font-['Roboto_Mono']">DISCOVER EXTRAORDINARY PAINTINGS FROM WORLD-CLASS ARTISTS</h2>
-              <p className="text-white text-sm sm:text-base leading-normal text-center mx-auto max-w-3xl font-['Roboto_Mono']">Explore our curated collection of exceptional paintings from renowned artists across various styles and periods.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Gallery Grid - with negative margins to make it wider */}
-        <div className="mb-16 relative">
-          <MasonryGallery />
-        </div>
-
-        {/* Product Testimonial Section */}
-        <div className="mb-16 relative z-10">
-          <ProductTestimonial />
-        </div>
-
+      {/* Container for main content */}
+      <div className="container mx-auto px-0 mt-4 z-50 relative" style={{ marginTop: '2rem' }}>
         {/* Product Grid Section */}
-        <div className="mb-16 mt-10 relative z-10 font-['Roboto_Mono']">
+        <div className="mb-16 relative z-10 font-['Roboto_Mono']">
           <ProductGrid 
             title="Masterpiece Collection" 
             subtitle="Featured Collection" 
