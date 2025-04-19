@@ -8,7 +8,7 @@ import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
-import ProductGrid from "@/components/product-grid"
+import PaintingProductGrid from "@/components/painting-product-grid"
 import { useState, useEffect, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
 
@@ -206,7 +206,7 @@ export default function PaintingsPage() {
       <div className="container mx-auto px-0 mt-4 z-50 relative" style={{ marginTop: '2rem' }}>
         {/* Product Grid Section */}
         <div className="mb-16 relative z-10 font-['Roboto_Mono']">
-          <ProductGrid 
+          <PaintingProductGrid 
             title="Masterpiece Collection" 
             subtitle="Featured Collection" 
             products={products}
