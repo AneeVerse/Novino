@@ -168,48 +168,117 @@ export default function ProductGrid({
         </div>
 
         {/* Right side: Custom Grid */}
-        <div className="w-full md:w-2/3 order-1 md:order-2 md:-ml-16">
-          <div className="grid grid-cols-2 gap-4">
-            {/* First row - two images side by side */}
-            <div className="mb-4">
-              <div className="relative" style={{ height: '250px' }}>
+        <div className="w-full md:w-2/3 order-1 md:order-2 md:-ml-16" style={{
+          overflow: 'visible' // Allow content to overflow
+        }}>
+          <div className="grid grid-cols-2 gap-4" style={{ overflow: 'visible' }}>
+            {/* 
+              First row - two images side by side 
+              CUSTOMIZATION:
+              - Change height from 250px to any value
+              - For top margin: add "mt-4" or larger value
+              - For alignment: add "ml-auto" (right) or "mx-auto" (center)
+            */}
+            <div className="mb-4" style={{ 
+              // Left image position adjustments
+              paddingRight: '20px', // Added right padding to move closer to center
+              transform: 'translateX(-75px)', // Move left by 40px
+            }}>
+              <div className="relative" style={{ 
+                height: '520px', 
+                width: '620px', // Set specific width
+                marginLeft: 'auto', // Push toward center
+              }}>
                 <Image
                   src={filteredProducts[0]?.image || "/images/painting/image 5.png"}
                   alt={(filteredProducts[0]?.name || "Product 1") as string}
                   fill
-                  style={{ objectFit: 'contain' }}
+                  style={{ 
+                    objectFit: 'contain',
+                    // objectPosition: 'left center' // Uncomment to align image left
+                  }}
                   priority
                 />
               </div>
             </div>
-            <div className="mb-4">
-              <div className="relative" style={{ height: '250px' }}>
+            <div className="mb-4" style={{ 
+              // Right image position adjustments
+              paddingLeft: '20px', // Added left padding to move closer to center
+              transform: 'translateX(-75px)', // Move left by 40px
+            }}>
+              <div className="relative" style={{ 
+                height: '520px',
+                width: '620px', // Set specific width
+                marginRight: 'auto', // Push toward center
+              }}>
                 <Image
                   src={filteredProducts[3]?.image || "/images/painting/image 8.png"}
                   alt={(filteredProducts[3]?.name || "Product 4") as string}
                   fill
-                  style={{ objectFit: 'contain' }}
+                  style={{ 
+                    objectFit: 'contain',
+                    // objectPosition: 'right center' // Uncomment to align image right
+                  }}
                   priority
                 />
               </div>
             </div>
             
-            {/* Second row - second image alone (full width) */}
-            <div className="col-span-2 mb-4">
-              <div className="relative" style={{ height: '250px' }}>
+            {/* 
+              Second row - full width image
+              CUSTOMIZATION:
+              - Increase height for taller image
+              - Add translate or margin to adjust vertical position
+            */}
+            <div className="col-span-2 mb-4" style={{ 
+              transform: 'translateY(-30px)', // Move up by 30px
+              display: 'flex',
+              justifyContent: 'center',
+              overflow: 'visible', // Allow content to overflow
+              maxWidth: 'none', // Remove any max-width constraints
+              width: '100vw', // Use full viewport width
+              position: 'relative',
+              left: '50%',
+              right: '50%',
+              marginLeft: '-50vw',
+              marginRight: '-50vw',
+            }}>
+              <div className="relative" style={{ 
+                height: '600px',
+                width: '59.5vw', // Use viewport width instead of fixed pixels
+                transform: 'translateX(26px)', // Move right by 30px
+                maxWidth: 'none', // Remove any max-width constraints
+              }}>
                 <Image
                   src={filteredProducts[1]?.image || "/images/painting/image 7.png"}
                   alt={(filteredProducts[1]?.name || "Red Pendant") as string}
                   fill
-                  style={{ objectFit: 'contain' }}
+                  sizes="90vw"
+                  style={{ 
+                    objectFit: 'contain',
+                    maxWidth: 'none', // Remove any max-width constraints
+                    width: '100%',
+                    height: '100%',
+                  }}
                   priority
                 />
               </div>
             </div>
             
-            {/* Third row - two standard images */}
-            <div className="mb-4">
-              <div className="relative" style={{ height: '250px' }}>
+            {/* 
+              Third row - two standard images
+              CUSTOMIZATION: Same options as first row
+            */}
+            <div className="mb-4" style={{ 
+              // Left image position adjustments
+              paddingRight: '20px', // Added right padding to move closer to center
+              transform: 'translate(-75px, -50px)', // Move left and further up
+            }}>
+              <div className="relative" style={{ 
+                height: '520px',
+                width: '620px', // Set specific width
+                marginLeft: 'auto', // Push toward center
+              }}>
                 <Image
                   src={filteredProducts[2]?.image || "/images/painting/Screenshot 2025-04-17 023229 3.png"}
                   alt={(filteredProducts[2]?.name || "Product 3") as string}
@@ -219,8 +288,16 @@ export default function ProductGrid({
                 />
               </div>
             </div>
-            <div className="mb-4">
-              <div className="relative" style={{ height: '250px' }}>
+            <div className="mb-4" style={{ 
+              // Right image position adjustments
+              paddingLeft: '20px', // Added left padding to move closer to center
+              transform: 'translate(-75px, -50px)', // Move left and further up
+            }}>
+              <div className="relative" style={{ 
+                height: '520px',
+                width: '620px', // Set specific width
+                marginRight: 'auto', // Push toward center
+              }}>
                 <Image
                   src={filteredProducts[4]?.image || "/images/painting/Screenshot 2025-04-17 023229 2.png"}
                   alt={(filteredProducts[4]?.name || "Product 5") as string}
@@ -231,14 +308,40 @@ export default function ProductGrid({
               </div>
             </div>
             
-            {/* Fourth row - image 6.png alone spanning full width */}
-            <div className="col-span-2 mb-4">
-              <div className="relative" style={{ height: '300px' }}>
+            {/* 
+              Fourth row - image 6.png alone spanning full width
+              CUSTOMIZATION: Same options as second row
+            */}
+            <div className="col-span-2 mb-4" style={{ 
+              transform: 'translateY(-80px)', // Move up even further
+              display: 'flex',
+              justifyContent: 'center',
+              overflow: 'visible', // Allow content to overflow
+              maxWidth: 'none', // Remove any max-width constraints
+              width: '100vw', // Use full viewport width
+              position: 'relative',
+              left: '50%',
+              right: '50%',
+              marginLeft: '-50vw',
+              marginRight: '-50vw',
+            }}>
+              <div className="relative" style={{ 
+                height: '600px',
+                width: '59.5vw', // Same as second row
+                transform: 'translateX(26px)', // Same as second row
+                maxWidth: 'none', // Remove any max-width constraints
+              }}>
                 <Image
                   src="/images/painting/image 6.png"
                   alt="LA-DE-DA Product"
                   fill
-                  style={{ objectFit: 'contain' }}
+                  sizes="59.5vw"
+                  style={{ 
+                    objectFit: 'contain',
+                    maxWidth: 'none', // Remove any max-width constraints
+                    width: '100%',
+                    height: '100%',
+                  }}
                   priority
                 />
               </div>
