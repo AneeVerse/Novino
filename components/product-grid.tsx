@@ -96,7 +96,7 @@ export default function ProductGrid({
     }}>
       {/* Bottom right overlay */}
       <div className="absolute -bottom-[-13%] -right-[-600px] w-[1000px] h-[120%] pointer-events-none" style={{
-        zIndex: 20
+        zIndex: 5
       }}>
         {/* 
           POSITIONING GUIDE:
@@ -116,7 +116,7 @@ export default function ProductGrid({
         />
       </div>
 
-      <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
+      <div className="flex flex-col md:flex-row md:gap-8 relative z-30">
         {/* Right side: Product Grid */}
         <div className="w-full md:w-1/2 order-1 md:order-2">
           <div className="grid grid-cols-2 gap-8">
@@ -160,18 +160,18 @@ export default function ProductGrid({
         {/* Left side: Categories and Title */}
         <div className="w-full md:w-1/2 mb-8 md:mb-0 order-2 md:order-1">
           <div className="pl-10">
-            <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono']">{subtitle}</div>
-            <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono']">{title}</h2>
+            <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono'] font-medium">{subtitle}</div>
+            <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono'] relative">{title}</h2>
 
             {/* Category Filters - Displayed horizontally and wrapped */}
-            <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
+            <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 relative">
               {propCategories.map((category) => (
                 <button
                   key={category}
                   className={`${
                     category === activeCategory 
-                      ? "bg-white text-black" 
-                      : "border border-white/30 text-white hover:bg-white/10"
+                      ? "bg-white text-black font-medium" 
+                      : "border border-white/60 text-white hover:bg-white/10 font-medium"
                   } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors font-['Roboto_Mono']`}
                   onClick={() => setActiveCategory(category)}
                 >
@@ -204,8 +204,8 @@ export default function ProductGrid({
       </div>
       
       {/* View All Button */}
-      <div className="mt-16 flex justify-center">
-        <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono']" style={{ borderRadius: '10px' }}>
+      <div className="mt-16 flex justify-center relative z-30">
+        <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/20 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono'] font-medium" style={{ borderRadius: '10px' }}>
           {viewAllText}
           <ArrowRight className="ml-2 w-4 h-4" />
         </button>
