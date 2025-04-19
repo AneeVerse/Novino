@@ -34,43 +34,65 @@ const products = [
     id: 1,
     name: "MASTERPIECE I",
     price: "$1250",
-    image: "/images/mug-black.png",
-    category: "Oil"
+    image: "/images/painting/image 5.png",
+    category: "Oil",
+    height: 1
   },
   {
     id: 2,
     name: "SEASCAPE",
     price: "$980",
-    image: "/images/mug-white.png",
-    category: "Oil"
+    image: "/images/painting/image 6.png",
+    category: "Oil",
+    height: 1
   },
   {
     id: 3,
     name: "ABSTRACT DREAM",
     price: "$870",
-    image: "/images/cycle1.png",
-    category: "Acrylic"
+    image: "/images/painting/image 7.png",
+    category: "Acrylic",
+    height: 1.5
   },
   {
     id: 4,
     name: "MOUNTAIN VIEW",
     price: "$1100",
-    image: "/images/cycle2.png",
-    category: "Acrylic"
+    image: "/images/painting/image 8.png",
+    category: "Acrylic",
+    height: 1
   },
   {
     id: 5,
     name: "WATERCOLOR SKY",
     price: "$750",
-    image: "/images/notebook-white.png",
-    category: "Watercolor"
+    image: "/images/painting/image 7.png",
+    category: "Watercolor",
+    height: 1
   },
   {
     id: 6,
     name: "SUNSET BEACH",
     price: "$820",
-    image: "/images/notebook-black.png",
-    category: "Watercolor"
+    image: "/images/painting/Screenshot 2025-04-17 023229 2.png",
+    category: "Watercolor",
+    height: 1.3
+  },
+  {
+    id: 7,
+    name: "ABSTRACT FLOW",
+    price: "$950",
+    image: "/images/painting/Screenshot 2025-04-17 023229 1.png",
+    category: "Mixed Media",
+    height: 1.2
+  },
+  {
+    id: 8,
+    name: "COASTAL VIEW",
+    price: "$1200",
+    image: "/images/painting/Screenshot 2025-04-17 023229 3.png",
+    category: "Oil",
+    height: 1.4
   }
 ];
 

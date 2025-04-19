@@ -8,45 +8,67 @@ import { ArrowRight } from "lucide-react"
 const products = [
   {
     id: 1,
-    name: "LIGHTCOOL",
-    price: "$22.5",
-    image: "/images/mug-black.png",
-    category: "Mugs"
+    name: "LA-DE-DA 450 PENDANT",
+    price: "from $2,327",
+    image: "/images/painting/image 5.png",
+    category: "Mugs",
+    height: 1 // Standard height
   },
   {
     id: 2,
-    name: "LIGHTCOOL",
-    price: "$22.5",
-    image: "/images/mug-white.png",
-    category: "Mugs"
+    name: "LA-DE-DA CANDLE",
+    price: "$120",
+    image: "/images/painting/image 7.png",
+    category: "Mugs",
+    height: 1 // Standard height
   },
   {
     id: 3,
-    name: "CYCLEWING",
-    price: "$35",
-    image: "/images/cycle1.png",
-    category: "Feeds"
+    name: "HEIRLOOM PENDANT",
+    price: "$1,850",
+    image: "/images/painting/image 6.png",
+    category: "Feeds",
+    height: 1.5 // Taller image
   },
   {
     id: 4,
-    name: "VELOCITY",
-    price: "$32",
-    image: "/images/cycle2.png",
-    category: "Feeds"
+    name: "DOME TABLE LAMP",
+    price: "$780",
+    image: "/images/painting/image 8.png",
+    category: "Feeds",
+    height: 1 // Standard height
   },
   {
     id: 5,
-    name: "CLASSWING",
-    price: "$20",
-    image: "/images/notebook-white.png",
-    category: "Books"
+    name: "BRASS PENDANT",
+    price: "$950",
+    image: "/images/painting/image 6.png",
+    category: "Books",
+    height: 1 // Standard height
   },
   {
     id: 6,
-    name: "HOLOCANE",
-    price: "$23",
-    image: "/images/notebook-black.png",
-    category: "Books"
+    name: "MODERN SCONCE",
+    price: "$480",
+    image: "/images/painting/Screenshot 2025-04-17 023229 1.png",
+    category: "Books",
+    height: 1 // Standard height
+  },
+  {
+    id: 7,
+    name: "WALL LIGHT",
+    price: "$380",
+    image: "/images/painting/Screenshot 2025-04-17 023229 2.png",
+    category: "Mugs",
+    height: 1.2 // Slightly taller
+  },
+  {
+    id: 8,
+    name: "PENDANT LAMP",
+    price: "$595",
+    image: "/images/painting/Screenshot 2025-04-17 023229 3.png",
+    category: "Feeds",
+    height: 1.3 // Taller image
   }
 ]
 
@@ -62,6 +84,7 @@ interface Product {
   role?: string;
   image: string;
   category: string;
+  height?: number;
 }
 
 interface ProductGridProps {
@@ -86,13 +109,15 @@ export default function ProductGrid({
     activeCategory === propCategories[0] ? true : product.category === activeCategory
   );
 
+  // For debugging
+  console.log("Filtered products:", filteredProducts);
+
   return (
-    <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto font-['Roboto_Mono']" style={{ 
+    <div className="p-8 relative overflow-visible max-w-[2400px] mx-auto font-['Roboto_Mono'] min-h-[800px]" style={{ 
       backgroundImage: "url('/Container (2).png')",
       backgroundSize: "100% 100%", 
       backgroundRepeat: "no-repeat",
-      backgroundPosition: "center",
-      overflow: "visible"
+      backgroundPosition: "center"
     }}>
       {/* Bottom right overlay */}
       <div className="absolute -bottom-[-13%] -right-[-600px] w-[1000px] h-[120%] pointer-events-none" style={{
@@ -117,48 +142,8 @@ export default function ProductGrid({
       </div>
 
       <div className="flex flex-col md:flex-row md:gap-8 relative z-30">
-        {/* Right side: Product Grid */}
-        <div className="w-full md:w-1/2 order-1 md:order-2">
-          <div className="grid grid-cols-2 gap-8">
-            {filteredProducts.slice(0, 2).map((product) => (
-              <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                <div className="relative aspect-square overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={(product.name || product.title || "Product") as string}
-                    fill
-                    className="object-contain p-4" 
-                  />
-                </div>
-                <div className="p-4 bg-[#333333]">
-                  <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                  <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-8 mt-8">
-            {filteredProducts.slice(2, 4).map((product) => (
-              <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                <div className="relative aspect-square overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={(product.name || product.title || "Product") as string}
-                    fill
-                    className="object-contain p-4" 
-                  />
-                </div>
-                <div className="p-4 bg-[#333333]">
-                  <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                  <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Left side: Categories and Title */}
-        <div className="w-full md:w-1/2 mb-8 md:mb-0 order-2 md:order-1">
+        <div className="w-full md:w-1/3 mb-8 md:mb-0 order-2 md:order-1">
           <div className="pl-10">
             <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono'] font-medium">{subtitle}</div>
             <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono'] relative">{title}</h2>
@@ -180,25 +165,84 @@ export default function ProductGrid({
               ))}
             </div>
           </div>
-          
-          {/* Two cards below filter on left side - now horizontal */}
-          <div className="grid grid-cols-2 gap-8 mt-[165px] pl-10">
-            {filteredProducts.slice(4, 6).map((product) => (
-              <div key={product.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
-                <div className="relative aspect-square overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={(product.name || product.title || "Product") as string}
-                    fill
-                    className="object-contain p-4" 
-                  />
-                </div>
-                <div className="p-4 bg-[#333333]">
-                  <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                  <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
-                </div>
+        </div>
+
+        {/* Right side: Custom Grid */}
+        <div className="w-full md:w-2/3 order-1 md:order-2 md:-ml-16">
+          <div className="grid grid-cols-2 gap-4">
+            {/* First row - two images side by side */}
+            <div className="mb-4">
+              <div className="relative" style={{ height: '250px' }}>
+                <Image
+                  src={filteredProducts[0]?.image || "/images/painting/image 5.png"}
+                  alt={(filteredProducts[0]?.name || "Product 1") as string}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
               </div>
-            ))}
+            </div>
+            <div className="mb-4">
+              <div className="relative" style={{ height: '250px' }}>
+                <Image
+                  src={filteredProducts[3]?.image || "/images/painting/image 8.png"}
+                  alt={(filteredProducts[3]?.name || "Product 4") as string}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
+              </div>
+            </div>
+            
+            {/* Second row - second image alone (full width) */}
+            <div className="col-span-2 mb-4">
+              <div className="relative" style={{ height: '250px' }}>
+                <Image
+                  src={filteredProducts[1]?.image || "/images/painting/image 7.png"}
+                  alt={(filteredProducts[1]?.name || "Red Pendant") as string}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
+              </div>
+            </div>
+            
+            {/* Third row - two standard images */}
+            <div className="mb-4">
+              <div className="relative" style={{ height: '250px' }}>
+                <Image
+                  src={filteredProducts[2]?.image || "/images/painting/Screenshot 2025-04-17 023229 3.png"}
+                  alt={(filteredProducts[2]?.name || "Product 3") as string}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
+              </div>
+            </div>
+            <div className="mb-4">
+              <div className="relative" style={{ height: '250px' }}>
+                <Image
+                  src={filteredProducts[4]?.image || "/images/painting/Screenshot 2025-04-17 023229 2.png"}
+                  alt={(filteredProducts[4]?.name || "Product 5") as string}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
+              </div>
+            </div>
+            
+            {/* Fourth row - image 6.png alone spanning full width */}
+            <div className="col-span-2 mb-4">
+              <div className="relative" style={{ height: '300px' }}>
+                <Image
+                  src="/images/painting/image 6.png"
+                  alt="LA-DE-DA Product"
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
