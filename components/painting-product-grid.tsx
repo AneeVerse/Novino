@@ -309,6 +309,48 @@ export default function ProductGrid({
             </div>
             
             {/* 
+              New row - two additional vertical images between rows 3 and 4
+            */}
+            <div className="mb-4" style={{ 
+              // Left image position adjustments
+              paddingRight: '20px', // Added right padding to move closer to center
+              transform: 'translate(-75px, -45px)', // Move down by reducing negative Y value
+            }}>
+              <div className="relative" style={{ 
+                height: '520px',
+                width: '620px', // Set specific width
+                marginLeft: 'auto', // Push toward center
+              }}>
+                <Image
+                  src={filteredProducts[6]?.image || "/images/painting/Screenshot 2025-04-17 023229 3.png"}
+                  alt={(filteredProducts[6]?.name || "Additional Image 1") as string}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
+              </div>
+            </div>
+            <div className="mb-4" style={{ 
+              // Right image position adjustments
+              paddingLeft: '20px', // Added left padding to move closer to center
+              transform: 'translate(-75px, -45px)', // Move down by reducing negative Y value
+            }}>
+              <div className="relative" style={{ 
+                height: '520px',
+                width: '620px', // Set specific width
+                marginRight: 'auto', // Push toward center
+              }}>
+                <Image
+                  src={filteredProducts[7]?.image || "/images/painting/Screenshot 2025-04-17 023229 1.png"}
+                  alt={(filteredProducts[7]?.name || "Additional Image 2") as string}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  priority
+                />
+              </div>
+            </div>
+            
+            {/* 
               Fourth row - image 6.png alone spanning full width
               CUSTOMIZATION: Same options as second row
             */}
