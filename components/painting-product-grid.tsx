@@ -43,6 +43,10 @@ export default function ProductGrid({
     // For categories other than "All Paintings", strictly filter by category
     if (activeCategory !== "All Paintings") {
       const filtered = propProducts.filter(product => product.category === activeCategory);
+      
+      // Sort the filtered products by id to ensure consistent order
+      filtered.sort((a, b) => a.id - b.id);
+      
       console.log(`FILTERING - Found ${filtered.length} products in category "${activeCategory}":`, filtered);
       return filtered;
     }
@@ -68,7 +72,7 @@ export default function ProductGrid({
   }, [activeCategory, filteredProducts]);
 
   return (
-    <div className="p-8 relative overflow-visible max-w-[2400px] mx-auto font-['Roboto_Mono'] min-h-[800px]" style={{ 
+    <div className="p-8 pb-16 relative overflow-visible max-w-[2400px] mx-auto font-['Roboto_Mono'] min-h-[800px]" style={{ 
       backgroundImage: "url('/Container (2).png')",
       backgroundSize: "100% 100%", 
       backgroundRepeat: "no-repeat",
@@ -126,253 +130,333 @@ export default function ProductGrid({
         <div className="w-full md:w-2/3 order-1 md:order-2 md:-ml-16" style={{
           overflow: 'visible' // Allow content to overflow
         }}>
-          <div className="grid grid-cols-2 gap-4" style={{ overflow: 'visible' }}>
-            {/* First row - images 0 and 1 (2.1.png and 2.2.png) */}
-            <div className="mb-4" style={{ 
-              paddingRight: '20px',
-              transform: 'translateX(-75px)',
-            }}>
-              <div className="relative" style={{ 
-                height: '520px', 
-                width: '620px',
-                marginLeft: 'auto',
-              }}>
-                {filteredProducts[0] ? (
-                  <Image
-                    src={filteredProducts[0].image}
-                    alt={(filteredProducts[0].name || "Product 1") as string}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-white">No product available</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="mb-4" style={{ 
-              paddingLeft: '20px',
-              transform: 'translateX(-75px)',
-            }}>
-              <div className="relative" style={{ 
-                height: '520px',
-                width: '620px',
-                marginRight: 'auto',
-              }}>
-                {filteredProducts[1] ? (
-                  <Image
-                    src={filteredProducts[1].image}
-                    alt={(filteredProducts[1].name || "Product 2") as string}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-white">No product available</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Second row - image 2 (3.png) full width */}
-            <div className="col-span-2 mb-4" style={{ 
-              transform: 'translateY(-30px)',
-              display: 'flex',
-              justifyContent: 'center',
-              overflow: 'visible',
-              maxWidth: 'none',
-              width: '100vw',
-              position: 'relative',
-              left: '50%',
-              right: '50%',
-              marginLeft: '-50vw',
-              marginRight: '-50vw',
-            }}>
-              <div className="relative" style={{ 
-                height: '600px',
-                width: '59.5vw',
-                transform: 'translateX(26px)',
+          {(activeCategory === "Mixed Media" && filteredProducts.length === 2) || 
+           (activeCategory === "Acrylic" && filteredProducts.length >= 1) ||
+           (activeCategory === "Oil" && filteredProducts.length >= 1) ||
+           (activeCategory === "Watercolor" && filteredProducts.length >= 1) ? (
+            // Special layout for category-specific displays
+            <div className="grid grid-cols-2 gap-4" style={{ overflow: 'visible' }}>
+              {/* First item */}
+              <div className="col-span-2 mb-4" style={{ 
+                transform: 'translateY(-5px)',
+                display: 'flex',
+                justifyContent: 'center',
+                overflow: 'visible',
                 maxWidth: 'none',
+                width: '100vw',
+                position: 'relative',
+                left: '50%',
+                right: '50%',
+                marginLeft: '-50vw',
+                marginRight: '-50vw',
+                pointerEvents: 'none',
               }}>
-                {filteredProducts[2] ? (
-                  <Image
-                    src={filteredProducts[2].image}
-                    alt={(filteredProducts[2].name || "Product 3") as string}
-                    fill
-                    sizes="90vw"
-                    style={{ 
-                      objectFit: 'contain',
-                      maxWidth: 'none',
-                      width: '100%',
-                      height: '100%',
-                    }}
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-white">No product available</p>
-                  </div>
-                )}
+                <div className="relative" style={{ 
+                  height: '600px',
+                  width: '59.5vw',
+                  transform: 'translateX(26px)',
+                  maxWidth: 'none',
+                }}>
+                  {filteredProducts[0] && (
+                    <Image
+                      src={filteredProducts[0].image}
+                      alt={(filteredProducts[0].name || "Product 1") as string}
+                      fill
+                      sizes="90vw"
+                      style={{ 
+                        objectFit: 'contain',
+                        maxWidth: 'none',
+                        width: '100%',
+                        height: '100%',
+                        pointerEvents: 'auto',
+                      }}
+                      priority
+                    />
+                  )}
+                </div>
               </div>
+              
+              {/* Second item at the bottom (only for Mixed Media with 2 items) */}
+              {activeCategory === "Mixed Media" && filteredProducts.length === 2 && (
+                <div className="col-span-2 mb-4" style={{ 
+                  transform: 'translateY(-40px)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  overflow: 'visible',
+                  maxWidth: 'none',
+                  width: '100vw',
+                  position: 'relative',
+                  left: '50%',
+                  right: '50%',
+                  marginLeft: '-50vw',
+                  marginRight: '-50vw',
+                  pointerEvents: 'none',
+                }}>
+                  <div className="relative" style={{ 
+                    height: '600px',
+                    width: '59.5vw',
+                    transform: 'translateX(26px)',
+                    maxWidth: 'none',
+                  }}>
+                    {filteredProducts[1] && (
+                      <Image
+                        src={filteredProducts[1].image}
+                        alt={(filteredProducts[1].name || "Product 2") as string}
+                        fill
+                        sizes="59.5vw"
+                        style={{ 
+                          objectFit: 'contain',
+                          maxWidth: 'none',
+                          width: '100%',
+                          height: '100%',
+                          pointerEvents: 'auto',
+                        }}
+                        priority
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-            
-            {/* Third row - images 3 and 4 (4.1.png and 4.2.png) */}
-            <div className="mb-4" style={{ 
-              paddingRight: '20px',
-              transform: 'translate(-75px, -50px)',
-            }}>
-              <div className="relative" style={{ 
-                height: '520px',
-                width: '620px',
-                marginLeft: 'auto',
+          ) : (
+            // Standard layout for other categories
+            <div className="grid grid-cols-2 gap-4" style={{ overflow: 'visible' }}>
+              {/* First row - images 0 and 1 (2.1.png and 2.2.png) */}
+              <div className="mb-4" style={{ 
+                paddingRight: '20px',
+                transform: 'translateX(-75px)',
               }}>
-                {filteredProducts[3] ? (
-                  <Image
-                    src={filteredProducts[3].image}
-                    alt={(filteredProducts[3].name || "Product 4") as string}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-white">No product available</p>
-                  </div>
-                )}
+                <div className="relative" style={{ 
+                  height: '520px', 
+                  width: '620px',
+                  marginLeft: 'auto',
+                }}>
+                  {filteredProducts[0] ? (
+                    <Image
+                      src={filteredProducts[0].image}
+                      alt={(filteredProducts[0].name || "Product 1") as string}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-white">No product available</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="mb-4" style={{ 
-              paddingLeft: '20px',
-              transform: 'translate(-75px, -50px)',
-            }}>
-              <div className="relative" style={{ 
-                height: '520px',
-                width: '620px',
-                marginRight: 'auto',
+              <div className="mb-4" style={{ 
+                paddingLeft: '20px',
+                transform: 'translateX(-75px)',
               }}>
-                {filteredProducts[4] ? (
-                  <Image
-                    src={filteredProducts[4].image}
-                    alt={(filteredProducts[4].name || "Product 5") as string}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-white">No product available</p>
-                  </div>
-                )}
+                <div className="relative" style={{ 
+                  height: '520px',
+                  width: '620px',
+                  marginRight: 'auto',
+                }}>
+                  {filteredProducts[1] ? (
+                    <Image
+                      src={filteredProducts[1].image}
+                      alt={(filteredProducts[1].name || "Product 2") as string}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-white">No product available</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            
-            {/* Fourth row - images 5 and 6 (5.1.png and 5.2.png) */}
-            <div className="mb-4" style={{ 
-              paddingRight: '20px',
-              transform: 'translate(-75px, -40px)',
-            }}>
-              <div className="relative" style={{ 
-                height: '520px',
-                width: '620px',
-                marginLeft: 'auto',
-              }}>
-                {filteredProducts[5] ? (
-                  <Image
-                    src={filteredProducts[5].image}
-                    alt={(filteredProducts[5].name || "Product 6") as string}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-white">No product available</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="mb-4" style={{ 
-              paddingLeft: '20px',
-              transform: 'translate(-75px, -40px)',
-            }}>
-              <div className="relative" style={{ 
-                height: '520px',
-                width: '620px',
-                marginRight: 'auto',
-              }}>
-                {filteredProducts[6] ? (
-                  <Image
-                    src={filteredProducts[6].image}
-                    alt={(filteredProducts[6].name || "Product 7") as string}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-white">No product available</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Fifth row - image 7 (6.png) full width */}
-            <div className="col-span-2 mb-4" style={{ 
-              transform: 'translateY(-60px)',
-              display: 'flex',
-              justifyContent: 'center',
-              overflow: 'visible',
-              maxWidth: 'none',
-              width: '100vw',
-              position: 'relative',
-              left: '50%',
-              right: '50%',
-              marginLeft: '-50vw',
-              marginRight: '-50vw',
-            }}>
-              <div className="relative" style={{ 
-                height: '600px',
-                width: '59.5vw',
-                transform: 'translateX(26px)',
+              
+              {/* Second row - image 2 (3.png) full width */}
+              <div className="col-span-2 mb-4" style={{ 
+                transform: 'translateY(-30px)',
+                display: 'flex',
+                justifyContent: 'center',
+                overflow: 'visible',
                 maxWidth: 'none',
+                width: '100vw',
+                position: 'relative',
+                left: '50%',
+                right: '50%',
+                marginLeft: '-50vw',
+                marginRight: '-50vw',
               }}>
-                {filteredProducts[7] ? (
-                  <Image
-                    src={filteredProducts[7].image}
-                    alt={(filteredProducts[7].name || "Product 8") as string}
-                    fill
-                    sizes="59.5vw"
-                    style={{ 
-                      objectFit: 'contain',
-                      maxWidth: 'none',
-                      width: '100%',
-                      height: '100%',
-                    }}
-                    priority
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-white">No product available</p>
-                  </div>
-                )}
+                <div className="relative" style={{ 
+                  height: '600px',
+                  width: '59.5vw',
+                  transform: 'translateX(26px)',
+                  maxWidth: 'none',
+                }}>
+                  {filteredProducts[2] ? (
+                    <Image
+                      src={filteredProducts[2].image}
+                      alt={(filteredProducts[2].name || "Product 3") as string}
+                      fill
+                      sizes="90vw"
+                      style={{ 
+                        objectFit: 'contain',
+                        maxWidth: 'none',
+                        width: '100%',
+                        height: '100%',
+                      }}
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-white">No product available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Third row - images 3 and 4 (4.1.png and 4.2.png) */}
+              <div className="mb-4" style={{ 
+                paddingRight: '20px',
+                transform: 'translate(-75px, -50px)',
+              }}>
+                <div className="relative" style={{ 
+                  height: '520px',
+                  width: '620px',
+                  marginLeft: 'auto',
+                }}>
+                  {filteredProducts[3] ? (
+                    <Image
+                      src={filteredProducts[3].image}
+                      alt={(filteredProducts[3].name || "Product 4") as string}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-white">No product available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="mb-4" style={{ 
+                paddingLeft: '20px',
+                transform: 'translate(-75px, -50px)',
+              }}>
+                <div className="relative" style={{ 
+                  height: '520px',
+                  width: '620px',
+                  marginRight: 'auto',
+                }}>
+                  {filteredProducts[4] ? (
+                    <Image
+                      src={filteredProducts[4].image}
+                      alt={(filteredProducts[4].name || "Product 5") as string}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-white">No product available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Fourth row - images 5 and 6 (5.1.png and 5.2.png) */}
+              <div className="mb-4" style={{ 
+                paddingRight: '20px',
+                transform: 'translate(-75px, -40px)',
+              }}>
+                <div className="relative" style={{ 
+                  height: '520px',
+                  width: '620px',
+                  marginLeft: 'auto',
+                }}>
+                  {filteredProducts[5] ? (
+                    <Image
+                      src={filteredProducts[5].image}
+                      alt={(filteredProducts[5].name || "Product 6") as string}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-white">No product available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="mb-4" style={{ 
+                paddingLeft: '20px',
+                transform: 'translate(-75px, -40px)',
+              }}>
+                <div className="relative" style={{ 
+                  height: '520px',
+                  width: '620px',
+                  marginRight: 'auto',
+                }}>
+                  {filteredProducts[6] ? (
+                    <Image
+                      src={filteredProducts[6].image}
+                      alt={(filteredProducts[6].name || "Product 7") as string}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-white">No product available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Fifth row - image 7 (6.png) full width */}
+              <div className="col-span-2 mb-4" style={{ 
+                transform: 'translateY(-60px)',
+                display: 'flex',
+                justifyContent: 'center',
+                overflow: 'visible',
+                maxWidth: 'none',
+                width: '100vw',
+                position: 'relative',
+                left: '50%',
+                right: '50%',
+                marginLeft: '-50vw',
+                marginRight: '-50vw',
+              }}>
+                <div className="relative" style={{ 
+                  height: '600px',
+                  width: '59.5vw',
+                  transform: 'translateX(26px)',
+                  maxWidth: 'none',
+                }}>
+                  {filteredProducts[7] ? (
+                    <Image
+                      src={filteredProducts[7].image}
+                      alt={(filteredProducts[7].name || "Product 8") as string}
+                      fill
+                      sizes="59.5vw"
+                      style={{ 
+                        objectFit: 'contain',
+                        maxWidth: 'none',
+                        width: '100%',
+                        height: '100%',
+                      }}
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-white">No product available</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
-      </div>
-      
-      {/* View All Button */}
-      <div className="mt-16 flex justify-center relative z-30" style={{ 
-        marginTop: "-40px", // Reduced from mt-16 and added negative margin to move up
-        transform: "translateY(-40px)" // Additional upward movement
-      }}>
-        <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/20 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono'] font-medium" style={{ borderRadius: '10px' }}>
-          {viewAllText}
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </button>
       </div>
     </div>
   );
