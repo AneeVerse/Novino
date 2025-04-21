@@ -203,8 +203,8 @@ export default function Home() {
             }}
           ></div>
           <h1 
-            className={`text-[#312F30] text-[150px] md:text-[200px] lg:text-[280px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
-            style={{ fontFamily: 'DM Serif Display, serif', top: '50%', left: '50%', transform: 'translate(-50%, 200%)' }}
+            className={`text-[#FFFFFF] text-[180px] md:text-[250px] lg:text-[350px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            style={{ fontFamily: 'DM Serif Display, serif', top: '38%', left: '50%', transform: 'translate(-50%, 200%)' }}
           >
             NOVINO
           </h1>

@@ -195,8 +195,8 @@ export default function JournalPage() {
             }}
           ></div>
           <h1 
-            className={`text-[#312F30] text-[80px] md:text-[120px] lg:text-[160px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
-            style={{ fontFamily: 'DM Serif Display, serif', top: '40%', left: '50%', transform: 'translate(-50%, 0%)' }}
+            className={`text-[#FFFFFF] text-[130px] md:text-[200px] lg:text-[260px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            style={{ fontFamily: 'DM Serif Display, serif', top: '3%', left: '50%', transform: 'translate(-50%, 0%)' }}
           >
             JOURNAL
           </h1>

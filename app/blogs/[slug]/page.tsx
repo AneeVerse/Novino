@@ -7,6 +7,10 @@ import { ArrowLeft } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { getValidImageUrl } from '@/lib/imageUtils';
 
+interface Params {
+  slug: string;
+}
+
 interface Blog {
   id: string;
   _id?: string;
@@ -30,7 +34,7 @@ interface Blog {
 const sampleBlog = {
   id: '1',
   slug: 'diamonds-haven',
-  title: "Diamond's Haven",
+  title: "Diamonds Havens",
   description: "Mesmerising jewellery collection that encapsulates the essence of timeless elegance & sophistication",
   content: `
     <p>Welcome to Diamond's Haven, where timeless elegance meets exquisite craftsmanship. Our collection celebrates the unparalleled beauty of diamonds, carefully curated to offer you the finest selection of jewelry pieces that embody sophistication and style.</p>
@@ -77,7 +81,8 @@ const sampleBlog = {
 };
 
 export default function BlogDetail() {
-  const { slug } = useParams();
+  const params = useParams() as { slug: string };
+  const { slug } = params;
   const [blog, setBlog] = useState<Blog | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -138,7 +143,7 @@ export default function BlogDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#333333] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#2D2D2D] text-white flex items-center justify-center">
         <p className="text-2xl">Loading...</p>
       </div>
     );
@@ -146,91 +151,116 @@ export default function BlogDetail() {
 
   if (error || !blog) {
     return (
-      <div className="min-h-screen bg-[#333333] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#2D2D2D] text-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl text-red-400 mb-4">{error || 'Blog not found'}</p>
           <Link 
-            href="/" 
+            href="/journal" 
             className="inline-flex items-center text-white/80 hover:text-white transition-colors"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
-            <span>Back to Home</span>
+            <span>Back to Journal</span>
           </Link>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-[#333333] text-white pt-8 pb-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        {/* Back button */}
-        <Link 
-          href="/" 
-          className="inline-flex items-center text-white/80 hover:text-white mb-8 transition-colors"
-        >
-          <ArrowLeft className="mr-2 h-5 w-5" />
-          <span>Back to Home</span>
-        </Link>
+  const formattedDate = new Date(blog.publishedAt || blog.createdAt).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
 
-        {/* Blog Header */}
-        <div className="mb-8">
-          <h1 className="text-white font-['Italiana'] font-normal text-3xl sm:text-4xl md:text-5xl leading-tight mb-4">
+  return (
+    <main className="min-h-screen bg-[#2D2D2D]">
+      {/* Back navigation */}
+      <div className="container mx-auto px-4 pt-6">
+        <Link 
+          href="/journal" 
+          className="inline-flex items-center text-white/80 hover:text-white transition-colors"
+        >
+          <span className="text-sm">Home</span>
+        </Link>
+      </div>
+
+      {/* Hero Section - Blog Title */}
+      <div className="w-full py-10">
+        <div className="container mx-auto px-4">
+          <h1 className="text-white text-[40px] md:text-[64px] font-dm-serif-display leading-tight mb-4"
+              style={{ fontFamily: 'DM Serif Display, serif' }}>
             {blog.title}
           </h1>
-          <p className="text-neutral-200 text-sm sm:text-base mb-6">
+          <p className="text-white text-lg md:text-xl max-w-3xl">
             {blog.description}
           </p>
-          <div className="flex items-center text-sm text-neutral-400">
-            <div className="mr-4">
-              {new Date(blog.publishedAt || blog.createdAt).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </div>
+          <div className="mt-4 flex items-center text-white/70">
+            <span>{formattedDate}</span>
             {blog.readTime && (
-              <div>{blog.readTime} min read</div>
+              <span className="ml-4">{blog.readTime} min read</span>
             )}
           </div>
         </div>
+      </div>
 
-        {/* Featured Image */}
-        <div className="relative mb-8 aspect-video w-full overflow-hidden rounded-lg border border-[#A47E3B]">
-          <img 
-            src={getValidImageUrl(blog.image)} 
-            alt={blog.title} 
-            className="object-cover w-full h-full"
-          />
-        </div>
+      {/* Main Content Section */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* Featured Image - Takes up 8 columns on large screens */}
+          <div className="lg:col-span-7 xl:col-span-8">
+            <div className="relative w-full aspect-square md:aspect-[4/3] bg-[#3A3A3A] overflow-hidden rounded-sm border border-[#A47E3B]">
+              <img 
+                src={getValidImageUrl(blog.image)} 
+                alt={blog.title} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
 
-        {/* Author Info */}
-        {blog.author && (
-          <div className="mb-8 flex items-center">
-            {blog.author.image && (
-              <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                <img 
-                  src={getValidImageUrl(blog.author.image, '/images/default-author.png')} 
-                  alt={blog.author.name} 
-                  className="w-full h-full object-cover"
-                />
+          {/* Article Content - Takes up 4 columns on large screens */}
+          <div className="lg:col-span-5 xl:col-span-4">
+            {/* Author Info if available */}
+            {blog.author && (
+              <div className="mb-8">
+                <div className="flex items-center">
+                  {blog.author.image && (
+                    <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
+                      <img 
+                        src={getValidImageUrl(blog.author.image, '/images/default-author.png')} 
+                        alt={blog.author.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-white font-medium">{blog.author.name}</div>
+                    {blog.author.role && (
+                      <div className="text-white/70 text-sm">{blog.author.role}</div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
-            <div>
-              <div className="text-white font-medium">{blog.author.name}</div>
-              {blog.author.role && (
-                <div className="text-white/70 text-sm">{blog.author.role}</div>
-              )}
+
+            {/* Blog Content */}
+            <div 
+              className="prose prose-invert max-w-none prose-headings:font-dm-serif-display prose-headings:font-normal prose-p:text-white/90 prose-li:text-white/90"
+              dangerouslySetInnerHTML={{ __html: blog.content }}
+            />
+
+            {/* Call to Action */}
+            <div className="mt-12">
+              <Link 
+                href="/journal" 
+                className="inline-flex flex-row justify-center items-center px-6 py-3 gap-2.5 bg-[#E8B08A] text-white text-sm font-medium"
+                style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
+              >
+                VIEW ALL ARTICLES
+              </Link>
             </div>
           </div>
-        )}
-
-        {/* Blog Content */}
-        <div 
-          className="prose prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: blog.content }}
-        />
+        </div>
       </div>
-    </div>
+    </main>
   );
 } 
