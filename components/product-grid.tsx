@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import { ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 // Product data
 const products = [
@@ -123,38 +124,42 @@ export default function ProductGrid({
         <div className="w-full md:w-1/2 order-1 md:order-2">
           <div className="grid grid-cols-2 gap-8">
             {filteredProducts.slice(0, 2).map((product) => (
-              <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                <div className="relative aspect-square overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={(product.name || product.title || "Product") as string}
-                    fill
-                    className="object-contain p-4" 
-                  />
+              <Link href={`/product/${product.id}`} key={product.id}>
+                <div className="bg-white w-full max-w-[80%] mx-auto border border-white hover:opacity-95 transition-opacity">
+                  <div className="relative aspect-square overflow-hidden">
+                    <Image
+                      src={product.image}
+                      alt={(product.name || product.title || "Product") as string}
+                      fill
+                      className="object-contain p-4" 
+                    />
+                  </div>
+                  <div className="p-4 bg-[#333333]">
+                    <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
+                    <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
+                  </div>
                 </div>
-                <div className="p-4 bg-[#333333]">
-                  <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                  <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
           <div className="grid grid-cols-2 gap-8 mt-8">
             {filteredProducts.slice(2, 4).map((product) => (
-              <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                <div className="relative aspect-square overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={(product.name || product.title || "Product") as string}
-                    fill
-                    className="object-contain p-4" 
-                  />
+              <Link href={`/product/${product.id}`} key={product.id}>
+                <div className="bg-white w-full max-w-[80%] mx-auto border border-white hover:opacity-95 transition-opacity">
+                  <div className="relative aspect-square overflow-hidden">
+                    <Image
+                      src={product.image}
+                      alt={(product.name || product.title || "Product") as string}
+                      fill
+                      className="object-contain p-4" 
+                    />
+                  </div>
+                  <div className="p-4 bg-[#333333]">
+                    <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
+                    <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
+                  </div>
                 </div>
-                <div className="p-4 bg-[#333333]">
-                  <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                  <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -186,20 +191,22 @@ export default function ProductGrid({
           {/* Two cards below filter on left side - now horizontal */}
           <div className="grid grid-cols-2 gap-8 mt-[165px] pl-10">
             {filteredProducts.slice(4, 6).map((product) => (
-              <div key={product.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
-                <div className="relative aspect-square overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={(product.name || product.title || "Product") as string}
-                    fill
-                    className="object-contain p-4" 
-                  />
+              <Link href={`/product/${product.id}`} key={product.id}>
+                <div className="bg-white w-full max-w-[85%] mx-auto border border-white hover:opacity-95 transition-opacity">
+                  <div className="relative aspect-square overflow-hidden">
+                    <Image
+                      src={product.image}
+                      alt={(product.name || product.title || "Product") as string}
+                      fill
+                      className="object-contain p-4" 
+                    />
+                  </div>
+                  <div className="p-4 bg-[#333333]">
+                    <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
+                    <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
+                  </div>
                 </div>
-                <div className="p-4 bg-[#333333]">
-                  <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                  <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

@@ -5,7 +5,8 @@
     "price": "$2,327",
     "image": "/images/painting/2.1.png",
     "category": "Oil",
-    "height": 1
+    "height": 1,
+    "description": "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
   },
   {
     "id": 2,
@@ -13,7 +14,8 @@
     "price": "$1,875",
     "image": "/images/painting/2.2.png",
     "category": "Oil",
-    "height": 1
+    "height": 1,
+    "description": "Chromatic Vision is a symphony of colors that blend and contrast to create a captivating visual experience. Each hue has been carefully selected to evoke specific emotions while maintaining harmony within the composition's dynamic structure."
   },
   {
     "id": 3,
@@ -21,7 +23,8 @@
     "price": "$1,850",
     "image": "/images/painting/3.png",
     "category": "Acrylic",
-    "height": 1.5
+    "height": 1.5,
+    "description": "Urban Canvas captures the essence of contemporary city life through a vibrant acrylic composition. The painting balances structured geometric forms with organic elements, reflecting the duality of urban environments – both constructed and alive."
   },
   {
     "id": 4,
@@ -29,7 +32,8 @@
     "price": "$2,100",
     "image": "/images/painting/4.1.png",
     "category": "Acrylic", 
-    "height": 1
+    "height": 1,
+    "description": "Modern Expression pushes the boundaries of form and technique, creating a visual dialogue between traditional painting approaches and contemporary aesthetics. The layered acrylic medium allows for both precision and spontaneity."
   },
   {
     "id": 5,
@@ -37,7 +41,8 @@
     "price": "$1,950",
     "image": "/images/painting/4.2.png",
     "category": "Watercolor",
-    "height": 1
+    "height": 1,
+    "description": "Tranquil Moments invites contemplation through its delicate watercolor composition. The subtle transparency of the medium creates a sense of lightness and serenity, while careful color choices evoke a sense of peaceful meditation."
   },
   {
     "id": 6,
@@ -45,7 +50,8 @@
     "price": "$2,750",
     "image": "/images/painting/5.1.png",
     "category": "Mixed Media",
-    "height": 1.2
+    "height": 1.2,
+    "description": "Dynamic Fusion combines multiple artistic techniques and materials to create a textured, multi-dimensional artwork. The interplay between different mediums creates visual intrigue, with each viewing angle revealing new details and relationships."
   },
   {
     "id": 7,
@@ -53,7 +59,8 @@
     "price": "$2,480",
     "image": "/images/painting/5.2.png",
     "category": "Watercolor",
-    "height": 1
+    "height": 1,
+    "description": "Bold Impression challenges the traditional limitations of watercolor with its striking composition and intense color saturation. The piece demonstrates how this often delicate medium can be used to create powerful, impactful statements."
   },
   {
     "id": 8,
@@ -61,6 +68,16 @@
     "price": "$2,200",
     "image": "/images/painting/6.png",
     "category": "Mixed Media",
-    "height": 1
+    "height": 1,
+    "description": "Geometric Harmony explores the mathematical beauty inherent in artistic composition. Precise forms interact with organic elements to create a balanced whole, demonstrating how structure and freedom can coexist in perfect equilibrium."
+  },
+  {
+    "id": 9,
+    "name": "OFFCUT WALL SCONCE",
+    "price": "$670",
+    "image": "/images/products/wall-sconce.jpg",
+    "category": "Artefacts",
+    "height": 1,
+    "description": "Offcut is a poetic balance of shape and form. Pairing remnant stone from local suppliers, with a custom designed 'teacup' globe, every iteration of Offcut is unique.\n\nThe natural stone is hand selected and intently broken in house, while the soft white glass and LED module is custom designed to create a seamless, contemporary aesthetic."
   }
 ] 

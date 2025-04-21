@@ -5,6 +5,7 @@ import Image from "next/image"
 import { ArrowRight } from "lucide-react"
 import React from "react"
 import productData from "@/public/data/painting-products.json"
+import Link from "next/link"
 
 interface Product {
   id: number;
@@ -187,7 +188,7 @@ export default function ProductGrid({
                     key={`single-${groupIndex}-${product.id}`}
                     className="relative w-full"
                   >
-                    <div className="relative h-[520px] overflow-hidden">
+                    <Link href={`/product/${product.id}`} className="block relative h-[520px] overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
                       <Image
                         src={product.image}
                         alt={(product.name || `Product ${product.id}`) as string}
@@ -201,7 +202,7 @@ export default function ProductGrid({
                           {product.name} {product.price && `- ${product.price}`}
                         </div>
                       )}
-                    </div>
+                    </Link>
                   </div>
                 );
               } 
@@ -218,7 +219,7 @@ export default function ProductGrid({
                           key={`product-${product.id}`}
                           className="relative"
                         >
-                          <div className="relative h-[520px] overflow-hidden">
+                          <Link href={`/product/${product.id}`} className="block relative h-[520px] overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
                             <Image
                               src={product.image}
                               alt={(product.name || `Product ${product.id}`) as string}
@@ -232,7 +233,7 @@ export default function ProductGrid({
                                 {product.name} {product.price && `- ${product.price}`}
                               </div>
                             )}
-                          </div>
+                          </Link>
                         </div>
                       );
                     })}
