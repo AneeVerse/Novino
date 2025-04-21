@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { getValidImageUrl } from "@/lib/imageUtils";
 
 interface Blog {
@@ -36,6 +37,23 @@ export default function BlogsPage() {
         setBlogs(processedBlogs);
       } catch (err) {
         console.error('Error fetching blogs:', err);
+        // Fallback to sample data if API fails
+        setBlogs([
+          {
+            id: '1',
+            title: "Gold Lava",
+            slug: "gold-lava",
+            description: "Radiant jewellery collection that captures the essence of molten gold",
+            image: "/images/blog/Rectangle 13.png"
+          },
+          {
+            id: '2',
+            title: "Silver Harmony",
+            slug: "silver-harmony",
+            description: "Elegant silverware that brings timeless sophistication to your collection",
+            image: "/images/blog/Rectangle 14.png"
+          }
+        ]);
       } finally {
         setIsLoading(false);
       }
@@ -44,21 +62,13 @@ export default function BlogsPage() {
     fetchBlogs();
   }, []);
 
-  const containerStyle = {
-    backgroundColor: "#333333",
-    minHeight: "100vh",
-    width: "100%"
-  };
-
   if (isLoading) {
     return (
-      <div style={containerStyle}>
-        <div className="max-w-[1440px] mx-auto">
-          <div className="pt-16 sm:pt-20 md:pt-24">
-            <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20 px-4 md:px-8">
-              <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-light font-['Italiana']">Our Blogs</h1>
-              <p className="text-white text-sm sm:text-base mt-4">Loading blogs...</p>
-            </div>
+      <div className="bg-[#2D2D2D] min-h-screen text-white">
+        <div className="max-w-6xl mx-auto px-6 pt-24 pb-16">
+          <div className="text-center mb-16">
+            <h1 className="text-5xl md:text-6xl font-light mb-4">Journal</h1>
+            <p className="text-white/80">Loading...</p>
           </div>
         </div>
       </div>
@@ -66,42 +76,39 @@ export default function BlogsPage() {
   }
 
   return (
-    <div style={containerStyle}>
-      <div className="max-w-[1440px] mx-auto">
-        <div className="pt-16 sm:pt-20 md:pt-24">
-          <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20 px-4 md:px-8">
-            <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-light font-['Italiana']">Our Blogs</h1>
-            <p className="text-white text-sm sm:text-base mt-4">Explore our complete collection of jewellery articles and stories.</p>
-          </div>
+    <div className="bg-[#2D2D2D] min-h-screen text-white">
+      <div className="max-w-6xl mx-auto px-6 pt-24 pb-16">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-light mb-4">Journal</h1>
+          <p className="text-white/80">Explore our collection of articles and stories</p>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 pb-16 px-4 md:px-8">
-            {blogs.map((blog) => (
-              <div key={blog.id} className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
-                <div className="relative mb-4 sm:mb-0">
-                  <div className="border border-[#A47E3B] w-full sm:w-[280px] h-[200px] sm:h-[240px] relative overflow-hidden z-10">
-                    <img 
-                      src={getValidImageUrl(blog.image)} 
-                      alt={blog.title} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {/* Decorative box behind image */}
-                  <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-full sm:w-[280px] h-[200px] sm:h-[240px] z-0"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {blogs.map((blog) => (
+            <Link 
+              href={`/blogs/${blog.slug || blog.id}`}
+              key={blog.id}
+              className="group"
+            >
+              <div className="flex flex-col">
+                <div className="relative w-full h-80 mb-6 overflow-hidden">
+                  <Image
+                    src={getValidImageUrl(blog.image)}
+                    alt={blog.title}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    className="transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
-                <div className="flex-1 min-w-0 relative z-10 text-center sm:text-left">
-                  <h3 className="text-white font-['Italiana'] font-normal text-2xl sm:text-3xl leading-tight mb-3 sm:mb-4">{blog.title}</h3>
-                  <p className="text-neutral-200 text-sm sm:text-base mb-4 sm:mb-6">{blog.description}</p>
-                  <Link 
-                    href={`/blogs/${blog.slug || blog.id}`} 
-                    className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#FFF4E9] text-black text-xs sm:text-sm font-medium"
-                    style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
-                  >
-                    VIEW DETAILS
-                  </Link>
-                </div>
+                <h2 className="text-2xl font-light mb-2 group-hover:text-[#E8B08A] transition-colors">
+                  {blog.title}
+                </h2>
+                <p className="text-white/70">
+                  {blog.description}
+                </p>
               </div>
-            ))}
-          </div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>
