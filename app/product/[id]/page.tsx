@@ -5,6 +5,10 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronUp, ChevronDown, ArrowLeft } from "lucide-react"
 import paintingProductData from "@/public/data/painting-products.json"
+import TestimonialCollection from "@/components/testimonial-collection"
+import BlogSection from "@/components/blog-section"
+import WardrobeSection from "@/components/wardrobe-section"
+import Footer from "@/components/footer"
 
 // Artefact products data
 const artefactProducts = [
@@ -107,67 +111,10 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
 
   const [quantity, setQuantity] = useState(1)
   const [selectedFinish, setSelectedFinish] = useState("Natural")
-  const [openAccordion, setOpenAccordion] = useState<string | null>("specifications")
   const [currentImage, setCurrentImage] = useState(1)
 
   const finishOptions = ["Natural", "Whiskey", "Midnight"]
   const totalImages = 11
-
-  const toggleAccordion = (id: string) => {
-    setOpenAccordion(openAccordion === id ? null : id)
-  }
-
-  // Specifications section content
-  const specifications: AccordionItem = {
-    title: "Specifications",
-    content: (
-      <div className="text-white/80 space-y-4">
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <h5 className="text-white text-sm mb-1">Dimensions</h5>
-            <p className="text-sm">30 × 40 cm</p>
-          </div>
-          <div>
-            <h5 className="text-white text-sm mb-1">Medium</h5>
-            <p className="text-sm">{product.category}</p>
-          </div>
-          <div>
-            <h5 className="text-white text-sm mb-1">Created</h5>
-            <p className="text-sm">2023</p>
-          </div>
-        </div>
-        
-        <div>
-          <h5 className="text-white text-sm mb-1">About the {product.category === "Oil" || product.category === "Acrylic" || product.category === "Watercolor" || product.category === "Mixed Media" ? "Painting" : "Artefact"}</h5>
-          <p className="text-sm leading-relaxed">{product.description}</p>
-        </div>
-      </div>
-    )
-  }
-
-  // FAQs section content
-  const faqs: AccordionItem = {
-    title: "FAQs",
-    content: (
-      <div className="text-white/80 space-y-4">
-        <div>
-          <h5 className="text-white text-sm mb-1">Do you ship internationally?</h5>
-          <p className="text-sm">Yes, we offer worldwide shipping with tracking and insurance for all paintings.</p>
-        </div>
-        <div>
-          <h5 className="text-white text-sm mb-1">What is the return policy?</h5>
-          <p className="text-sm">We accept returns within 14 days of delivery if the painting is in its original condition.</p>
-        </div>
-        <div>
-          <h5 className="text-white text-sm mb-1">Do you offer framing services?</h5>
-          <p className="text-sm">Yes, custom framing options are available at an additional cost. Please contact us for details.</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Related products - simplified version
-  const relatedProducts = paintingProductData.filter(p => p.id !== productId).slice(0, 2)
 
   const increaseQuantity = () => {
     setQuantity(prev => prev + 1)
@@ -179,13 +126,16 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
     }
   }
 
+  // Related products - get 3 products instead of 2
+  const relatedProducts = paintingProductData.filter(p => p.id !== productId).slice(0, 3)
+
   return (
     <div className="bg-[#2D2D2D] text-white min-h-screen">
-      <div className="container mx-auto px-4 pt-32 pb-12 max-w-7xl">
+      <div className="w-full px-8 sm:px-12 lg:px-16 pt-24 pb-12">
        
 
         {/* Main product display with container image */}
-        <div className="relative mb-12">
+        <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1600px" }}>
           <div className="absolute inset-0" style={{ 
             backgroundImage: 'url("/images/product/Container (4).png")',
             backgroundSize: '100% 100%',
@@ -307,56 +257,125 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* Accordion sections */}
-        <div className="max-w-3xl mx-auto border-t border-white/10">
-          {/* Specifications section */}
-          <div className="border-b border-white/10">
-            <button 
-              onClick={() => toggleAccordion("specifications")}
-              className="w-full py-4 flex justify-between items-center text-left"
-            >
-              <h2 className="text-xl font-light">{specifications.title}</h2>
-              {openAccordion === "specifications" ? (
-                <ChevronUp className="w-5 h-5 text-white/60" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-white/60" />
-              )}
-            </button>
-            <div className={`overflow-hidden transition-all ${openAccordion === "specifications" ? "max-h-[1000px] pb-6" : "max-h-0"}`}>
-              {specifications.content}
-            </div>
-          </div>
-
-          {/* FAQs section */}
-          <div className="border-b border-white/10">
-            <button 
-              onClick={() => toggleAccordion("faqs")}
-              className="w-full py-4 flex justify-between items-center text-left"
-            >
-              <h2 className="text-xl font-light">{faqs.title}</h2>
-              {openAccordion === "faqs" ? (
-                <ChevronUp className="w-5 h-5 text-white/60" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-white/60" />
-              )}
-            </button>
-            <div className={`overflow-hidden transition-all ${openAccordion === "faqs" ? "max-h-[500px] pb-6" : "max-h-0"}`}>
-              {faqs.content}
+        {/* Specification section - Always visible now */}
+        <div className="mx-auto border-t border-white/10 pt-12 pb-6 w-full" style={{ maxWidth: "1600px" }}>
+          <h2 className="text-2xl font-light mb-8 px-6 md:px-12">Specifications</h2>
+          <div className="text-white/90 font-mono w-full py-8">
+            <div className="flex flex-col md:flex-row gap-12 mx-auto px-6 md:px-12">
+              {/* Image on the left */}
+              <div className="md:w-5/12">
+                <div className="relative w-full pt-[100%]">
+                  <Image
+                    src="/images/product/image 12.png"
+                    alt="Product specifications diagram"
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    className="opacity-95"
+                  />
+                </div>
+              </div>
+              
+              {/* Specifications on the right */}
+              <div className="md:w-7/12 space-y-6">
+                <div>
+                  <h5 className="text-white text-base mb-2 uppercase font-bold">COLOUR TEMPERATURE</h5>
+                  <p className="text-base italic">Warm White 3000k</p>
+                </div>
+                
+                <div>
+                  <h5 className="text-white text-base mb-2 uppercase font-bold">WATTAGE</h5>
+                  <p className="text-base italic">5W, 550mA Constant Current</p>
+                </div>
+                
+                <div>
+                  <h5 className="text-white text-base mb-2 uppercase font-bold">IP RATING</h5>
+                  <p className="text-base italic">IP20</p>
+                </div>
+                
+                <div>
+                  <h5 className="text-white text-base mb-2 uppercase font-bold">REMOTE DRIVER</h5>
+                  <p className="text-base italic">TCI Mini Jolly (size: 102mm x 38mm× 21mm)</p>
+                </div>
+                
+                <div>
+                  <h5 className="text-white text-base mb-2 uppercase font-bold">DIMMING OPTIONS</h5>
+                  <p className="text-base italic">1-10v, Non-dim, Push</p>
+                </div>
+                
+                <div>
+                  <h5 className="text-white text-base mb-2 uppercase font-bold">DIMENSIONS</h5>
+                  <p className="text-base italic">30 × 40 cm</p>
+                </div>
+                
+                <div>
+                  <h5 className="text-white text-base mb-2 uppercase font-bold">ABOUT THE PAINTING</h5>
+                  <p className="text-base leading-relaxed">{product.description}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* FAQs section - Always visible and side by side with image */}
+        <div className="mx-auto border-t border-white/10 pt-12 pb-6 w-full" style={{ maxWidth: "1600px" }}>
+          <h2 className="text-2xl font-light mb-8 px-6 md:px-12">FAQs</h2>
+          <div className="flex flex-col md:flex-row gap-12 mx-auto px-6 md:px-12">
+            {/* FAQs on the left */}
+            <div className="md:w-1/2 text-white/90 space-y-6 py-6">
+              <div>
+                <h5 className="text-white text-base mb-2 font-bold">Do you ship internationally?</h5>
+                <p className="text-base">Yes, we offer worldwide shipping with tracking and insurance for all paintings.</p>
+              </div>
+              <div>
+                <h5 className="text-white text-base mb-2 font-bold">What is the return policy?</h5>
+                <p className="text-base">We accept returns within 14 days of delivery if the painting is in its original condition.</p>
+              </div>
+              <div>
+                <h5 className="text-white text-base mb-2 font-bold">Do you offer framing services?</h5>
+                <p className="text-base">Yes, custom framing options are available at an additional cost. Please contact us for details.</p>
+              </div>
+            </div>
+            
+            {/* Image on the right */}
+            <div className="md:w-1/2">
+              <div className="relative w-full pt-[100%]">
+                <Image
+                  src="/images/product/image (7).png"
+                  alt="Product image"
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  className="opacity-95"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Full-width image section after FAQs */}
+        <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw] mt-16 mb-20">
+          <div className="relative w-full" style={{ paddingTop: "56.25%" }}>  {/* 16:9 aspect ratio */}
+            <Image
+              src="/images/product/image 13.png"
+              alt="Product showcase"
+              fill
+              style={{ objectFit: 'cover' }}
+              className="opacity-100"
+              priority
+            />
+          </div>
+        </div>
+
         {/* Related Products */}
-        <div className="mt-20">
+        <div className="mt-20 px-6 md:px-12 mx-auto w-full" style={{ maxWidth: "1600px" }}>
           <h2 className="text-2xl font-light mb-8 text-center">Related Products</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {relatedProducts.map((relatedProduct) => (
               <Link 
                 href={`/product/${relatedProduct.id}`} 
                 key={relatedProduct.id}
                 className="block group"
               >
-                <div className="relative aspect-square bg-neutral-800/10 mb-4 overflow-hidden">
+                <div className="relative aspect-square bg-neutral-800/10 mb-3 overflow-hidden max-w-xs mx-auto">
                   <Image
                     src={relatedProduct.image}
                     alt={relatedProduct.name || "Related product"}
@@ -365,12 +384,32 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
                     className="transition-transform group-hover:scale-105"
                   />
                 </div>
-                <h3 className="text-lg font-light">{relatedProduct.name}</h3>
-                <p className="text-white/60 text-sm">From {relatedProduct.price}</p>
+                <div className="text-center">
+                  <h3 className="text-base font-light">{relatedProduct.name}</h3>
+                  <p className="text-white/60 text-sm">From {relatedProduct.price}</p>
+                </div>
               </Link>
             ))}
           </div>
         </div>
+
+        {/* Testimonial Collection */}
+        <div className="mt-24">
+          <TestimonialCollection />
+        </div>
+
+        {/* Blog Section */}
+        <div className="mt-24">
+          <BlogSection />
+        </div>
+
+        {/* Wardrobe Section */}
+        <div className="mt-24">
+          <WardrobeSection />
+        </div>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   )
