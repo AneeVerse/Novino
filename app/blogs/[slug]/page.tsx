@@ -129,9 +129,9 @@ export default function BlogDetail() {
           
       </div>
 
-      <div className="container mx-auto px-2 sm:px-4 lg:px-6 py-12 mt-16 w-full">
-        <div className="max-w-[2400px] mx-auto w-full">
-          <div className="relative p-8 md:p-12" style={{ 
+      <div className="container mx-auto px-0 py-12 mt-16">
+        <div className="max-w-[2400px] mx-auto">
+          <div className="relative p-6 md:p-10" style={{ 
             backgroundImage: 'url("/images/product/Container (4).png")',
             backgroundSize: '100% 100%',
             backgroundPosition: 'center',
@@ -167,26 +167,18 @@ export default function BlogDetail() {
       </div>
       
       {/* Related Blog Posts */}
-      <div className="container mx-auto px-2 sm:px-4 lg:px-6 mt-16 w-full">
-        <div className="max-w-[2400px] mx-auto w-full">
-          <BlogSection />
-        </div>
+      <div className="container mx-auto px-0 mt-16">
+        <BlogSection />
       </div>
       
       {/* Wardrobe Section */}
-      <div className="container mx-auto px-2 sm:px-4 lg:px-6 mt-12 w-full">
-        <div className="max-w-[2400px] mx-auto w-full">
-          <WardrobeSection />
-        </div>
+      <div className="container mx-auto px-0 mt-12">
+        <WardrobeSection />
       </div>
       
       {/* Footer */}
       <div className="w-full">
-        <div className="container mx-auto px-2 sm:px-4 lg:px-6 w-full">
-          <div className="max-w-[2400px] mx-auto w-full">
-            <Footer />
-          </div>
-        </div>
+        <Footer />
       </div>
     </main>
   );
