@@ -130,8 +130,8 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
   const relatedProducts = paintingProductData.filter(p => p.id !== productId).slice(0, 3)
 
   return (
-    <div className="bg-[#2D2D2D] text-white min-h-screen">
-      <div className="w-full px-8 sm:px-12 lg:px-16 pt-24 pb-12">
+    <div className="bg-[#2D2D2D] text-white min-h-screen overflow-x-hidden">
+      <div className="w-full px-8 sm:px-12 lg:px-16 pt-24 pb-0">
        
 
         {/* Main product display with container image */}
@@ -352,7 +352,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
         </div>
 
         {/* Full-width image section after FAQs */}
-        <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw] mt-16 mb-20">
+        <div className="relative w-full left-1/2 transform -translate-x-1/2 mt-16 mb-16 overflow-hidden" style={{ width: "100vw" }}>
           <div className="relative w-full" style={{ paddingTop: "56.25%" }}>  {/* 16:9 aspect ratio */}
             <Image
               src="/images/product/image 13.png"
@@ -366,7 +366,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
         </div>
 
         {/* Related Products */}
-        <div className="mt-20 px-6 md:px-12 mx-auto w-full" style={{ maxWidth: "1600px" }}>
+        <div className="mt-16 px-6 md:px-12 mx-auto w-full" style={{ maxWidth: "1600px" }}>
           <h2 className="text-2xl font-light mb-8 text-center">Related Products</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {relatedProducts.map((relatedProduct) => (
@@ -394,22 +394,26 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
         </div>
 
         {/* Testimonial Collection */}
-        <div className="mt-24">
+        <div className="mt-12">
           <TestimonialCollection />
         </div>
 
-        {/* Blog Section */}
-        <div className="mt-24">
+        {/* Blog Section - reduced spacing */}
+        <div className="mt-8">
           <BlogSection />
         </div>
 
-        {/* Wardrobe Section */}
-        <div className="mt-24">
+        {/* Wardrobe Section - reduced spacing */}
+        <div className="mt-8">
           <WardrobeSection />
         </div>
+      </div>
 
-        {/* Footer */}
-        <Footer />
+      {/* Footer with specific width constraints and padding */}
+      <div className="w-full px-8 sm:px-12 lg:px-16">
+        <div className="mx-auto" style={{ maxWidth: "1600px" }}>
+          <Footer />
+        </div>
       </div>
     </div>
   )
