@@ -320,8 +320,21 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
         <div className="mx-auto border-t border-white/10 pt-12 pb-6 w-full" style={{ maxWidth: "1600px" }}>
           <h2 className="text-2xl font-light mb-8 px-6 md:px-12">FAQs</h2>
           <div className="flex flex-col md:flex-row gap-12 mx-auto px-6 md:px-12">
+            {/* Image on the right - moved to the top position in mobile and adjusted to appear higher */}
+            <div className="md:w-1/2 order-1 md:order-2 md:-mt-40">
+              <div className="relative w-full pt-[100%]">
+                <Image
+                  src="/images/product/image (7).png"
+                  alt="Product image"
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  className="opacity-95"
+                />
+              </div>
+            </div>
+            
             {/* FAQs on the left */}
-            <div className="md:w-1/2 text-white/90 space-y-6 py-6">
+            <div className="md:w-1/2 text-white/90 space-y-6 py-6 order-2 md:order-1">
               <div>
                 <h5 className="text-white text-base mb-2 font-bold">Do you ship internationally?</h5>
                 <p className="text-base">Yes, we offer worldwide shipping with tracking and insurance for all paintings.</p>
@@ -333,19 +346,6 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
               <div>
                 <h5 className="text-white text-base mb-2 font-bold">Do you offer framing services?</h5>
                 <p className="text-base">Yes, custom framing options are available at an additional cost. Please contact us for details.</p>
-              </div>
-            </div>
-            
-            {/* Image on the right */}
-            <div className="md:w-1/2">
-              <div className="relative w-full pt-[100%]">
-                <Image
-                  src="/images/product/image (7).png"
-                  alt="Product image"
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  className="opacity-95"
-                />
               </div>
             </div>
           </div>
