@@ -8,7 +8,7 @@ import productData from "@/public/data/painting-products.json"
 import Link from "next/link"
 
 interface Product {
-  id: number;
+  id: string | number;
   name?: string;
   title?: string;
   price?: string;
@@ -46,7 +46,7 @@ export default function ProductGrid({
       const filtered = propProducts.filter(product => product.category === activeCategory);
       
       // Sort the filtered products by id to ensure consistent order
-      filtered.sort((a, b) => a.id - b.id);
+      filtered.sort((a, b) => Number(a.id) - Number(b.id));
       
       console.log(`FILTERING - Found ${filtered.length} products in category "${activeCategory}":`, filtered);
       return filtered;
@@ -76,7 +76,7 @@ export default function ProductGrid({
   const isWideProduct = (product: Product, index: number): boolean => {
     // ONLY product with ID 3 (URBAN CANVAS) should be wide
     // And product with ID 8 (GEOMETRIC HARMONY)
-    if (product.id === 3 || product.id === 8) return true;
+    if (Number(product.id) === 3 || Number(product.id) === 8) return true;
     
     // Only use height if it's significantly large
     if (product.height && product.height > 1.4) return true;

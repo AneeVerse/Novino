@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronUp, ChevronDown, ArrowLeft } from "lucide-react"
@@ -9,6 +9,7 @@ import TestimonialCollection from "@/components/testimonial-collection"
 import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import Footer from "@/components/footer"
+import { useRouter } from "next/navigation"
 
 // Artefact products data
 const artefactProducts = [
@@ -75,9 +76,16 @@ interface ProductWithDescription {
   id: number;
   name?: string;
   price?: string;
-  image: string;
+  basePrice?: string;
+  image?: string;
+  images?: string[];
   category: string;
   description?: string;
+  variants?: any[];
+  type?: string;
+  specifications?: any;
+  faqSection?: any;
+  additionalImageUrl?: string;
 }
 
 // Helper type for accordion content
@@ -87,34 +95,189 @@ interface AccordionItem {
 }
 
 export default function ProductDetail({ params }: { params: { id: string } }) {
-  const productId = parseInt(params.id)
+  const router = useRouter()
+  const [product, setProduct] = useState<ProductWithDescription | undefined>(undefined)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [dataSource, setDataSource] = useState<'api' | 'fallback'>('fallback')
   
-  // Attempt to find the product in painting products first
-  let product: ProductWithDescription | undefined = paintingProductData.find(p => p.id === productId)
-  
-  // If not found in paintings, try to find in artefacts
-  if (!product) {
-    product = artefactProducts.find(p => p.id === productId)
-  }
-  
-  // If still not found, use default
-  if (!product) {
-    product = {
-      id: 1,
-      name: "ABSTRACT ELEGANCE",
-      price: "$2,327",
-      image: "/images/painting/2.1.png",
-      category: "Oil",
-      description: "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
-    }
-  }
-
   const [quantity, setQuantity] = useState(1)
   const [selectedFinish, setSelectedFinish] = useState("Natural")
   const [currentImage, setCurrentImage] = useState(1)
 
   const finishOptions = ["Natural", "Whiskey", "Midnight"]
   const totalImages = 11
+
+  // Validate the product ID parameter
+  const productId = params.id && params.id !== 'undefined' ? parseInt(params.id) : null
+  const isValidId = productId !== null && !isNaN(productId)
+  const [isInvalidRoute, setIsInvalidRoute] = useState(false)
+
+  // If we detect an invalid route, we could redirect programmatically
+  useEffect(() => {
+    if (params.id === 'undefined' && paintingProductData.length > 0) {
+      // If we have undefined in the URL, redirect to the first valid product
+      const firstValidProduct = paintingProductData[0]
+      if (firstValidProduct?.id) {
+        router.replace(`/product/${firstValidProduct.id}`)
+      }
+    }
+  }, [params.id, router])
+
+  useEffect(() => {
+    async function fetchProduct() {
+      setIsLoading(true)
+      
+      if (!isValidId) {
+        // If ID is invalid, show a featured product instead
+        setIsInvalidRoute(true)
+        
+        // Get the first product from the static data as featured
+        const featuredProduct = paintingProductData[0] || {
+          id: 1,
+          name: "ABSTRACT ELEGANCE",
+          price: "$2,327",
+          image: "/images/painting/2.1.png",
+          category: "Oil",
+          description: "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
+        }
+        
+        setProduct(featuredProduct)
+        setIsLoading(false)
+        return
+      }
+      
+      try {
+        // Ensure productId is a valid number for the API call
+        const safeProductId = typeof productId === 'number' ? productId : 1
+        console.log(`Fetching product with ID: ${safeProductId} from API...`);
+        
+        // Use absolute URL to avoid any path resolution issues
+        const apiUrl = `/api/products/${safeProductId}`;
+        console.log(`API URL: ${apiUrl}`);
+        
+        const startTime = Date.now();
+        const response = await fetch(apiUrl, { 
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          // Adding cache: 'no-store' to ensure fresh data always
+          cache: 'no-store'
+        });
+        const endTime = Date.now();
+        
+        console.log(`API response status: ${response.status} (took ${endTime - startTime}ms)`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('API data received:', data);
+          
+          if (data && (data.id || data._id)) {
+            // Parse ID correctly depending on type
+            let productId: number;
+            if (data.id && typeof data.id === 'number') {
+              productId = data.id;
+            } else if (data.id && typeof data.id === 'string') {
+              productId = parseInt(data.id) || safeProductId;
+            } else if (data._id) {
+              // MongoDB ObjectId case - convert to numeric ID if possible, else use safe ID
+              productId = typeof data._id === 'string' ? 
+                (data._id.match(/^[0-9]+$/) ? parseInt(data._id) : safeProductId) : 
+                safeProductId;
+            } else {
+              productId = safeProductId;
+            }
+            
+            // Format API data to match our component needs
+            const formattedProduct = {
+              id: productId,
+              name: data.name,
+              price: data.price || data.basePrice,
+              basePrice: data.basePrice || data.price,
+              image: data.image,
+              images: data.images,
+              category: data.category || 'Unknown',
+              description: data.description,
+              variants: Array.isArray(data.variants) ? data.variants : [],
+              type: data.type,
+              specifications: data.specifications,
+              faqSection: data.faqSection,
+              additionalImageUrl: data.additionalImageUrl
+            };
+            
+            console.log('Using API data for product display:', formattedProduct);
+            setProduct(formattedProduct);
+            setDataSource('api');
+            setError(null);
+          } else {
+            throw new Error('API returned data without ID');
+          }
+        } else {
+          // If API fails, fallback to local data
+          console.warn(`API request failed with status ${response.status}, using fallback data`);
+          
+          // Try to get response text for debugging
+          let responseText = '';
+          try {
+            responseText = await response.text();
+            console.error('API error response:', responseText);
+          } catch (e) {
+            console.error('Could not read API error response');
+          }
+          
+          // Attempt to find the product in painting products first
+          let fallbackProduct: ProductWithDescription | undefined = paintingProductData.find(p => p.id === safeProductId)
+          
+          // If not found in paintings, try to find in artefacts
+          if (!fallbackProduct) {
+            fallbackProduct = artefactProducts.find(p => p.id === safeProductId)
+          }
+          
+          // If still not found, use default
+          if (!fallbackProduct) {
+            fallbackProduct = paintingProductData[0] || {
+              id: 1,
+              name: "ABSTRACT ELEGANCE",
+              price: "$2,327",
+              image: "/images/painting/2.1.png",
+              category: "Oil",
+              description: "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
+            }
+          }
+          
+          console.log('Using fallback data for product display:', fallbackProduct);
+          setProduct(fallbackProduct);
+          setDataSource('fallback');
+          setError(`API Error (${response.status}): Could not load product from API, using fallback data`);
+        }
+      } catch (err) {
+        console.error('Error fetching product:', err);
+        
+        // Fallback to local data on error
+        const fallbackProduct = paintingProductData.find(p => p.id === productId) || 
+          artefactProducts.find(p => p.id === productId) || 
+          paintingProductData[0] || {
+            id: 1,
+            name: "ABSTRACT ELEGANCE",
+            price: "$2,327",
+            image: "/images/painting/2.1.png",
+            category: "Oil",
+            description: "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
+          };
+        
+        console.log('Using fallback data after error:', fallbackProduct);
+        setProduct(fallbackProduct);
+        setDataSource('fallback');
+        setError("Could not load product from API, using fallback data");
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchProduct()
+  }, [productId, isValidId, router])
 
   const increaseQuantity = () => {
     setQuantity(prev => prev + 1)
@@ -126,14 +289,56 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
     }
   }
 
-  // Related products - get 3 products instead of 2
-  const relatedProducts = paintingProductData.filter(p => p.id !== productId).slice(0, 3)
+  // Related products - get 3 products from static data for now
+  // This could be enhanced to fetch from API in the future
+  const relatedProducts = isValidId && product?.id 
+    ? paintingProductData.filter(p => p.id !== product.id).slice(0, 3)
+    : paintingProductData.slice(1, 4) // If showing featured product, show other products as related
+
+  if (isLoading) {
+    return (
+      <div className="bg-[#2D2D2D] text-white min-h-screen flex items-center justify-center">
+        <div className="text-2xl">Loading product...</div>
+      </div>
+    )
+  }
+
+  if (!product) {
+    return (
+      <div className="bg-[#2D2D2D] text-white min-h-screen flex items-center justify-center">
+        <div className="text-2xl">Product not found</div>
+      </div>
+    )
+  }
+
+  // Use either the image array or fallback to a single image
+  const productImage = product.image || (product.images && product.images.length > 0 ? product.images[0] : "/images/painting/2.1.png")
+  // Use either price or basePrice, whichever is available
+  const productPrice = product.price || product.basePrice || "$0"
 
   return (
     <div className="bg-[#2D2D2D] text-white min-h-screen overflow-x-hidden">
       <div className="w-full px-8 sm:px-12 lg:px-16 pt-24 pb-0">
        
-
+        {isInvalidRoute && (
+          <div className="bg-[#3D3D3D] text-white p-4 mb-6 rounded-md mx-auto" style={{ maxWidth: "1600px" }}>
+            <p className="text-center font-light">
+              <span className="text-amber-400 font-medium">Featured Product</span> — The requested product was not found. Showing a featured item instead.
+              <Link href="/paintings" className="ml-2 underline text-white/80 hover:text-white">
+                Browse all paintings
+              </Link>
+            </p>
+          </div>
+        )}
+        
+        {process.env.NODE_ENV === 'development' && (
+          <div className={`text-xs py-1 px-3 rounded-full absolute top-24 right-4 z-20 ${
+            dataSource === 'api' ? 'bg-green-600/70' : 'bg-orange-600/70'
+          }`}>
+            {dataSource === 'api' ? 'API Data' : 'Fallback Data'}
+          </div>
+        )}
+       
         {/* Main product display with container image */}
         <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1600px" }}>
           <div className="absolute inset-0" style={{ 
@@ -178,7 +383,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
                     }}>
                   </div>
                   <Image
-                    src={product.image}
+                    src={productImage}
                     alt={product.name || "Product Image"}
                     fill
                     style={{ objectFit: 'contain' }}
@@ -189,13 +394,16 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
 
               {/* Right column - Price and cart actions */}
               <div className="flex flex-col justify-center">
-                <div className="text-2xl font-light mb-4">{product.price} <span className="text-xs text-white/60 ml-1">inc Tax</span></div>
+                <div className="text-2xl font-light mb-4">{productPrice} <span className="text-xs text-white/60 ml-1">inc Tax</span></div>
                 
-                {/* Finish options */}
+                {/* Finish options - using variants if available, otherwise fallback to static options */}
                 <div className="mb-6">
                   <h3 className="uppercase text-xs text-white/60 mb-2">Frame</h3>
                   <div className="flex flex-wrap gap-2">
-                    {finishOptions.map((finish) => (
+                    {(product.variants && product.variants.length > 0 && product.variants[0].type === 'frame' 
+                      ? product.variants.map(variant => variant.name)
+                      : finishOptions
+                    ).map((finish) => (
                       <button 
                         key={finish}
                         onClick={() => setSelectedFinish(finish)}
@@ -266,7 +474,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
               <div className="md:w-5/12">
                 <div className="relative w-full pt-[100%]">
                   <Image
-                    src="/images/product/image 12.png"
+                    src={product.specifications?.imageUrl || "/images/product/image 12.png"}
                     alt="Product specifications diagram"
                     fill
                     style={{ objectFit: 'contain' }}
@@ -324,7 +532,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
             <div className="md:w-1/2 order-1 md:order-2 md:-mt-40">
               <div className="relative w-full pt-[100%]">
                 <Image
-                  src="/images/product/image (7).png"
+                  src={product.faqSection?.imageUrl || "/images/product/image (7).png"}
                   alt="Product image"
                   fill
                   style={{ objectFit: 'contain' }}
@@ -335,18 +543,31 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
             
             {/* FAQs on the left */}
             <div className="md:w-1/2 text-white/90 space-y-6 py-6 order-2 md:order-1">
-              <div>
-                <h5 className="text-white text-base mb-2 font-bold">Do you ship internationally?</h5>
-                <p className="text-base">Yes, we offer worldwide shipping with tracking and insurance for all paintings.</p>
-              </div>
-              <div>
-                <h5 className="text-white text-base mb-2 font-bold">What is the return policy?</h5>
-                <p className="text-base">We accept returns within 14 days of delivery if the painting is in its original condition.</p>
-              </div>
-              <div>
-                <h5 className="text-white text-base mb-2 font-bold">Do you offer framing services?</h5>
-                <p className="text-base">Yes, custom framing options are available at an additional cost. Please contact us for details.</p>
-              </div>
+              {product.faqSection && product.faqSection.faqs && product.faqSection.faqs.length > 0 ? (
+                // If FAQs are available from API, use them
+                product.faqSection.faqs.map((faq: any, index: number) => (
+                  <div key={faq.id || index}>
+                    <h5 className="text-white text-base mb-2 font-bold">{faq.question}</h5>
+                    <p className="text-base">{faq.answer}</p>
+                  </div>
+                ))
+              ) : (
+                // Otherwise, use default FAQs
+                <>
+                  <div>
+                    <h5 className="text-white text-base mb-2 font-bold">Do you ship internationally?</h5>
+                    <p className="text-base">Yes, we offer worldwide shipping with tracking and insurance for all paintings.</p>
+                  </div>
+                  <div>
+                    <h5 className="text-white text-base mb-2 font-bold">What is the return policy?</h5>
+                    <p className="text-base">We accept returns within 14 days of delivery if the painting is in its original condition.</p>
+                  </div>
+                  <div>
+                    <h5 className="text-white text-base mb-2 font-bold">Do you offer framing services?</h5>
+                    <p className="text-base">Yes, custom framing options are available at an additional cost. Please contact us for details.</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -355,7 +576,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
         <div className="relative w-full left-1/2 transform -translate-x-1/2 mt-16 mb-16 overflow-hidden" style={{ width: "100vw" }}>
           <div className="relative w-full" style={{ paddingTop: "56.25%" }}>  {/* 16:9 aspect ratio */}
             <Image
-              src="/images/product/image 13.png"
+              src={product.additionalImageUrl || "/images/product/image 13.png"}
               alt="Product showcase"
               fill
               style={{ objectFit: 'cover' }}

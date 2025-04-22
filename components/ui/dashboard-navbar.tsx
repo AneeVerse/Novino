@@ -134,6 +134,26 @@ function DashboardNavbarContent() {
             >
               Testimonials
             </Link>
+            <Link 
+              href="/dashboard?tab=paintings" 
+              className={`px-4 py-3 text-sm font-medium ${
+                currentTab === 'paintings'
+                  ? 'text-white border-b-2 border-[#A47E3B]' 
+                  : 'text-white/70 hover:text-white hover:bg-[#222222]'
+              } transition-colors`}
+            >
+              Paintings
+            </Link>
+            <Link 
+              href="/dashboard?tab=artefacts" 
+              className={`px-4 py-3 text-sm font-medium ${
+                currentTab === 'artefacts'
+                  ? 'text-white border-b-2 border-[#A47E3B]' 
+                  : 'text-white/70 hover:text-white hover:bg-[#222222]'
+              } transition-colors`}
+            >
+              Artefacts
+            </Link>
           </div>
         </div>
       </div>
@@ -177,6 +197,30 @@ function DashboardNavbarContent() {
                   } transition-colors`}
                 >
                   Testimonials
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/dashboard?tab=paintings" 
+                  className={`block px-4 py-2 text-sm ${
+                    currentTab === 'paintings'
+                      ? 'text-white bg-[#2A2A2A] font-medium rounded'
+                      : 'text-white/70 hover:text-white hover:bg-[#2A2A2A] rounded'
+                  } transition-colors`}
+                >
+                  Paintings
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/dashboard?tab=artefacts" 
+                  className={`block px-4 py-2 text-sm ${
+                    currentTab === 'artefacts'
+                      ? 'text-white bg-[#2A2A2A] font-medium rounded'
+                      : 'text-white/70 hover:text-white hover:bg-[#2A2A2A] rounded'
+                  } transition-colors`}
+                >
+                  Artefacts
                 </Link>
               </li>
               <li className="pt-2 mt-2 border-t border-[#333333]">

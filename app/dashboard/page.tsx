@@ -4,7 +4,9 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import BlogForm from '@/components/blog-form';
 import TestimonialForm from '@/components/testimonial-form';
+import EnhancedProductForm from '@/components/enhanced-product-form';
 import { getValidImageUrl } from '@/lib/imageUtils';
+import { Product as EnhancedProduct } from '@/app/dashboard/models/product';
 
 // Define types for our data
 interface Blog {
@@ -30,9 +32,59 @@ interface Testimonial {
   createdAt: string;
 }
 
+// Define product-related types
+interface ProductVariant {
+  id: string;
+  name: string;
+  type: 'frame' | 'color';
+  price?: string;
+  quantity: number;
+  imageUrl?: string;
+}
+
+interface ProductSpecification {
+  title: string;
+  content: string;
+  imageUrl?: string;
+}
+
+interface ProductFaq {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+interface FaqSection {
+  faqs: ProductFaq[];
+  imageUrl?: string;
+}
+
+// Define the Product interface with enhanced properties
+interface Product {
+  id: string;
+  _id?: string;
+  name: string;
+  price?: string;
+  basePrice?: string;
+  description: string;
+  image?: string;
+  images?: string[];
+  category: string;
+  type: 'painting' | 'artefact';
+  quantity?: number;
+  variants?: ProductVariant[];
+  specifications?: ProductSpecification;
+  faqSection?: FaqSection;
+  additionalImageUrl?: string;
+  createdAt?: string;
+}
+
 function DashboardContent() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [paintings, setPaintings] = useState<Product[]>([]);
+  const [artefacts, setArtefacts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<{id: string; name: string; type: 'painting' | 'artefact'}[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
@@ -40,12 +92,16 @@ function DashboardContent() {
   // State for forms
   const [showBlogForm, setShowBlogForm] = useState(false);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
+  const [showProductForm, setShowProductForm] = useState(false);
   const [currentBlog, setCurrentBlog] = useState<Blog | undefined>(undefined);
   const [currentTestimonial, setCurrentTestimonial] = useState<Testimonial | undefined>(undefined);
+  const [currentProduct, setCurrentProduct] = useState<Product | undefined>(undefined);
   
   // Form modes
   const [blogFormMode, setBlogFormMode] = useState<'add' | 'edit'>('add');
   const [testimonialFormMode, setTestimonialFormMode] = useState<'add' | 'edit'>('add');
+  const [productFormMode, setProductFormMode] = useState<'add' | 'edit'>('add');
+  const [productType, setProductType] = useState<'painting' | 'artefact'>('painting');
 
   // Function to fetch data from API
   const fetchData = async () => {
@@ -79,8 +135,62 @@ function DashboardContent() {
         id: testimonial._id || testimonial.id
       }));
       
+      // Fetch products
+      const productsResponse = await fetch('/api/products');
+      if (!productsResponse.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      const productsData = await productsResponse.json();
+      
+      // Process products and separate into paintings and artefacts
+      const processedProducts = productsData.map((product: any) => {
+        // Convert to a format compatible with our UI
+        const processedProduct: Product = {
+          id: product._id || product.id,
+          _id: product._id,
+          name: product.name,
+          description: product.description,
+          price: product.basePrice || product.price,
+          image: product.images?.[0] || product.image || '',
+          category: product.category,
+          type: product.type,
+          createdAt: product.createdAt
+        };
+        return processedProduct;
+      });
+      
+      const paintingsData = processedProducts.filter((product: Product) => product.type === 'painting');
+      const artefactsData = processedProducts.filter((product: Product) => product.type === 'artefact');
+      
+      // Fetch categories
+      try {
+        const categoriesResponse = await fetch('/api/categories');
+        if (categoriesResponse.ok) {
+          const categoriesData = await categoriesResponse.json();
+          setCategories(categoriesData.map((cat: any) => ({
+            id: cat._id || cat.id,
+            name: cat.name,
+            type: cat.type
+          })));
+        }
+      } catch (categoryErr) {
+        console.error('Error fetching categories:', categoryErr);
+        // Fallback categories if API fails
+        setCategories([
+          { id: '1', name: 'Oil', type: 'painting' },
+          { id: '2', name: 'Acrylic', type: 'painting' },
+          { id: '3', name: 'Watercolor', type: 'painting' },
+          { id: '4', name: 'Mixed Media', type: 'painting' },
+          { id: '5', name: 'Egyptian', type: 'artefact' },
+          { id: '6', name: 'Asian', type: 'artefact' },
+          { id: '7', name: 'European', type: 'artefact' }
+        ]);
+      }
+      
       setBlogs(processedBlogs);
       setTestimonials(processedTestimonials);
+      setPaintings(paintingsData);
+      setArtefacts(artefactsData);
     } catch (err: any) {
       console.error('Error fetching data:', err);
       setError(err.message || 'Failed to load data');
@@ -88,6 +198,8 @@ function DashboardContent() {
       // Fallback to sample data if API fails
       setBlogs(sampleBlogs);
       setTestimonials(sampleTestimonials);
+      setPaintings(samplePaintings);
+      setArtefacts(sampleArtefacts);
     } finally {
       setIsLoading(false);
     }
@@ -153,6 +265,87 @@ function DashboardContent() {
     }
   };
 
+  // Function to handle editing a product
+  const handleEditProduct = (product: Product) => {
+    setCurrentProduct(product);
+    setProductType(product.type);
+    setProductFormMode('edit');
+    setShowProductForm(true);
+  };
+
+  // Function to handle deleting a product
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    
+    try {
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+      
+      // Remove the product from the state
+      setPaintings(paintings.filter(product => product.id !== id));
+      setArtefacts(artefacts.filter(product => product.id !== id));
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      alert('Failed to delete product. Please try again.');
+    }
+  };
+
+  // Transform the simple product to enhanced format for the form
+  const convertToEnhancedProduct = (product: Product | undefined): EnhancedProduct | undefined => {
+    if (!product) return undefined;
+    
+    // For editing an existing product, fetch the complete product data
+    const fetchCompleteProduct = async () => {
+      try {
+        const response = await fetch(`/api/products/${product.id}`);
+        if (response.ok) {
+          const completeProduct = await response.json();
+          // Update the state with the complete product data
+          setCurrentProduct({
+            ...product,
+            ...completeProduct
+          });
+          return completeProduct;
+        }
+      } catch (err) {
+        console.error('Error fetching complete product data:', err);
+      }
+      return null;
+    };
+    
+    // If in edit mode, attempt to fetch complete data
+    if (productFormMode === 'edit') {
+      fetchCompleteProduct();
+    }
+    
+    return {
+      id: product.id,
+      _id: product._id,
+      name: product.name,
+      description: product.description,
+      basePrice: product.price || product.basePrice,
+      quantity: product.quantity || 1,
+      images: product.images || (product.image ? [product.image] : []),
+      category: product.category,
+      type: product.type,
+      variants: product.variants || [],
+      specifications: product.specifications || {
+        title: '',
+        content: ''
+      },
+      faqSection: product.faqSection || {
+        faqs: []
+      },
+      additionalImageUrl: product.additionalImageUrl || '',
+      createdAt: product.createdAt || new Date().toISOString()
+    };
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[70vh]">
@@ -200,6 +393,24 @@ function DashboardContent() {
         >
           Testimonials
         </button>
+        <button
+          onClick={() => setActiveTab('paintings')}
+          className={`px-4 py-2 rounded ${activeTab === 'paintings' ? 'bg-[#A47E3B] text-white' : 'bg-[#222222] text-white/70 hover:bg-[#333333]'}`}
+        >
+          Paintings
+        </button>
+        <button
+          onClick={() => setActiveTab('artefacts')}
+          className={`px-4 py-2 rounded ${activeTab === 'artefacts' ? 'bg-[#A47E3B] text-white' : 'bg-[#222222] text-white/70 hover:bg-[#333333]'}`}
+        >
+          Artefacts
+        </button>
+        <Link 
+          href="/dashboard/settings/categories"
+          className="px-4 py-2 rounded bg-[#222222] text-white/70 hover:bg-[#333333]"
+        >
+          Categories
+        </Link>
       </div>
 
       {/* Content based on active tab */}
@@ -370,6 +581,178 @@ function DashboardContent() {
         </div>
       )}
       
+      {/* Paintings Tab */}
+      {activeTab === 'paintings' && (
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold text-white">Manage Paintings</h1>
+            <div className="flex space-x-2">
+              <Link 
+                href="/dashboard/settings/categories?type=painting"
+                className="px-4 py-2 bg-[#333333] text-white rounded hover:bg-[#444444] transition"
+              >
+                Manage Categories
+              </Link>
+              <button 
+                onClick={() => {
+                  setCurrentProduct(undefined);
+                  setProductType('painting');
+                  setProductFormMode('add');
+                  setShowProductForm(true);
+                }}
+                className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
+              >
+                Add New Painting
+              </button>
+            </div>
+          </div>
+          
+          {/* Paintings Table */}
+          <div className="bg-[#222222] rounded-lg overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-[#1A1A1A] border-b border-[#333333]">
+                  <th className="text-left p-4 text-white font-medium">Name</th>
+                  <th className="text-left p-4 text-white font-medium hidden md:table-cell">Price</th>
+                  <th className="text-left p-4 text-white font-medium hidden lg:table-cell">Category</th>
+                  <th className="text-right p-4 text-white font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paintings.map((product) => (
+                  <tr key={product.id} className="border-b border-[#333333] hover:bg-[#2A2A2A]">
+                    <td className="p-4 text-white">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded overflow-hidden mr-3 flex-shrink-0">
+                          <img src={getValidImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="truncate max-w-[200px]">{product.name}</div>
+                      </div>
+                    </td>
+                    <td className="p-4 text-white/70 hidden md:table-cell">
+                      {product.price}
+                    </td>
+                    <td className="p-4 text-white/70 hidden lg:table-cell">
+                      {product.category}
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex justify-end items-center space-x-2">
+                        <button
+                          onClick={() => handleEditProduct(product)}
+                          className="px-3 py-1 bg-[#333333] text-white/70 rounded hover:bg-[#444444] hover:text-white text-sm transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="px-3 py-1 bg-[#392222] text-[#ff9494] rounded hover:bg-[#4a2b2b] hover:text-white text-sm transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                
+                {paintings.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-center text-white/50">
+                      No paintings found. Add a new painting to get started.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Artefacts Tab */}
+      {activeTab === 'artefacts' && (
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold text-white">Manage Artefacts</h1>
+            <div className="flex space-x-2">
+              <Link 
+                href="/dashboard/settings/categories?type=artefact"
+                className="px-4 py-2 bg-[#333333] text-white rounded hover:bg-[#444444] transition"
+              >
+                Manage Categories
+              </Link>
+              <button 
+                onClick={() => {
+                  setCurrentProduct(undefined);
+                  setProductType('artefact');
+                  setProductFormMode('add');
+                  setShowProductForm(true);
+                }}
+                className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
+              >
+                Add New Artefact
+              </button>
+            </div>
+          </div>
+          
+          {/* Artefacts Table */}
+          <div className="bg-[#222222] rounded-lg overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-[#1A1A1A] border-b border-[#333333]">
+                  <th className="text-left p-4 text-white font-medium">Name</th>
+                  <th className="text-left p-4 text-white font-medium hidden md:table-cell">Price</th>
+                  <th className="text-left p-4 text-white font-medium hidden lg:table-cell">Category</th>
+                  <th className="text-right p-4 text-white font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {artefacts.map((product) => (
+                  <tr key={product.id} className="border-b border-[#333333] hover:bg-[#2A2A2A]">
+                    <td className="p-4 text-white">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded overflow-hidden mr-3 flex-shrink-0">
+                          <img src={getValidImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="truncate max-w-[200px]">{product.name}</div>
+                      </div>
+                    </td>
+                    <td className="p-4 text-white/70 hidden md:table-cell">
+                      {product.price}
+                    </td>
+                    <td className="p-4 text-white/70 hidden lg:table-cell">
+                      {product.category}
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex justify-end items-center space-x-2">
+                        <button
+                          onClick={() => handleEditProduct(product)}
+                          className="px-3 py-1 bg-[#333333] text-white/70 rounded hover:bg-[#444444] hover:text-white text-sm transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="px-3 py-1 bg-[#392222] text-[#ff9494] rounded hover:bg-[#4a2b2b] hover:text-white text-sm transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                
+                {artefacts.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-center text-white/50">
+                      No artefacts found. Add a new artefact to get started.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      
       {/* Overview tab */}
       {(!activeTab || activeTab === 'overview') && (
         <div>
@@ -463,12 +846,27 @@ function DashboardContent() {
           }} 
         />
       )}
+      
+      {showProductForm && (
+        <EnhancedProductForm 
+          mode={productFormMode} 
+          product={convertToEnhancedProduct(currentProduct)}
+          productType={productType}
+          categories={categories.filter(cat => 
+            cat.type === productType
+          )}
+          onCancel={() => {
+            setShowProductForm(false);
+            fetchData(); // Refresh data when form is closed
+          }} 
+        />
+      )}
     </div>
   );
 }
 
-// Sample data for fallback
-const sampleBlogs: Blog[] = [
+// Sample data for testing
+const sampleBlogs = [
   {
     id: '1',
     title: 'Sample Blog Post 1',
@@ -480,7 +878,7 @@ const sampleBlogs: Blog[] = [
   // ... more sample blogs if needed
 ];
 
-const sampleTestimonials: Testimonial[] = [
+const sampleTestimonials = [
   {
     id: '1',
     name: 'John Doe',
@@ -491,6 +889,52 @@ const sampleTestimonials: Testimonial[] = [
     createdAt: new Date().toISOString()
   },
   // ... more sample testimonials if needed
+];
+
+const samplePaintings = [
+  {
+    id: '1',
+    name: "AUTUMN BREEZE",
+    price: "$1,250",
+    category: "Oil",
+    description: "A vibrant autumn landscape with rich colors depicting the changing of seasons.",
+    image: "/images/mug-black.png",
+    type: 'painting' as 'painting',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: '2',
+    name: "SERENITY",
+    price: "$950",
+    category: "Acrylic",
+    description: "An abstract piece conveying tranquility through soft blue and green tones.",
+    image: "/images/mug-white.png",
+    type: 'painting' as 'painting',
+    createdAt: new Date().toISOString()
+  },
+];
+
+const sampleArtefacts = [
+  {
+    id: '1',
+    name: "ANCIENT VASE",
+    price: "$3,250",
+    category: "Egyptian",
+    description: "This ancient Egyptian vase features intricate hieroglyphics and traditional design elements.",
+    image: "/images/mug-black.png",
+    type: 'artefact' as 'artefact',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: '2',
+    name: "JADE FIGURINE",
+    price: "$2,870",
+    category: "Asian",
+    description: "This exquisite jade figurine showcases the meticulous craftsmanship of Asian artisans.",
+    image: "/images/cycle1.png",
+    type: 'artefact' as 'artefact',
+    createdAt: new Date().toISOString()
+  },
 ];
 
 export default function Dashboard() {

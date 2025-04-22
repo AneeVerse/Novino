@@ -42,6 +42,40 @@ export default function PaintingsPage() {
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const [showText, setShowText] = useState(false);
 
+  // State for dynamic painting products
+  interface SimpleProduct {
+    id: string;
+    name: string;
+    price: string;
+    image: string;
+    category: string;
+  }
+  const [paintingProducts, setPaintingProducts] = useState<SimpleProduct[]>([]);
+  
+  // Fetch painting products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('/api/products');
+        if (!res.ok) throw new Error('Failed to fetch products');
+        const data = await res.json();
+        const filtered = data
+          .filter((p: any) => p.type === 'painting')
+          .map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: p.basePrice || p.price,
+            image: p.images?.[0] || p.image,
+            category: p.category
+          }));
+        setPaintingProducts(filtered);
+      } catch (err) {
+        console.error('Error fetching painting products:', err);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   // Initial load - delay text appearance
   useEffect(() => {
     // Delay showing text on initial load
@@ -158,6 +192,7 @@ export default function PaintingsPage() {
           <PaintingProductGrid 
             title="Masterpiece Collection" 
             subtitle="Featured Collection" 
+            products={paintingProducts}
             categories={categories}
             viewAllText="View all paintings"
           />
