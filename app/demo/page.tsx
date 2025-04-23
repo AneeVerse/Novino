@@ -390,7 +390,7 @@ export default function DemoPage() {
           {/* Full background image */}
           <div className="relative w-full h-[300px]">
             <Image 
-              src="/images/wardrobe/b1 (2).png" 
+              src="/images/wardrobe/b1 (1).png" 
               alt="Wardrobe background" 
               fill 
               className="object-cover"
