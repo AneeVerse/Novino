@@ -139,7 +139,7 @@ export default function Home() {
       if (autoplayRef.current) clearTimeout(autoplayRef.current);
       autoplayRef.current = setTimeout(() => {
         emblaApi.scrollNext();
-      }, 10000); // 10 seconds between slides
+      }, 7000); // 7 seconds between slides
     };
 
     // Start autoplay
