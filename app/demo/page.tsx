@@ -386,8 +386,43 @@ export default function DemoPage() {
         </div>
 
         {/* Wardrobe Section */}
-        <div className="mb-16">
-          <WardrobeSection />
+        <div className="relative mx-2 mb-16 overflow-hidden rounded-3xl max-w-[2400px]">
+          {/* Full background image */}
+          <div className="relative w-full h-[300px]">
+            <Image 
+              src="/images/wardrobe/b1 (2).png" 
+              alt="Wardrobe background" 
+              fill 
+              className="object-cover"
+              style={{
+                objectPosition: '-200px center',
+                transform: 'scale(1)',
+              }}
+              priority
+            />
+            
+            {/* Content overlay */}
+            <div className="absolute inset-0 flex flex-col md:flex-row items-center p-8 md:p-12">
+              {/* Left content section */}
+              <div className="md:w-3/5 z-10">
+                <h2 className="text-black text-3xl md:text-4xl font-bold mb-4">ELEVATE YOUR WARDROBE</h2>
+                <p className="text-black text-base md:text-lg max-w-2xl">
+                  Don't miss out – experience the epitome of fashion by clicking 'Buy Now' and embrace a world of chic elegance delivered to your doorstep. Your style journey begins here.
+                </p>
+              </div>
+
+              {/* Button section - aligned with circle */}
+              <div className="md:absolute md:right-32 md:top-1/2 md:-translate-y-1/2 mt-6 md:mt-0 z-10">
+                <Link
+                  href="/shop"
+                  className="bg-white text-black px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
+                >
+                  Shop Now
+                  <span className="inline-block transform rotate-45">↗</span>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Footer Section */}
