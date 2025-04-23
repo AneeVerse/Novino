@@ -268,7 +268,8 @@ export default function Home() {
                           src={product.image}
                           alt={product.name}
                           fill
-                          className="object-contain p-4" 
+                          className={`object-contain ${product.category === "Mugs" ? "p-0 scale-125" : "p-4"}`}
+                          style={product.category === "Mugs" ? { transform: 'scale(1.25)' } : {}}
                         />
                       </div>
                       <div className="p-4 bg-[#333333]">
@@ -286,7 +287,8 @@ export default function Home() {
                           src={product.image}
                           alt={product.name}
                           fill
-                          className="object-contain p-4" 
+                          className={`object-contain ${product.category === "Mugs" ? "p-0 scale-125" : "p-4"}`}
+                          style={product.category === "Mugs" ? { transform: 'scale(1.25)' } : {}}
                         />
                       </div>
                       <div className="p-4 bg-[#333333]">
@@ -339,7 +341,8 @@ export default function Home() {
                           src={product.image}
                           alt={product.name}
                           fill
-                          className="object-contain p-4" 
+                          className={`object-contain ${product.category === "Mugs" ? "p-0 scale-125" : "p-4"}`}
+                          style={product.category === "Mugs" ? { transform: 'scale(1.25)' } : {}}
                         />
                       </div>
                       <div className="p-4 bg-[#333333]">
