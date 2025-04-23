@@ -77,7 +77,7 @@ const products = [
   }
 ];
 
-export default function Home() {
+export default function DemoPage() {
   const [activeCategory, setActiveCategory] = useState("All Products");
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
@@ -203,7 +203,7 @@ export default function Home() {
             }}
           ></div>
           <h1 
-            className={`text-[#FFFFFF] text-[160px] md:text-[230px] lg:text-[330px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            className={`text-[#312F30] text-[160px] md:text-[230px] lg:text-[330px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
             style={{ fontFamily: 'DM Serif Display, serif', top: '41%', left: '51%', transform: 'translate(-50%, 200%)', letterSpacing: '0.15em' }}
           >
             NOVINO
@@ -415,5 +415,4 @@ export default function Home() {
       `}</style>
     </main>
   );
-}
-
+} 
