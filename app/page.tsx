@@ -196,15 +196,15 @@ export default function Home() {
               height: '270px',
               background: '#E8B08A',
               filter: 'blur(60px)',
-              opacity: 0.4,
-              width: '50%',
+              opacity: 0.6,
+              width: '100%',
               zIndex: -1,
               bottom: 'auto'
             }}
           ></div>
           <h1 
-            className={`text-[#FFFFFF] text-[180px] md:text-[250px] lg:text-[350px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
-            style={{ fontFamily: 'DM Serif Display, serif', top: '38%', left: '50%', transform: 'translate(-50%, 200%)' }}
+            className={`text-[#FFFFFF] text-[160px] md:text-[230px] lg:text-[330px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            style={{ fontFamily: 'DM Serif Display, serif', top: '41%', left: '50%', transform: 'translate(-50%, 200%)', letterSpacing: '0.15em' }}
           >
             NOVINO
           </h1>
