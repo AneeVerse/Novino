@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Edit, Trash, Plus } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -12,7 +12,7 @@ interface Category {
   description?: string;
 }
 
-export default function CategoriesPage() {
+function CategoriesContent() {
   const searchParams = useSearchParams();
   const typeParam = searchParams ? searchParams.get('type') : null;
   
@@ -333,5 +333,17 @@ export default function CategoriesPage() {
         </table>
       </div>
     </div>
+  );
+}
+
+export default function CategoriesPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto pt-8 px-4">
+        <div className="text-white">Loading categories...</div>
+      </div>
+    }>
+      <CategoriesContent />
+    </Suspense>
   );
 } 
