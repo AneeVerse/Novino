@@ -415,7 +415,7 @@ export default function DemoPage() {
               <div className="md:absolute md:right-32 md:top-1/2 md:-translate-y-1/2 mt-6 md:mt-0 z-10">
                 <Link
                   href="/shop"
-                  className="bg-white text-black px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
+                  className="bg-black text-white px-6 py-3 rounded-lg hover:bg-black transition-colors flex items-center gap-2"
                 >
                   Shop Now
                   <span className="inline-block transform rotate-45">↗</span>

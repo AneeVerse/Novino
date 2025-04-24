@@ -125,14 +125,14 @@ export default function BlogSection({ showViewAllButton = true, showAllBlogs = f
           <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light font-['DM_Serif_Display'] relative z-50 mb-2">Blogs</h2>
           <p className="text-white text-sm sm:text-base opacity-90 mb-4 font-['Roboto_Mono']">Find all the jewellery you will need here.</p>
           {showViewAllButton && (
-            <div className="absolute top-0 right-4 sm:right-8 z-50">
+            <div className="absolute top-0 right-2 sm:right-8 z-50">
               <Link 
                 href="/journal"
-                className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer gap-2"
+                className="inline-flex items-center px-3 py-1 sm:px-6 sm:py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-xs sm:text-base cursor-pointer gap-1 sm:gap-2"
                 style={{ borderRadius: '10px' }}
               >
                 View All
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </Link>

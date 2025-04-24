@@ -146,16 +146,16 @@ export default function TestimonialCollection() {
         </div>
 
         {/* Abstract design in top right - controllable positioning */}
-        <div className="absolute top-[-2px] -right-12 w-40 h-40 sm:w-64 sm:h-64 overflow-visible" style={{
+        <div className="absolute top-[-2px] -right-12 w-0 h-0 sm:w-24 md:w-64 sm:h-24 md:h-64 overflow-visible" style={{
           // You can adjust these values to move the container
           transform: 'translate(var(--container-x, 0px), var(--container-y, 0px))'
         }}>
           <Image 
-            src="/images/abstract-design.png" 
+            src="/images/testimonals/abstract.png" 
             alt="Abstract design" 
-            width={250} 
-            height={250} 
-            className="object-contain max-w-none" 
+            width={330} 
+            height={330} 
+            className="hidden sm:block object-contain max-w-none sm:scale-50 md:scale-100" 
             style={{ 
               position: 'absolute',
               // You can adjust these values to move the image within the container

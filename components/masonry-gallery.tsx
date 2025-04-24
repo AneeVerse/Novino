@@ -71,8 +71,8 @@ export default function MasonryGallery() {
         />
       </div>
       
-      {/* Category Filters */}
-      <div className="flex flex-wrap justify-center items-center gap-2 xs:gap-3 sm:gap-4 mb-8 mt-8 relative">
+      {/* Category Filters - Adjusted main container margin for mobile */}
+      <div className="flex flex-wrap justify-center items-center gap-2 xs:gap-3 sm:gap-4 mb-8 sm:mb-12 mt-8 relative">
         {Object.keys(categories).map((category) => (
           <div key={category} className="relative inline-block my-4">
             <button 
@@ -99,8 +99,9 @@ export default function MasonryGallery() {
           </div>
         ))}
         
-        {/* Shop Now button - aligned with category buttons */}
-        <div className="absolute right-4 sm:right-6 z-10">
+        {/* Shop Now button 1 (Desktop/Tablet) - Hidden on mobile */}
+        {/* Added hidden sm:flex */}
+        <div className="hidden sm:flex w-full sm:w-auto mt-4 sm:mt-0 sm:absolute right-4 sm:right-6 z-10 justify-center sm:justify-end">
           <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer" style={{ borderRadius: '10px' }}>
             View all
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-2">
@@ -110,9 +111,10 @@ export default function MasonryGallery() {
         </div>
       </div>
 
-      {/* Masonry Gallery */}
+      {/* Masonry Gallery (Desktop) - Controlled by CSS now */}
       <Masonry
         breakpointCols={breakpointColumnsObj}
+        // Removed hidden md:flex, CSS handles display
         className="my-masonry-grid"
         columnClassName="my-masonry-grid_column"
       >
@@ -127,7 +129,8 @@ export default function MasonryGallery() {
           else if (categories.kids.includes(imageNum)) imageCategory = "Kids";
           
           return (
-            <div key={imageNum} className="overflow-hidden gallery-image-container mb-3">
+            // Added md:mb-3 for desktop margin
+            <div key={imageNum} className="overflow-hidden gallery-image-container md:mb-3">
               <div className="relative border-0 rounded-sm overflow-hidden">
                 <Image
                   src={`/images/grid-gallery/bg3 ${imgIndex}.png`}
@@ -149,10 +152,60 @@ export default function MasonryGallery() {
         })}
       </Masonry>
 
+      {/* Horizontal Scroll Gallery (Mobile) - Controlled by CSS now */}
+      {/* Added mobile-scroll-gallery class, removed md:hidden */}
+      <div className="mobile-scroll-gallery flex overflow-x-auto space-x-3 pb-4 scrollbar-hide pl-1">
+        {images.map((imageNum) => {
+          // Use modulo to handle more images than we might have available
+          const imgIndex = (imageNum % 12) + 1;
+          
+          // Determine which category this image belongs to
+          let imageCategory = "All";
+          if (categories.mens.includes(imageNum)) imageCategory = "Mens";
+          else if (categories.womens.includes(imageNum)) imageCategory = "Womens";
+          else if (categories.kids.includes(imageNum)) imageCategory = "Kids";
+          
+          return (
+            // Apply mobile-specific styles: fixed width, no shrinking
+            <div key={`mobile-${imageNum}`} className="overflow-hidden gallery-image-container w-52 sm:w-60 flex-shrink-0">
+              <div className="relative border-0 rounded-sm overflow-hidden">
+                <Image
+                  src={`/images/grid-gallery/bg3 ${imgIndex}.png`}
+                  alt={`Abstract art ${imgIndex}`}
+                  width={280} // Base width/height for aspect ratio
+                  height={280} // Base width/height for aspect ratio
+                  priority
+                  className="w-full h-auto object-cover gallery-image"
+                />
+                {/* Overlay always visible on mobile (handled by existing CSS) */}
+                <div className="gallery-image-overlay">
+                  <span className="inline-block bg-white/90 text-black text-xs px-2 py-1 rounded mb-1">
+                    {imageCategory}
+                  </span>
+                  <h3 className="text-white text-xs font-medium">Abstract Art {imgIndex}</h3>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Shop Now button 2 (Mobile) - Shown only on mobile, below gallery */}
+      {/* Added sm:hidden */}
+      <div className="flex sm:hidden w-full mt-6 z-10 justify-center">
+        <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer" style={{ borderRadius: '10px' }}>
+          View all
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-2">
+            <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
       {/* Add some CSS for the masonry grid */}
       <style jsx global>{`
         .my-masonry-grid {
-          display: flex;
+          /* Keep display: flex; */
+          display: flex; 
           width: auto;
           margin-left: -8px; /* Smaller gap to match Figma design */
         }
@@ -198,6 +251,34 @@ export default function MasonryGallery() {
             padding: 6px;
             opacity: 1; /* Always show overlay on mobile for better UX */
           }
+        }
+
+        /* Explicitly control display based on screen size */
+        @media (max-width: 767px) { /* Mobile */
+          .my-masonry-grid {
+            display: none !important; /* Hide Masonry */
+          }
+          .mobile-scroll-gallery {
+            display: flex !important; /* Show Scroll */
+          }
+        }
+
+        @media (min-width: 768px) { /* Desktop */
+          .my-masonry-grid {
+            display: flex !important; /* Show Masonry (as required by library) */
+          }
+          .mobile-scroll-gallery {
+            display: none !important; /* Hide Scroll */
+          }
+        }
+
+        /* Utility to hide scrollbars (optional but often desired for horizontal scroll) */
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
         }
       `}</style>
     </div>
