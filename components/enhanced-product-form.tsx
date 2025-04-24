@@ -205,6 +205,35 @@ export default function EnhancedProductForm({
     }
   }, [mode, product, categories, productType]);
 
+  // Fetch full product details when editing to populate all sections
+  useEffect(() => {
+    if (mode === 'edit' && product?.id) {
+      (async () => {
+        try {
+          const res = await fetch(`/api/products/${product.id}`);
+          if (!res.ok) throw new Error('Failed to fetch product details');
+          const full = await res.json();
+          // Populate all form fields
+          setName(full.name || '');
+          setDescription(full.description || '');
+          setBasePrice(full.basePrice || full.price || '');
+          setQuantity(full.quantity || 1);
+          setSelectedCategory(full.category || '');
+          setImages(full.images || (full.image ? [full.image] : []));
+          setVariants(full.variants || []);
+          setSpecificationTitle(full.specifications?.title || '');
+          setSpecificationContent(full.specifications?.content || '');
+          setSpecificationImage(full.specifications?.imageUrl || '');
+          setFaqs(full.faqSection?.faqs || []);
+          setFaqImageUrl(full.faqSection?.imageUrl || '');
+          setAdditionalImageUrl(full.additionalImageUrl || '');
+        } catch (err) {
+          console.error('Error loading full product data for edit:', err);
+        }
+      })();
+    }
+  }, [mode, product?.id]);
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

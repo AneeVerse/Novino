@@ -100,12 +100,7 @@ export default async function handler(
             product = await collection.findOne({ id: numericId });
           }
           
-          // If still no result, try to find the first product (fallback)
-          if (!product) {
-            console.log('No product found with specific ID, fetching first product as fallback');
-            product = await collection.findOne({});
-          }
-          
+          // If no product found, return 404
           if (!product) {
             return res.status(404).json({ success: false, error: 'Product not found' });
           }
@@ -114,6 +109,9 @@ export default async function handler(
           if (product && !product.id && product._id) {
             product.id = product._id.toString();
           }
+          
+          // Disable caching for product details to ensure fresh data always
+          res.setHeader('Cache-Control', 'no-store, max-age=0');
           
           res.status(200).json(product);
         } catch (err) {

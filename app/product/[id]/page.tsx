@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronUp, ChevronDown, ArrowLeft } from "lucide-react"
+import { ChevronUp, ChevronDown, ArrowLeft, Plus, Minus } from "lucide-react"
 import paintingProductData from "@/public/data/painting-products.json"
 import TestimonialCollection from "@/components/testimonial-collection"
 import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import Footer from "@/components/footer"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
+import { useCallback } from "react"
 
 // Artefact products data
 const artefactProducts = [
@@ -94,9 +95,11 @@ interface AccordionItem {
   content: React.ReactNode;
 }
 
-export default function ProductDetail({ params }: { params: { id: string } }) {
+export default function ProductDetail() {
   const router = useRouter()
+  const params = useParams()
   const [product, setProduct] = useState<ProductWithDescription | undefined>(undefined)
+  const [categoryName, setCategoryName] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [dataSource, setDataSource] = useState<'api' | 'fallback'>('fallback')
@@ -104,25 +107,36 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
   const [quantity, setQuantity] = useState(1)
   const [selectedFinish, setSelectedFinish] = useState("Natural")
   const [currentImage, setCurrentImage] = useState(1)
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
 
   const finishOptions = ["Natural", "Whiskey", "Midnight"]
   const totalImages = 11
 
-  // Validate the product ID parameter
-  const productId = params.id && params.id !== 'undefined' ? parseInt(params.id) : null
-  const isValidId = productId !== null && !isNaN(productId)
+  // Next.js useParams returns string | string[] | undefined
+  const rawId = params?.id
+  // Extract single string ID
+  const paramId = Array.isArray(rawId) ? rawId[0] : rawId
+  // Use raw string ID for API calls
+  const productId = paramId && paramId !== 'undefined' ? paramId : null
+  const isValidId = typeof productId === 'string' && productId.length > 0
   const [isInvalidRoute, setIsInvalidRoute] = useState(false)
+
+  // FAQ accordion state
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const toggleFaq = (index: number) => {
+    setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
 
   // If we detect an invalid route, we could redirect programmatically
   useEffect(() => {
-    if (params.id === 'undefined' && paintingProductData.length > 0) {
+    if (paramId === 'undefined' && paintingProductData.length > 0) {
       // If we have undefined in the URL, redirect to the first valid product
       const firstValidProduct = paintingProductData[0]
       if (firstValidProduct?.id) {
         router.replace(`/product/${firstValidProduct.id}`)
       }
     }
-  }, [params.id, router])
+  }, [paramId, router])
 
   useEffect(() => {
     async function fetchProduct() {
@@ -148,8 +162,8 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
       }
       
       try {
-        // Ensure productId is a valid number for the API call
-        const safeProductId = typeof productId === 'number' ? productId : 1
+        // Use string ID for the API call
+        const safeProductId = productId as string
         console.log(`Fetching product with ID: ${safeProductId} from API...`);
         
         // Use absolute URL to avoid any path resolution issues
@@ -209,6 +223,25 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
             
             console.log('Using API data for product display:', formattedProduct);
             setProduct(formattedProduct);
+            // Lookup category name
+            try {
+              const catsRes = await fetch('/api/categories');
+              if (catsRes.ok) {
+                const cats = await catsRes.json();
+                const catItem = cats.find((cat: any) => (cat._id || cat.id) === formattedProduct.category);
+                setCategoryName(catItem?.name || formattedProduct.category);
+              } else {
+                setCategoryName(formattedProduct.category);
+              }
+            } catch (e) {
+              console.error('Error fetching categories:', e);
+              setCategoryName(formattedProduct.category);
+            }
+            // Initialize selected frame variant
+            const frameVariants = Array.isArray(formattedProduct.variants)
+              ? formattedProduct.variants.filter((v: any) => v.type === 'frame')
+              : [];
+            setSelectedVariant(frameVariants[0] || null);
             setDataSource('api');
             setError(null);
           } else {
@@ -248,7 +281,15 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
           }
           
           console.log('Using fallback data for product display:', fallbackProduct);
-          setProduct(fallbackProduct);
+          // Cast to full ProductWithDescription for type safety
+          const typedFallback = fallbackProduct as unknown as ProductWithDescription;
+          setProduct(typedFallback);
+          setCategoryName(typedFallback.category);
+          // Initialize fallback selected variant if any
+          const frameVars = Array.isArray(typedFallback.variants)
+            ? typedFallback.variants.filter((v: any) => v.type === 'frame')
+            : [];
+          setSelectedVariant(frameVars[0] || null);
           setDataSource('fallback');
           setError(`API Error (${response.status}): Could not load product from API, using fallback data`);
         }
@@ -268,7 +309,14 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
           };
         
         console.log('Using fallback data after error:', fallbackProduct);
-        setProduct(fallbackProduct);
+        const typedFallback = fallbackProduct as unknown as ProductWithDescription;
+        setProduct(typedFallback);
+        // Initialize fallback selected variant if any
+        const frameVars = Array.isArray(typedFallback.variants)
+          ? typedFallback.variants.filter((v: any) => v.type === 'frame')
+          : [];
+        setSelectedVariant(frameVars[0] || null);
+        setCategoryName(typedFallback.category);
         setDataSource('fallback');
         setError("Could not load product from API, using fallback data");
       } finally {
@@ -277,7 +325,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
     }
     
     fetchProduct()
-  }, [productId, isValidId, router])
+  }, [productId, router])
 
   const increaseQuantity = () => {
     setQuantity(prev => prev + 1)
@@ -315,6 +363,15 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
   const productImage = product.image || (product.images && product.images.length > 0 ? product.images[0] : "/images/painting/2.1.png")
   // Use either price or basePrice, whichever is available
   const productPrice = product.price || product.basePrice || "$0"
+  // Derive displayed values based on selected variant
+  const displayedVariant = selectedVariant;
+  const displayedPrice = displayedVariant?.price || productPrice;
+  const displayedImage = displayedVariant?.imageUrl || productImage;
+
+  // Prepare frame variants from product
+  const frameVariants = Array.isArray((product as any)?.variants)
+    ? (product as any).variants.filter((v: any) => v.type === 'frame')
+    : [];
 
   return (
     <div className="bg-[#2D2D2D] text-white min-h-screen overflow-x-hidden">
@@ -348,11 +405,13 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
             backgroundRepeat: 'no-repeat'
           }}></div>
 
-          <div className="relative z-10 p-8 md:p-12">
+          <div className="relative z-10 pl-4 pr-8 pt-8 pb-8 md:pl-6 md:pr-12 md:pt-12 md:pb-12">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
               {/* Left column - Product title and description */}
               <div className="flex flex-col justify-center">
-                <div className="uppercase text-xs text-white/60 mb-1">{product.category}</div>
+                <div className="uppercase text-xs text-white/60 mb-1">
+                  {categoryName}
+                </div>
                 <h1 className="text-4xl md:text-5xl font-light mb-6 tracking-wide">
                   {product.name?.split(' ').map(word => 
                     <span key={word} className="capitalize">{word.toLowerCase()} </span>
@@ -360,7 +419,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
                 </h1>
                 
                 <div className="prose prose-lg prose-invert max-w-none text-white/80">
-                  <p className="whitespace-pre-line text-base">{product.description}</p>
+                  <p className="whitespace-pre-line break-words text-base">{product.description}</p>
                 </div>
               </div>
 
@@ -383,7 +442,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
                     }}>
                   </div>
                   <Image
-                    src={productImage}
+                    src={displayedImage}
                     alt={product.name || "Product Image"}
                     fill
                     style={{ objectFit: 'contain' }}
@@ -394,28 +453,34 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
 
               {/* Right column - Price and cart actions */}
               <div className="flex flex-col justify-center">
-                <div className="text-2xl font-light mb-4">{productPrice} <span className="text-xs text-white/60 ml-1">inc Tax</span></div>
+                <div className="text-2xl font-light mb-4">{displayedPrice} <span className="text-xs text-white/60 ml-1">inc Tax</span></div>
                 
-                {/* Finish options - using variants if available, otherwise fallback to static options */}
+                {/* Finish options */}
                 <div className="mb-6">
                   <h3 className="uppercase text-xs text-white/60 mb-2">Frame</h3>
                   <div className="flex flex-wrap gap-2">
-                    {(product.variants && product.variants.length > 0 && product.variants[0].type === 'frame' 
-                      ? product.variants.map(variant => variant.name)
-                      : finishOptions
-                    ).map((finish) => (
-                      <button 
-                        key={finish}
-                        onClick={() => setSelectedFinish(finish)}
-                        className={`px-4 py-2 text-xs border ${
-                          selectedFinish === finish 
-                            ? 'border-white text-white' 
-                            : 'border-white/30 text-white/70 hover:border-white/50'
-                        }`}
-                      >
-                        {finish}
-                      </button>
-                    ))}
+                    {frameVariants.length > 0
+                      ? frameVariants.map((variant: any) => (
+                          <button
+                            key={variant.id}
+                            onClick={() => setSelectedVariant(variant)}
+                            className={`px-4 py-2 text-xs border ${
+                              selectedVariant?.id === variant.id
+                                ? 'border-white text-white'
+                                : 'border-white/30 text-white/70 hover:border-white/50'
+                            }`}
+                          >
+                            {variant.name}
+                          </button>
+                        ))
+                      : finishOptions.map((finish) => (
+                          <button
+                            key={finish}
+                            className="px-4 py-2 text-xs border border-white/30 text-white/70"
+                          >
+                            {finish}
+                          </button>
+                        ))}
                   </div>
                 </div>
                 
@@ -467,69 +532,59 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
 
         {/* Specification section - Always visible now */}
         <div className="mx-auto border-t border-white/10 pt-12 pb-6 w-full" style={{ maxWidth: "1600px" }}>
-          <h2 className="text-2xl font-light mb-8 px-6 md:px-12">Specifications</h2>
-          <div className="text-white/90 font-mono w-full py-8">
-            <div className="flex flex-col md:flex-row gap-12 mx-auto px-6 md:px-12">
-              {/* Image on the left */}
-              <div className="md:w-5/12">
-                <div className="relative w-full pt-[100%]">
-                  <Image
-                    src={product.specifications?.imageUrl || "/images/product/image 12.png"}
-                    alt="Product specifications diagram"
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    className="opacity-95"
-                  />
-                </div>
+          <h2 style={{ fontFamily: 'DM Serif Display' }} className="text-2xl font-light mb-8 px-6 md:px-12">Specifications</h2>
+          <div className="flex flex-col md:flex-row gap-12 w-full py-8 px-6 md:px-12">
+            {/* Image on the left (wider) */}
+            <div className="md:w-7/12">
+              <div className="relative w-full pt-[100%]">
+                <Image
+                  src={product.specifications?.imageUrl || "/images/product/image 12.png"}
+                  alt="Product specifications diagram"
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  className="opacity-95"
+                />
               </div>
-              
-              {/* Specifications on the right */}
-              <div className="md:w-7/12 space-y-6">
-                <div>
-                  <h5 className="text-white text-base mb-2 uppercase font-bold">COLOUR TEMPERATURE</h5>
-                  <p className="text-base italic">Warm White 3000k</p>
-                </div>
-                
-                <div>
-                  <h5 className="text-white text-base mb-2 uppercase font-bold">WATTAGE</h5>
-                  <p className="text-base italic">5W, 550mA Constant Current</p>
-                </div>
-                
-                <div>
-                  <h5 className="text-white text-base mb-2 uppercase font-bold">IP RATING</h5>
-                  <p className="text-base italic">IP20</p>
-                </div>
-                
-                <div>
-                  <h5 className="text-white text-base mb-2 uppercase font-bold">REMOTE DRIVER</h5>
-                  <p className="text-base italic">TCI Mini Jolly (size: 102mm x 38mm× 21mm)</p>
-                </div>
-                
-                <div>
-                  <h5 className="text-white text-base mb-2 uppercase font-bold">DIMMING OPTIONS</h5>
-                  <p className="text-base italic">1-10v, Non-dim, Push</p>
-                </div>
-                
-                <div>
-                  <h5 className="text-white text-base mb-2 uppercase font-bold">DIMENSIONS</h5>
-                  <p className="text-base italic">30 × 40 cm</p>
-                </div>
-                
-                <div>
-                  <h5 className="text-white text-base mb-2 uppercase font-bold">ABOUT THE PAINTING</h5>
-                  <p className="text-base leading-relaxed">{product.description}</p>
-                </div>
-              </div>
+            </div>
+            
+            {/* Specifications on the right */}
+            <div className="md:w-5/12 flex flex-col justify-center">
+              <h5 style={{ fontFamily: 'DM Serif Display' }} className="text-white text-2xl mb-4 capitalize">
+                {product.specifications?.title}
+              </h5>
+              <pre style={{ fontFamily: 'Roboto Mono' }} className="text-white/90 whitespace-pre-line text-base leading-relaxed">
+                {product.specifications?.content}
+              </pre>
             </div>
           </div>
         </div>
 
-        {/* FAQs section - Always visible and side by side with image */}
+        {/* FAQs section - accordion layout */}
         <div className="mx-auto border-t border-white/10 pt-12 pb-6 w-full" style={{ maxWidth: "1600px" }}>
           <h2 className="text-2xl font-light mb-8 px-6 md:px-12">FAQs</h2>
-          <div className="flex flex-col md:flex-row gap-12 mx-auto px-6 md:px-12">
-            {/* Image on the right - moved to the top position in mobile and adjusted to appear higher */}
-            <div className="md:w-1/2 order-1 md:order-2 md:-mt-40">
+          <div className="flex flex-col md:flex-row gap-8 px-6 md:px-12">
+            {/* FAQs list */}
+            <div className="md:w-4/12 space-y-4">
+              {product.faqSection?.faqs.map((faq: any, index: number) => (
+                <div key={faq.id || index} className="border-b border-white/20 pb-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleFaq(index)}
+                    className="w-full flex justify-between items-center text-white text-base font-medium"
+                  >
+                    {faq.question}
+                    {openFaqIndex === index ? <Minus size={16} /> : <Plus size={16} />}
+                  </button>
+                  {openFaqIndex === index && (
+                    <p className="mt-2 text-white/80 text-sm whitespace-pre-line">
+                      {faq.answer}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+            {/* FAQ Image on the right (wider) */}
+            <div className="md:w-8/12 order-1 md:order-2">
               <div className="relative w-full pt-[100%]">
                 <Image
                   src={product.faqSection?.imageUrl || "/images/product/image (7).png"}
@@ -539,35 +594,6 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
                   className="opacity-95"
                 />
               </div>
-            </div>
-            
-            {/* FAQs on the left */}
-            <div className="md:w-1/2 text-white/90 space-y-6 py-6 order-2 md:order-1">
-              {product.faqSection && product.faqSection.faqs && product.faqSection.faqs.length > 0 ? (
-                // If FAQs are available from API, use them
-                product.faqSection.faqs.map((faq: any, index: number) => (
-                  <div key={faq.id || index}>
-                    <h5 className="text-white text-base mb-2 font-bold">{faq.question}</h5>
-                    <p className="text-base">{faq.answer}</p>
-                  </div>
-                ))
-              ) : (
-                // Otherwise, use default FAQs
-                <>
-                  <div>
-                    <h5 className="text-white text-base mb-2 font-bold">Do you ship internationally?</h5>
-                    <p className="text-base">Yes, we offer worldwide shipping with tracking and insurance for all paintings.</p>
-                  </div>
-                  <div>
-                    <h5 className="text-white text-base mb-2 font-bold">What is the return policy?</h5>
-                    <p className="text-base">We accept returns within 14 days of delivery if the painting is in its original condition.</p>
-                  </div>
-                  <div>
-                    <h5 className="text-white text-base mb-2 font-bold">Do you offer framing services?</h5>
-                    <p className="text-base">Yes, custom framing options are available at an additional cost. Please contact us for details.</p>
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>

@@ -70,6 +70,12 @@ export default async function handler(
         try {
           const products = await collection.find({}).sort({ createdAt: -1 }).toArray();
           
+          // Serialize ObjectId to string and ensure id property exists
+          const serializedProducts = products.map((prod) => ({
+            ...prod,
+            id: prod.id || (prod._id ? prod._id.toString() : undefined)
+          }));
+          
           // If no products found in MongoDB, use sample data
           if (!products || products.length === 0) {
             console.log('No products found in MongoDB, returning sample data');
@@ -114,7 +120,7 @@ export default async function handler(
             return res.status(200).json(sampleProducts);
           }
           
-          res.status(200).json(products);
+          res.status(200).json(serializedProducts);
         } catch (error) {
           console.error('Error fetching products:', error);
           res.status(500).json({ success: false, error: 'Failed to fetch products' });
