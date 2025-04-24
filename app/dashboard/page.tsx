@@ -298,37 +298,15 @@ function DashboardContent() {
   // Transform the simple product to enhanced format for the form
   const convertToEnhancedProduct = (product: Product | undefined): EnhancedProduct | undefined => {
     if (!product) return undefined;
-    
-    // For editing an existing product, fetch the complete product data
-    const fetchCompleteProduct = async () => {
-      try {
-        const response = await fetch(`/api/products/${product.id}`);
-        if (response.ok) {
-          const completeProduct = await response.json();
-          // Update the state with the complete product data
-          setCurrentProduct({
-            ...product,
-            ...completeProduct
-          });
-          return completeProduct;
-        }
-      } catch (err) {
-        console.error('Error fetching complete product data:', err);
-      }
-      return null;
-    };
-    
-    // If in edit mode, attempt to fetch complete data
-    if (productFormMode === 'edit') {
-      fetchCompleteProduct();
-    }
-    
+
+    // Removed automatic fetch in convertToEnhancedProduct to prevent infinite loops
+
     return {
       id: product.id,
       _id: product._id,
       name: product.name,
       description: product.description,
-      basePrice: product.price || product.basePrice,
+      basePrice: product.price || product.basePrice || '',
       quantity: product.quantity || 1,
       images: product.images || (product.image ? [product.image] : []),
       category: product.category,
@@ -624,7 +602,7 @@ function DashboardContent() {
                     <td className="p-4 text-white">
                       <div className="flex items-center">
                         <div className="w-10 h-10 rounded overflow-hidden mr-3 flex-shrink-0">
-                          <img src={getValidImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" />
+                          <img src={getValidImageUrl(product.image ?? '')} alt={product.name} className="w-full h-full object-cover" />
                         </div>
                         <div className="truncate max-w-[200px]">{product.name}</div>
                       </div>
@@ -710,7 +688,7 @@ function DashboardContent() {
                     <td className="p-4 text-white">
                       <div className="flex items-center">
                         <div className="w-10 h-10 rounded overflow-hidden mr-3 flex-shrink-0">
-                          <img src={getValidImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" />
+                          <img src={getValidImageUrl(product.image ?? '')} alt={product.name} className="w-full h-full object-cover" />
                         </div>
                         <div className="truncate max-w-[200px]">{product.name}</div>
                       </div>

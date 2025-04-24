@@ -863,6 +863,47 @@ export default function EnhancedProductForm({
                         Add frequently asked questions and answers.
                       </p>
                       
+                      {/* Added section-level FAQ image input and preview */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                        <div>
+                          <label className="block text-white font-medium mb-2">
+                            FAQ Section Image (Optional)
+                          </label>
+                          {faqImageUrl ? (
+                            <div className="relative group mb-2">
+                              <div className="aspect-video bg-[#333333] rounded-lg overflow-hidden">
+                                <img
+                                  src={getValidImageUrl(faqImageUrl)}
+                                  alt="FAQ section image"
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setFaqImageUrl("")}
+                                className="absolute top-2 right-2 bg-[#333333] rounded-full p-1 text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="border border-dashed border-[#444444] rounded-lg p-8 text-center mb-2">
+                              <div className="mx-auto w-12 h-12 rounded-full bg-[#333333] flex items-center justify-center mb-2">
+                                <ImageIcon size={24} />
+                              </div>
+                              <p className="text-white/70">No FAQ image added</p>
+                            </div>
+                          )}
+                          <input
+                            type="url"
+                            placeholder="Enter FAQ section image URL"
+                            value={faqImageUrl}
+                            onChange={(e) => setFaqImageUrl(e.target.value)}
+                            className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                      
                       {/* New FAQ form */}
                       <div className="bg-[#1A1A1A] p-4 rounded-lg mb-6">
                         <h4 className="text-white text-sm font-medium mb-4">
