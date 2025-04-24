@@ -29,52 +29,6 @@ const heroImages = [
   }
 ];
 
-// Product data
-const products = [
-  {
-    id: 1,
-    name: "ANCIENT VASE",
-    price: "$3250",
-    image: "/images/mug-black.png",
-    category: "Egyptian"
-  },
-  {
-    id: 2,
-    name: "STONE STATUE",
-    price: "$4980",
-    image: "/images/mug-white.png",
-    category: "Egyptian"
-  },
-  {
-    id: 3,
-    name: "JADE FIGURINE",
-    price: "$2870",
-    image: "/images/cycle1.png",
-    category: "Asian"
-  },
-  {
-    id: 4,
-    name: "BRONZE BELL",
-    price: "$1850",
-    image: "/images/cycle2.png",
-    category: "Asian"
-  },
-  {
-    id: 5,
-    name: "MEDIEVAL CHALICE",
-    price: "$5750",
-    image: "/images/notebook-white.png",
-    category: "European"
-  },
-  {
-    id: 6,
-    name: "ORNATE SHIELD",
-    price: "$7820",
-    image: "/images/notebook-black.png",
-    category: "European"
-  }
-];
-
 // Categories for the product grid
 const categories = ["All Artefacts", "Egyptian", "Asian", "European", "American"];
 
@@ -87,6 +41,9 @@ export default function ArtefactsPage() {
   const [totalSlides, setTotalSlides] = useState(heroImages.length);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const [showText, setShowText] = useState(false);
+  // State for dynamic artefact products
+  interface SimpleProduct { id: string; name: string; price: string; image: string; category: string; }
+  const [artefactProducts, setArtefactProducts] = useState<SimpleProduct[]>([]);
 
   // Initial load - delay text appearance
   useEffect(() => {
@@ -145,6 +102,30 @@ export default function ArtefactsPage() {
       emblaApi.off('pointerUp', startAutoplay);
     };
   }, [emblaApi]);
+
+  // Fetch artefact products from API
+  useEffect(() => {
+    async function fetchArtefacts() {
+      try {
+        const res = await fetch('/api/products');
+        if (!res.ok) throw new Error('Failed to fetch artefacts');
+        const data = await res.json();
+        const filtered = data
+          .filter((p: any) => p.type === 'artefact')
+          .map((p: any) => ({
+            id: p.id || p._id,
+            name: p.name,
+            price: p.basePrice || p.price,
+            image: p.images?.[0] || p.image,
+            category: p.category
+          }));
+        setArtefactProducts(filtered);
+      } catch (err) {
+        console.error('Error fetching artefact products:', err);
+      }
+    }
+    fetchArtefacts();
+  }, []);
   
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
@@ -204,7 +185,7 @@ export default function ArtefactsPage() {
           <ProductGrid 
             title="Ancient Civilizations" 
             subtitle="Featured Collection" 
-            products={products}
+            products={artefactProducts}
             categories={categories}
             viewAllText="View all artefacts"
           />
