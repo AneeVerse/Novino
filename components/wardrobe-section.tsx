@@ -5,12 +5,16 @@ export default function WardrobeSection() {
   return (
     <div className="relative mx-2 mb-16 overflow-hidden rounded-3xl max-w-[2400px]">
       {/* Full background image */}
-      <div className="relative w-full h-[333px]">
+      <div className="relative w-full h-[300px]">
         <Image 
-          src="/images/Container (1).png" 
+          src="/images/wardrobe/b1 (2).png" 
           alt="Wardrobe background" 
           fill 
           className="object-cover"
+          style={{
+            objectPosition: '-200px center', // Adjusted from -400px to -200px to show more of the right side
+            transform: 'scale(1)', // Zoom out (< 1) or in (> 1)
+          }}
           priority
         />
         
@@ -25,10 +29,10 @@ export default function WardrobeSection() {
           </div>
 
           {/* Button section - aligned with circle */}
-          <div className="md:absolute md:right-36 md:top-1/2 md:-translate-y-1/2 mt-6 md:mt-0 z-10">
+          <div className="md:absolute md:right-32 md:top-1/2 md:-translate-y-1/2 mt-6 md:mt-0 z-10">
             <Link
               href="/shop"
-              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2"
+              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-black transition-colors flex items-center gap-2"
             >
               Shop Now
               <span className="inline-block transform rotate-45">↗</span>

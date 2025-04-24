@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import "@fontsource/roboto-mono"
 import "@fontsource/dm-serif-display"
 
@@ -36,6 +36,7 @@ const testimonials = [
 export default function ProductTestimonial() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   
   // Add debugging logs to diagnose the issue
   useEffect(() => {
@@ -51,11 +52,11 @@ export default function ProductTestimonial() {
       setTimeout(() => {
         setCurrentIndex(index);
         
-        // Short delay before removing the transition class to ensure smooth animation
+        // Longer delay before removing the transition class to match the new animation duration
         setTimeout(() => {
           setIsTransitioning(false);
-        }, 200);
-      }, 300);
+        }, 700);
+      }, 700);
     }
   };
 
@@ -78,11 +79,28 @@ export default function ProductTestimonial() {
     if (isTransitioning) {
       const safetyTimer = setTimeout(() => {
         setIsTransitioning(false);
-      }, 1000);
+      }, 1500); // Increased safety timeout
       
       return () => clearTimeout(safetyTimer);
     }
   }, [isTransitioning]);
+
+  // Auto-scrolling functionality - always active
+  useEffect(() => {
+    const startAutoplay = () => {
+      if (autoplayRef.current) clearTimeout(autoplayRef.current);
+      
+      autoplayRef.current = setTimeout(() => {
+        nextTestimonial();
+      }, 5000); // Increased to 5 seconds to give more time to read testimonials
+    };
+
+    startAutoplay();
+    
+    return () => {
+      if (autoplayRef.current) clearTimeout(autoplayRef.current);
+    };
+  }, [currentIndex, isTransitioning]);
 
   const current = testimonials[currentIndex];
 
@@ -104,12 +122,16 @@ export default function ProductTestimonial() {
             }}
           >
             <div className="relative w-[95%] h-[95%] z-10 py-4 overflow-hidden">
-              <div className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`} style={{ transform: 'translateX(10px) translateZ(0)' }}>
+              <div 
+                className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                  isTransitioning ? 'opacity-0 transform translate-x-[-20px]' : 'opacity-100 transform translate-x-0'
+                }`}
+              >
                 <Image
                   src={current.image}
                   alt={current.altText}
                   fill
-                  className="object-contain"
+                  className="object-contain transform transition-transform duration-700 ease-in-out"
                   priority
                   sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
                   style={{ transform: 'translateZ(0)' }}
@@ -150,8 +172,12 @@ export default function ProductTestimonial() {
               </div>
 
               {/* Testimonial Quote */}
-              <div className="relative min-h-[180px] sm:min-h-[200px] md:min-h-[220px] z-10">
-                <div className={`absolute inset-0 flex flex-col justify-center transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+              <div className="relative min-h-[180px] sm:min-h-[200px] md:min-h-[220px] z-10 overflow-hidden">
+                <div 
+                  className={`absolute inset-0 flex flex-col justify-center transition-all duration-700 ease-in-out ${
+                    isTransitioning ? 'opacity-0 transform translate-y-[20px]' : 'opacity-100 transform translate-y-0'
+                  }`}
+                >
                   <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight" style={{ fontFamily: '"DM Serif Display", serif' }}>
                     "{current.quote}"
                   </blockquote>

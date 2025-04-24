@@ -121,8 +121,9 @@ export default function ProductGrid({
 
       <div className="flex flex-col md:flex-row md:gap-8 relative z-30">
         {/* Right side: Product Grid */}
-        <div className="w-full md:w-1/2 order-1 md:order-2">
-          <div className="grid grid-cols-2 gap-8">
+        <div className="w-full md:w-1/2 order-2 md:order-2">
+          {/* Desktop grid (hidden on mobile) */}
+          <div className="hidden md:grid md:grid-cols-2 md:gap-8">
             {filteredProducts.slice(0, 2).map((product) => (
               <Link href={`/product/${product.id}`} key={product.id}>
                 <div className="bg-white w-full max-w-[80%] mx-auto border border-white hover:opacity-95 transition-opacity">
@@ -142,7 +143,7 @@ export default function ProductGrid({
               </Link>
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-8 mt-8">
+          <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-8">
             {filteredProducts.slice(2, 4).map((product) => (
               <Link href={`/product/${product.id}`} key={product.id}>
                 <div className="bg-white w-full max-w-[80%] mx-auto border border-white hover:opacity-95 transition-opacity">
@@ -165,8 +166,8 @@ export default function ProductGrid({
         </div>
 
         {/* Left side: Categories and Title */}
-        <div className="w-full md:w-1/2 mb-8 md:mb-0 order-2 md:order-1">
-          <div className="pl-10">
+        <div className="w-full md:w-1/2 mb-8 md:mb-0 order-1 md:order-1">
+          <div className="px-4 md:px-0 md:pl-10">
             <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono'] font-medium">{subtitle}</div>
             <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono'] relative">{title}</h2>
 
@@ -188,11 +189,36 @@ export default function ProductGrid({
             </div>
           </div>
           
-          {/* Two cards below filter on left side - now horizontal */}
-          <div className="grid grid-cols-2 gap-8 mt-[165px] pl-10">
+          {/* Two cards below filter on left side (Desktop) */}
+          <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-[165px] md:pl-10">
             {filteredProducts.slice(4, 6).map((product) => (
               <Link href={`/product/${product.id}`} key={product.id}>
                 <div className="bg-white w-full max-w-[85%] mx-auto border border-white hover:opacity-95 transition-opacity">
+                  <div className="relative aspect-square overflow-hidden">
+                    <Image
+                      src={product.image}
+                      alt={(product.name || product.title || "Product") as string}
+                      fill
+                      className="object-contain p-4" 
+                    />
+                  </div>
+                  <div className="p-4 bg-[#333333]">
+                    <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
+                    <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+        
+        {/* Mobile horizontal scroll (hidden on md and up) - Moved below filters */}
+        <div className="w-full md:hidden flex flex-col mt-6 mb-6 order-3">
+          <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide px-2 items-start">
+            {/* Display all products in a single row for mobile */}
+            {filteredProducts.map((product) => (
+              <Link href={`/product/${product.id}`} key={`mobile-${product.id}`} className="flex-shrink-0 w-60">
+                <div className="bg-white w-full border border-white hover:opacity-95 transition-opacity">
                   <div className="relative aspect-square overflow-hidden">
                     <Image
                       src={product.image}
@@ -221,6 +247,17 @@ export default function ProductGrid({
           </button>
         </div>
       )}
+
+      {/* Add CSS utility to hide scrollbars */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+      `}</style>
     </div>
   );
 }

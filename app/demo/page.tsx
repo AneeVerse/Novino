@@ -77,7 +77,7 @@ const products = [
   }
 ];
 
-export default function Home() {
+export default function DemoPage() {
   const [activeCategory, setActiveCategory] = useState("All Products");
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
@@ -139,7 +139,7 @@ export default function Home() {
       if (autoplayRef.current) clearTimeout(autoplayRef.current);
       autoplayRef.current = setTimeout(() => {
         emblaApi.scrollNext();
-      }, 7000); // 7 seconds between slides
+      }, 10000); // 10 seconds between slides
     };
 
     // Start autoplay
@@ -163,7 +163,7 @@ export default function Home() {
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
       {/* Hero Section - Full width that extends to the top */}
-      <div className="relative w-full h-[600px] md:h-[730px]">
+      <div className="relative w-full h-[730px]">
         {/* Embla Carousel */}
         <div className="overflow-hidden w-full h-full" ref={emblaRef}>
           <div className="flex h-full">
@@ -185,7 +185,7 @@ export default function Home() {
         </div>
 
         {/* NOVINO text overlay - IMPORTANT: limit its position to stay above the hero section only */}
-        <div className="absolute inset-0 z-20 overflow-hidden" style={{ height: '100%', maxHeight: '100%' }}>
+        <div className="absolute inset-0 z-20 overflow-hidden" style={{ height: '730px', maxHeight: '730px' }}>
           {/* Semi-transparent light effect behind text */}
           <div 
             className="absolute w-full text-center" 
@@ -202,10 +202,9 @@ export default function Home() {
               bottom: 'auto'
             }}
           ></div>
-          {/* Added smaller text size for mobile - trying text-7xl */}
-          {/* Removed inline styles for positioning, moved to CSS block below */}
           <h1 
-            className={`novino-hero-text text-[#FFFFFF] text-7xl sm:text-[160px] md:text-[230px] lg:text-[330px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            className={`text-[#312F30] text-[160px] md:text-[230px] lg:text-[330px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            style={{ fontFamily: 'DM Serif Display, serif', top: '41%', left: '51%', transform: 'translate(-50%, 200%)', letterSpacing: '0.15em' }}
           >
             NOVINO
           </h1>
@@ -214,13 +213,13 @@ export default function Home() {
       </div>
 
       {/* Clear separation from the hero section with negative margin to prevent overlap */}
-      <div className="container mx-auto px-4 md:px-0 mt-4 z-50 relative" style={{ clear: 'both' }}>
+      <div className="container mx-auto px-0 mt-4 z-50 relative" style={{ marginTop: '2rem', clear: 'both' }}>
         {/* ELEVATE ORDINARY WALLS Section */}
         <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
-          <div className="max-w-[2400px] mx-auto px-4 md:pl-8">
+          <div className="max-w-[2400px] mx-auto pl-8">
             <div className="mb-8 sm:mb-16 p-6 rounded bg-[#2D2D2D]" style={{ position: 'relative', zIndex: 30 }}>
-              <h2 className="text-white text-lg sm:text-[24px] md:text-[38px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em] mb-4 sm:mb-8 text-center font-['Roboto_Mono']">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h2>
-              <p className="text-white text-xs sm:text-sm md:text-base leading-normal text-center mx-auto max-w-3xl font-['Roboto_Mono']">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
+              <h2 className="text-white text-[24px] sm:text-[28px] md:text-[38px] font-medium uppercase leading-[1.171875em] mb-4 sm:mb-8 text-center font-['Roboto_Mono']">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h2>
+              <p className="text-white text-sm sm:text-base leading-normal text-center mx-auto max-w-3xl font-['Roboto_Mono']">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
             </div>
           </div>
         </div>
@@ -258,12 +257,10 @@ export default function Home() {
               />
             </div>
 
-            {/* Adjusted flex direction for mobile */}
             <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
-              {/* Right side: Product Grid - Change order for mobile */}
-              <div className="w-full md:w-1/2 order-2 md:order-2">
-                {/* Desktop grid - hidden on mobile */}
-                <div className="hidden md:grid md:grid-cols-2 md:gap-8">
+              {/* Right side: Product Grid (Moved up first to be displayed first) */}
+              <div className="w-full md:w-1/2 order-1 md:order-2">
+                <div className="grid grid-cols-2 gap-8">
                   {filteredProducts.slice(0, 2).map((product) => (
                     <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
                       <div className="relative aspect-square overflow-hidden">
@@ -282,8 +279,7 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                {/* Desktop grid - hidden on mobile */}
-                <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-8">
+                <div className="grid grid-cols-2 gap-8 mt-8">
                   {filteredProducts.slice(2, 4).map((product) => (
                     <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
                       <div className="relative aspect-square overflow-hidden">
@@ -305,9 +301,8 @@ export default function Home() {
               </div>
 
               {/* Left side: Categories and Title */}
-              <div className="w-full md:w-1/2 mb-8 md:mb-0 order-1 md:order-1">
-                {/* Adjusted padding for mobile */}
-                <div className="px-4 md:px-0 md:pl-10 mt-8 md:mt-0">
+              <div className="w-full md:w-1/2 mb-8 md:mb-0 order-2 md:order-1">
+                <div className="pl-10">
                   <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono']">All Products</div>
                   <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono']">Elevate Your Gallery</h2>
 
@@ -335,8 +330,10 @@ export default function Home() {
                   </div>
                 </div>
                 
-                {/* Desktop grid - hidden on mobile */}
-                <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-[215px] md:pl-10">
+                {/* Two cards below filter on left side - now horizontal */}
+                {/* To move cards UP/DOWN: adjust mt-[230px] value
+                    To change card size: adjust max-w-[90%] value (larger % = bigger cards) */}
+                <div className="grid grid-cols-2 gap-8 mt-[215px] pl-10">
                   {filteredProducts.slice(4, 6).map((product) => (
                     <div key={product.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
                       <div className="relative aspect-square overflow-hidden">
@@ -354,32 +351,6 @@ export default function Home() {
                       </div>
                     </div>
                   ))}
-                </div>
-
-                {/* Mobile horizontal scroll (hidden on md and up) - Moved outside the columns */}
-                <div className="w-full md:hidden flex flex-col mt-6 mb-6">
-                  <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide px-2 items-start">
-                    {/* Display all products in a single row for mobile */}
-                    {filteredProducts.map((product) => (
-                      <div key={`mobile-${product.id}`} className="flex-shrink-0 w-64">
-                        <div className="bg-white w-full border border-white">
-                          <div className="relative aspect-square overflow-hidden">
-                            <Image
-                              src={product.image}
-                              alt={product.name}
-                              fill
-                              className={`object-contain ${product.category === "Mugs" ? "p-0 scale-125" : "p-4"}`}
-                              style={product.category === "Mugs" ? { transform: 'scale(1.25)' } : {}}
-                            />
-                          </div>
-                          <div className="p-4 bg-[#333333]">
-                            <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
-                            <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
             </div>
@@ -415,8 +386,43 @@ export default function Home() {
         </div>
 
         {/* Wardrobe Section */}
-        <div className="mb-16">
-          <WardrobeSection />
+        <div className="relative mx-2 mb-16 overflow-hidden rounded-3xl max-w-[2400px]">
+          {/* Full background image */}
+          <div className="relative w-full h-[300px]">
+            <Image 
+              src="/images/wardrobe/b1 (1).png" 
+              alt="Wardrobe background" 
+              fill 
+              className="object-cover"
+              style={{
+                objectPosition: '-200px center',
+                transform: 'scale(1)',
+              }}
+              priority
+            />
+            
+            {/* Content overlay */}
+            <div className="absolute inset-0 flex flex-col md:flex-row items-center p-8 md:p-12">
+              {/* Left content section */}
+              <div className="md:w-3/5 z-10">
+                <h2 className="text-black text-3xl md:text-4xl font-bold mb-4">ELEVATE YOUR WARDROBE</h2>
+                <p className="text-black text-base md:text-lg max-w-2xl">
+                  Don't miss out – experience the epitome of fashion by clicking 'Buy Now' and embrace a world of chic elegance delivered to your doorstep. Your style journey begins here.
+                </p>
+              </div>
+
+              {/* Button section - aligned with circle */}
+              <div className="md:absolute md:right-32 md:top-1/2 md:-translate-y-1/2 mt-6 md:mt-0 z-10">
+                <Link
+                  href="/shop"
+                  className="bg-black text-white px-6 py-3 rounded-lg hover:bg-black transition-colors flex items-center gap-2"
+                >
+                  Shop Now
+                  <span className="inline-block transform rotate-45">↗</span>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Footer Section */}
@@ -441,34 +447,7 @@ export default function Home() {
         .animate-rise-up {
           animation: riseUp 2s ease-out forwards;
         }
-
-        /* Add styles for the hero text */
-        .novino-hero-text {
-          font-family: 'DM Serif Display', serif;
-          /* Desktop styles */
-          top: 41%;
-          left: 51%;
-          transform: translate(-50%, 200%); /* Initial position for animation */
-          letter-spacing: 0.15em;
-        }
-
-        /* Mobile adjustment - move text down */
-        @media (max-width: 767px) { /* Target screens smaller than md (768px) */
-          .novino-hero-text {
-            top: 46%; /* Increased top value to move down */
-          }
-        }
-        
-        /* Utility to hide scrollbars for horizontal scrolling */
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-        }
       `}</style>
     </main>
   );
-}
-
+} 

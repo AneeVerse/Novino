@@ -32,9 +32,9 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 w-full z-[1000] bg-[#2D2D2D]/70 h-[80px]" style={{ position: 'fixed' }}>
-      <div className="relative w-[1440px] mx-auto h-full flex justify-between items-center">
+      <div className="relative max-w-[1440px] mx-auto h-full flex justify-between items-center px-4 md:px-0">
         {/* Left section - Menu items (Desktop) */}
-        <div className="hidden md:flex items-center space-x-6 h-full pl-6">
+        <div className="hidden md:flex items-center space-x-6 h-full md:pl-6">
           <Link href="/paintings" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
             PAINTINGS
           </Link>
@@ -76,13 +76,21 @@ const Navbar = () => {
         
         {/* Center - Logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
-          <Link href="/" className="text-2xl font-bold font-roboto-mono text-white">
-            Novino<span className="text-[#AE876D]">.</span>io
+          <Link href="/" className="flex items-center text-xl md:text-2xl font-bold font-roboto-mono text-white">
+            <Image
+              src="/images/navbar/N Logo.png"
+              alt="N Logo"
+              width={24}
+              height={24}
+              className="w-[60px] h-[45px] md:w-[80px] md:h-[60px] object-contain relative left-2 md:left-[24px]"
+              priority
+            />
+            <span className="relative top-1 -left-2 md:top-[10px] md:left-0">ovino<span className="text-[#AE876D]">.</span>io</span>
           </Link>
         </div>
         
         {/* Right section - Authentication */}
-        <div className="flex items-center space-x-4 pr-6">
+        <div className="flex items-center space-x-2 md:space-x-4 md:pr-6 ml-auto">
           <Link href="/auth/login" className="text-white">
             <svg
               xmlns="http://www.w3.org/2000/svg"
