@@ -35,7 +35,7 @@ export default function LoginPage() {
       if (res.ok) {
         setMessage('Login successful! Redirecting...')
         setTimeout(() => {
-          router.push('/')
+        router.push('/')
         }, 1500)
       } else {
         setMessage(data.message || 'Login failed')
@@ -45,7 +45,7 @@ export default function LoginPage() {
       setMessage('Network error. Please try again.')
     } finally {
       setLoading(false)
-    }
+  }
   }
 
   const handleSendResetOtp = async (e: React.FormEvent) => {
@@ -143,12 +143,12 @@ export default function LoginPage() {
   }
 
   const renderForgotPasswordForm = () => {
-    return (
+  return (
       <div className="space-y-4">
         {resetStage === 'email' && (
           <>
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="resetEmail">
+              <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="resetEmail">
                 Email Address
               </label>
               <Input
@@ -157,7 +157,7 @@ export default function LoginPage() {
                 required
                 value={resetEmail}
                 onChange={e => setResetEmail(e.target.value)}
-                className="w-full"
+                className="w-full bg-[#222222] border-[#444444] text-white"
                 disabled={loading}
                 placeholder="Enter your email address"
               />
@@ -165,7 +165,7 @@ export default function LoginPage() {
             
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white" 
               disabled={loading}
               onClick={handleSendResetOtp}
             >
@@ -178,7 +178,7 @@ export default function LoginPage() {
         {resetStage === 'otp' && (
           <>
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="resetOtp">
+              <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="resetOtp">
                 Verification Code
               </label>
               <Input
@@ -187,7 +187,7 @@ export default function LoginPage() {
                 required
                 value={resetOtp}
                 onChange={e => setResetOtp(e.target.value)}
-                className="w-full"
+                className="w-full bg-[#222222] border-[#444444] text-white"
                 disabled={loading}
                 placeholder="Enter 6-digit code"
                 maxLength={6}
@@ -196,7 +196,7 @@ export default function LoginPage() {
             
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white" 
               disabled={loading}
               onClick={handleVerifyOtp}
             >
@@ -209,7 +209,7 @@ export default function LoginPage() {
         {resetStage === 'newPassword' && (
           <>
             <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="newPassword">
+              <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="newPassword">
                 New Password
               </label>
               <Input
@@ -218,7 +218,7 @@ export default function LoginPage() {
                 required
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                className="w-full"
+                className="w-full bg-[#222222] border-[#444444] text-white"
                 disabled={loading}
                 placeholder="Enter your new password"
                 minLength={6}
@@ -227,7 +227,7 @@ export default function LoginPage() {
             
             <Button 
               type="submit" 
-              className="w-full" 
+              className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white" 
               disabled={loading}
               onClick={handleResetPassword}
             >
@@ -244,20 +244,20 @@ export default function LoginPage() {
               setShowForgotPassword(false)
               setMessage('')
             }}
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-[#AE876D] hover:underline"
           >
             Back to Login
           </button>
         </div>
       </div>
-    )
-  }
-  
+    );
+  };
+
   const renderLoginForm = () => {
     return (
-      <form onSubmit={handleLogin} className="space-y-4">
+      <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="identifier">
+          <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="identifier">
             Email or Username
           </label>
           <Input
@@ -266,82 +266,81 @@ export default function LoginPage() {
             required
             value={identifier}
             onChange={e => setIdentifier(e.target.value)}
-            className="w-full"
+            className="w-full bg-[#222222] border-[#444444] text-white"
             disabled={loading}
-            placeholder="Enter email or username"
+            placeholder="Enter your email or username"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="password">
-            Password
-          </label>
+          <div className="flex justify-between items-center">
+            <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="password">
+              Password
+            </label>
+            <button 
+              type="button" 
+              onClick={() => {
+                setShowForgotPassword(true)
+                setMessage('')
+              }}
+              className="text-xs text-[#AE876D] hover:underline"
+            >
+              Forgot Password?
+            </button>
+          </div>
           <Input
             id="password"
             type="password"
             required
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="w-full"
+            className="w-full bg-[#222222] border-[#444444] text-white"
             disabled={loading}
             placeholder="Enter your password"
           />
         </div>
         
-        <div className="flex justify-end">
-          <button 
-            type="button" 
-            onClick={() => {
-              setShowForgotPassword(true)
-              setMessage('')
-            }}
-            className="text-sm text-primary hover:underline"
-          >
-            Forgot password?
-          </button>
-        </div>
-        
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white" 
           disabled={loading}
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Log In
         </Button>
-      </form>
-    )
-  }
+      </div>
+    );
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold font-serif">Novino</h1>
-          <p className="text-muted-foreground mt-2">
-            {showForgotPassword ? 'Reset your password' : 'Log in to your account'}
-          </p>
+          <h1 className="text-4xl font-bold text-white">Novino</h1>
+          <p className="text-white/60 mt-2">Log in to your account</p>
         </div>
         
-        <div className="bg-card border border-border rounded-lg shadow-sm p-6 w-full">
-          {showForgotPassword ? renderForgotPasswordForm() : renderLoginForm()}
-          
-          {message && (
-            <div className={`text-sm text-center mt-4 ${message.includes('successful') ? 'text-green-500' : 'text-destructive'}`}>
-              {message}
-            </div>
-          )}
+        <div className="bg-[#333333] border border-[#444444] rounded-lg shadow-sm p-6 w-full">
+          <form onSubmit={handleLogin}>
+            {showForgotPassword ? renderForgotPasswordForm() : renderLoginForm()}
+            
+            {message && (
+              <div className={`text-sm text-center mt-4 ${message.includes('successful') ? 'text-green-400' : 'text-red-400'}`}>
+                {message}
+              </div>
+            )}
+          </form>
         </div>
         
         <div className="text-center mt-6">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/60">
             Don't have an account?{' '}
-            <Link href="/signup" className="text-primary hover:underline">
+            <Link href="/signup" className="text-[#AE876D] hover:underline">
               Sign up
             </Link>
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 } 

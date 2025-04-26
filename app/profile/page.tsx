@@ -211,16 +211,16 @@ export default function ProfilePage() {
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#2D2D2D]">
         <Loader2 className="h-8 w-8 animate-spin text-[#AE876D]" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto pt-24 pb-12 px-4 bg-gray-50">
+    <div className="container mx-auto pt-24 pb-12 px-4 bg-[#2D2D2D] text-white">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-[#2D2D2D]">My Account</h1>
+        <h1 className="text-3xl font-bold">My Account</h1>
         <Button
           variant="outline"
           onClick={handleLogout}
@@ -232,57 +232,35 @@ export default function ProfilePage() {
       </div>
       
       {message && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        <div className="bg-red-900/20 border border-red-500/30 text-red-400 px-4 py-3 rounded mb-6">
           {message}
         </div>
       )}
       
       <Tabs defaultValue="profile">
-        <TabsList className="mb-6 bg-[#2D2D2D]/90 rounded-md p-1">
-          <TabsTrigger value="profile" className="data-[state=active]:bg-[#AE876D] data-[state=active]:text-white rounded-sm text-white">Profile</TabsTrigger>
-          <TabsTrigger value="orders" className="data-[state=active]:bg-[#AE876D] data-[state=active]:text-white rounded-sm text-white">Orders</TabsTrigger>
-          <TabsTrigger value="addresses" className="data-[state=active]:bg-[#AE876D] data-[state=active]:text-white rounded-sm text-white">Addresses</TabsTrigger>
-          <TabsTrigger value="security" className="data-[state=active]:bg-[#AE876D] data-[state=active]:text-white rounded-sm text-white">Security</TabsTrigger>
+        <TabsList className="mb-6 bg-[#333333] rounded-md p-1">
+          <TabsTrigger value="profile" className="data-[state=active]:bg-[#AE876D] data-[state=active]:text-white rounded-sm text-white/70">Profile</TabsTrigger>
+          <TabsTrigger value="orders" className="data-[state=active]:bg-[#AE876D] data-[state=active]:text-white rounded-sm text-white/70">Orders</TabsTrigger>
+          <TabsTrigger value="addresses" className="data-[state=active]:bg-[#AE876D] data-[state=active]:text-white rounded-sm text-white/70">Addresses</TabsTrigger>
+          <TabsTrigger value="security" className="data-[state=active]:bg-[#AE876D] data-[state=active]:text-white rounded-sm text-white/70">Security</TabsTrigger>
         </TabsList>
         
         {/* Profile Tab */}
         <TabsContent value="profile">
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-            <h2 className="text-xl font-semibold mb-4 text-[#2D2D2D]">Profile Information</h2>
-            
+          <div className="bg-[#333333] rounded-lg shadow-sm p-6 border border-[#444444]">
+            <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Full Name</p>
-                  <p className="font-medium text-[#2D2D2D]">{user?.name || (user?.username ? `${user?.username} (Username)` : 'John Doe')}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Username</p>
-                  <p className="font-medium text-[#2D2D2D]">{user?.username || 'user123'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Email</p>
-                  <p className="font-medium text-[#2D2D2D]">{user?.email || 'user@example.com'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Member Since</p>
-                  <p className="font-medium text-[#2D2D2D]">{user?.iat ? new Date(user.iat * 1000).toLocaleDateString() : 'May 2023'}</p>
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-white/70">Username</label>
+                <p className="p-2 bg-[#222222] border border-[#444444] rounded">{user?.username}</p>
               </div>
-              
-              <div className="pt-4 mt-4 border-t">
-                <h3 className="font-medium mb-2 text-[#2D2D2D]">Account Settings</h3>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Button 
-                    variant="outline" 
-                    className="border-[#AE876D] text-[#AE876D] hover:bg-[#AE876D]/10"
-                  >
-                    Edit Profile
-                  </Button>
-                  <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-50">
-                    Delete Account
-                  </Button>
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-white/70">Email</label>
+                <p className="p-2 bg-[#222222] border border-[#444444] rounded">{user?.email}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-white/70">Name</label>
+                <p className="p-2 bg-[#222222] border border-[#444444] rounded">{user?.name || "Not set"}</p>
               </div>
             </div>
           </div>

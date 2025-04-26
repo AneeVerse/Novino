@@ -105,18 +105,18 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold font-serif">Novino</h1>
-          <p className="text-muted-foreground mt-2">Create your account</p>
+          <h1 className="text-4xl font-bold text-white">Novino</h1>
+          <p className="text-white/60 mt-2">Create your account</p>
         </div>
         
-        <div className="bg-card border border-border rounded-lg shadow-sm p-6 w-full">
+        <div className="bg-[#333333] border border-[#444444] rounded-lg shadow-sm p-6 w-full">
           <form onSubmit={stage === 'email' ? handleSendOtp : handleSignup}>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="email">
+                <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="email">
                   Email
                 </label>
                 <Input
@@ -125,7 +125,7 @@ export default function SignupPage() {
                   required
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full"
+                  className="w-full bg-[#222222] border-[#444444] text-white"
                   disabled={stage === 'otp' || loading}
                   placeholder="you@example.com"
                 />
@@ -134,7 +134,7 @@ export default function SignupPage() {
               {stage === 'email' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="username">
+                    <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="username">
                       Username
                     </label>
                     <Input
@@ -143,14 +143,14 @@ export default function SignupPage() {
                       required
                       value={username}
                       onChange={e => setUsername(e.target.value)}
-                      className="w-full"
+                      className="w-full bg-[#222222] border-[#444444] text-white"
                       disabled={loading}
                       placeholder="Choose a username"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="password">
+                    <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="password">
                       Password
                     </label>
                     <Input
@@ -159,7 +159,7 @@ export default function SignupPage() {
                       required
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      className="w-full"
+                      className="w-full bg-[#222222] border-[#444444] text-white"
                       disabled={loading}
                       placeholder="Create a password"
                     />
@@ -170,13 +170,13 @@ export default function SignupPage() {
               {stage === 'otp' && (
                 <div>
                   <div className="flex justify-between items-center">
-                    <label className="block text-sm font-medium mb-1" htmlFor="otp">
+                    <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="otp">
                       Verification Code
                     </label>
                     <button 
                       type="button" 
                       onClick={resendOtp} 
-                      className="text-xs text-primary hover:underline"
+                      className="text-xs text-[#AE876D] hover:underline"
                       disabled={loading}
                     >
                       Resend Code
@@ -188,7 +188,7 @@ export default function SignupPage() {
                     required
                     value={otp}
                     onChange={e => setOtp(e.target.value)}
-                    className="w-full"
+                    className="w-full bg-[#222222] border-[#444444] text-white"
                     disabled={loading}
                     placeholder="Enter 6-digit code"
                     maxLength={6}
@@ -198,7 +198,7 @@ export default function SignupPage() {
               
               <Button 
                 type="submit" 
-                className="w-full" 
+                className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white" 
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -206,7 +206,7 @@ export default function SignupPage() {
               </Button>
               
               {message && (
-                <div className={`text-sm text-center mt-2 ${message.includes('successful') ? 'text-green-500' : 'text-destructive'}`}>
+                <div className={`text-sm text-center mt-2 ${message.includes('successful') ? 'text-green-400' : 'text-red-400'}`}>
                   {message}
                 </div>
               )}
@@ -215,9 +215,9 @@ export default function SignupPage() {
         </div>
         
         <div className="text-center mt-6">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/60">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-[#AE876D] hover:underline">
               Log in
             </Link>
           </p>
