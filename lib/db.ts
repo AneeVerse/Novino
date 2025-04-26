@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
-// Using a MongoDB Atlas free cluster (replace with your own connection string in production)
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://novinouser:novinopassword@cluster0.mongodb.net/novino?retryWrites=true&w=majority';
+// Using a MongoDB Atlas cluster
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://mayur:3QL1uhw5duQiKua2@cluster0.eeqwnze.mongodb.net/novino?retryWrites=true&w=majority&appName=Cluster0';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');
