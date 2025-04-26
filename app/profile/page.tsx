@@ -211,14 +211,14 @@ export default function ProfilePage() {
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#2D2D2D]">
+      <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-[#AE876D]" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto pt-24 pb-12 px-4 bg-[#2D2D2D] text-white">
+    <div className="container mx-auto pt-24 pb-12 px-4 text-white">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">My Account</h1>
         <Button

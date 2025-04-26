@@ -4,9 +4,10 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
+import { Loader2 } from "lucide-react";
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, clearCart, getCartTotal } = useCart();
+  const { cart, removeFromCart, updateQuantity, clearCart, getCartTotal, isLoading } = useCart();
   
   // Calculate shipping and tax
   const shipping = cart.length > 0 ? 15 : 0;
@@ -32,6 +33,15 @@ export default function CartPage() {
       updateQuantity(id, currentQuantity - 1, variant);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto pt-24 pb-12 px-4 min-h-[60vh] flex flex-col items-center justify-center">
+        <Loader2 className="h-12 w-12 text-[#AE876D] animate-spin mb-4" />
+        <p className="text-xl">Loading your cart...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto pt-24 pb-12 px-4">

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { cart, removeFromCart, updateQuantity, getCartTotal } = useCart();
+  const { cart, removeFromCart, updateQuantity, getCartTotal, isLoading } = useCart();
   
   // Format currency helper
   const formatCurrency = (value: number) => {
@@ -84,7 +84,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         
         {/* Content */}
         <div className="h-[calc(100%-200px)] overflow-y-auto p-6">
-          {cart.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <Loader2 className="h-10 w-10 text-[#AE876D] animate-spin mb-4" />
+              <p className="text-white/70">Loading your cart...</p>
+            </div>
+          ) : cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full">
               <p className="text-lg text-white/70 mb-4">Your cart is empty</p>
               <Link
@@ -147,7 +152,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         </div>
         
         {/* Footer */}
-        {cart.length > 0 && (
+        {!isLoading && cart.length > 0 && (
           <div className="absolute bottom-0 left-0 w-full bg-[#222222] border-t border-[#333333] p-6">
             <div className="flex justify-between items-center mb-4">
               <span className="text-white">TOTAL</span>

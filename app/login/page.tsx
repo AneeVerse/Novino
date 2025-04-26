@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
+import { useCart } from '@/contexts/CartContext'
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('')
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const [newPassword, setNewPassword] = useState('')
   const [resetStage, setResetStage] = useState<'email' | 'otp' | 'newPassword'>('email')
   const router = useRouter()
+  const { closeCart } = useCart()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,8 +36,12 @@ export default function LoginPage() {
       
       if (res.ok) {
         setMessage('Login successful! Redirecting...')
+        
+        // Sync cart by triggering a page reload (which will trigger cart context's sync logic)
+        // Will execute after this function due to the timeout
         setTimeout(() => {
-        router.push('/')
+          closeCart() // Close cart drawer before redirecting
+          router.push('/')
         }, 1500)
       } else {
         setMessage(data.message || 'Login failed')
@@ -45,7 +51,7 @@ export default function LoginPage() {
       setMessage('Network error. Please try again.')
     } finally {
       setLoading(false)
-  }
+    }
   }
 
   const handleSendResetOtp = async (e: React.FormEvent) => {

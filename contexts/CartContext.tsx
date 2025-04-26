@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useSession } from 'next-auth/react';
 
 // Define types for cart items
 export interface CartItem {
@@ -10,6 +11,7 @@ export interface CartItem {
   image: string;
   quantity: number;
   variant?: string;
+  addedAt?: Date;
 }
 
 // Define types for cart context
@@ -24,6 +26,7 @@ interface CartContextType {
   isCartOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
+  isLoading: boolean;
 }
 
 // Create the context with default values
@@ -38,6 +41,7 @@ const CartContext = createContext<CartContextType>({
   isCartOpen: false,
   openCart: () => {},
   closeCart: () => {},
+  isLoading: false,
 });
 
 // Custom hook to use the cart context
@@ -45,12 +49,39 @@ export const useCart = () => useContext(CartContext);
 
 // Provider component
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  // Initialize cart state from localStorage (if available)
+  // Initialize cart state
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const isLoggedIn = status === 'authenticated' && session?.user;
 
-  // Load cart from localStorage on mount
+  // Load cart on mount and when authentication status changes
   useEffect(() => {
+    async function loadCart() {
+      setIsLoading(true);
+      try {
+        if (isLoggedIn) {
+          // If logged in, fetch cart from server
+          await fetchServerCart();
+        } else {
+          // If not logged in, load from localStorage
+          loadLocalCart();
+        }
+      } catch (error) {
+        console.error('Error loading cart:', error);
+        // Fallback to local cart if server fetch fails
+        loadLocalCart();
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadCart();
+  }, [isLoggedIn]);
+
+  // Function to load cart from localStorage
+  const loadLocalCart = () => {
     try {
       const savedCart = localStorage.getItem('novinoCart');
       if (savedCart) {
@@ -59,12 +90,104 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Error loading cart from localStorage:', error);
     }
-  }, []);
+  };
 
-  // Save cart to localStorage whenever it changes
+  // Function to fetch cart from server
+  const fetchServerCart = async () => {
+    try {
+      const response = await fetch('/api/cart/get', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include cookies for auth
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCart(data.items || []);
+      } else {
+        throw new Error('Failed to fetch cart from server');
+      }
+    } catch (error) {
+      console.error('Error fetching cart from server:', error);
+      throw error;
+    }
+  };
+
+  // Function to update cart on server
+  const updateServerCart = async (updatedCart: CartItem[]) => {
+    try {
+      const response = await fetch('/api/cart/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ items: updatedCart }),
+        credentials: 'include', // Include cookies for auth
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update cart on server');
+      }
+    } catch (error) {
+      console.error('Error updating cart on server:', error);
+    }
+  };
+
+  // Sync guest cart to server when user logs in
   useEffect(() => {
-    localStorage.setItem('novinoCart', JSON.stringify(cart));
-  }, [cart]);
+    async function syncCartOnLogin() {
+      if (isLoggedIn) {
+        try {
+          // Get local cart
+          const localCart = localStorage.getItem('novinoCart');
+          
+          if (localCart) {
+            const parsedLocalCart = JSON.parse(localCart);
+            
+            // Only sync if there are items in the local cart
+            if (parsedLocalCart.length > 0) {
+              const response = await fetch('/api/cart/sync', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ guestCartItems: parsedLocalCart }),
+                credentials: 'include',
+              });
+              
+              if (response.ok) {
+                const data = await response.json();
+                setCart(data.items || []);
+                
+                // Clear local cart after successful sync
+                localStorage.removeItem('novinoCart');
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error syncing cart on login:', error);
+        }
+      }
+    }
+    
+    syncCartOnLogin();
+  }, [isLoggedIn]);
+
+  // Save cart to localStorage if not logged in
+  useEffect(() => {
+    if (!isLoggedIn && !isLoading) {
+      localStorage.setItem('novinoCart', JSON.stringify(cart));
+    }
+  }, [cart, isLoggedIn, isLoading]);
+
+  // Update server cart when cart changes for logged-in users
+  useEffect(() => {
+    if (isLoggedIn && !isLoading) {
+      updateServerCart(cart);
+    }
+  }, [cart, isLoggedIn, isLoading]);
 
   // Add item to cart
   const addToCart = (item: CartItem) => {
@@ -156,6 +279,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     isCartOpen,
     openCart,
     closeCart,
+    isLoading,
   };
 
   return (

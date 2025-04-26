@@ -10,6 +10,7 @@ import "@fontsource/dm-serif-display"
 import { CartProvider } from "@/contexts/CartContext"
 import CartDrawer from "@/components/ui/cart-drawer"
 import { useCart } from "@/contexts/CartContext"
+import { SessionProvider } from "next-auth/react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -35,17 +36,19 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <CartProvider>
-            {isDashboard ? (
-              <div className="w-full">
-                <DashboardNavbar />
-              </div>
-            ) : (
-              <Navbar />
-            )}
-            {children}
-            <CartDrawerWrapper />
-          </CartProvider>
+          <SessionProvider>
+            <CartProvider>
+              {isDashboard ? (
+                <div className="w-full">
+                  <DashboardNavbar />
+                </div>
+              ) : (
+                <Navbar />
+              )}
+              {children}
+              <CartDrawerWrapper />
+            </CartProvider>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>
