@@ -298,9 +298,9 @@ function DashboardContent() {
   // Transform the simple product to enhanced format for the form
   const convertToEnhancedProduct = (product: Product | undefined): EnhancedProduct | undefined => {
     if (!product) return undefined;
-
+    
     // Removed automatic fetch in convertToEnhancedProduct to prevent infinite loops
-
+    
     return {
       id: product.id,
       _id: product._id,
