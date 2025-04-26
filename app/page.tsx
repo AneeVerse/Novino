@@ -87,6 +87,7 @@ export default function Home() {
   const [totalSlides, setTotalSlides] = useState(heroImages.length);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const [showText, setShowText] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   // Filter products based on active category
   const filteredProducts = products.filter(product => 
@@ -159,7 +160,43 @@ export default function Home() {
       emblaApi.off('pointerUp', startAutoplay);
     };
   }, [emblaApi]);
-  
+
+  // Add scroll event listener for the text color transition
+  useEffect(() => {
+    const handleScroll = () => {
+      const position = window.scrollY;
+      setScrollPosition(position);
+      
+      // Calculate transition percentage (0 to 100)
+      // Adjust these values to control when the color change happens
+      const startChange = 50;  // Start earlier
+      const endChange = 500;   // End point for full color change
+      const scrollRange = endChange - startChange;
+      const currentScroll = Math.max(0, position - startChange);
+      const percentage = Math.min(100, (currentScroll / scrollRange) * 100);
+      
+      // Apply the background position to control the color transition
+      const heroText = document.querySelector('.novino-hero-text') as HTMLElement;
+      if (heroText) {
+        // This controls the gradient position - changing from 0% (white) to 100% (#312F30)
+        heroText.style.backgroundPosition = `0% ${percentage}%`;
+      }
+    };
+    
+    // Only add the scroll listener after the initial animation completes
+    const timer = setTimeout(() => {
+      window.addEventListener('scroll', handleScroll);
+      // Initial call to set correct position
+      handleScroll();
+    }, 1500); // Match this with the rise-up animation duration
+    
+    // Cleanup
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
       {/* Hero Section - Full width that extends to the top */}
@@ -202,10 +239,9 @@ export default function Home() {
               bottom: 'auto'
             }}
           ></div>
-          {/* Added smaller text size for mobile - trying text-7xl */}
-          {/* Removed inline styles for positioning, moved to CSS block below */}
+          {/* Updated NOVINO text with custom class for scroll animation */}
           <h1 
-            className={`novino-hero-text text-[#FFFFFF] text-7xl sm:text-[160px] md:text-[230px] lg:text-[330px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            className={`novino-hero-text text-7xl sm:text-[160px] md:text-[230px] lg:text-[330px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
           >
             NOVINO
           </h1>
