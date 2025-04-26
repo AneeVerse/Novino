@@ -3,10 +3,34 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const pathname = usePathname();
+
+  // Check if user is logged in
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        // Try to authenticate with real credentials first
+        const res = await fetch("/api/auth/me");
+        
+        if (res.ok) {
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (err) {
+        console.error(err);
+        setIsLoggedIn(false);
+      }
+    }
+    
+    checkAuth();
+  }, [pathname]);
 
   // Track scroll position to change navbar transparency
   useEffect(() => {
@@ -91,7 +115,7 @@ const Navbar = () => {
         
         {/* Right section - Authentication */}
         <div className="flex items-center space-x-2 md:space-x-4 md:pr-6 ml-auto">
-          <Link href="/auth/login" className="text-white">
+          <Link href={isLoggedIn ? "/profile" : "/login"} className="text-white">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
