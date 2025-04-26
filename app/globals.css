@@ -294,11 +294,13 @@ body {
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  background-image: linear-gradient(to bottom, white 50%, #312F30 50%);
+  background-image: linear-gradient(to bottom, 
+    white 0%, white 50%, 
+    #312F30 50%, #312F30 100%);
   background-size: 100% 200%;
   background-position: 0% 0%;
   transition: background-position 0.2s ease-out;
-  text-shadow: 0 5px 30px rgba(174, 135, 109, 0.3); /* Adding subtle shadow for depth */
+  /* text-shadow: 0 5px 30px rgba(174, 135, 109, 0.3); Adding subtle shadow for depth */
 }
 
 .novino-hero-text-dark {
@@ -308,15 +310,9 @@ body {
 /* For larger screens, create a smoother transition */
 @media (min-width: 768px) {
   .novino-hero-text {
-    background-image: linear-gradient(
-      to bottom,
-      white 45%,
-      rgba(255, 255, 255, 0.9) 47%,
-      rgba(255, 255, 255, 0.8) 49%,
-      rgba(49, 47, 48, 0.8) 51%,  /* #312F30 with alpha */
-      rgba(49, 47, 48, 0.9) 53%,  /* #312F30 with alpha */
-      #312F30 55%
-    );
+    background-image: linear-gradient(to bottom, 
+      white 0%, white 50%, 
+      #312F30 50%, #312F30 100%);
   }
 }
 
