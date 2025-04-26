@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useCart } from "@/contexts/CartContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname();
+  const { getCartCount, openCart } = useCart();
 
   // Check if user is logged in
   useEffect(() => {
@@ -53,6 +55,12 @@ const Navbar = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  // Handle cart icon click
+  const handleCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    openCart();
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full z-[1000] bg-[#2D2D2D]/70 h-[80px]" style={{ position: 'fixed' }}>
@@ -131,7 +139,7 @@ const Navbar = () => {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </Link>
-          <Link href="/cart" className="text-white">
+          <button onClick={handleCartClick} className="text-white relative">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -147,7 +155,12 @@ const Navbar = () => {
               <circle cx="20" cy="21" r="1"></circle>
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
-          </Link>
+            {getCartCount() > 0 && (
+              <span className="absolute -top-2 -right-2 bg-[#AE876D] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {getCartCount()}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Mobile Menu */}

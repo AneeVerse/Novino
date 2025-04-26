@@ -12,6 +12,7 @@ import WardrobeSection from "@/components/wardrobe-section"
 import Footer from "@/components/footer"
 import { useRouter, useParams } from "next/navigation"
 import { useCallback } from "react"
+import { useCart } from '@/contexts/CartContext'
 
 // Artefact products data
 const artefactProducts = [
@@ -125,6 +126,9 @@ export default function ProductDetail() {
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
+
+  // Add the cart context
+  const { addToCart } = useCart();
 
   // If we detect an invalid route, we could redirect programmatically
   useEffect(() => {
@@ -342,6 +346,24 @@ export default function ProductDetail() {
     ? paintingProductData.filter(p => p.id !== product.id).slice(0, 3)
     : paintingProductData.slice(1, 4) // If showing featured product, show other products as related
 
+  // Add to cart handler
+  const handleAddToCart = () => {
+    if (product) {
+      // Prepare the cart item
+      const cartItem = {
+        id: product.id,
+        name: product.name,
+        price: displayedPrice,
+        image: displayedImage,
+        quantity: quantity,
+        variant: selectedVariant ? selectedVariant.name : undefined
+      };
+      
+      // Add to cart (this will automatically open the cart drawer)
+      addToCart(cartItem);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="bg-[#2D2D2D] text-white min-h-screen flex items-center justify-center">
@@ -491,7 +513,7 @@ export default function ProductDetail() {
                 
                 <div className="text-xs text-white/60 mb-4">Lead time 6-8 weeks</div>
                 
-                <div className="flex items-center gap-2 mb-6">
+                <div className="flex items-center gap-1">
                   <button 
                     onClick={decreaseQuantity}
                     className="w-8 h-8 flex items-center justify-center border border-white/20 hover:bg-white/5 transition"
@@ -506,7 +528,10 @@ export default function ProductDetail() {
                     +
                   </button>
                   
-                  <button className="ml-4 flex-1 bg-neutral-800 hover:bg-neutral-700 text-white py-2.5 uppercase tracking-widest text-sm transition">
+                  <button 
+                    onClick={handleAddToCart}
+                    className="ml-4 flex-1 bg-neutral-800 hover:bg-neutral-700 text-white py-2.5 uppercase tracking-widest text-sm transition"
+                  >
                     Add to Cart
                   </button>
                 </div>

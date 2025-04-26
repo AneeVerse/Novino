@@ -7,8 +7,17 @@ import Navbar from "@/components/ui/navbar"
 import DashboardNavbar from "@/components/ui/dashboard-navbar"
 import { usePathname } from "next/navigation"
 import "@fontsource/dm-serif-display"
+import { CartProvider } from "@/contexts/CartContext"
+import CartDrawer from "@/components/ui/cart-drawer"
+import { useCart } from "@/contexts/CartContext"
 
 const inter = Inter({ subsets: ["latin"] })
+
+// Cart wrapper to use the cart context
+function CartDrawerWrapper() {
+  const { isCartOpen, closeCart } = useCart();
+  return <CartDrawer isOpen={isCartOpen} onClose={closeCart} />;
+}
 
 export default function RootLayout({
   children,
@@ -26,14 +35,17 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {isDashboard ? (
-            <div className="w-full">
-              <DashboardNavbar />
-            </div>
-          ) : (
-            <Navbar />
-          )}
-          {children}
+          <CartProvider>
+            {isDashboard ? (
+              <div className="w-full">
+                <DashboardNavbar />
+              </div>
+            ) : (
+              <Navbar />
+            )}
+            {children}
+            <CartDrawerWrapper />
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>
