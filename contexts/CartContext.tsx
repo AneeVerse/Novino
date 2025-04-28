@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useSession } from 'next-auth/react';
 
 // Define types for cart items
 export interface CartItem {
@@ -53,8 +52,74 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { data: session, status } = useSession();
-  const isLoggedIn = status === 'authenticated' && session?.user;
+  
+  // Replace NextAuth session with custom token-based auth check
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // Check authentication on mount and when cookies change
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (typeof window !== 'undefined') {
+        try {
+          // First check: Is there a profile page check we can do?
+          // If we're on the profile page, we're definitely logged in
+          const isOnProfilePage = window.location.pathname.includes('/profile');
+          if (isOnProfilePage) {
+            console.log('Auth determined from profile page access');
+            setIsLoggedIn(true);
+            return;
+          }
+          
+          // Second check: Try API auth check, but only do this once on mount
+          const response = await fetch('/api/auth/me', {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            console.log('Auth confirmed via API');
+            setIsLoggedIn(true);
+            return;
+          }
+          
+          // Third check: Cookie exists check
+          const cookies = document.cookie.split(';');
+          const tokenCookie = cookies.find(c => c.trim().startsWith('token='));
+          
+          if (tokenCookie && tokenCookie.length > 6) {
+            console.log('Auth token found in cookies');
+            setIsLoggedIn(true);
+            return;
+          }
+          
+          // If we get here, user is not logged in
+          console.log('User is not authenticated');
+          setIsLoggedIn(false);
+        } catch (error) {
+          console.error('Auth check error:', error);
+          // If error occurred, default to cookie check as fallback
+          const hasToken = document.cookie.includes('token=');
+          console.log('Fallback auth check - Token present:', hasToken);
+          setIsLoggedIn(hasToken);
+        }
+      }
+    };
+    
+    // Only check on mount
+    checkAuth();
+    
+    // Set up a listener for storage events to detect login/logout from other tabs
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'logout' || event.key === 'login') {
+        checkAuth();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   // Load cart on mount and when authentication status changes
   useEffect(() => {
@@ -287,4 +352,4 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </CartContext.Provider>
   );
-}; 
+};
