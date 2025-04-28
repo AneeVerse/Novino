@@ -31,51 +31,17 @@ const heroImages = [
   }
 ];
 
-// Product data
-const products = [
-  {
-    id: 1,
-    name: "LIGHTCOOL",
-    price: "$22.5",
-    image: "/images/mug-black.png",
-    category: "Mugs"
-  },
-  {
-    id: 2,
-    name: "LIGHTCOOL",
-    price: "$22.5",
-    image: "/images/mug-white.png",
-    category: "Mugs"
-  },
-  {
-    id: 3,
-    name: "CYCLEWING",
-    price: "$35",
-    image: "/images/cycle1.png",
-    category: "Feeds"
-  },
-  {
-    id: 4,
-    name: "VELOCITY",
-    price: "$32",
-    image: "/images/cycle2.png",
-    category: "Feeds"
-  },
-  {
-    id: 5,
-    name: "CLASSWING",
-    price: "$20",
-    image: "/images/notebook-white.png",
-    category: "Books"
-  },
-  {
-    id: 6,
-    name: "HOLOCANE",
-    price: "$23",
-    image: "/images/notebook-black.png",
-    category: "Books"
-  }
-];
+// Product data - We'll replace this with API data
+// const products = [
+//   {
+//     id: 1,
+//     name: "LIGHTCOOL",
+//     price: "$22.5",
+//     image: "/images/mug-black.png",
+//     category: "Mugs"
+//   },
+//   ...
+// ];
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All Products");
@@ -88,11 +54,132 @@ export default function Home() {
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const [showText, setShowText] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
+  
+  // Add states for categories and products
+  const [categories, setCategories] = useState<string[]>(["All Products"]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        if (!res.ok) throw new Error('Failed to fetch categories');
+        const data = await res.json();
+        
+        // Build mapping between category IDs and names
+        const catMap: {[key: string]: string} = {};
+        data.forEach((cat: any) => {
+          if (cat.type === 'artefact') {
+            const id = cat._id || cat.id;
+            if (id) catMap[id] = cat.name;
+          }
+        });
+        setCategoryMap(catMap);
+        
+        // Get category names for various product types
+        const productCategories = data
+          .filter((cat: any) => cat.type === 'artefact')
+          .map((cat: any) => cat.name);
+          
+        // Always add "All Products" as the first option
+        setCategories(["All Products", ...productCategories]);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        // Fallback to default categories
+        setCategories(["All Products", "Books", "Mugs", "Costar", "Feeds"]);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/products');
+        if (!res.ok) throw new Error('Failed to fetch products');
+        const data = await res.json();
+        
+        // Get artefact products
+        const artefactProducts = data
+          .filter((p: any) => p.type === 'artefact')
+          .map((p: any) => ({
+            id: p.id || p._id,
+            name: p.name,
+            price: p.basePrice || p.price || "$0",
+            image: p.images?.[0] || p.image || "/images/placeholder.png",
+            category: p.category,
+            categoryId: p.category // Store original category ID for reference
+          }));
+        
+        setProducts(artefactProducts);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        // Fallback to hardcoded products if API fails
+        setProducts([
+          {
+            id: 1,
+            name: "LIGHTCOOL",
+            price: "$22.5",
+            image: "/images/mug-black.png",
+            category: "Mugs"
+          },
+          {
+            id: 2,
+            name: "LIGHTCOOL",
+            price: "$22.5",
+            image: "/images/mug-white.png",
+            category: "Mugs"
+          },
+          {
+            id: 3,
+            name: "CYCLEWING",
+            price: "$35",
+            image: "/images/cycle1.png",
+            category: "Feeds"
+          },
+          {
+            id: 4,
+            name: "VELOCITY",
+            price: "$32",
+            image: "/images/cycle2.png",
+            category: "Feeds"
+          },
+          {
+            id: 5,
+            name: "CLASSWING",
+            price: "$20",
+            image: "/images/notebook-white.png",
+            category: "Books"
+          },
+          {
+            id: 6,
+            name: "HOLOCANE",
+            price: "$23",
+            image: "/images/notebook-black.png",
+            category: "Books"
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   // Filter products based on active category
-  const filteredProducts = products.filter(product => 
-    activeCategory === "All Products" ? true : product.category === activeCategory
-  );
+  const filteredProducts = products.filter(product => {
+    if (activeCategory === "All Products") return true;
+    
+    // Match by either category ID or name
+    return categoryMap[product.category] === activeCategory || // Match by mapped name
+           product.category === activeCategory || // Direct match (rare)
+           product.categoryId === activeCategory; // Match by ID
+  });
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -298,46 +385,56 @@ export default function Home() {
             <div className="flex flex-col md:flex-row md:gap-8 relative z-10">
               {/* Right side: Product Grid - Change order for mobile */}
               <div className="w-full md:w-1/2 order-2 md:order-2">
-                {/* Desktop grid - hidden on mobile */}
-                <div className="hidden md:grid md:grid-cols-2 md:gap-8">
-                  {filteredProducts.slice(0, 2).map((product) => (
-                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className={`object-contain ${product.category === "Mugs" ? "p-0 scale-125" : "p-4"}`}
-                          style={product.category === "Mugs" ? { transform: 'scale(1.25)' } : {}}
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
-                      </div>
+                {loading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <p className="text-white">Loading products...</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Desktop grid - hidden on mobile */}
+                    <div className="hidden md:grid md:grid-cols-2 md:gap-8">
+                      {filteredProducts.slice(0, 2).map((product) => (
+                        <Link href={`/product/${product.id}`} key={product.id}>
+                          <div className="bg-white w-full max-w-[80%] mx-auto border border-white hover:opacity-95 transition-opacity">
+                            <div className="relative aspect-square overflow-hidden">
+                              <Image
+                                src={product.image}
+                                alt={product.name}
+                                fill
+                                className="object-contain p-4"
+                              />
+                            </div>
+                            <div className="p-4 bg-[#333333]">
+                              <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
+                              <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                {/* Desktop grid - hidden on mobile */}
-                <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-8">
-                  {filteredProducts.slice(2, 4).map((product) => (
-                    <div key={product.id} className="bg-white w-full max-w-[80%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className={`object-contain ${product.category === "Mugs" ? "p-0 scale-125" : "p-4"}`}
-                          style={product.category === "Mugs" ? { transform: 'scale(1.25)' } : {}}
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
-                      </div>
+                    {/* Desktop grid - hidden on mobile */}
+                    <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-8">
+                      {filteredProducts.slice(2, 4).map((product) => (
+                        <Link href={`/product/${product.id}`} key={product.id}>
+                          <div className="bg-white w-full max-w-[80%] mx-auto border border-white hover:opacity-95 transition-opacity">
+                            <div className="relative aspect-square overflow-hidden">
+                              <Image
+                                src={product.image}
+                                alt={product.name}
+                                fill
+                                className="object-contain p-4"
+                              />
+                            </div>
+                            <div className="p-4 bg-[#333333]">
+                              <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
+                              <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </>
+                )}
               </div>
 
               {/* Left side: Categories and Title */}
@@ -349,83 +446,81 @@ export default function Home() {
 
                   {/* Category Filters - Displayed horizontally and wrapped */}
                   <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
-                    {[
-                      { name: "All Products", active: activeCategory === "All Products" },
-                      { name: "Books", active: activeCategory === "Books" },
-                      { name: "Mugs", active: activeCategory === "Mugs" },
-                      { name: "Costar", active: activeCategory === "Costar" },
-                      { name: "Feeds", active: activeCategory === "Feeds" },
-                    ].map((category) => (
+                    {categories.map((category) => (
                       <button
-                        key={category.name}
+                        key={category}
                         className={`${
-                          category.active 
+                          activeCategory === category
                             ? "bg-white text-black" 
                             : "border border-white/30 text-white hover:bg-white/10"
                         } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors font-['Roboto_Mono']`}
-                        onClick={() => setActiveCategory(category.name)}
+                        onClick={() => setActiveCategory(category)}
                       >
-                        {category.name}
+                        {category}
                       </button>
                     ))}
                   </div>
                 </div>
                 
-                {/* Desktop grid - hidden on mobile */}
-                <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-[215px] md:pl-10">
-                  {filteredProducts.slice(4, 6).map((product) => (
-                    <div key={product.id} className="bg-white w-full max-w-[85%] mx-auto border border-white">
-                      <div className="relative aspect-square overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className={`object-contain ${product.category === "Mugs" ? "p-0 scale-125" : "p-4"}`}
-                          style={product.category === "Mugs" ? { transform: 'scale(1.25)' } : {}}
-                        />
-                      </div>
-                      <div className="p-4 bg-[#333333]">
-                        <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
-                        <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
+                {!loading && (
+                  <>
+                    {/* Desktop grid - hidden on mobile */}
+                    <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-[215px] md:pl-10">
+                      {filteredProducts.slice(4, 6).map((product) => (
+                        <Link href={`/product/${product.id}`} key={product.id}>
+                          <div className="bg-white w-full max-w-[85%] mx-auto border border-white hover:opacity-95 transition-opacity">
+                            <div className="relative aspect-square overflow-hidden">
+                              <Image
+                                src={product.image}
+                                alt={product.name}
+                                fill
+                                className="object-contain p-4"
+                              />
+                            </div>
+                            <div className="p-4 bg-[#333333]">
+                              <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
+                              <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+
+                    {/* Mobile horizontal scroll (hidden on md and up) - Moved outside the columns */}
+                    <div className="w-full md:hidden flex flex-col mt-6 mb-6">
+                      <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide px-2 items-start">
+                        {/* Display all products in a single row for mobile */}
+                        {filteredProducts.map((product) => (
+                          <Link href={`/product/${product.id}`} key={`mobile-${product.id}`} className="flex-shrink-0 w-64">
+                            <div className="bg-white w-full border border-white hover:opacity-95 transition-opacity">
+                              <div className="relative aspect-square overflow-hidden">
+                                <Image
+                                  src={product.image}
+                                  alt={product.name}
+                                  fill
+                                  className="object-contain p-4"
+                                />
+                              </div>
+                              <div className="p-4 bg-[#333333]">
+                                <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
+                                <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                {/* Mobile horizontal scroll (hidden on md and up) - Moved outside the columns */}
-                <div className="w-full md:hidden flex flex-col mt-6 mb-6">
-                  <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide px-2 items-start">
-                    {/* Display all products in a single row for mobile */}
-                    {filteredProducts.map((product) => (
-                      <div key={`mobile-${product.id}`} className="flex-shrink-0 w-64">
-                        <div className="bg-white w-full border border-white">
-                          <div className="relative aspect-square overflow-hidden">
-                            <Image
-                              src={product.image}
-                              alt={product.name}
-                              fill
-                              className={`object-contain ${product.category === "Mugs" ? "p-0 scale-125" : "p-4"}`}
-                              style={product.category === "Mugs" ? { transform: 'scale(1.25)' } : {}}
-                            />
-                          </div>
-                          <div className="p-4 bg-[#333333]">
-                            <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
-                            <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
             </div>
             
             {/* Shop Now Button */}
             <div className="mt-16 flex justify-center">
-              <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono']" style={{ borderRadius: '10px' }}>
+              <Link href="/artefacts" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono']" style={{ borderRadius: '10px' }}>
                 View all
                 <ArrowRight className="ml-2 w-4 h-4" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>

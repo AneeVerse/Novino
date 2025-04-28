@@ -235,6 +235,7 @@ export default function ArtefactsPage() {
             products={artefactProducts}
             categories={categories}
             viewAllText="View all artefacts"
+            showViewAllButton={false}
           />
         </div>
 
