@@ -450,8 +450,16 @@ export default function ProductDetail() {
        
         {/* Main product display with container image */}
         <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1600px" }}>
-          <div className="absolute inset-0" style={{ 
+          <div className="absolute inset-0 hidden sm:block" style={{ 
             backgroundImage: 'url("/images/product/Container (4).png")',
+            backgroundSize: '100% 100%',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}></div>
+          
+          {/* Mobile-only border */}
+          <div className="absolute inset-0 sm:hidden" style={{ 
+            backgroundImage: 'url("/paint-product-all-border.png")',
             backgroundSize: '100% 100%',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
