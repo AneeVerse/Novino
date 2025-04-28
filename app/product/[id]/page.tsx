@@ -107,10 +107,8 @@ export default function ProductDetail() {
   const [dataSource, setDataSource] = useState<'api' | 'fallback'>('fallback')
   
   const [quantity, setQuantity] = useState(1)
-  const [currentImage, setCurrentImage] = useState(1)
+  const [currentImage, setCurrentImage] = useState(0)
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
-
-  const totalImages = 11
 
   // Next.js useParams returns string | string[] | undefined
   const rawId = params?.id
@@ -214,7 +212,9 @@ export default function ProductDetail() {
               price: data.price || data.basePrice,
               basePrice: data.basePrice || data.price,
               image: data.image,
-              images: data.images,
+              images: Array.isArray(data.images) 
+                ? data.images 
+                : (data.image ? [data.image] : []),
               category: data.category || 'Unknown',
               description: data.description,
               variants: Array.isArray(data.variants) ? data.variants : [],
@@ -225,6 +225,7 @@ export default function ProductDetail() {
             };
             
             console.log('Using API data for product display:', formattedProduct);
+            console.log('Product images:', formattedProduct.images);
             setProduct(formattedProduct);
             // Lookup category name
             try {
@@ -286,12 +287,19 @@ export default function ProductDetail() {
           console.log('Using fallback data for product display:', fallbackProduct);
           // Cast to full ProductWithDescription for type safety
           const typedFallback = fallbackProduct as unknown as ProductWithDescription;
-          setProduct(typedFallback);
-          setCategoryName(typedFallback.category);
+          
+          // Ensure the fallback product has images array
+          if (!typedFallback.images && typedFallback.image) {
+            typedFallback.images = [typedFallback.image];
+          }
+          
           // Initialize fallback selected variant if any
           const frameVars = Array.isArray(typedFallback.variants)
             ? typedFallback.variants.filter((v: any) => v.type === 'frame')
             : [];
+          
+          setProduct(typedFallback);
+          setCategoryName(typedFallback.category);
           setSelectedVariant(null);
           setDataSource('fallback');
           setError(`API Error (${response.status}): Could not load product from API, using fallback data`);
@@ -313,13 +321,19 @@ export default function ProductDetail() {
         
         console.log('Using fallback data after error:', fallbackProduct);
         const typedFallback = fallbackProduct as unknown as ProductWithDescription;
-        setProduct(typedFallback);
+        
+        // Ensure the fallback product has images array
+        if (!typedFallback.images && typedFallback.image) {
+          typedFallback.images = [typedFallback.image];
+        }
+        
         // Initialize fallback selected variant if any
         const frameVars = Array.isArray(typedFallback.variants)
           ? typedFallback.variants.filter((v: any) => v.type === 'frame')
           : [];
         setSelectedVariant(null);
         setCategoryName(typedFallback.category);
+        setProduct(typedFallback);
         setDataSource('fallback');
         setError("Could not load product from API, using fallback data");
       } finally {
@@ -387,7 +401,16 @@ export default function ProductDetail() {
   // Derive displayed values based on selected variant
   const displayedVariant = selectedVariant;
   const displayedPrice = displayedVariant?.price || productPrice;
-  const displayedImage = displayedVariant?.imageUrl || productImage;
+  
+  // Handle the product images array
+  const productImages = product.images || [productImage];
+  const totalImages = productImages.length;
+  
+  // Get the current image to display based on the current index
+  const displayedImage = selectedVariant?.imageUrl || 
+    (currentImage < productImages.length 
+      ? productImages[currentImage] 
+      : productImage);
 
   // Prepare color variants from product
   const colorVariants = Array.isArray(product?.variants)
@@ -397,6 +420,10 @@ export default function ProductDetail() {
   const frameVariants = Array.isArray(product?.variants)
     ? product.variants.filter((v: any) => v.type === 'frame')
     : [];
+
+  // Get basic color and frame for "unstyled" button state
+  const hasSelectedColor = colorVariants.some(v => selectedVariant?.id === v.id);
+  const hasSelectedFrame = frameVariants.some(v => selectedVariant?.id === v.id);
 
   return (
     <div className="bg-[#2D2D2D] text-white min-h-screen overflow-x-hidden">
@@ -480,36 +507,92 @@ export default function ProductDetail() {
               <div className="flex flex-col justify-center">
                 <div className="text-2xl font-light mb-4">{displayedPrice} <span className="text-xs text-white/60 ml-1">inc Tax</span></div>
                 
-                {/* Variant options */}
-                <div className="mb-6">
-                  <h3 className="uppercase text-xs text-white/60 mb-2">Variant</h3>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      key="basic"
-                      onClick={() => setSelectedVariant(null)}
-                      className={`px-4 py-2 text-xs border ${
-                        selectedVariant === null
-                          ? 'border-white text-white'
-                          : 'border-white/30 text-white/70 hover:border-white/50'
-                      }`}
-                    >
-                      Basic
-                    </button>
-                    {frameVariants.map((variant: any) => (
-                      <button
-                        key={variant.id}
-                        onClick={() => setSelectedVariant(variant)}
-                        className={`px-4 py-2 text-xs border ${
-                          selectedVariant?.id === variant.id
-                            ? 'border-white text-white'
-                            : 'border-white/30 text-white/70 hover:border-white/50'
-                        }`}
-                      >
-                        {variant.name}
-                      </button>
-                    ))}
+                {/* Variant Options */}
+                {(frameVariants.length > 0 || colorVariants.length > 0) && (
+                  <div className="flex flex-col gap-4 mt-8">
+                    {frameVariants.length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        <div className="text-xs text-white/50">FRAME</div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            key="basic"
+                            onClick={() => {
+                              // If a color is selected, keep it selected while removing frame
+                              if (hasSelectedColor) {
+                                // Find the current color variant
+                                const currentColor = colorVariants.find(v => v.id === selectedVariant?.id);
+                                setSelectedVariant(currentColor);
+                              } else {
+                                setSelectedVariant(null);
+                              }
+                            }}
+                            className={`px-4 py-2 text-xs border ${
+                              !hasSelectedFrame
+                                ? 'border-white text-white'
+                                : 'border-white/30 text-white/70 hover:border-white/50'
+                            }`}
+                          >
+                            Basic
+                          </button>
+                          {frameVariants.map((variant: any) => (
+                            <button
+                              key={variant.id}
+                              onClick={() => setSelectedVariant(variant)}
+                              className={`px-4 py-2 text-xs border ${
+                                selectedVariant?.id === variant.id
+                                  ? 'border-white text-white'
+                                  : 'border-white/30 text-white/70 hover:border-white/50'
+                              }`}
+                            >
+                              {variant.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {colorVariants.length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        <div className="text-xs text-white/50">COLOR</div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            key="basic-color"
+                            onClick={() => {
+                              // If a frame is selected, keep it selected while removing color
+                              if (hasSelectedFrame) {
+                                // Find the current frame variant
+                                const currentFrame = frameVariants.find(v => v.id === selectedVariant?.id);
+                                setSelectedVariant(currentFrame);
+                              } else {
+                                setSelectedVariant(null);
+                              }
+                            }}
+                            className={`px-4 py-2 text-xs border ${
+                              !hasSelectedColor
+                                ? 'border-white text-white'
+                                : 'border-white/30 text-white/70 hover:border-white/50'
+                            }`}
+                          >
+                            Basic
+                          </button>
+                          {colorVariants.map((variant: any) => (
+                            <button
+                              key={variant.id}
+                              onClick={() => setSelectedVariant(variant)}
+                              className={`px-4 py-2 text-xs border ${
+                                selectedVariant?.id === variant.id
+                                  ? 'border-white text-white'
+                                  : 'border-white/30 text-white/70 hover:border-white/50'
+                              }`}
+                            >
+                              {variant.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
                 
                 <div className="text-xs text-white/60 mb-4">Lead time 6-8 weeks</div>
                 
@@ -546,17 +629,23 @@ export default function ProductDetail() {
             </div>
 
             {/* Image pagination */}
-            <div className="flex justify-center gap-2 mt-8">
-              {[...Array(totalImages)].map((_, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => setCurrentImage(i+1)}
-                  className={`w-6 h-6 flex items-center justify-center text-xs ${currentImage === i+1 ? 'text-white' : 'text-white/50'}`}
-                >
-                  {i+1}
-                </button>
-              ))}
-            </div>
+            {totalImages > 1 && (
+              <div className="flex justify-center gap-4 mt-8">
+                {productImages.map((imageUrl, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => setCurrentImage(i)}
+                    className={`text-sm transition-all ${
+                      currentImage === i 
+                        ? 'text-white font-medium' 
+                        : 'text-white/60 hover:text-white/80'
+                    }`}
+                  >
+                    {i+1}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
