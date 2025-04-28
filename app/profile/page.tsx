@@ -217,6 +217,14 @@ export default function ProfilePage() {
     );
   }
 
+  // Redirect unauthenticated users to login
+  if (!user) {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+    return null;
+  }
+
   return (
     <div className="container mx-auto pt-24 pb-12 px-4 text-white">
       <div className="flex justify-between items-center mb-8">

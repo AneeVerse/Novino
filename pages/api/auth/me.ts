@@ -8,7 +8,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   // For development/testing purposes, enable mock mode - this should be disabled in production
-  const MOCK_MODE = true; 
+  const MOCK_MODE = false; 
   
   try {
     // First try to get real user data from token

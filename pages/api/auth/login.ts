@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // For development/testing purposes, accept a mock login
-    const MOCK_MODE = true; // Set to false in production
+    const MOCK_MODE = false; // Set to false in production
     let user = null;
 
     if (MOCK_MODE && (identifier === 'test@example.com' || identifier === 'test') && password === 'password') {
