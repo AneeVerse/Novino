@@ -30,17 +30,20 @@ export default async function handler(
   if (!MONGODB_URI || MONGODB_URI === 'mongodb://localhost:27017') {
     console.log('Using fallback data (no MongoDB connection)');
     
+    // In-memory data store (would be replaced by file system in production)
+    let fallbackCategories = [
+      { id: '1', name: 'Oil', type: 'painting', description: 'Oil paintings' },
+      { id: '2', name: 'Acrylic', type: 'painting', description: 'Acrylic paintings' },
+      { id: '3', name: 'Watercolor', type: 'painting', description: 'Watercolor paintings' },
+      { id: '4', name: 'Mixed Media', type: 'painting', description: 'Mixed media paintings' },
+      { id: '5', name: 'Egyptian', type: 'artefact', description: 'Egyptian artefacts' },
+      { id: '6', name: 'Asian', type: 'artefact', description: 'Asian artefacts' },
+      { id: '7', name: 'European', type: 'artefact', description: 'European artefacts' },
+    ];
+    
     // Simple in-memory fallback for testing
     if (method === 'GET') {
-      return res.status(200).json([
-        { id: '1', name: 'Oil', type: 'painting', description: 'Oil paintings' },
-        { id: '2', name: 'Acrylic', type: 'painting', description: 'Acrylic paintings' },
-        { id: '3', name: 'Watercolor', type: 'painting', description: 'Watercolor paintings' },
-        { id: '4', name: 'Mixed Media', type: 'painting', description: 'Mixed media paintings' },
-        { id: '5', name: 'Egyptian', type: 'artefact', description: 'Egyptian artefacts' },
-        { id: '6', name: 'Asian', type: 'artefact', description: 'Asian artefacts' },
-        { id: '7', name: 'European', type: 'artefact', description: 'European artefacts' },
-      ]);
+      return res.status(200).json(fallbackCategories);
     }
     
     if (method === 'POST') {
@@ -51,6 +54,12 @@ export default async function handler(
         description: req.body.description,
         createdAt: new Date().toISOString()
       };
+      
+      // Add to in-memory store (would write to file in production)
+      fallbackCategories.push(newCategory);
+      
+      console.log('Added new category in fallback mode:', newCategory);
+      console.log('Current categories:', fallbackCategories);
       
       return res.status(201).json(newCategory);
     }

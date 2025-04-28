@@ -23,6 +23,15 @@ export default async function handler(
     method,
   } = req;
 
+  // Check for valid ID
+  if (!id || id === 'undefined') {
+    console.error('Invalid ID provided:', id);
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Invalid category ID provided' 
+    });
+  }
+
   // Create a MongoDB connection
   const client = new MongoClient(MONGODB_URI);
 
@@ -32,40 +41,68 @@ export default async function handler(
   if (!MONGODB_URI || MONGODB_URI === 'mongodb://localhost:27017') {
     console.log('Using fallback data (no MongoDB connection)');
     
+    // In-memory fallback data
+    const fallbackCategories = [
+      { id: '1', name: 'Oil', type: 'painting', description: 'Oil paintings' },
+      { id: '2', name: 'Acrylic', type: 'painting', description: 'Acrylic paintings' },
+      { id: '3', name: 'Watercolor', type: 'painting', description: 'Watercolor paintings' },
+      { id: '4', name: 'Mixed Media', type: 'painting', description: 'Mixed media paintings' },
+      { id: '5', name: 'Egyptian', type: 'artefact', description: 'Egyptian artefacts' },
+      { id: '6', name: 'Asian', type: 'artefact', description: 'Asian artefacts' },
+      { id: '7', name: 'European', type: 'artefact', description: 'European artefacts' },
+    ];
+    
     // Simple in-memory fallback for testing
     if (method === 'GET') {
-      // Mock returning a single category
-      const sampleCategories = [
-        { id: '1', name: 'Oil', type: 'painting', description: 'Oil paintings' },
-        { id: '2', name: 'Acrylic', type: 'painting', description: 'Acrylic paintings' },
-        { id: '3', name: 'Watercolor', type: 'painting', description: 'Watercolor paintings' },
-        { id: '4', name: 'Mixed Media', type: 'painting', description: 'Mixed media paintings' },
-        { id: '5', name: 'Egyptian', type: 'artefact', description: 'Egyptian artefacts' },
-        { id: '6', name: 'Asian', type: 'artefact', description: 'Asian artefacts' },
-        { id: '7', name: 'European', type: 'artefact', description: 'European artefacts' },
-      ];
+      // Find the category by ID
+      const foundCategory = fallbackCategories.find(cat => cat.id === id);
       
-      const foundCategory = sampleCategories.find(cat => cat.id === id);
+      console.log(`Looking for category with ID ${id}`, foundCategory || 'Not found');
       
       if (foundCategory) {
         return res.status(200).json(foundCategory);
       } else {
-        return res.status(404).json({ error: 'Category not found' });
+        return res.status(404).json({ success: false, error: 'Category not found' });
       }
     }
     
     if (method === 'PUT') {
-      return res.status(200).json({
-        id: id as string,
+      console.log('Fallback PUT for category:', id, req.body);
+      const categoryIndex = fallbackCategories.findIndex(cat => cat.id === id);
+      
+      if (categoryIndex === -1) {
+        console.error(`Category with ID ${id} not found for update`);
+        return res.status(404).json({ success: false, error: 'Category not found' });
+      }
+      
+      // Update the category
+      const updatedCategory = {
+        ...fallbackCategories[categoryIndex],
         name: req.body.name,
         type: req.body.type,
         description: req.body.description,
         updatedAt: new Date().toISOString()
-      });
+      };
+      
+      console.log('Updated category in fallback mode:', updatedCategory);
+      
+      return res.status(200).json(updatedCategory);
     }
     
     if (method === 'DELETE') {
-      return res.status(200).json({ success: true });
+      console.log('Fallback DELETE for category:', id);
+      const categoryIndex = fallbackCategories.findIndex(cat => cat.id === id);
+      
+      if (categoryIndex === -1) {
+        console.error(`Category with ID ${id} not found for deletion`);
+        return res.status(404).json({ success: false, error: 'Category not found' });
+      }
+      
+      // "Delete" the category
+      const deletedCategory = fallbackCategories[categoryIndex];
+      console.log('Deleted category in fallback mode:', deletedCategory);
+      
+      return res.status(200).json({ success: true, id: id as string });
     }
     
     return res.status(405).json({ error: `Method ${method} not allowed without database` });
@@ -90,6 +127,8 @@ export default async function handler(
     const query = objectId 
       ? { $or: [{ _id: objectId }, { id: id }] }
       : { id: id };
+      
+    console.log('Using query:', JSON.stringify(query));
 
     switch (method) {
       case 'GET':
@@ -111,10 +150,14 @@ export default async function handler(
           description: req.body.description
         };
         
+        console.log('Updating category with data:', updateData);
+        
         const result = await collection.updateOne(
           query,
           { $set: updateData }
         );
+        
+        console.log('Update result:', result);
         
         if (result.matchedCount === 0) {
           return res.status(404).json({ success: false, error: 'Category not found' });
@@ -126,13 +169,17 @@ export default async function handler(
 
       case 'DELETE':
         // Delete a category
+        console.log('Deleting category with ID:', id);
+        
         const deleteResult = await collection.deleteOne(query);
+        
+        console.log('Delete result:', deleteResult);
         
         if (deleteResult.deletedCount === 0) {
           return res.status(404).json({ success: false, error: 'Category not found' });
         }
         
-        res.status(200).json({ success: true });
+        res.status(200).json({ success: true, id: id });
         break;
 
       default:
@@ -143,6 +190,11 @@ export default async function handler(
     console.error('API Error:', error);
     res.status(500).json({ success: false, error: 'Server error' });
   } finally {
-    await client.close();
+    try {
+      await client.close();
+      console.log('MongoDB connection closed');
+    } catch (closeError) {
+      console.error('Error closing MongoDB connection:', closeError);
+    }
   }
 } 

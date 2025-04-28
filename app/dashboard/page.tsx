@@ -7,6 +7,7 @@ import TestimonialForm from '@/components/testimonial-form';
 import EnhancedProductForm from '@/components/enhanced-product-form';
 import { getValidImageUrl } from '@/lib/imageUtils';
 import { Product as EnhancedProduct } from '@/app/dashboard/models/product';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 // Define types for our data
 interface Blog {
@@ -80,6 +81,7 @@ interface Product {
 }
 
 function DashboardContent() {
+  const router = useRouter();
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [paintings, setPaintings] = useState<Product[]>([]);
@@ -87,7 +89,18 @@ function DashboardContent() {
   const [categories, setCategories] = useState<{id: string; name: string; type: 'painting' | 'artefact'}[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('overview');
+  
+  // Get tab from URL parameter
+  const searchParams = useSearchParams();
+  const tabParam = searchParams ? searchParams.get('tab') : null;
+  const [activeTab, setActiveTab] = useState(tabParam || 'overview');
+  
+  // Update activeTab when URL parameter changes
+  useEffect(() => {
+    if (searchParams) {
+      setActiveTab(searchParams.get('tab') || 'overview');
+    }
+  }, [searchParams]);
   
   // State for forms
   const [showBlogForm, setShowBlogForm] = useState(false);
@@ -324,6 +337,11 @@ function DashboardContent() {
     };
   };
 
+  // Helper function to navigate to a tab
+  const navigateToTab = (tab: string) => {
+    router.push(`/dashboard${tab === 'overview' ? '' : `?tab=${tab}`}`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[70vh]">
@@ -351,47 +369,77 @@ function DashboardContent() {
 
   return (
     <div>
-      {/* Navigation Tabs */}
-      <div className="flex space-x-4 mb-6">
-        <button
-          onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2 rounded ${activeTab === 'overview' ? 'bg-[#A47E3B] text-white' : 'bg-[#222222] text-white/70 hover:bg-[#333333]'}`}
-        >
-          Overview
-        </button>
-        <button
-          onClick={() => setActiveTab('blogs')}
-          className={`px-4 py-2 rounded ${activeTab === 'blogs' ? 'bg-[#A47E3B] text-white' : 'bg-[#222222] text-white/70 hover:bg-[#333333]'}`}
-        >
-          Blogs
-        </button>
-        <button
-          onClick={() => setActiveTab('testimonials')}
-          className={`px-4 py-2 rounded ${activeTab === 'testimonials' ? 'bg-[#A47E3B] text-white' : 'bg-[#222222] text-white/70 hover:bg-[#333333]'}`}
-        >
-          Testimonials
-        </button>
-        <button
-          onClick={() => setActiveTab('paintings')}
-          className={`px-4 py-2 rounded ${activeTab === 'paintings' ? 'bg-[#A47E3B] text-white' : 'bg-[#222222] text-white/70 hover:bg-[#333333]'}`}
-        >
-          Paintings
-        </button>
-        <button
-          onClick={() => setActiveTab('artefacts')}
-          className={`px-4 py-2 rounded ${activeTab === 'artefacts' ? 'bg-[#A47E3B] text-white' : 'bg-[#222222] text-white/70 hover:bg-[#333333]'}`}
-        >
-          Artefacts
-        </button>
-        <Link 
-          href="/dashboard/settings/categories"
-          className="px-4 py-2 rounded bg-[#222222] text-white/70 hover:bg-[#333333]"
-        >
-          Categories
-        </Link>
-      </div>
-
-      {/* Content based on active tab */}
+      {/* Content sections based on activeTab */}
+      {activeTab === 'overview' && (
+        <div>
+          <h1 className="text-2xl font-bold text-white mb-6">Dashboard Overview</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-[#222222] p-6 rounded-lg">
+              <h2 className="text-lg font-medium text-white mb-4">Blogs</h2>
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="text-3xl font-bold text-white">{blogs.length}</div>
+                  <div className="text-white/70">Total Blogs</div>
+                </div>
+                <button 
+                  onClick={() => navigateToTab('blogs')}
+                  className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
+                >
+                  Manage Blogs
+                </button>
+              </div>
+            </div>
+            
+            <div className="bg-[#222222] p-6 rounded-lg">
+              <h2 className="text-lg font-medium text-white mb-4">Testimonials</h2>
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="text-3xl font-bold text-white">{testimonials.length}</div>
+                  <div className="text-white/70">Total Testimonials</div>
+                </div>
+                <button 
+                  onClick={() => navigateToTab('testimonials')}
+                  className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
+                >
+                  Manage Testimonials
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6">
+            <div className="bg-[#222222] p-6 rounded-lg">
+              <h2 className="text-lg font-medium text-white mb-4">Recent Blog Posts</h2>
+              
+              {blogs.slice(0, 3).map((blog) => (
+                <div key={blog.id} className="flex items-center py-3 border-b border-[#333333] last:border-0">
+                  <div className="w-12 h-12 rounded overflow-hidden mr-4 flex-shrink-0">
+                    <img src={getValidImageUrl(blog.image)} alt={blog.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-white truncate">{blog.title}</div>
+                    <div className="text-sm text-white/70">{new Date(blog.createdAt).toLocaleDateString()}</div>
+                  </div>
+                  <Link 
+                    href={`/blogs/${blog.slug || blog.id}`}
+                    className="ml-4 px-3 py-1 bg-[#444444] text-white text-sm rounded hover:bg-[#555555]"
+                  >
+                    View
+                  </Link>
+                </div>
+              ))}
+              
+              {blogs.length === 0 && (
+                <div className="text-center text-white/70 py-4">
+                  No blogs found. Add some blogs to see them here.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
       {activeTab === 'blogs' && (
         <div>
           <div className="flex justify-between items-center mb-6">
@@ -731,77 +779,6 @@ function DashboardContent() {
         </div>
       )}
       
-      {/* Overview tab */}
-      {(!activeTab || activeTab === 'overview') && (
-        <div>
-          <h1 className="text-2xl font-bold text-white mb-6">Dashboard Overview</h1>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-[#222222] p-6 rounded-lg">
-              <h2 className="text-lg font-medium text-white mb-4">Blogs</h2>
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="text-3xl font-bold text-white">{blogs.length}</div>
-                  <div className="text-white/70">Total Blogs</div>
-                </div>
-                <button 
-                  onClick={() => setActiveTab('blogs')}
-                  className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
-                >
-                  Manage Blogs
-                </button>
-              </div>
-            </div>
-            
-            <div className="bg-[#222222] p-6 rounded-lg">
-              <h2 className="text-lg font-medium text-white mb-4">Testimonials</h2>
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="text-3xl font-bold text-white">{testimonials.length}</div>
-                  <div className="text-white/70">Total Testimonials</div>
-                </div>
-                <button 
-                  onClick={() => setActiveTab('testimonials')}
-                  className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
-                >
-                  Manage Testimonials
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-[#222222] p-6 rounded-lg">
-              <h2 className="text-lg font-medium text-white mb-4">Recent Blog Posts</h2>
-              
-              {blogs.slice(0, 3).map((blog) => (
-                <div key={blog.id} className="flex items-center py-3 border-b border-[#333333] last:border-0">
-                  <div className="w-12 h-12 rounded overflow-hidden mr-4 flex-shrink-0">
-                    <img src={getValidImageUrl(blog.image)} alt={blog.title} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-white truncate">{blog.title}</div>
-                    <div className="text-sm text-white/70">{new Date(blog.createdAt).toLocaleDateString()}</div>
-                  </div>
-                  <Link 
-                    href={`/blogs/${blog.slug || blog.id}`}
-                    className="ml-4 px-3 py-1 bg-[#444444] text-white text-sm rounded hover:bg-[#555555]"
-                  >
-                    View
-                  </Link>
-                </div>
-              ))}
-              
-              {blogs.length === 0 && (
-                <div className="text-center text-white/70 py-4">
-                  No blogs found. Add some blogs to see them here.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-      
       {/* Forms */}
       {showBlogForm && (
         <BlogForm 
@@ -917,8 +894,8 @@ const sampleArtefacts = [
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-[70vh]">
-      <div className="text-white text-xl">Loading dashboard...</div>
+    <Suspense fallback={<div className="h-screen w-full flex items-center justify-center">
+      <div className="w-10 h-10 border-4 border-[#A47E3B] border-t-transparent rounded-full animate-spin"></div>
     </div>}>
       <DashboardContent />
     </Suspense>
