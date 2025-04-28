@@ -16,6 +16,7 @@ interface Product {
   role?: string;
   image: string;
   category: string;
+  categoryId?: string;
   height?: number;
 }
 
@@ -36,14 +37,18 @@ export default function ProductGrid({
 }: ProductGridProps) {
   const [activeCategory, setActiveCategory] = useState<string>("All Paintings");
   
-  // Simple direct filtering approach
+  // Simple direct filtering approach with improved category matching
   const filteredProducts = React.useMemo(() => {
     console.log("FILTERING - Active Category:", activeCategory);
     console.log("FILTERING - Products before filter:", propProducts);
     
     // For categories other than "All Paintings", strictly filter by category
     if (activeCategory !== "All Paintings") {
-      const filtered = propProducts.filter(product => product.category === activeCategory);
+      const filtered = propProducts.filter(product => {
+        // Match either by category name or category ID
+        return product.category === activeCategory || 
+               product.categoryId === activeCategory;
+      });
       
       // Sort the filtered products by id to ensure consistent order
       filtered.sort((a, b) => Number(a.id) - Number(b.id));

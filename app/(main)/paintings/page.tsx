@@ -29,10 +29,11 @@ const heroImages = [
 ];
 
 // Categories for the product grid
-const categories = ["All Paintings", "Oil", "Acrylic", "Watercolor", "Mixed Media"];
+// const categories = ["All Paintings", "Oil", "Acrylic", "Watercolor", "Mixed Media"];
 
 export default function PaintingsPage() {
   const [activeCategory, setActiveCategory] = useState("All Paintings");
+  const [categories, setCategories] = useState<string[]>(["All Paintings"]);
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
     duration: 50
@@ -49,8 +50,44 @@ export default function PaintingsPage() {
     price: string;
     image: string;
     category: string;
+    categoryId?: string;
   }
   const [paintingProducts, setPaintingProducts] = useState<SimpleProduct[]>([]);
+  const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
+  
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        if (!res.ok) throw new Error('Failed to fetch categories');
+        const data = await res.json();
+        
+        // Filter to get only painting categories
+        const paintingCategories = data
+          .filter((cat: any) => cat.type === 'painting')
+          .map((cat: any) => cat.name);
+          
+        // Build category ID to name mapping
+        const catMap: {[key: string]: string} = {};
+        data.forEach((cat: any) => {
+          if (cat.type === 'painting') {
+            const id = cat._id || cat.id;
+            if (id) catMap[id] = cat.name;
+          }
+        });
+        setCategoryMap(catMap);
+        
+        // Always add "All Paintings" as the first option
+        setCategories(["All Paintings", ...paintingCategories]);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        // Fallback to default categories
+        setCategories(["All Paintings", "Oil", "Acrylic", "Watercolor", "Mixed Media"]);
+      }
+    };
+    fetchCategories();
+  }, []);
   
   // Fetch painting products from API
   useEffect(() => {
@@ -66,7 +103,8 @@ export default function PaintingsPage() {
             name: p.name,
             price: p.basePrice || p.price,
             image: p.images?.[0] || p.image,
-            category: p.category
+            category: categoryMap[p.category] || p.category, // Use name from map if available
+            categoryId: p.category // Store the category ID/reference
           }));
         setPaintingProducts(filtered);
       } catch (err) {
@@ -74,7 +112,7 @@ export default function PaintingsPage() {
       }
     };
     fetchProducts();
-  }, []);
+  }, [categoryMap]); // Add categoryMap as dependency to update products when categories load
 
   // Initial load - delay text appearance
   useEffect(() => {
