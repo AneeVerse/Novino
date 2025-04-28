@@ -689,18 +689,18 @@ export default function ProductDetail() {
         {/* FAQs section - accordion layout */}
         <div className="mx-auto border-t border-white/10 pt-20 pb-6 w-full" style={{ maxWidth: "1600px" }}>
           <h2 className="text-2xl font-light mb-8 px-6 md:px-12">FAQs</h2>
-          <div className="flex flex-row gap-8 px-6 md:px-12">
+          <div className="flex flex-col-reverse md:flex-row gap-8 px-6 md:px-12">
             {/* FAQs list */}
-            <div className="w-4/12 space-y-4 pt-44">
+            <div className="w-full md:w-4/12 space-y-4 pt-8 md:pt-44">
               {product.faqSection?.faqs.map((faq: any, index: number) => (
                 <div key={faq.id || index} className="border-b border-white/20 pb-4">
                   <button
                     type="button"
                     onClick={() => toggleFaq(index)}
-                    className="w-full flex justify-between items-center text-white text-base font-medium"
+                    className="w-full flex justify-between items-center text-white text-base font-medium text-left"
                   >
-                    {faq.question}
-                    {openFaqIndex === index ? <Minus size={16} /> : <Plus size={16} />}
+                    <span className="pr-4">{faq.question}</span>
+                    {openFaqIndex === index ? <Minus size={24} /> : <Plus size={24} />}
                   </button>
                   {openFaqIndex === index && (
                     <p className="mt-2 text-white/80 text-sm whitespace-pre-line">
@@ -710,9 +710,9 @@ export default function ProductDetail() {
                 </div>
               ))}
             </div>
-            {/* FAQ Image on the right (wider) */}
-            <div className="w-8/12">
-              <div className="relative w-full pt-[100%]">
+            {/* FAQ Image on the right (wider) on desktop, top on mobile */}
+            <div className="w-full md:w-8/12">
+              <div className="relative w-full pt-[100%] md:pt-[100%]">
                 <Image
                   src={product.faqSection?.imageUrl || "/images/product/image (7).png"}
                   alt="Product image"
