@@ -433,11 +433,11 @@ export default function ProductDetail() {
           <div className="relative z-10 pl-4 pr-8 pt-8 pb-8 md:pl-6 md:pr-12 md:pt-12 md:pb-12">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
               {/* Left column - Product title and description */}
-              <div className="flex flex-col justify-center">
-                <div className="uppercase text-xs text-white/60 mb-1">
+              <div className="flex flex-col justify-center px-4">
+                <div className="uppercase text-xs text-white/60 mb-2">
                   {categoryName}
                 </div>
-                <h1 className="text-4xl md:text-5xl font-light mb-6 tracking-wide">
+                <h1 className="text-4xl md:text-5xl font-light mb-6 tracking-wide -ml-1">
                   {product.name?.split(' ').map(word => 
                     <span key={word} className="capitalize">{word.toLowerCase()} </span>
                   )}
