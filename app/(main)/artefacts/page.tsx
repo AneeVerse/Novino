@@ -30,7 +30,7 @@ const heroImages = [
 ];
 
 // Categories for the product grid
-const categories = ["All Artefacts", "Egyptian", "Asian", "European", "American"];
+// const categories = ["All Artefacts", "Egyptian", "Asian", "European", "American"];
 
 export default function ArtefactsPage() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
@@ -41,8 +41,20 @@ export default function ArtefactsPage() {
   const [totalSlides, setTotalSlides] = useState(heroImages.length);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const [showText, setShowText] = useState(false);
+  
+  // State for categories and artefact products
+  const [categories, setCategories] = useState<string[]>(["All Artefacts"]);
+  const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
+  
   // State for dynamic artefact products
-  interface SimpleProduct { id: string; name: string; price: string; image: string; category: string; }
+  interface SimpleProduct { 
+    id: string; 
+    name: string; 
+    price: string; 
+    image: string; 
+    category: string;
+    categoryId?: string;
+  }
   const [artefactProducts, setArtefactProducts] = useState<SimpleProduct[]>([]);
 
   // Initial load - delay text appearance
@@ -103,6 +115,40 @@ export default function ArtefactsPage() {
     };
   }, [emblaApi]);
 
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        if (!res.ok) throw new Error('Failed to fetch categories');
+        const data = await res.json();
+        
+        // Filter to get only artefact categories
+        const artefactCategories = data
+          .filter((cat: any) => cat.type === 'artefact')
+          .map((cat: any) => cat.name);
+          
+        // Build category ID to name mapping
+        const catMap: {[key: string]: string} = {};
+        data.forEach((cat: any) => {
+          if (cat.type === 'artefact') {
+            const id = cat._id || cat.id;
+            if (id) catMap[id] = cat.name;
+          }
+        });
+        setCategoryMap(catMap);
+        
+        // Always add "All Artefacts" as the first option
+        setCategories(["All Artefacts", ...artefactCategories]);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        // Fallback to default categories
+        setCategories(["All Artefacts", "Egyptian", "Asian", "European", "American"]);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   // Fetch artefact products from API
   useEffect(() => {
     async function fetchArtefacts() {
@@ -117,7 +163,8 @@ export default function ArtefactsPage() {
             name: p.name,
             price: p.basePrice || p.price,
             image: p.images?.[0] || p.image,
-            category: p.category
+            category: categoryMap[p.category] || p.category, // Use name from map if available
+            categoryId: p.category // Store the category ID/reference
           }));
         setArtefactProducts(filtered);
       } catch (err) {
@@ -125,7 +172,7 @@ export default function ArtefactsPage() {
       }
     }
     fetchArtefacts();
-  }, []);
+  }, [categoryMap]); // Add categoryMap as dependency to update products when categories load
   
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">

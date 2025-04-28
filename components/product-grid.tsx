@@ -55,7 +55,7 @@ const products = [
 // This component only renders the product grid
 
 interface Product {
-  id: number;
+  id: number | string;
   name?: string;
   title?: string;
   price?: string;
@@ -63,6 +63,7 @@ interface Product {
   role?: string;
   image: string;
   category: string;
+  categoryId?: string;
 }
 
 interface ProductGridProps {
@@ -84,10 +85,11 @@ export default function ProductGrid({
 }: ProductGridProps) {
   const [activeCategory, setActiveCategory] = useState<string>(propCategories[0]);
   
-  // Filter products based on active category
-  const filteredProducts = propProducts.filter(product => 
-    activeCategory === propCategories[0] ? true : product.category === activeCategory
-  );
+  // Filter products based on active category with improved category matching
+  const filteredProducts = propProducts.filter(product => {
+    if (activeCategory === propCategories[0]) return true; 
+    return product.category === activeCategory || product.categoryId === activeCategory;
+  });
 
   return (
     <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto font-['Roboto_Mono']" style={{ 
@@ -190,7 +192,7 @@ export default function ProductGrid({
           </div>
           
           {/* Two cards below filter on left side (Desktop) */}
-          <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-[165px] md:pl-10">
+          <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-[215px] md:pl-10">
             {filteredProducts.slice(4, 6).map((product) => (
               <Link href={`/product/${product.id}`} key={product.id}>
                 <div className="bg-white w-full max-w-[85%] mx-auto border border-white hover:opacity-95 transition-opacity">
@@ -241,10 +243,10 @@ export default function ProductGrid({
       {/* View All Button */}
       {showViewAllButton && (
         <div className="mt-16 flex justify-center relative z-30">
-          <button className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/20 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono'] font-medium" style={{ borderRadius: '10px' }}>
+          <Link href="/artefacts" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/20 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono'] font-medium" style={{ borderRadius: '10px' }}>
             {viewAllText}
             <ArrowRight className="ml-2 w-4 h-4" />
-          </button>
+          </Link>
         </div>
       )}
 
