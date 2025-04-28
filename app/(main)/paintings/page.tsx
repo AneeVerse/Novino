@@ -175,7 +175,7 @@ export default function PaintingsPage() {
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
       {/* Hero Section - Full width that extends to the top */}
-      <div className="relative w-full h-[350px]">
+      <div className="relative w-full h-[250px] sm:h-[300px] md:h-[350px]">
         {/* Embla Carousel */}
         <div className="overflow-hidden w-full h-full" ref={emblaRef}>
           <div className="flex h-full">
@@ -197,25 +197,24 @@ export default function PaintingsPage() {
         </div>
 
         {/* PAINTINGS text overlay */}
-        <div className="absolute inset-0 z-20 overflow-hidden" style={{ height: '350px', maxHeight: '350px' }}>
+        <div className="absolute inset-0 z-20 overflow-hidden h-full">
           {/* Semi-transparent light effect behind text */}
           <div 
-            className="absolute w-full text-center" 
+            className="absolute w-3/4 sm:w-1/2 text-center" 
             style={{ 
               top: '50%', 
               left: '50%', 
               transform: 'translate(-50%, 44%)',
-              height: '150px',
+              height: '100px',
               background: '#E8B08A',
               filter: 'blur(60px)',
               opacity: 0.4,
-              width: '50%',
               zIndex: -1,
               bottom: 'auto'
             }}
           ></div>
           <h1 
-            className={`text-[#FFFFFF] text-[130px] md:text-[200px] lg:text-[260px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            className={`text-[#FFFFFF] text-[80px] sm:text-[120px] md:text-[160px] lg:text-[200px] xl:text-[260px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
             style={{ fontFamily: 'DM Serif Display, serif', top: '3%', left: '50%', transform: 'translate(-50%, 0%)' }}
           >
             PAINTINGS
@@ -224,7 +223,7 @@ export default function PaintingsPage() {
       </div>
 
       {/* Container for main content */}
-      <div className="container mx-auto px-0 mt-4 z-50 relative" style={{ marginTop: '2rem' }}>
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 mt-4 z-50 relative">
         {/* Product Grid Section */}
         <div className="mb-16 relative z-10 font-['Roboto_Mono']">
           <PaintingProductGrid 
@@ -238,12 +237,12 @@ export default function PaintingsPage() {
       </div>
 
       {/* Video Section - Full width */}
-      <div className="relative w-full h-[730px] bg-[#2D2D2D] mb-32">
+      <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[730px] bg-[#2D2D2D] mb-16 sm:mb-24 md:mb-32">
         <VideoSection />
       </div>
 
       {/* New container for remaining sections */}
-      <div className="container mx-auto px-0 z-10 relative">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 z-10 relative">
         {/* Testimonial Collection */}
         <div className="mb-16">
           <TestimonialCollection />
