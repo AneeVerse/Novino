@@ -42,12 +42,21 @@ export default function Footer() {
   return (
     <div className="relative overflow-hidden">
       <footer className="relative mx-2 mb-12 max-w-[2400px]">
-        <div className="relative p-0" style={{ 
-          backgroundImage: "url('/footer.png')",
+        <div className="relative p-0 bg-[#292929] sm:bg-transparent" style={{ 
+          backgroundImage: "none",
           backgroundSize: "100% 100%", 
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center"
         }}>
+          {/* Add conditional background image for desktop */}
+          <div className="absolute inset-0 hidden sm:block" style={{
+            backgroundImage: "url('/footer.png')",
+            backgroundSize: "100% 100%",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            zIndex: -1
+          }}></div>
+          
           {/* Mobile border overlay */}
           <div className="absolute inset-0 border-2 border-dashed border-white rounded-[20px] block sm:hidden"></div>
 
