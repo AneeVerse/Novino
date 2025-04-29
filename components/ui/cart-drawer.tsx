@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, ChevronDown } from "lucide-react";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -13,6 +13,8 @@ interface CartDrawerProps {
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { cart, removeFromCart, updateQuantity, getCartTotal, isLoading } = useCart();
+  const [showOptions, setShowOptions] = useState(false);
+  const optionsRef = useRef<HTMLDivElement>(null);
   
   // Format currency helper
   const formatCurrency = (value: number) => {
@@ -33,6 +35,20 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
+  
+  // Close options dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (optionsRef.current && !optionsRef.current.contains(event.target as Node)) {
+        setShowOptions(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   
   // Prevent body scroll when drawer is open
   useEffect(() => {
@@ -92,13 +108,39 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           ) : cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full">
               <p className="text-lg text-white/70 mb-4">Your cart is empty</p>
-              <Link
-                href="/shop"
-                className="inline-block bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 px-4"
-                onClick={onClose}
-              >
-                Continue Shopping
-              </Link>
+              <div className="relative" ref={optionsRef}>
+                <button
+                  className="inline-flex items-center justify-center gap-2 bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 px-4"
+                  onClick={() => setShowOptions(!showOptions)}
+                >
+                  Continue Shopping
+                  <ChevronDown size={16} className={`transition-transform ${showOptions ? 'rotate-180' : ''}`} />
+                </button>
+                {showOptions && (
+                  <div className="absolute left-0 right-0 mt-1 bg-[#333333] border border-[#444444] shadow-lg z-10">
+                    <Link
+                      href="/paintings"
+                      className="block w-full text-left px-4 py-3 text-white hover:bg-[#444444]"
+                      onClick={() => {
+                        setShowOptions(false);
+                        onClose();
+                      }}
+                    >
+                      Paintings
+                    </Link>
+                    <Link
+                      href="/artefacts"
+                      className="block w-full text-left px-4 py-3 text-white hover:bg-[#444444]"
+                      onClick={() => {
+                        setShowOptions(false);
+                        onClose();
+                      }}
+                    >
+                      Artifacts
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="space-y-6">
@@ -166,12 +208,39 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               >
                 Checkout
               </Link>
-              <button 
-                onClick={onClose}
-                className="w-full py-3 border border-[#444444] hover:bg-[#333333] text-white text-center uppercase font-medium"
-              >
-                Continue Shopping
-              </button>
+              <div className="relative" ref={optionsRef}>
+                <button
+                  className="w-full py-3 inline-flex items-center justify-center gap-2 border border-[#444444] hover:bg-[#333333] text-white uppercase font-medium"
+                  onClick={() => setShowOptions(!showOptions)}
+                >
+                  Continue Shopping
+                  <ChevronDown size={16} className={`transition-transform ${showOptions ? 'rotate-180' : ''}`} />
+                </button>
+                {showOptions && (
+                  <div className="absolute left-0 right-0 bottom-full mb-1 bg-[#333333] border border-[#444444] shadow-lg z-10">
+                    <Link
+                      href="/paintings"
+                      className="block w-full text-left px-4 py-3 text-white hover:bg-[#444444]"
+                      onClick={() => {
+                        setShowOptions(false);
+                        onClose();
+                      }}
+                    >
+                      Paintings
+                    </Link>
+                    <Link
+                      href="/artifacts"
+                      className="block w-full text-left px-4 py-3 text-white hover:bg-[#444444]"
+                      onClick={() => {
+                        setShowOptions(false);
+                        onClose();
+                      }}
+                    >
+                      Artifacts
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="mt-4 text-center text-sm text-white/60">
               Shipping and taxes calculated at checkout
