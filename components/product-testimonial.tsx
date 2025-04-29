@@ -52,11 +52,11 @@ export default function ProductTestimonial() {
       setTimeout(() => {
         setCurrentIndex(index);
         
-        // Longer delay before removing the transition class to match the new animation duration
+        // Shorter delay before removing the transition class to match the new animation duration
         setTimeout(() => {
           setIsTransitioning(false);
-        }, 700);
-      }, 700);
+        }, 400);
+      }, 400);
     }
   };
 
@@ -79,7 +79,7 @@ export default function ProductTestimonial() {
     if (isTransitioning) {
       const safetyTimer = setTimeout(() => {
         setIsTransitioning(false);
-      }, 1500); // Increased safety timeout
+      }, 1500); // Reduced safety timeout
       
       return () => clearTimeout(safetyTimer);
     }
@@ -92,7 +92,7 @@ export default function ProductTestimonial() {
       
       autoplayRef.current = setTimeout(() => {
         nextTestimonial();
-      }, 5000); // Increased to 5 seconds to give more time to read testimonials
+      }, 7000); // Increased to 5 seconds to give more time to read testimonials
     };
 
     startAutoplay();
@@ -123,15 +123,15 @@ export default function ProductTestimonial() {
           >
             <div className="relative w-[95%] h-[95%] z-10 py-4 overflow-hidden">
               <div 
-                className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-                  isTransitioning ? 'opacity-0 transform translate-x-[-20px]' : 'opacity-100 transform translate-x-0'
+                className={`absolute inset-0 transition-all duration-400 ease-in-out ${
+                  isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0'
                 }`}
               >
                 <Image
                   src={current.image}
                   alt={current.altText}
                   fill
-                  className="object-contain transform transition-transform duration-700 ease-in-out"
+                  className="object-contain transform transition-transform duration-400 ease-in-out"
                   priority
                   sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
                   style={{ transform: 'translateZ(0)' }}
@@ -174,8 +174,8 @@ export default function ProductTestimonial() {
               {/* Testimonial Quote */}
               <div className="relative min-h-[180px] sm:min-h-[200px] md:min-h-[220px] z-10 overflow-hidden">
                 <div 
-                  className={`absolute inset-0 flex flex-col justify-center transition-all duration-700 ease-in-out ${
-                    isTransitioning ? 'opacity-0 transform translate-y-[20px]' : 'opacity-100 transform translate-y-0'
+                  className={`absolute inset-0 flex flex-col justify-center transition-all duration-400 ease-in-out ${
+                    isTransitioning ? 'opacity-0 transform translate-y-[-20px]' : 'opacity-100 transform translate-y-0'
                   }`}
                 >
                   <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight" style={{ fontFamily: '"DM Serif Display", serif' }}>
