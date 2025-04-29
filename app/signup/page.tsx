@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Mail, User, Lock, KeyRound } from 'lucide-react'
 
 export default function SignupPage() {
   const [stage, setStage] = useState<'email' | 'otp'>('email')
@@ -105,100 +105,118 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white">Novino</h1>
-          <p className="text-white/60 mt-2">Create your account</p>
-        </div>
-        
-        <div className="bg-[#333333] border border-[#444444] rounded-lg shadow-sm p-6 w-full">
+    <div 
+      className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 relative"
+      style={{
+        backgroundImage: "url('/loginbg.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat"
+      }}
+    >
+      {/* Overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/40"></div>
+      
+      <div className="w-full max-w-md relative z-10">
+        <div className="backdrop-blur-md bg-black/30 border border-[#444444] rounded-2xl shadow-lg p-8 w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white">Register</h1>
+          </div>
+          
           <form onSubmit={stage === 'email' ? handleSendOtp : handleSignup}>
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="email">
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-[#222222] border-[#444444] text-white"
-                  disabled={stage === 'otp' || loading}
-                  placeholder="you@example.com"
-                />
+                <div className="relative flex items-center">
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12"
+                    disabled={stage === 'otp' || loading}
+                    placeholder="Email"
+                  />
+                  <div className="absolute left-4 text-white">
+                    <Mail size={20} />
+                  </div>
+                </div>
               </div>
               
               {stage === 'email' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="username">
-                      Username
-                    </label>
-                    <Input
-                      id="username"
-                      type="text"
-                      required
-                      value={username}
-                      onChange={e => setUsername(e.target.value)}
-                      className="w-full bg-[#222222] border-[#444444] text-white"
-                      disabled={loading}
-                      placeholder="Choose a username"
-                    />
+                    <div className="relative flex items-center">
+                      <Input
+                        id="username"
+                        type="text"
+                        required
+                        value={username}
+                        onChange={e => setUsername(e.target.value)}
+                        className="w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12"
+                        disabled={loading}
+                        placeholder="Username"
+                      />
+                      <div className="absolute left-4 text-white">
+                        <User size={20} />
+                      </div>
+                    </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="password">
-                      Password
-                    </label>
-                    <Input
-                      id="password"
-                      type="password"
-                      required
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      className="w-full bg-[#222222] border-[#444444] text-white"
-                      disabled={loading}
-                      placeholder="Create a password"
-                    />
+                    <div className="relative flex items-center">
+                      <Input
+                        id="password"
+                        type="password"
+                        required
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        className="w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12"
+                        disabled={loading}
+                        placeholder="Password"
+                      />
+                      <div className="absolute left-4 text-white">
+                        <Lock size={20} />
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
               
               {stage === 'otp' && (
                 <div>
-                  <div className="flex justify-between items-center">
-                    <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="otp">
-                      Verification Code
-                    </label>
+                  <div className="relative flex items-center">
+                    <Input
+                      id="otp"
+                      type="text"
+                      required
+                      value={otp}
+                      onChange={e => setOtp(e.target.value)}
+                      className="w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12"
+                      disabled={loading}
+                      placeholder="Verification Code"
+                      maxLength={6}
+                    />
+                    <div className="absolute left-4 text-white">
+                      <KeyRound size={20} />
+                    </div>
+                  </div>
+                  <div className="text-right mt-2">
                     <button 
                       type="button" 
                       onClick={resendOtp} 
-                      className="text-xs text-[#AE876D] hover:underline"
+                      className="text-sm text-white hover:text-[#AE876D] transition-colors"
                       disabled={loading}
                     >
                       Resend Code
                     </button>
                   </div>
-                  <Input
-                    id="otp"
-                    type="text"
-                    required
-                    value={otp}
-                    onChange={e => setOtp(e.target.value)}
-                    className="w-full bg-[#222222] border-[#444444] text-white"
-                    disabled={loading}
-                    placeholder="Enter 6-digit code"
-                    maxLength={6}
-                  />
                 </div>
               )}
               
               <Button 
                 type="submit" 
-                className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white" 
+                className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium py-2.5 rounded-full" 
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -212,15 +230,15 @@ export default function SignupPage() {
               )}
             </div>
           </form>
-        </div>
-        
-        <div className="text-center mt-6">
-          <p className="text-sm text-white/60">
-            Already have an account?{' '}
-            <Link href="/login" className="text-[#AE876D] hover:underline">
-              Log in
-            </Link>
-          </p>
+          
+          <div className="text-center mt-6">
+            <p className="text-sm text-white">
+              Already have an account?{' '}
+              <Link href="/login" className="text-[#AE876D] font-medium hover:underline transition-colors">
+                Login
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -261,72 +261,97 @@ export default function LoginPage() {
 
   const renderLoginForm = () => {
     return (
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div>
-          <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="identifier">
-            Email or Username
-          </label>
-          <Input
-            id="identifier"
-            type="text"
-            required
-            value={identifier}
-            onChange={e => setIdentifier(e.target.value)}
-            className="w-full bg-[#222222] border-[#444444] text-white"
-            disabled={loading}
-            placeholder="Enter your email or username"
-          />
+          <div className="relative flex items-center">
+            <Input
+              id="identifier"
+              type="text"
+              required
+              value={identifier}
+              onChange={e => setIdentifier(e.target.value)}
+              className="w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12"
+              disabled={loading}
+              placeholder="Username"
+            />
+            <div className="absolute left-4 text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+          </div>
         </div>
         
         <div>
-          <div className="flex justify-between items-center">
-            <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="password">
-              Password
-            </label>
-            <button 
-              type="button" 
-              onClick={() => {
-                setShowForgotPassword(true)
-                setMessage('')
-              }}
-              className="text-xs text-[#AE876D] hover:underline"
-            >
-              Forgot Password?
-            </button>
+          <div className="relative flex items-center">
+            <Input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12"
+              disabled={loading}
+              placeholder="Password"
+            />
+            <div className="absolute left-4 text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
           </div>
-          <Input
-            id="password"
-            type="password"
-            required
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="w-full bg-[#222222] border-[#444444] text-white"
-            disabled={loading}
-            placeholder="Enter your password"
-          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="remember"
+              className="w-4 h-4 text-[#AE876D] bg-black/20 border-[#444444] rounded focus:ring-[#AE876D] focus:ring-1"
+            />
+            <label htmlFor="remember" className="ml-2 text-sm text-white">
+              Remember me
+            </label>
+          </div>
+          <button 
+            type="button" 
+            onClick={() => {
+              setShowForgotPassword(true)
+              setMessage('')
+            }}
+            className="text-sm text-white hover:text-[#AE876D] transition-colors"
+          >
+            Forgot password?
+          </button>
         </div>
         
         <Button 
           type="submit" 
-          className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white" 
+          className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium py-2.5 rounded-full" 
           disabled={loading}
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Log In
+          Login
         </Button>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white">Novino</h1>
-          <p className="text-white/60 mt-2">Log in to your account</p>
-        </div>
-        
-        <div className="bg-[#333333] border border-[#444444] rounded-lg shadow-sm p-6 w-full">
+    <div 
+      className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 relative"
+      style={{
+        backgroundImage: "url('/loginbg.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat"
+      }}
+    >
+      {/* Overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/40"></div>
+      
+      <div className="w-full max-w-md relative z-10">
+        <div className="backdrop-blur-md bg-black/30 border border-[#444444] rounded-2xl shadow-lg p-8 w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white">Login</h1>
+          </div>
+          
           <form onSubmit={handleLogin}>
             {showForgotPassword ? renderForgotPasswordForm() : renderLoginForm()}
             
@@ -336,15 +361,15 @@ export default function LoginPage() {
               </div>
             )}
           </form>
-        </div>
-        
-        <div className="text-center mt-6">
-          <p className="text-sm text-white/60">
-            Don't have an account?{' '}
-            <Link href="/signup" className="text-[#AE876D] hover:underline">
-              Sign up
-            </Link>
-          </p>
+          
+          <div className="text-center mt-6">
+            <p className="text-sm text-white">
+              Don't have an account?{' '}
+              <Link href="/signup" className="text-[#AE876D] font-medium hover:underline transition-colors">
+                Register
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
