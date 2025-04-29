@@ -543,7 +543,7 @@ export default function Home() {
             </div>
             
             {/* Shop Now Button */}
-            <div className="mt-16 flex justify-center">
+            <div className="mt-6 md:mt-16 flex justify-center">
               <Link href="/artefacts" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono']" style={{ borderRadius: '10px' }}>
                 View all
                 <ArrowRight className="ml-2 w-4 h-4" />
