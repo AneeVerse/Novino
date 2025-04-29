@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
-import { X } from "lucide-react";
+import { X, Image as ImageIcon, Archive, Map, FileText } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -87,17 +87,21 @@ const Navbar = () => {
         <div className="relative max-w-[1440px] mx-auto h-full flex justify-between items-center px-4 md:px-0">
           {/* Left section - Menu items (Desktop) */}
           <div className="hidden md:flex items-center space-x-6 h-full md:pl-6">
-            <Link href="/paintings" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
+            <Link href="/paintings" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white flex items-center gap-2">
               PAINTINGS
+              <ImageIcon size={20} className="text-[#AE876D]" />
             </Link>
-            <Link href="/artefacts" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
+            <Link href="/artefacts" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white flex items-center gap-2">
               ARTEFACTS
+              <Archive size={20} className="text-[#AE876D]" />
             </Link>
-            <Link href="/journey" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
+            <Link href="/journey" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white flex items-center gap-2">
               JOURNEY
+              <Map size={20} className="text-[#AE876D]" />
             </Link>
-            <Link href="/journal" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
+            <Link href="/journal" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white flex items-center gap-2">
               JOURNAL
+              <FileText size={20} className="text-[#AE876D]" />
             </Link>
           </div>
           
@@ -204,37 +208,41 @@ const Navbar = () => {
               <li className="border-b border-[#333333] pb-6">
                 <Link 
                   href="/paintings" 
-                  className="text-2xl font-medium font-roboto-mono text-white hover:text-[#AE876D] transition-colors block"
+                  className="text-2xl font-medium font-roboto-mono text-white hover:text-[#AE876D] transition-colors flex items-center justify-between"
                   onClick={() => setIsOpen(false)}
                 >
                   PAINTINGS
+                  <ImageIcon size={26} className="text-[#AE876D]" />
                 </Link>
               </li>
               <li className="border-b border-[#333333] pb-6">
                 <Link 
                   href="/artefacts" 
-                  className="text-2xl font-medium font-roboto-mono text-white hover:text-[#AE876D] transition-colors block"
+                  className="text-2xl font-medium font-roboto-mono text-white hover:text-[#AE876D] transition-colors flex items-center justify-between"
                   onClick={() => setIsOpen(false)}
                 >
                   ARTEFACTS
+                  <Archive size={26} className="text-[#AE876D]" />
                 </Link>
               </li>
               <li className="border-b border-[#333333] pb-6">
                 <Link 
                   href="/journey" 
-                  className="text-2xl font-medium font-roboto-mono text-white hover:text-[#AE876D] transition-colors block"
+                  className="text-2xl font-medium font-roboto-mono text-white hover:text-[#AE876D] transition-colors flex items-center justify-between"
                   onClick={() => setIsOpen(false)}
                 >
                   JOURNEY
+                  <Map size={26} className="text-[#AE876D]" />
                 </Link>
               </li>
               <li className="border-b border-[#333333] pb-6">
                 <Link 
                   href="/journal" 
-                  className="text-2xl font-medium font-roboto-mono text-white hover:text-[#AE876D] transition-colors block"
+                  className="text-2xl font-medium font-roboto-mono text-white hover:text-[#AE876D] transition-colors flex items-center justify-between"
                   onClick={() => setIsOpen(false)}
                 >
                   JOURNAL
+                  <FileText size={26} className="text-[#AE876D]" />
                 </Link>
               </li>
             </ul>
