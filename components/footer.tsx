@@ -1,10 +1,44 @@
 import Link from "next/link"
-import { Facebook, Twitter, Instagram, Youtube } from "lucide-react"
+import { Facebook, Twitter, Instagram, Youtube, ChevronRight } from "lucide-react"
 import "@fontsource/roboto-mono"
 import Image from "next/image"
+import { useState } from "react"
 
 // Using local import for Satoshi font since npm package isn't available
 export default function Footer() {
+  // Define a type for the section names
+  type SectionName = 'company' | 'help' | 'faq' | 'resources';
+
+  // State to track which sections are open
+  const [openSections, setOpenSections] = useState({
+    company: false,
+    help: false,
+    faq: false,
+    resources: false
+  });
+
+  // Function to toggle sections with the grouped behavior
+  const toggleSection = (section: SectionName) => {
+    if (section === 'company' || section === 'help') {
+      setOpenSections({
+        ...openSections,
+        company: !openSections.company,
+        help: !openSections.company
+      });
+    } else if (section === 'resources' || section === 'faq') {
+      setOpenSections({
+        ...openSections,
+        resources: !openSections.resources,
+        faq: !openSections.resources
+      });
+    } else {
+      setOpenSections({
+        ...openSections,
+        [section]: !openSections[section]
+      });
+    }
+  };
+
   return (
     <div className="relative overflow-hidden">
       <footer className="relative mx-2 mb-12 max-w-[2400px]">
@@ -65,8 +99,17 @@ export default function Footer() {
 
               {/* Company Column */}
               <div>
-                <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">COMPANY</h3>
-                <ul className="space-y-1.5 sm:space-y-2">
+                <div 
+                  className="flex items-start cursor-pointer relative" 
+                  onClick={() => toggleSection('company')}
+                >
+                  <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">COMPANY</h3>
+                  <ChevronRight 
+                    size={16} 
+                    className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.company ? 'rotate-90' : ''}`} 
+                  />
+                </div>
+                <ul className={`space-y-1.5 sm:space-y-2 overflow-hidden transition-all duration-300 ${openSections.company ? 'max-h-40' : 'max-h-0'}`}>
                   <li>
                     <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
                       About
@@ -92,8 +135,17 @@ export default function Footer() {
 
               {/* Help Column */}
               <div>
-                <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">HELP</h3>
-                <ul className="space-y-1.5 sm:space-y-2">
+                <div 
+                  className="flex items-start cursor-pointer relative" 
+                  onClick={() => toggleSection('help')}
+                >
+                  <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">HELP</h3>
+                  <ChevronRight 
+                    size={16} 
+                    className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.help ? 'rotate-90' : ''}`} 
+                  />
+                </div>
+                <ul className={`space-y-1.5 sm:space-y-2 overflow-hidden transition-all duration-300 ${openSections.help ? 'max-h-40' : 'max-h-0'}`}>
                   <li>
                     <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
                       Customer Support
@@ -119,8 +171,17 @@ export default function Footer() {
 
               {/* FAQ Column */}
               <div>
-                <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">FAQ</h3>
-                <ul className="space-y-1.5 sm:space-y-2">
+                <div 
+                  className="flex items-start cursor-pointer relative" 
+                  onClick={() => toggleSection('faq')}
+                >
+                  <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">FAQ</h3>
+                  <ChevronRight 
+                    size={16} 
+                    className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.faq ? 'rotate-90' : ''}`} 
+                  />
+                </div>
+                <ul className={`space-y-1.5 sm:space-y-2 overflow-hidden transition-all duration-300 ${openSections.faq ? 'max-h-40' : 'max-h-0'}`}>
                   <li>
                     <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
                       Account
@@ -146,8 +207,17 @@ export default function Footer() {
               
               {/* Resources Column */}
               <div>
-                <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">RESOURCES</h3>
-                <ul className="space-y-1.5 sm:space-y-2">
+                <div 
+                  className="flex items-start cursor-pointer relative" 
+                  onClick={() => toggleSection('resources')}
+                >
+                  <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">RESOURCES</h3>
+                  <ChevronRight 
+                    size={16} 
+                    className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.resources ? 'rotate-90' : ''}`} 
+                  />
+                </div>
+                <ul className={`space-y-1.5 sm:space-y-2 overflow-hidden transition-all duration-300 ${openSections.resources ? 'max-h-40' : 'max-h-0'}`}>
                   <li>
                     <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
                       Free eBooks
