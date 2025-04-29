@@ -256,8 +256,8 @@ export default function Home() {
       
       // Calculate transition percentage (0 to 100)
       // Adjust these values to control when the color change happens
-      const startChange = 50;  // Start earlier
-      const endChange = 500;   // End point for full color change
+      const startChange = 0;   // Start from first scroll
+      const endChange = 300;   // End point for full color change (reduced for faster transition)
       const scrollRange = endChange - startChange;
       const currentScroll = Math.max(0, position - startChange);
       const percentage = Math.min(100, (currentScroll / scrollRange) * 100);
