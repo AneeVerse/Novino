@@ -586,7 +586,9 @@ export default function Home() {
         /* Mobile adjustment - move text down */
         @media (max-width: 767px) { /* Target screens smaller than md (768px) */
           .novino-hero-text {
-            top: 46%; /* Increased top value to move down */
+            top: 77%; /* Moved much lower to match green marking */
+            letter-spacing: 0.04em; /* Decreased letter spacing */
+            font-size: 105px !important; /* Increased font size */
           }
         }
         
