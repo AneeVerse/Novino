@@ -486,28 +486,55 @@ export default function Home() {
                       ))}
                     </div>
 
-                    {/* Mobile horizontal scroll (hidden on md and up) - Moved outside the columns */}
-                    <div className="w-full md:hidden flex flex-col mt-6 mb-6">
-                      <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide px-2 items-start">
-                        {/* Display all products in a single row for mobile */}
-                        {filteredProducts.map((product) => (
-                          <Link href={`/product/${product.id}`} key={`mobile-${product.id}`} className="flex-shrink-0 w-64">
-                            <div className="bg-white w-full border border-white hover:opacity-95 transition-opacity">
-                              <div className="relative aspect-square overflow-hidden">
-                                <Image
-                                  src={product.image}
-                                  alt={product.name}
-                                  fill
-                                  className="object-contain p-4"
-                                />
-                              </div>
-                              <div className="p-4 bg-[#333333]">
-                                <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
-                                <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
+                    {/* Two-row synchronized horizontal scroll for mobile */}
+                    <div className="w-full md:hidden mt-6 mb-6">
+                      {/* Container for both rows that scroll together */}
+                      <div className="overflow-x-auto scrollbar-hide">
+                        <div className="inline-block min-w-full">
+                          {/* Top row with odd-indexed products */}
+                          <div className="flex mb-4 px-2">
+                            {filteredProducts.filter((_, index) => index % 2 === 0).map((product) => (
+                              <Link href={`/product/${product.id}`} key={`mobile-top-${product.id}`} className="flex-shrink-0 w-64 mx-2">
+                                <div className="bg-white w-full border border-white hover:opacity-95 transition-opacity">
+                                  <div className="relative aspect-square overflow-hidden">
+                                    <Image
+                                      src={product.image}
+                                      alt={product.name}
+                                      fill
+                                      className="object-contain p-4"
+                                    />
+                                  </div>
+                                  <div className="p-4 bg-[#333333]">
+                                    <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
+                                    <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
+                                  </div>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                          
+                          {/* Bottom row with even-indexed products */}
+                          <div className="flex px-2">
+                            {filteredProducts.filter((_, index) => index % 2 === 1).map((product) => (
+                              <Link href={`/product/${product.id}`} key={`mobile-bottom-${product.id}`} className="flex-shrink-0 w-64 mx-2">
+                                <div className="bg-white w-full border border-white hover:opacity-95 transition-opacity">
+                                  <div className="relative aspect-square overflow-hidden">
+                                    <Image
+                                      src={product.image}
+                                      alt={product.name}
+                                      fill
+                                      className="object-contain p-4"
+                                    />
+                                  </div>
+                                  <div className="p-4 bg-[#333333]">
+                                    <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name}</div>
+                                    <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price}</div>
+                                  </div>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </>
