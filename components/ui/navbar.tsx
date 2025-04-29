@@ -87,21 +87,17 @@ const Navbar = () => {
         <div className="relative max-w-[1440px] mx-auto h-full flex justify-between items-center px-4 md:px-0">
           {/* Left section - Menu items (Desktop) */}
           <div className="hidden md:flex items-center space-x-6 h-full md:pl-6">
-            <Link href="/paintings" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white flex items-center gap-2">
+            <Link href="/paintings" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
               PAINTINGS
-              <ImageIcon size={20} className="text-[#AE876D]" />
             </Link>
-            <Link href="/artefacts" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white flex items-center gap-2">
+            <Link href="/artefacts" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
               ARTEFACTS
-              <Archive size={20} className="text-[#AE876D]" />
             </Link>
-            <Link href="/journey" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white flex items-center gap-2">
+            <Link href="/journey" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
               JOURNEY
-              <Map size={20} className="text-[#AE876D]" />
             </Link>
-            <Link href="/journal" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white flex items-center gap-2">
+            <Link href="/journal" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
               JOURNAL
-              <FileText size={20} className="text-[#AE876D]" />
             </Link>
           </div>
           
