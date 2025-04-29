@@ -108,146 +108,266 @@ export default function Footer() {
 
               {/* Company Column */}
               <div>
-                <div 
-                  className="flex items-start cursor-pointer relative" 
-                  onClick={() => toggleSection('company')}
-                >
-                  <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">COMPANY</h3>
-                  <ChevronRight 
-                    size={16} 
-                    className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.company ? 'rotate-90' : ''}`} 
-                  />
+                {/* Mobile view with collapsible sections */}
+                <div className="sm:hidden">
+                  <div 
+                    className="flex items-start cursor-pointer relative" 
+                    onClick={() => toggleSection('company')}
+                  >
+                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">COMPANY</h3>
+                    <ChevronRight 
+                      size={16} 
+                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.company ? 'rotate-90' : ''}`} 
+                    />
+                  </div>
+                  <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.company ? 'max-h-40' : 'max-h-0'}`}>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        About
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Features
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Works
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Career
+                      </Link>
+                    </li>
+                  </ul>
                 </div>
-                <ul className={`space-y-1.5 sm:space-y-2 overflow-hidden transition-all duration-300 ${openSections.company ? 'max-h-40' : 'max-h-0'}`}>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      About
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Features
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Works
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Career
-                    </Link>
-                  </li>
-                </ul>
+                
+                {/* Desktop view with always visible links */}
+                <div className="hidden sm:block">
+                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">COMPANY</h3>
+                  <ul className="space-y-2">
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        About
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Features
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Works
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Career
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               {/* Help Column */}
               <div>
-                <div 
-                  className="flex items-start cursor-pointer relative" 
-                  onClick={() => toggleSection('help')}
-                >
-                  <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">HELP</h3>
-                  <ChevronRight 
-                    size={16} 
-                    className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.help ? 'rotate-90' : ''}`} 
-                  />
+                {/* Mobile view with collapsible sections */}
+                <div className="sm:hidden">
+                  <div 
+                    className="flex items-start cursor-pointer relative" 
+                    onClick={() => toggleSection('help')}
+                  >
+                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">HELP</h3>
+                    <ChevronRight 
+                      size={16} 
+                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.help ? 'rotate-90' : ''}`} 
+                    />
+                  </div>
+                  <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.help ? 'max-h-40' : 'max-h-0'}`}>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Customer Support
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Delivery Details
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Terms & Conditions
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Privacy Policy
+                      </Link>
+                    </li>
+                  </ul>
                 </div>
-                <ul className={`space-y-1.5 sm:space-y-2 overflow-hidden transition-all duration-300 ${openSections.help ? 'max-h-40' : 'max-h-0'}`}>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Customer Support
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Delivery Details
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Terms & Conditions
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Privacy Policy
-                    </Link>
-                  </li>
-                </ul>
+                
+                {/* Desktop view with always visible links */}
+                <div className="hidden sm:block">
+                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">HELP</h3>
+                  <ul className="space-y-2">
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Customer Support
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Delivery Details
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Terms & Conditions
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Privacy Policy
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               {/* FAQ Column */}
               <div>
-                <div 
-                  className="flex items-start cursor-pointer relative" 
-                  onClick={() => toggleSection('faq')}
-                >
-                  <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">FAQ</h3>
-                  <ChevronRight 
-                    size={16} 
-                    className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.faq ? 'rotate-90' : ''}`} 
-                  />
+                {/* Mobile view with collapsible sections */}
+                <div className="sm:hidden">
+                  <div 
+                    className="flex items-start cursor-pointer relative" 
+                    onClick={() => toggleSection('faq')}
+                  >
+                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">FAQ</h3>
+                    <ChevronRight 
+                      size={16} 
+                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.faq ? 'rotate-90' : ''}`} 
+                    />
+                  </div>
+                  <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.faq ? 'max-h-40' : 'max-h-0'}`}>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Account
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Manage Deliveries
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Orders
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Payments
+                      </Link>
+                    </li>
+                  </ul>
                 </div>
-                <ul className={`space-y-1.5 sm:space-y-2 overflow-hidden transition-all duration-300 ${openSections.faq ? 'max-h-40' : 'max-h-0'}`}>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Account
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Manage Deliveries
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Orders
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Payments
-                    </Link>
-                  </li>
-                </ul>
+                
+                {/* Desktop view with always visible links */}
+                <div className="hidden sm:block">
+                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">FAQ</h3>
+                  <ul className="space-y-2">
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Account
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Manage Deliveries
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Orders
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Payments
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               </div>
               
               {/* Resources Column */}
               <div>
-                <div 
-                  className="flex items-start cursor-pointer relative" 
-                  onClick={() => toggleSection('resources')}
-                >
-                  <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-satoshi">RESOURCES</h3>
-                  <ChevronRight 
-                    size={16} 
-                    className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.resources ? 'rotate-90' : ''}`} 
-                  />
+                {/* Mobile view with collapsible sections */}
+                <div className="sm:hidden">
+                  <div 
+                    className="flex items-start cursor-pointer relative" 
+                    onClick={() => toggleSection('resources')}
+                  >
+                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">RESOURCES</h3>
+                    <ChevronRight 
+                      size={16} 
+                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.resources ? 'rotate-90' : ''}`} 
+                    />
+                  </div>
+                  <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.resources ? 'max-h-40' : 'max-h-0'}`}>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Free eBooks
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Development Tutorial
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        How to - Blog
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        YouTube Playlist
+                      </Link>
+                    </li>
+                  </ul>
                 </div>
-                <ul className={`space-y-1.5 sm:space-y-2 overflow-hidden transition-all duration-300 ${openSections.resources ? 'max-h-40' : 'max-h-0'}`}>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Free eBooks
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      Development Tutorial
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      How to - Blog
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#" className="text-gray-300 hover:text-white text-xs sm:text-sm font-satoshi">
-                      YouTube Playlist
-                    </Link>
-                  </li>
-                </ul>
+                
+                {/* Desktop view with always visible links */}
+                <div className="hidden sm:block">
+                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">RESOURCES</h3>
+                  <ul className="space-y-2">
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Free eBooks
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Development Tutorial
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        How to - Blog
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        YouTube Playlist
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
 
