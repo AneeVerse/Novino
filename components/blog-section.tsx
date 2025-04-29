@@ -142,73 +142,111 @@ export default function BlogSection({ showViewAllButton = true, showAllBlogs = f
 
         {/* Main Container */}
         <div className="w-full">
-          {/* Render all rows */}
-          {rows.map((row, rowIndex) => (
-            <div 
-              key={rowIndex} 
-              className={`flex flex-col md:flex-row gap-8 md:gap-16 ${rowIndex < rows.length - 1 ? 'mb-12 sm:mb-16 md:mb-20' : ''}`}
-            >
-              {row.map((blog, index) => (
-                <div key={blog.id} className="flex-1 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
-                  {/* If even row (including first row=0), use left image layout */}
-                  {rowIndex % 2 === 0 ? (
-                    <>
-                      {/* Image with decorative border - left side for even rows */}
-                      <div className="relative mb-4 sm:mb-0">
-                        <div className="border border-[#A47E3B] w-full sm:w-[240px] h-[160px] sm:h-[200px] relative overflow-hidden z-10">
-                          <img 
-                            src={getValidImageUrl(blog.image)} 
-                            alt={blog.title} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        {/* Decorative box behind image */}
-                        <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-full sm:w-[240px] h-[160px] sm:h-[200px] z-0"></div>
+          {/* Mobile horizontal scroll view - only visible on mobile */}
+          <div className="md:hidden w-full overflow-x-auto scrollbar-hide pb-4">
+            <div className="inline-flex space-x-6 px-4 min-w-max">
+              {displayBlogs.map((blog) => (
+                <div key={blog.id} className="w-[280px] flex-shrink-0">
+                  <div className="flex flex-col items-center">
+                    {/* Image with decorative border - preserved design */}
+                    <div className="relative mb-4">
+                      <div className="border border-[#A47E3B] w-full h-[160px] relative overflow-hidden z-10">
+                        <img 
+                          src={getValidImageUrl(blog.image)} 
+                          alt={blog.title} 
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <div className="min-w-0 relative z-10 text-center sm:text-left">
-                        <h3 className="text-white font-['Italiana'] font-normal text-2xl sm:text-[28px] md:text-[32px] leading-tight mb-2 sm:mb-3">{blog.title}</h3>
-                        <p className="text-neutral-200 text-xs sm:text-sm mb-4 font-['Mulish']">{blog.description}</p>
-                        <Link 
-                          href={`/blogs/${blog.slug || blog.id}`} 
-                          className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#E8B08A] text-white text-xs sm:text-sm font-medium font-['Mulish']"
-                          style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
-                        >
-                          VIEW DETAILS
-                        </Link>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Reversed layout for odd rows */}
-                      <div className="min-w-0 relative z-10 text-center sm:text-right order-2 sm:order-1">
-                        <h3 className="text-white font-['Italiana'] font-normal text-2xl sm:text-[28px] md:text-[32px] leading-tight mb-2 sm:mb-3">{blog.title}</h3>
-                        <p className="text-neutral-200 text-xs sm:text-sm mb-4 font-['Mulish']">{blog.description}</p>
-                        <Link 
-                          href={`/blogs/${blog.slug || blog.id}`} 
-                          className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#E8B08A] text-white text-xs sm:text-sm font-medium font-['Mulish']"
-                          style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
-                        >
-                          VIEW DETAILS
-                        </Link>
-                      </div>
-                      {/* Image with decorative border - right side for odd rows */}
-                      <div className="relative order-1 sm:order-2 mb-4 sm:mb-0 sm:ml-auto">
-                        <div className="border border-[#A47E3B] w-full sm:w-[240px] h-[160px] sm:h-[200px] relative overflow-hidden z-10">
-                          <img 
-                            src={getValidImageUrl(blog.image)} 
-                            alt={blog.title} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        {/* Decorative box behind image */}
-                        <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-full sm:w-[240px] h-[160px] sm:h-[200px] z-0"></div>
-                      </div>
-                    </>
-                  )}
+                      {/* Decorative box behind image */}
+                      <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-full h-[160px] z-0"></div>
+                    </div>
+                    <div className="min-w-0 relative z-10 text-center">
+                      <h3 className="text-white font-['Italiana'] font-normal text-2xl leading-tight mb-2">{blog.title}</h3>
+                      <p className="text-neutral-200 text-xs mb-4 font-['Mulish'] px-4 line-clamp-3 overflow-hidden">{blog.description}</p>
+                      <Link 
+                        href={`/blogs/${blog.slug || blog.id}`} 
+                        className="inline-flex flex-row justify-center items-center px-4 py-3 gap-2.5 w-[120px] h-[45px] bg-[#E8B08A] text-white text-xs font-medium font-['Mulish']"
+                        style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
+                      >
+                        VIEW DETAILS
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-          ))}
+          </div>
+
+          {/* Desktop view - hidden on mobile */}
+          <div className="hidden md:block">
+            {/* Render all rows */}
+            {rows.map((row, rowIndex) => (
+              <div 
+                key={rowIndex} 
+                className={`flex flex-col md:flex-row gap-8 md:gap-16 ${rowIndex < rows.length - 1 ? 'mb-12 sm:mb-16 md:mb-20' : ''}`}
+              >
+                {row.map((blog, index) => (
+                  <div key={blog.id} className="flex-1 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
+                    {/* If even row (including first row=0), use left image layout */}
+                    {rowIndex % 2 === 0 ? (
+                      <>
+                        {/* Image with decorative border - left side for even rows */}
+                        <div className="relative mb-4 sm:mb-0">
+                          <div className="border border-[#A47E3B] w-full sm:w-[240px] h-[160px] sm:h-[200px] relative overflow-hidden z-10">
+                            <img 
+                              src={getValidImageUrl(blog.image)} 
+                              alt={blog.title} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          {/* Decorative box behind image */}
+                          <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-full sm:w-[240px] h-[160px] sm:h-[200px] z-0"></div>
+                        </div>
+                        <div className="min-w-0 relative z-10 text-center sm:text-left">
+                          <h3 className="text-white font-['Italiana'] font-normal text-2xl sm:text-[28px] md:text-[32px] leading-tight mb-2 sm:mb-3">{blog.title}</h3>
+                          <p className="text-neutral-200 text-xs sm:text-sm mb-4 font-['Mulish'] px-20 sm:px-0 line-clamp-3 overflow-hidden">{blog.description}</p>
+                          <Link 
+                            href={`/blogs/${blog.slug || blog.id}`} 
+                            className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#E8B08A] text-white text-xs sm:text-sm font-medium font-['Mulish']"
+                            style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
+                          >
+                            VIEW DETAILS
+                          </Link>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Reversed layout for odd rows */}
+                        <div className="min-w-0 relative z-10 text-center sm:text-right order-2 sm:order-1">
+                          <h3 className="text-white font-['Italiana'] font-normal text-2xl sm:text-[28px] md:text-[32px] leading-tight mb-2 sm:mb-3">{blog.title}</h3>
+                          <p className="text-neutral-200 text-xs sm:text-sm mb-4 font-['Mulish'] px-20 sm:px-0 line-clamp-3 overflow-hidden">{blog.description}</p>
+                          <Link 
+                            href={`/blogs/${blog.slug || blog.id}`} 
+                            className="inline-flex flex-row justify-center items-center px-4 py-3 sm:p-5 gap-2.5 w-[120px] sm:w-[140px] h-[45px] sm:h-[55px] bg-[#E8B08A] text-white text-xs sm:text-sm font-medium font-['Mulish']"
+                            style={{ borderRadius: '0px 20px', whiteSpace: 'nowrap' }}
+                          >
+                            VIEW DETAILS
+                          </Link>
+                        </div>
+                        {/* Image with decorative border - right side for odd rows */}
+                        <div className="relative order-1 sm:order-2 mb-4 sm:mb-0 sm:ml-auto">
+                          <div className="border border-[#A47E3B] w-full sm:w-[240px] h-[160px] sm:h-[200px] relative overflow-hidden z-10">
+                            <img 
+                              src={getValidImageUrl(blog.image)} 
+                              alt={blog.title} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          {/* Decorative box behind image */}
+                          <div className="absolute -top-2 -right-2 border border-[#E8B08A] w-full sm:w-[240px] h-[160px] sm:h-[200px] z-0"></div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
