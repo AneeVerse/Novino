@@ -123,7 +123,6 @@ export default function BlogSection({ showViewAllButton = true, showAllBlogs = f
         {/* Header - Making sure it matches Figma design */}
         <div className="text-center mb-10 sm:mb-16 md:mb-20 relative z-50">
           <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light font-['DM_Serif_Display'] relative z-50 mb-2">Blogs</h2>
-          <p className="text-white text-sm sm:text-base opacity-90 mb-4 font-['Roboto_Mono']">Find all the jewellery you will need here.</p>
           {showViewAllButton && (
             <div className="absolute top-0 right-2 sm:right-8 z-50">
               <Link 
