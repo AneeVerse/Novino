@@ -42,6 +42,7 @@ export default function PaintingsPage() {
   const [totalSlides, setTotalSlides] = useState(heroImages.length);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const [showText, setShowText] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   // State for dynamic painting products
   interface SimpleProduct {
@@ -122,6 +123,36 @@ export default function PaintingsPage() {
     }, 300);
     
     return () => clearTimeout(timer);
+  }, []);
+
+  // Add scroll event listener for the text color transition
+  useEffect(() => {
+    const handleScroll = () => {
+      const position = window.scrollY;
+      setScrollPosition(position);
+      // Calculate transition percentage (0 to 100)
+      const startChange = 0;
+      const endChange = 300;
+      const scrollRange = endChange - startChange;
+      const currentScroll = Math.max(0, position - startChange);
+      const percentage = Math.min(100, (currentScroll / scrollRange) * 100);
+      // Apply the background position to control the color transition
+      const heroText = document.querySelector('.paintings-hero-text') as HTMLElement;
+      if (heroText) {
+        heroText.style.backgroundPosition = `0% ${percentage}%`;
+      }
+    };
+    // Only add the scroll listener after the initial animation completes
+    const timer = setTimeout(() => {
+      window.addEventListener('scroll', handleScroll);
+      // Initial call to set correct position
+      handleScroll();
+    }, 1500); // Match this with the rise-up animation duration
+    // Cleanup
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   // Handle automatic sliding and slide tracking
@@ -214,8 +245,7 @@ export default function PaintingsPage() {
             }}
           ></div>
           <h1 
-            className={`text-[#FFFFFF] text-[80px] sm:text-[120px] md:text-[160px] lg:text-[200px] xl:text-[260px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
-            style={{ fontFamily: 'DM Serif Display, serif', top: '3%', left: '50%', transform: 'translate(-50%, 0%)' }}
+            className={`paintings-hero-text text-[80px] sm:text-[120px] md:text-[160px] lg:text-[200px] xl:text-[260px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
           >
             PAINTINGS
           </h1>
@@ -279,6 +309,34 @@ export default function PaintingsPage() {
         
         .animate-rise-up {
           animation: riseUp 2s ease-out forwards;
+        }
+
+        /* Add styles for the hero text */
+        .paintings-hero-text {
+          font-family: 'DM Serif Display', serif;
+          /* Desktop styles */
+          top: 2%;
+          left: 50%;
+          transform: translate(-50%, 200%); /* Initial position for animation */
+          letter-spacing: 0.05em;
+          color: transparent;
+          background-image: linear-gradient(to bottom, white 0%, white 50%, #312F30 50%, #312F30 100%);
+          background-size: 100% 200%;
+          background-position: 0% 0%;
+          background-clip: text;
+          -webkit-background-clip: text;
+          transition: background-position 0.2s ease-out;
+          width: 90%;
+        }
+
+        /* Mobile adjustment - move text down */
+        @media (max-width: 767px) { /* Target screens smaller than md (768px) */
+          .paintings-hero-text {
+            top: 64%; /* Moved much lower */
+            letter-spacing: 0.02em; /* Decreased letter spacing */
+            font-size: 70px !important; /* Decreased font size */
+            width: 95%;
+          }
         }
       `}</style>
     </main>
