@@ -105,15 +105,18 @@ export default function Home() {
     fetchCategories();
   }, []);
 
-  // Fetch products from API
+  // Fetch products from API, but only after categoryMap is set
   useEffect(() => {
+    // Don't fetch until categoryMap is ready (has more than 1 key)
+    if (!categoryMap || Object.keys(categoryMap).length === 0) return;
+
     const fetchProducts = async () => {
       setLoading(true);
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
-        
+
         // Get artefact products
         const artefactProducts = data
           .filter((p: any) => p.type === 'artefact')
@@ -122,68 +125,21 @@ export default function Home() {
             name: p.name,
             price: p.basePrice || p.price || "$0",
             image: p.images?.[0] || p.image || "/images/placeholder.png",
-            category: p.category,
+            category: categoryMap[p.category] || p.category, // use display name
             categoryId: p.category // Store original category ID for reference
           }));
-        
-        console.log("Home page products loaded:", artefactProducts);
-        console.log("Categories available:", categories);
-        console.log("Category map:", categoryMap);
-        
+
         setProducts(artefactProducts);
       } catch (err) {
         console.error('Error fetching products:', err);
-        // Fallback to hardcoded products if API fails
-        setProducts([
-          {
-            id: 1,
-            name: "LIGHTCOOL",
-            price: "$22.5",
-            image: "/images/mug-black.png",
-            category: "Mugs"
-          },
-          {
-            id: 2,
-            name: "LIGHTCOOL",
-            price: "$22.5",
-            image: "/images/mug-white.png",
-            category: "Mugs"
-          },
-          {
-            id: 3,
-            name: "CYCLEWING",
-            price: "$35",
-            image: "/images/cycle1.png",
-            category: "Feeds"
-          },
-          {
-            id: 4,
-            name: "VELOCITY",
-            price: "$32",
-            image: "/images/cycle2.png",
-            category: "Feeds"
-          },
-          {
-            id: 5,
-            name: "CLASSWING",
-            price: "$20",
-            image: "/images/notebook-white.png",
-            category: "Books"
-          },
-          {
-            id: 6,
-            name: "HOLOCANE",
-            price: "$23",
-            image: "/images/notebook-black.png",
-            category: "Books"
-          }
-        ]);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
+
     fetchProducts();
-  }, []);
+  }, [categoryMap]);
 
   // Filter products based on active category
   const filteredProducts = products.filter(product => {

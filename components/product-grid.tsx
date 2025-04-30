@@ -112,59 +112,9 @@ export default function ProductGrid({
   
   // Filter products based on active category with improved category matching
   const filteredProducts = propProducts.filter(product => {
-    console.log("ProductGrid filtering:", { 
-      activeCategory, 
-      productCategory: product.category,
-      productCategoryId: product.categoryId,
-      firstCategory: propCategories[0]
-    });
-    
     // Skip filtering if "All Products" or similar is selected
-    if (activeCategory === propCategories[0]) return true; 
-    
-    // Check if the activeCategory matches one of the category buttons by position
-    const activeCategoryIndex = propCategories.indexOf(activeCategory);
-    if (activeCategoryIndex > 0) {
-      // This category button was selected - now we need to check if the product belongs to this category
-      
-      // For diagnostic purposes
-      console.log(`Category '${activeCategory}' selected, checking product:`, product);
-      
-      // First try direct match against product category or categoryId
-      if (product.category === activeCategory || product.categoryId === activeCategory) {
-        return true;
-      }
-      
-      // Look for partial matches in strings (case-insensitive)
-      if (typeof product.category === 'string' && typeof activeCategory === 'string') {
-        const productCategoryLower = product.category.toLowerCase();
-        const activeCategoryLower = activeCategory.toLowerCase();
-        
-        if (productCategoryLower.includes(activeCategoryLower) || 
-            activeCategoryLower.includes(productCategoryLower)) {
-          return true;
-        }
-      }
-      
-      // At this point, we'll use position-based matching as a fallback
-      // If the user clicked the 2nd category button, try to match with the 2nd category from the API
-      
-      // If we have a reasonable number of products, just show all of them
-      // This is a fallback to ensure something displays
-      const productsPerCategory = Math.ceil(propProducts.length / Math.max(1, propCategories.length - 1));
-      const startIndex = (activeCategoryIndex - 1) * productsPerCategory;
-      const endIndex = startIndex + productsPerCategory;
-      
-      // Get product index
-      const productIndex = propProducts.findIndex(p => 
-        p.id === product.id || 
-        (typeof p.id === 'string' && typeof product.id === 'string' && p.id.toString() === product.id.toString())
-      );
-      
-      return productIndex >= startIndex && productIndex < endIndex;
-    }
-    
-    // Fallback to original logic
+    if (activeCategory === propCategories[0]) return true;
+    // Only match products where category or categoryId matches exactly
     return product.category === activeCategory || product.categoryId === activeCategory;
   });
 
