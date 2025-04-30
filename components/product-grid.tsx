@@ -219,7 +219,7 @@ export default function ProductGrid({
           <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide px-2 items-start">
             {/* Display all products in a single row for mobile */}
             {filteredProducts.map((product) => (
-              <Link href={`/product/${product.id}`} key={`mobile-${product.id}`} className="flex-shrink-0 w-60">
+              <Link href={`/product/${product.id}`} key={`mobile-${product.id}`} className="flex-shrink-0 w-48">
                 <div className="bg-white w-full border border-white hover:opacity-95 transition-opacity">
                   <div className="relative aspect-square overflow-hidden">
                     <Image
