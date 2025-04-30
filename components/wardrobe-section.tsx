@@ -29,7 +29,7 @@ export default function WardrobeSection() {
           </div>
 
           {/* Button section - aligned with circle */}
-          <div className="md:absolute md:right-32 md:top-1/2 md:-translate-y-1/2 mt-6 md:mt-0 z-10">
+          <div className="md:absolute md:right-32 md:top-1/2 md:-translate-y-1/2 mt-2 md:mt-0 z-10">
             <Link
               href="/shop"
               className="bg-black text-white px-6 py-3 rounded-lg hover:bg-black transition-colors flex items-center gap-2"
