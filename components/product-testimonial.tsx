@@ -37,6 +37,50 @@ export default function ProductTestimonial() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  
+  // Handle touch events for swiping on mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Save the starting touch position
+    touchStartX.current = e.touches[0].clientX;
+    
+    // Pause autoplay during user interaction
+    if (autoplayRef.current) {
+      clearTimeout(autoplayRef.current);
+    }
+  };
+  
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Update end position as touch moves
+    touchEndX.current = e.touches[0].clientX;
+  };
+  
+  const handleTouchEnd = () => {
+    // Don't process swipe if already transitioning
+    if (isTransitioning) return;
+    
+    // Check if we have valid touch data
+    if (touchStartX.current !== null && touchEndX.current !== null) {
+      // Calculate swipe distance
+      const distance = touchEndX.current - touchStartX.current;
+      
+      // Minimum swipe distance to register (50px)
+      const minSwipeDistance = 50;
+      
+      if (distance > minSwipeDistance) {
+        // Swiped right - go to previous
+        prevTestimonial();
+      } else if (distance < -minSwipeDistance) {
+        // Swiped left - go to next
+        nextTestimonial();
+      }
+    }
+    
+    // Reset touch values
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
   
   // Add debugging logs to diagnose the issue
   useEffect(() => {
@@ -55,8 +99,8 @@ export default function ProductTestimonial() {
         // Shorter delay before removing the transition class to match the new animation duration
         setTimeout(() => {
           setIsTransitioning(false);
-        }, 400);
-      }, 400);
+        }, 200); // Reduced from 400 to 200 for faster appearance
+      }, 400); // Keep disappearing at 400ms
     }
   };
 
@@ -108,7 +152,12 @@ export default function ProductTestimonial() {
     <section
       className="relative w-full py-8 sm:py-16 md:py-24 overflow-visible bg-transparent"
     >
-      <div className="relative mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-8 md:gap-12 lg:gap-16 px-4 sm:px-6 md:px-8">
+      <div 
+        className="relative mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-8 md:gap-12 lg:gap-16 px-4 sm:px-6 md:px-8"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {/* Product Image in Circle */}
         <div className="relative w-full max-w-[300px] sm:max-w-[350px] md:max-w-[400px] mx-auto md:mx-0">
           {/* Main circle container */}
@@ -124,7 +173,7 @@ export default function ProductTestimonial() {
             <div className="relative w-[95%] h-[95%] z-10 py-4 overflow-hidden">
               <div 
                 className={`absolute inset-0 transition-all duration-400 ease-in-out ${
-                  isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0'
+                  isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0 duration-200'
                 }`}
               >
                 <Image
@@ -175,7 +224,7 @@ export default function ProductTestimonial() {
               <div className="relative min-h-[180px] sm:min-h-[200px] md:min-h-[220px] z-10 overflow-hidden">
                 <div 
                   className={`absolute inset-0 flex flex-col justify-center transition-all duration-400 ease-in-out ${
-                    isTransitioning ? 'opacity-0 transform translate-y-[-20px]' : 'opacity-100 transform translate-y-0'
+                    isTransitioning ? 'opacity-0 transform translate-y-[-20px]' : 'opacity-100 transform translate-y-0 duration-200'
                   }`}
                 >
                   <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight" style={{ fontFamily: '"DM Serif Display", serif' }}>
