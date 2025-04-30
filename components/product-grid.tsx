@@ -119,7 +119,7 @@ export default function ProductGrid({
   });
 
   return (
-    <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto font-['Roboto_Mono']" style={{ 
+    <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto font-['Roboto_Mono'] min-h-[600px]" style={{ 
       backgroundImage: "url('/Container (2).png')",
       backgroundSize: "100% 100%", 
       backgroundRepeat: "no-repeat",
