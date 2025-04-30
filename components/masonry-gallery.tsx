@@ -178,7 +178,7 @@ export default function MasonryGallery() {
         
         {/* Shop Now button 1 (Desktop/Tablet) - Hidden on mobile */}
         <div className="hidden sm:flex w-full sm:w-auto mt-4 sm:mt-0 sm:absolute right-4 sm:right-6 z-10 justify-center sm:justify-end">
-          <Link href="/paintings" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer" style={{ borderRadius: '10px' }}>
+          <Link href="/paintings" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-[#AE876D]/80 transition-colors text-sm sm:text-base cursor-pointer" style={{ borderRadius: '10px' }}>
             View all
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-2">
               <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -256,7 +256,7 @@ export default function MasonryGallery() {
 
       {/* Shop Now button 2 (Mobile) - Shown only on mobile, below gallery */}
       <div className="flex sm:hidden w-full mt-6 z-10 justify-center">
-        <Link href="/paintings" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-sm sm:text-base cursor-pointer" style={{ borderRadius: '10px' }}>
+        <Link href="/paintings" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-[#AE876D]/80 transition-colors text-sm sm:text-base cursor-pointer" style={{ borderRadius: '10px' }}>
           View all
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-2">
             <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

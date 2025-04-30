@@ -320,7 +320,7 @@ export default function ProductGrid({
       {/* View All Button */}
       {showViewAllButton && (
         <div className="mt-16 flex justify-center relative z-30">
-          <Link href="/artefacts" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-white/20 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono'] font-medium" style={{ borderRadius: '10px' }}>
+          <Link href="/artefacts" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-[#AE876D]/80 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono'] font-medium" style={{ borderRadius: '10px' }}>
             {viewAllText}
             <ArrowRight className="ml-2 w-4 h-4" />
           </Link>

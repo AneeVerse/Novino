@@ -127,7 +127,7 @@ export default function BlogSection({ showViewAllButton = true, showAllBlogs = f
             <div className="absolute top-0 right-2 sm:right-8 z-50">
               <Link 
                 href="/journal"
-                className="inline-flex items-center px-3 py-1 sm:px-6 sm:py-2 border-2 border-dashed border-white text-white hover:bg-white/10 transition-colors text-xs sm:text-base cursor-pointer gap-1 sm:gap-2"
+                className="inline-flex items-center px-3 py-1 sm:px-6 sm:py-2 border-2 border-dashed border-white text-white hover:bg-[#AE876D]/80 transition-colors text-xs sm:text-base cursor-pointer gap-1 sm:gap-2"
                 style={{ borderRadius: '10px' }}
               >
                 View All
