@@ -43,10 +43,10 @@ export default function VideoSection() {
               alt="Play Button"
               width={320}
               height={320}
-              className="w-[320px] h-[320px]"
+              className="w-[180px] h-[180px] sm:w-[240px] sm:h-[240px] md:w-[280px] md:h-[280px] lg:w-[320px] lg:h-[320px]"
             />
             <div className="absolute" style={{ marginLeft: "8px" }}>
-              <svg width="160" height="160" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="160" height="160" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] md:w-[130px] md:h-[130px] lg:w-[160px] lg:h-[160px]">
                 <path d="M6 4L18 12L6 20V4Z" fill="#E8B08A" stroke="#E8B08A" strokeWidth="2" strokeLinejoin="round"/>
               </svg>
             </div>
@@ -59,7 +59,7 @@ export default function VideoSection() {
         <div className="absolute inset-0 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity" onClick={togglePlay}>
           <div className="relative flex items-center justify-center transition-all transform hover:scale-110">
             <div className="absolute">
-              <svg width="160" height="160" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="160" height="160" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] md:w-[130px] md:h-[130px] lg:w-[160px] lg:h-[160px]">
                 <rect x="6" y="4" width="4" height="16" rx="1" fill="#E8B08A" stroke="#E8B08A" strokeWidth="1"/>
                 <rect x="14" y="4" width="4" height="16" rx="1" fill="#E8B08A" stroke="#E8B08A" strokeWidth="1"/>
               </svg>

@@ -390,7 +390,7 @@ export default function Home() {
       </div>
 
       {/* Video Section - Full width */}
-      <div className="relative w-full h-[730px] bg-[#2D2D2D] mb-32">
+      <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[730px] bg-[#2D2D2D] mb-16 sm:mb-24 md:mb-32">
         <VideoSection />
       </div>
 
