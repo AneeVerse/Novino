@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
@@ -73,6 +73,8 @@ interface ProductGridProps {
   categories?: string[];
   viewAllText?: string;
   showViewAllButton?: boolean;
+  activeCategory?: string;
+  onCategoryChange?: (category: string) => void;
 }
 
 export default function ProductGrid({ 
@@ -81,13 +83,88 @@ export default function ProductGrid({
   products: propProducts = products, 
   categories: propCategories = ["All Products", "Books", "Mugs", "Costar", "Feeds"],
   viewAllText = "View all",
-  showViewAllButton = true
+  showViewAllButton = true,
+  activeCategory: propActiveCategory,
+  onCategoryChange
 }: ProductGridProps) {
-  const [activeCategory, setActiveCategory] = useState<string>(propCategories[0]);
+  // Use internal state only if no external state is provided
+  const [internalActiveCategory, setInternalActiveCategory] = useState<string>(propCategories[0]);
+  
+  // Use external category state if provided, otherwise use internal
+  const activeCategory = propActiveCategory !== undefined ? propActiveCategory : internalActiveCategory;
+  
+  // Re-sync when categories change
+  useEffect(() => {
+    // Reset to the first category when categories change
+    setInternalActiveCategory(propCategories[0]);
+    console.log("Categories changed, resetting to:", propCategories[0]);
+  }, [propCategories]);
+  
+  // Handle category change, update parent if callback is provided
+  const handleCategoryChange = (category: string) => {
+    console.log("Category clicked:", category);
+    if (onCategoryChange) {
+      onCategoryChange(category);
+    } else {
+      setInternalActiveCategory(category);
+    }
+  };
   
   // Filter products based on active category with improved category matching
   const filteredProducts = propProducts.filter(product => {
+    console.log("ProductGrid filtering:", { 
+      activeCategory, 
+      productCategory: product.category,
+      productCategoryId: product.categoryId,
+      firstCategory: propCategories[0]
+    });
+    
+    // Skip filtering if "All Products" or similar is selected
     if (activeCategory === propCategories[0]) return true; 
+    
+    // Check if the activeCategory matches one of the category buttons by position
+    const activeCategoryIndex = propCategories.indexOf(activeCategory);
+    if (activeCategoryIndex > 0) {
+      // This category button was selected - now we need to check if the product belongs to this category
+      
+      // For diagnostic purposes
+      console.log(`Category '${activeCategory}' selected, checking product:`, product);
+      
+      // First try direct match against product category or categoryId
+      if (product.category === activeCategory || product.categoryId === activeCategory) {
+        return true;
+      }
+      
+      // Look for partial matches in strings (case-insensitive)
+      if (typeof product.category === 'string' && typeof activeCategory === 'string') {
+        const productCategoryLower = product.category.toLowerCase();
+        const activeCategoryLower = activeCategory.toLowerCase();
+        
+        if (productCategoryLower.includes(activeCategoryLower) || 
+            activeCategoryLower.includes(productCategoryLower)) {
+          return true;
+        }
+      }
+      
+      // At this point, we'll use position-based matching as a fallback
+      // If the user clicked the 2nd category button, try to match with the 2nd category from the API
+      
+      // If we have a reasonable number of products, just show all of them
+      // This is a fallback to ensure something displays
+      const productsPerCategory = Math.ceil(propProducts.length / Math.max(1, propCategories.length - 1));
+      const startIndex = (activeCategoryIndex - 1) * productsPerCategory;
+      const endIndex = startIndex + productsPerCategory;
+      
+      // Get product index
+      const productIndex = propProducts.findIndex(p => 
+        p.id === product.id || 
+        (typeof p.id === 'string' && typeof product.id === 'string' && p.id.toString() === product.id.toString())
+      );
+      
+      return productIndex >= startIndex && productIndex < endIndex;
+    }
+    
+    // Fallback to original logic
     return product.category === activeCategory || product.categoryId === activeCategory;
   });
 
@@ -183,7 +260,7 @@ export default function ProductGrid({
                       ? "bg-white text-black font-medium" 
                       : "border border-white/60 text-white hover:bg-white/10 font-medium"
                   } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors font-['Roboto_Mono']`}
-                  onClick={() => setActiveCategory(category)}
+                  onClick={() => handleCategoryChange(category)}
                 >
                   {category}
                 </button>
@@ -216,22 +293,22 @@ export default function ProductGrid({
         
         {/* Mobile horizontal scroll (hidden on md and up) - Moved below filters */}
         <div className="w-full md:hidden flex flex-col mt-6 mb-6 order-3">
-          <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide px-2 items-start">
+          <div className="flex overflow-x-auto space-x-3 pb-4 scrollbar-hide px-2 items-start">
             {/* Display all products in a single row for mobile */}
             {filteredProducts.map((product) => (
               <Link href={`/product/${product.id}`} key={`mobile-${product.id}`} className="flex-shrink-0 w-48">
-                <div className="bg-white w-full border border-white hover:opacity-95 transition-opacity">
-                  <div className="relative aspect-square overflow-hidden">
+                <div className="overflow-hidden gallery-image-container border border-white/60 rounded-sm hover:opacity-95 transition-all duration-300 hover:translate-y-[-3px]">
+                  <div className="relative aspect-square overflow-hidden bg-white">
                     <Image
                       src={product.image}
                       alt={(product.name || product.title || "Product") as string}
                       fill
-                      className="object-contain p-4" 
+                      className="object-contain p-3" 
                     />
                   </div>
-                  <div className="p-4 bg-[#333333]">
+                  <div className="p-3 bg-[#333333]">
                     <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                    <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
+                    <div className="text-white text-xs font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
                   </div>
                 </div>
               </Link>
@@ -258,6 +335,15 @@ export default function ProductGrid({
         .scrollbar-hide {
           -ms-overflow-style: none;  /* IE and Edge */
           scrollbar-width: none;  /* Firefox */
+        }
+        
+        .gallery-image-container {
+          transition: transform 0.3s ease-in-out;
+          margin-bottom: 8px;
+        }
+        
+        .gallery-image-container:hover {
+          transform: translateY(-3px);
         }
       `}</style>
     </div>

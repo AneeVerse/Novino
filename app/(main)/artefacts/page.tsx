@@ -230,6 +230,7 @@ export default function ArtefactsPage() {
         {/* Product Grid Section */}
         <div className="mb-16 relative z-10 font-['Roboto_Mono']">
           <ProductGrid 
+            key="artefact-product-grid"
             title="Ancient Civilizations" 
             subtitle="Featured Collection" 
             products={artefactProducts}

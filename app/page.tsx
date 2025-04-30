@@ -56,6 +56,14 @@ export default function Home() {
   const [showText, setShowText] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
   
+  // State for filtering in the ProductGrid
+  const [gridActiveCategory, setGridActiveCategory] = useState("All Products");
+  
+  // Debug when grid category changes
+  useEffect(() => {
+    console.log("Grid category changed to:", gridActiveCategory);
+  }, [gridActiveCategory]);
+  
   // Add states for categories and products
   const [categories, setCategories] = useState<string[]>(["All Products"]);
   const [products, setProducts] = useState<any[]>([]);
@@ -116,6 +124,10 @@ export default function Home() {
             category: p.category,
             categoryId: p.category // Store original category ID for reference
           }));
+        
+        console.log("Home page products loaded:", artefactProducts);
+        console.log("Categories available:", categories);
+        console.log("Category map:", categoryMap);
         
         setProducts(artefactProducts);
       } catch (err) {
@@ -362,12 +374,15 @@ export default function Home() {
         {/* Product Grid Section */}
         <div className="mb-16 relative z-10 font-['Roboto_Mono']">
           <ProductGrid 
+            key="home-product-grid"
             title="Elevate Your Gallery" 
             subtitle="All Products" 
-            products={filteredProducts}
+            products={products}
             categories={categories}
             viewAllText="View all"
             showViewAllButton={true}
+            activeCategory={gridActiveCategory}
+            onCategoryChange={setGridActiveCategory}
           />
         </div>
 
