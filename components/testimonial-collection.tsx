@@ -126,7 +126,7 @@ export default function TestimonialCollection() {
         </div>
 
         {/* Corner accents using the provided images */}
-        <div className="absolute bottom-0 left-0 w-8 sm:w-12 h-8 sm:h-12">
+        <div className="absolute bottom-0 left-0 w-8 sm:w-12 h-8 sm:h-12 hidden sm:block">
           <Image 
             src="/images/Abstract Design (1).png" 
             alt="Corner design" 
@@ -135,7 +135,7 @@ export default function TestimonialCollection() {
             className="object-contain"
           />
         </div>
-        <div className="absolute bottom-0 right-0 w-8 sm:w-12 h-8 sm:h-12">
+        <div className="absolute bottom-0 right-0 w-8 sm:w-12 h-8 sm:h-12 hidden sm:block">
           <Image 
             src="/images/Abstract Design.png" 
             alt="Corner design" 
