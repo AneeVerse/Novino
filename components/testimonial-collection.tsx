@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image"
 import "@fontsource/roboto-mono"
+import { Loader } from './blog-section';
 
 interface Testimonial {
   id: string;
@@ -83,19 +84,7 @@ export default function TestimonialCollection() {
   // Display loading state
   if (isLoading) {
     return (
-      <div className="mx-2 mb-16 relative overflow-hidden">
-        <div className="relative p-4 sm:p-8 flex flex-col items-start" style={{ 
-          boxSizing: 'border-box',
-          border: '2px dashed #FFFFFF',
-          borderRadius: '20px',
-          borderSpacing: '8px',
-        }}>
-          <div className="max-w-2xl mb-6 sm:mb-12 relative z-10">
-            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4 font-['Roboto_Mono']">THE STYLELOOM TESTIMONIAL COLLECTION.</h1>
-            <p className="text-gray-300 text-sm sm:text-base font-['Roboto_Mono']">Loading testimonials...</p>
-          </div>
-        </div>
-      </div>
+      <Loader />
     );
   }
 

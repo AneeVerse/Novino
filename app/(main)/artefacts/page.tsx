@@ -12,6 +12,7 @@ import MasonryGallery from "@/components/masonry-gallery"
 import ProductGrid from "@/components/product-grid"
 import { useState, useEffect, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
+import { Loader } from '@/components/blog-section'
 
 // Hero carousel images
 const heroImages = [
@@ -57,6 +58,7 @@ export default function ArtefactsPage() {
     categoryId?: string;
   }
   const [artefactProducts, setArtefactProducts] = useState<SimpleProduct[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Initial load - delay text appearance
   useEffect(() => {
@@ -184,6 +186,7 @@ export default function ArtefactsPage() {
   useEffect(() => {
     async function fetchArtefacts() {
       try {
+        setLoading(true);
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch artefacts');
         const data = await res.json();
@@ -200,11 +203,17 @@ export default function ArtefactsPage() {
         setArtefactProducts(filtered);
       } catch (err) {
         console.error('Error fetching artefact products:', err);
+      } finally {
+        setLoading(false);
       }
     }
     fetchArtefacts();
   }, [categoryMap]); // Add categoryMap as dependency to update products when categories load
   
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
       {/* Hero Section - Full width that extends to the top */}

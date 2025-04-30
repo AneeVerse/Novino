@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Masonry from 'react-masonry-css';
 import Link from 'next/link';
+import { Loader } from './blog-section';
 
 // We'll replace the static image configuration with API data
 // const availableImages = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -189,9 +190,7 @@ export default function MasonryGallery() {
 
       {/* Loading state */}
       {loading && (
-        <div className="flex justify-center items-center py-16">
-          <div className="text-white text-lg">Loading gallery...</div>
-        </div>
+        <Loader />
       )}
 
       {/* Masonry Gallery (Desktop) */}

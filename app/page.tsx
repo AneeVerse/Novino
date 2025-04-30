@@ -15,6 +15,7 @@ import useEmblaCarousel from 'embla-carousel-react'
 import "@fontsource/dm-serif-display"
 import "@fontsource/roboto-mono"
 import ProductGrid from "@/components/product-grid"
+import { Loader } from '../components/blog-section'
 
 // Hero carousel images
 const heroImages = [
@@ -296,6 +297,10 @@ export default function Home() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">

@@ -11,6 +11,7 @@ import Footer from "@/components/footer"
 import PaintingProductGrid from "@/components/painting-product-grid"
 import { useState, useEffect, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
+import { Loader } from '@/components/blog-section'
 
 // Hero carousel images
 const heroImages = [
@@ -55,6 +56,7 @@ export default function PaintingsPage() {
   }
   const [paintingProducts, setPaintingProducts] = useState<SimpleProduct[]>([]);
   const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
+  const [loading, setLoading] = useState(false);
   
   // Fetch categories from API
   useEffect(() => {
@@ -94,6 +96,7 @@ export default function PaintingsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
@@ -110,6 +113,8 @@ export default function PaintingsPage() {
         setPaintingProducts(filtered);
       } catch (err) {
         console.error('Error fetching painting products:', err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProducts();
@@ -202,6 +207,10 @@ export default function PaintingsPage() {
       emblaApi.off('pointerUp', startAutoplay);
     };
   }, [emblaApi]);
+  
+  if (loading) {
+    return <Loader />;
+  }
   
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">

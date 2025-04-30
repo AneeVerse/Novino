@@ -55,6 +55,16 @@ const sampleBlogs = [
   },
 ];
 
+// Loader component for consistent loading UI
+function Loader() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16">
+      <div className="w-10 h-10 border-4 border-[#AE876D] border-t-transparent rounded-full animate-spin mb-4"></div>
+      <div className="text-white/80 text-base">Loading...</div>
+    </div>
+  );
+}
+
 export default function BlogSection({ showViewAllButton = true, showAllBlogs = false }: BlogSectionProps) {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -101,7 +111,7 @@ export default function BlogSection({ showViewAllButton = true, showAllBlogs = f
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
           <div className="text-center mb-10 sm:mb-16 md:mb-20 relative z-50">
             <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-light mb-2 sm:mb-4 font-['DM_Serif_Display'] relative z-50">Blogs</h2>
-            <p className="text-white text-sm sm:text-base opacity-90 font-['Roboto_Mono']">Loading blog content...</p>
+            <Loader />
           </div>
         </div>
       </div>
@@ -251,4 +261,7 @@ export default function BlogSection({ showViewAllButton = true, showAllBlogs = f
     </div>
   )
 }
+
+// At the end of the file, export Loader for reuse
+export { Loader };
 
