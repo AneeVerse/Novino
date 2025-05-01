@@ -116,7 +116,7 @@ export default function Home() {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
-
+        
         // Get artefact products
         const artefactProducts = data
           .filter((p: any) => p.type === 'artefact')
@@ -128,7 +128,7 @@ export default function Home() {
             category: categoryMap[p.category] || p.category, // use display name
             categoryId: p.category // Store original category ID for reference
           }));
-
+        
         setProducts(artefactProducts);
       } catch (err) {
         console.error('Error fetching products:', err);

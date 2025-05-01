@@ -213,7 +213,7 @@ export default function ArtefactsPage() {
   if (loading) {
     return <Loader />;
   }
-
+  
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
       {/* Hero Section - Full width that extends to the top */}

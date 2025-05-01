@@ -93,6 +93,7 @@ export default function TestimonialCollection() {
 
   return (
     <div className="mx-2 mb-16 relative overflow-visible">
+      {/* Desktop abstract logo (top right, outside card content) */}
       {/* Main container with dashed border - matched to Figma */}
       <div className="relative flex flex-col items-start w-full overflow-visible" style={{ 
         boxSizing: 'border-box',
@@ -154,14 +155,20 @@ export default function TestimonialCollection() {
             }}
           />
         </div>
-
+           {/* Header section - desktop only */}
+            <div className="w-full p-4 sm:p-8 hidden sm:block">
+          <div className="max-w-2xl mb-6 sm:mb-12 relative z-10">
+            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4 font-['Roboto_Mono']">THE STYLELOOM TESTIMONIAL COLLECTION.</h1>
+            <p className="text-gray-300 text-sm sm:text-base font-['Roboto_Mono']">At StyleLoom, our customers are the heartbeat of our brand.</p>
+          </div>
+        </div>
         {/* Mobile abstract logo in top-right corner (mobile only) */}
-        <div className="absolute right-1 top-1 w-15 h-15 sm:hidden z-10">
+        <div className="absolute right-0 top-1 w-16 h-16 sm:hidden z-10">
           <Image 
             src="/images/testimonals/abstract.png" 
             alt="Abstract design mobile" 
-            width={65} 
-            height={65} 
+            width={60} 
+            height={60} 
             className="object-contain" 
             priority
           />
@@ -177,7 +184,6 @@ export default function TestimonialCollection() {
             <p className="text-gray-300 text-xs font-['Roboto_Mono'] mt-1">At StyleLoom, our customers are the heartbeat of our brand.</p>
           </div>
         </div>
-
         {/* Testimonials grid with dashed borders */}
         <div className="grid grid-cols-1 md:grid-cols-3 w-full">
           {displayTestimonials.map((testimonial, index) => (
@@ -202,7 +208,6 @@ export default function TestimonialCollection() {
                   <Image src={testimonial.socialIcon || "/images/Capa 2.png"} alt="Social icon" width={16} height={16} className="object-contain w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-
               <div className="flex mb-3 sm:mb-4" style={{ color: '#E8B08A' }}>
                 {[...Array(testimonial.rating)].map((_, i) => (
                   <svg
@@ -220,7 +225,6 @@ export default function TestimonialCollection() {
                   </svg>
                 ))}
               </div>
-
               <p className="text-white text-sm sm:text-base break-words whitespace-normal font-['Roboto_Mono']">
                 {testimonial.comment}
               </p>
@@ -229,6 +233,6 @@ export default function TestimonialCollection() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 

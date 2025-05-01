@@ -113,7 +113,7 @@ export default function ProductGrid({
   // Filter products based on active category with improved category matching
   const filteredProducts = propProducts.filter(product => {
     // Skip filtering if "All Products" or similar is selected
-    if (activeCategory === propCategories[0]) return true;
+    if (activeCategory === propCategories[0]) return true; 
     // Only match products where category or categoryId matches exactly
     return product.category === activeCategory || product.categoryId === activeCategory;
   });
