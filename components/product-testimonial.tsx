@@ -170,6 +170,16 @@ export default function ProductTestimonial() {
               height: "auto"
             }}
           >
+            {/* Mobile overlay (only visible on mobile) */}
+            <div 
+              className="absolute left-1/2 top-1/2 w-[350px] h-[420px] -translate-x-1/2 -translate-y-1/2 sm:hidden z-0"
+              style={{
+                background: '#E8B08A',
+                filter: 'blur(30px)',
+                opacity: 0.2,
+                borderRadius: '30%',
+              }}
+            ></div>
             <div className="relative w-[95%] h-[95%] z-10 py-4 overflow-hidden">
               <div 
                 className={`absolute inset-0 transition-all duration-400 ease-in-out ${
