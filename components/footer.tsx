@@ -380,6 +380,10 @@ export default function Footer() {
                 </div>
                 <div className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Designed & Managed By Aneeverse.com</div>
               </div>
+              {/* Payment options for mobile */}
+              <div className="flex sm:hidden items-center justify-center mt-4">
+                <img src="/images/Frame 53.png" alt="Payment Methods" className="h-6" />
+              </div>
             </div>
 
             {/* Add Satoshi font styles */}
