@@ -155,11 +155,26 @@ export default function TestimonialCollection() {
           />
         </div>
 
-        {/* Header section */}
-        <div className="w-full p-4 sm:p-8">
-          <div className="max-w-2xl mb-6 sm:mb-12 relative z-10">
-            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4 font-['Roboto_Mono']">THE STYLELOOM TESTIMONIAL COLLECTION.</h1>
-            <p className="text-gray-300 text-sm sm:text-base font-['Roboto_Mono']">At StyleLoom, our customers are the heartbeat of our brand.</p>
+        {/* Mobile abstract logo in top-right corner (mobile only) */}
+        <div className="absolute right-1 top-1 w-15 h-15 sm:hidden z-10">
+          <Image 
+            src="/images/testimonals/abstract.png" 
+            alt="Abstract design mobile" 
+            width={65} 
+            height={65} 
+            className="object-contain" 
+            priority
+          />
+        </div>
+        {/* Mobile header arrangement (mobile only) */}
+        <div className="w-full sm:hidden px-2 mt-0">
+          <div className="max-w-full px-2 py-2">
+            <h1 className="text-white text-xl font-bold font-['Roboto_Mono'] leading-tight">
+              <span className="block">THE STYLELOOM</span>
+              <span className="block">TESTIMONIAL</span>
+              <span className="block">COLLECTION.</span>
+            </h1>
+            <p className="text-gray-300 text-xs font-['Roboto_Mono'] mt-1">At StyleLoom, our customers are the heartbeat of our brand.</p>
           </div>
         </div>
 
