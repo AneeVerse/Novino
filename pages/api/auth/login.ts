@@ -44,6 +44,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
+      // Check if user is blocked
+      if (user.isBlocked) {
+        return res.status(403).json({ message: 'Your account has been blocked. Please contact support.' });
+      }
+
       // Verify password
       const isPasswordValid = await user.comparePassword(password);
       if (!isPasswordValid) {

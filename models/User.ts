@@ -5,6 +5,8 @@ export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
+  isBlocked: boolean;
+  lastBlockedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -32,6 +34,14 @@ const UserSchema: Schema = new Schema({
     required: [true, 'Please provide a password'],
     minlength: [6, 'Password must be at least 6 characters'],
     select: false // Don't return password in queries by default
+  },
+  isBlocked: {
+    type: Boolean,
+    default: false
+  },
+  lastBlockedAt: {
+    type: Date,
+    default: null
   },
   createdAt: {
     type: Date,

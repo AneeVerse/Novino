@@ -32,7 +32,7 @@ function DashboardNavbarContent() {
   
   const handleLogout = () => {
     // Set the state in localStorage directly first to avoid race conditions
-    localStorage.removeItem('adminAuth');
+    localStorage.removeItem('adminAuthToken');
     
     // Then call the context logout
     logout();
@@ -203,6 +203,16 @@ function DashboardNavbarContent() {
             >
               Artefacts
             </Link>
+            <Link 
+              href="/dashboard/users" 
+              className={`px-4 py-3 text-sm font-medium ${
+                pathname === '/dashboard/users'
+                  ? 'text-white border-b-2 border-[#A47E3B]' 
+                  : 'text-white/70 hover:text-white hover:bg-[#222222]'
+              } transition-colors`}
+            >
+              Users
+            </Link>
           </div>
         </div>
       </div>
@@ -270,6 +280,18 @@ function DashboardNavbarContent() {
                   } transition-colors`}
                 >
                   Artefacts
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/dashboard/users" 
+                  className={`block px-4 py-2 text-sm ${
+                    pathname === '/dashboard/users'
+                      ? 'text-white bg-[#2A2A2A] font-medium rounded'
+                      : 'text-white/70 hover:text-white hover:bg-[#2A2A2A] rounded'
+                  } transition-colors`}
+                >
+                  Users
                 </Link>
               </li>
               <li className="pt-2 mt-2 border-t border-[#333333]">
