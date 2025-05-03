@@ -1,15 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { LogOut } from "lucide-react";
 
 function DashboardNavbarContent() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showAdminDropdown, setShowAdminDropdown] = useState(false);
+  const adminDropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentTab = searchParams.get('tab');
+  const currentTab = searchParams?.get('tab') || null;
+  const { logout } = useAuth();
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (adminDropdownRef.current && !adminDropdownRef.current.contains(event.target as Node)) {
+        setShowAdminDropdown(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  
+  const handleLogout = () => {
+    // Set the state in localStorage directly first to avoid race conditions
+    localStorage.removeItem('adminAuth');
+    
+    // Then call the context logout
+    logout();
+    
+    // Navigate directly
+    window.location.href = '/admin/login';
+  };
   
   return (
     <nav className="w-full z-40 bg-[#222222] border-b border-[#333333] sticky top-0">
@@ -94,8 +124,27 @@ function DashboardNavbarContent() {
             </svg>
           </button>
           
-          <div className="w-9 h-9 bg-[#A47E3B] rounded-full flex items-center justify-center text-white font-bold text-sm">
-            A
+          {/* Admin avatar with dropdown */}
+          <div className="relative" ref={adminDropdownRef}>
+            <button 
+              onClick={() => setShowAdminDropdown(!showAdminDropdown)}
+              className="w-9 h-9 bg-[#A47E3B] rounded-full flex items-center justify-center text-white font-bold text-sm"
+            >
+              A
+            </button>
+            
+            {/* Admin dropdown menu */}
+            {showAdminDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-[#222222] rounded-md shadow-lg py-1 z-50 border border-[#333333]">
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#333333] transition-colors"
+                >
+                  <LogOut size={16} className="mr-2" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
