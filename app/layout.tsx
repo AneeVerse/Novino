@@ -11,6 +11,7 @@ import { CartProvider } from "@/contexts/CartContext"
 import CartDrawer from "@/components/ui/cart-drawer"
 import { useCart } from "@/contexts/CartContext"
 import { SessionProvider } from "next-auth/react"
+import { AuthProvider } from "@/contexts/AuthContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -27,6 +28,7 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard');
+  const isAdminRoute = pathname?.startsWith('/admin') || isDashboard;
   
   return (
     <html lang="en" suppressHydrationWarning>
@@ -36,18 +38,23 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <SessionProvider>
-            <CartProvider>
-              {isDashboard ? (
-                <div className="w-full">
-                  <DashboardNavbar />
-                </div>
-              ) : (
-                <Navbar />
-              )}
-              {children}
-              <CartDrawerWrapper />
-            </CartProvider>
+          <SessionProvider 
+            refetchInterval={isAdminRoute ? 0 : undefined}
+            refetchOnWindowFocus={!isAdminRoute}
+          >
+            <AuthProvider>
+              <CartProvider>
+                {isDashboard ? (
+                  <div className="w-full">
+                    <DashboardNavbar />
+                  </div>
+                ) : (
+                  <Navbar />
+                )}
+                {children}
+                <CartDrawerWrapper />
+              </CartProvider>
+            </AuthProvider>
           </SessionProvider>
         </ThemeProvider>
       </body>
