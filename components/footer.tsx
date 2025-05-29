@@ -378,7 +378,11 @@ export default function Footer() {
                 <div className="hidden sm:flex items-center justify-center mx-4">
                   <img src="/images/Frame 53.png" alt="Payment Methods" className="h-6 sm:h-8" />
                 </div>
-                <div className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Designed & Managed By Aneeverse.com</div>
+                <a 
+                href="https://www.aneeverse.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Designed & Managed By Aneeverse.com</a>
               </div>
               {/* Payment options for mobile */}
               <div className="flex sm:hidden items-center justify-center mt-4">
