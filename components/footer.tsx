@@ -382,7 +382,7 @@ export default function Footer() {
                 href="https://www.aneeverse.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Designed & Managed By Aneeverse.com</a>
+                className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Designed & Managed By Aneeverse</a>
               </div>
               {/* Payment options for mobile */}
               <div className="flex sm:hidden items-center justify-center mt-4">
