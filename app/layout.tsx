@@ -29,6 +29,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard');
   const isAdminRoute = pathname?.startsWith('/admin') || isDashboard;
+  const isLinkoPage = pathname?.startsWith('/linko.page/');
   
   return (
     <html lang="en" suppressHydrationWarning>
@@ -48,11 +49,11 @@ export default function RootLayout({
                   <div className="w-full">
                     <DashboardNavbar />
                   </div>
-                ) : (
+                ) : !isLinkoPage ? (
                   <Navbar />
-                )}
+                ) : null}
                 {children}
-                <CartDrawerWrapper />
+                {!isLinkoPage && <CartDrawerWrapper />}
               </CartProvider>
             </AuthProvider>
           </SessionProvider>
