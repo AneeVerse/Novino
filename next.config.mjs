@@ -29,6 +29,7 @@ const nextConfig = {
       'lh3.googleusercontent.com',
       'githubusercontent.com',
       'cloudinary.com',
+      'ik.imagekit.io',
     ],
   },
   experimental: {

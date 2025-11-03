@@ -11,6 +11,7 @@ const allowedImageDomains = [
   'lh3.googleusercontent.com',
   'githubusercontent.com',
   'cloudinary.com',
+  'ik.imagekit.io',
 ];
 
 /**
@@ -57,4 +58,4 @@ export function getCloudinaryPublicId(url: string): string | null {
   } catch (e) {
     return null;
   }
-} 
+}
