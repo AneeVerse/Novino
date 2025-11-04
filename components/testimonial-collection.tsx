@@ -100,15 +100,44 @@ export default function TestimonialCollection() {
         border: '2px dashed #FFFFFF',
         borderRadius: '20px',
       }}>
-        {/* Middle overlay */}
-        <div className="absolute top-[120%] left-[50%] w-[3000px] h-[300%] pointer-events-none" style={{
+        {/* Gradient overlays - White */}
+        {/* Main center glow */}
+        <div className="absolute pointer-events-none" style={{
+          top: '50%',
+          left: '50%',
           transform: 'translate(-50%, -50%)',
+          width: '100%',
+          height: '100%',
           zIndex: 5,
-          background: 'radial-gradient(circle, rgba(174, 135, 109, 0.6) 0%, rgba(174, 135, 109, 0.4) 30%, rgba(174, 135, 109, 0.2) 50%, transparent 70%)',
-          opacity: 0.6,
-          mixBlendMode: 'screen'
-        }}>
-        </div>
+          background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.12) 30%, rgba(255, 255, 255, 0.06) 50%, transparent 70%)',
+          filter: 'blur(60px)',
+          mixBlendMode: 'overlay'
+        }}></div>
+        
+        {/* Bottom glow */}
+        <div className="absolute pointer-events-none" style={{
+          bottom: '-30%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '80%',
+          height: '60%',
+          zIndex: 5,
+          background: 'radial-gradient(ellipse at top, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.1) 35%, transparent 65%)',
+          filter: 'blur(50px)',
+          mixBlendMode: 'overlay'
+        }}></div>
+        
+        {/* Top right accent */}
+        <div className="absolute pointer-events-none" style={{
+          top: '-10%',
+          right: '10%',
+          width: '40%',
+          height: '50%',
+          zIndex: 5,
+          background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 30%, transparent 60%)',
+          filter: 'blur(40px)',
+          mixBlendMode: 'overlay'
+        }}></div>
 
         {/* Corner accents using the provided images */}
         <div className="absolute bottom-0 left-0 w-8 sm:w-12 h-8 sm:h-12 hidden sm:block">

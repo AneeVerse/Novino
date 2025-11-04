@@ -126,22 +126,43 @@ export default function ProductGrid({
       backgroundPosition: "center",
       overflow: "visible"
     }}>
-      {/* Bottom right overlay */}
-      <div className="absolute -bottom-[-13%] -right-[-600px] w-[1300px] h-[120%] pointer-events-none" style={{
+      {/* Gradient overlays - White */}
+      {/* Main glow - bottom right */}
+      <div className="absolute pointer-events-none" style={{
+        bottom: '-20%',
+        right: '-40%',
+        width: '80%',
+        height: '100%',
         zIndex: 5,
-        background: 'radial-gradient(circle, rgba(174, 135, 109, 0.6) 0%, rgba(174, 135, 109, 0.4) 30%, rgba(174, 135, 109, 0.2) 50%, transparent 70%)',
-        opacity: 0.9,
-        mixBlendMode: 'screen'
-      }}>
-        {/* 
-          POSITIONING GUIDE:
-          - To move RIGHT: increase the right value (make it less negative) e.g. -right-[650px]
-          - To move LEFT: decrease the right value (make it more negative) e.g. -right-[1050px]
-          - To move UP: increase the bottom value (make it less negative) e.g. bottom-[-50%]
-          - To move DOWN: decrease the bottom value (make it more negative) e.g. bottom-[-130%]
-          - You can also adjust width and height with w-[2000px] and h-[220%]
-        */}
-      </div>
+        background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 25%, rgba(255, 255, 255, 0.08) 45%, transparent 70%)',
+        filter: 'blur(40px)',
+        mixBlendMode: 'overlay'
+      }}></div>
+      
+      {/* Secondary glow - center left */}
+      <div className="absolute pointer-events-none" style={{
+        top: '30%',
+        left: '-20%',
+        width: '60%',
+        height: '60%',
+        zIndex: 5,
+        background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.1) 35%, transparent 65%)',
+        filter: 'blur(50px)',
+        mixBlendMode: 'overlay'
+      }}></div>
+      
+      {/* Accent glow - top center */}
+      <div className="absolute pointer-events-none" style={{
+        top: '0%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '50%',
+        height: '40%',
+        zIndex: 5,
+        background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.08) 30%, transparent 60%)',
+        filter: 'blur(60px)',
+        mixBlendMode: 'overlay'
+      }}></div>
 
       <div className="flex flex-col md:flex-row md:gap-8 relative z-30">
         {/* Right side: Product Grid */}

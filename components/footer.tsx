@@ -62,20 +62,43 @@ export default function Footer() {
 
           {/* Content container with padding */}
           <div className="relative p-8 z-10">
-            {/* White overlay */}
-            <div className="absolute bottom-[-100%] -right-[10px] w-[1500px] h-[300%] pointer-events-none" style={{
+            {/* Gradient overlays - White */}
+            {/* Main center glow */}
+            <div className="absolute pointer-events-none" style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '90%',
+              height: '80%',
               zIndex: 5,
-              transform: 'rotate(90deg)',
-              opacity: 0.6,
-              position: 'absolute',
-              background: 'radial-gradient(circle, rgba(174, 135, 109, 0.6) 0%, rgba(174, 135, 109, 0.4) 30%, rgba(174, 135, 109, 0.2) 50%, transparent 70%)',
-              mixBlendMode: 'screen'
-            }}>
-            </div>
-
-            {/* Gradient effects similar to the product section */}
-            <div className="absolute left-[10%] top-0 w-[60%] h-[50%] bg-gradient-to-r from-white/20 via-white/10 to-transparent blur-[100px] pointer-events-none"></div>
-            <div className="absolute right-[20%] bottom-0 w-[40%] h-[60%] bg-gradient-to-l from-white/15 via-white/10 to-transparent blur-[80px] pointer-events-none"></div>
+              background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.12) 30%, rgba(255, 255, 255, 0.06) 50%, transparent 70%)',
+              filter: 'blur(70px)',
+              mixBlendMode: 'overlay'
+            }}></div>
+            
+            {/* Bottom left glow */}
+            <div className="absolute pointer-events-none" style={{
+              bottom: '-20%',
+              left: '-10%',
+              width: '50%',
+              height: '60%',
+              zIndex: 5,
+              background: 'radial-gradient(ellipse at top right, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.1) 40%, transparent 70%)',
+              filter: 'blur(50px)',
+              mixBlendMode: 'overlay'
+            }}></div>
+            
+            {/* Top right glow */}
+            <div className="absolute pointer-events-none" style={{
+              top: '-15%',
+              right: '-5%',
+              width: '45%',
+              height: '55%',
+              zIndex: 5,
+              background: 'radial-gradient(ellipse at bottom left, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 30%, transparent 65%)',
+              filter: 'blur(55px)',
+              mixBlendMode: 'overlay'
+            }}></div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 md:gap-8 relative z-10">
               {/* Brand Column */}
