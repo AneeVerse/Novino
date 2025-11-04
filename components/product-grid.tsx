@@ -219,7 +219,7 @@ export default function ProductGrid({
           </div>
           
           {/* Two cards below filter on left side (Desktop) */}
-          <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-[169px] md:pl-10">
+          <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-[165px] md:pl-10">
             {filteredProducts.slice(4, 6).map((product) => (
               <Link href={`/product/${product.id}`} key={product.id}>
                 <div className="bg-white w-full max-w-[85%] mx-auto border border-white hover:opacity-95 transition-opacity">
