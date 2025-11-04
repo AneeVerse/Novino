@@ -10,6 +10,7 @@ import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
 import ProductTestimonial from "@/components/product-testimonial"
 import MasonryGallery from "@/components/masonry-gallery"
+import FeaturedProducts from "@/components/featured-products"
 import { useState, useEffect, useCallback, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
 import "@fontsource/dm-serif-display"
@@ -324,6 +325,11 @@ export default function Home() {
               <p className="text-white text-xs sm:text-sm md:text-base leading-normal text-center mx-auto max-w-3xl font-['Roboto_Mono']">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
             </div>
           </div>
+        </div>
+
+        {/* Featured Products Section */}
+        <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
+          <FeaturedProducts />
         </div>
 
         {/* Gallery Grid - with negative margins to make it wider */}
