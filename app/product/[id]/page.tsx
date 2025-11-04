@@ -379,18 +379,35 @@ export default function ProductDetail() {
   // Add to cart handler
   const handleAddToCart = () => {
     if (product) {
-      // Prepare the cart item
+      // Ensure product has a valid ID
+      if (!product.id) {
+        console.error('Product missing ID:', product);
+        alert('Error: Product ID is missing. Cannot add to cart.');
+        return;
+      }
+      
+      // Prepare the cart item with all required fields
       const cartItem = {
-        id: product.id,
-        name: product.name,
+        id: String(product.id).trim(), // Ensure ID is a string and trimmed
+        name: product.name || 'Unnamed Product',
         price: displayedPrice,
-        image: displayedImage,
-        quantity: quantity,
+        image: displayedImage || product.image || '',
+        quantity: quantity || 1,
         variant: selectedVariant ? selectedVariant.name : undefined
       };
       
+      console.log('Adding to cart:', {
+        id: cartItem.id,
+        name: cartItem.name,
+        price: cartItem.price,
+        quantity: cartItem.quantity
+      });
+      
       // Add to cart (this will automatically open the cart drawer)
       addToCart(cartItem);
+    } else {
+      console.error('Product is undefined');
+      alert('Error: Product information is missing.');
     }
   };
 

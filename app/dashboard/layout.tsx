@@ -3,6 +3,7 @@
 import { ReactNode, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import DashboardNavbar from "@/components/ui/dashboard-navbar";
 
 function DashboardContent({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -31,8 +32,9 @@ function DashboardContent({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#1A1A1A] pt-0 pb-10">
-      <div className="container mx-auto pt-6 px-4">
+    <div className="min-h-screen bg-[#0A0A0A]">
+      
+      <div className="container mx-auto px-4 py-8">
         {children}
       </div>
     </div>

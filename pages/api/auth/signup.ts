@@ -18,6 +18,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: 'Email, username, password and OTP are required' });
   }
 
+  // Validate password strength
+  if (password.length < 8) {
+    return res.status(400).json({ message: 'Password must be at least 8 characters' });
+  }
+  if (!/(?=.*[a-z])/.test(password)) {
+    return res.status(400).json({ message: 'Password must contain at least one lowercase letter' });
+  }
+  if (!/(?=.*[A-Z])/.test(password)) {
+    return res.status(400).json({ message: 'Password must contain at least one uppercase letter' });
+  }
+  if (!/(?=.*\d)/.test(password)) {
+    return res.status(400).json({ message: 'Password must contain at least one number' });
+  }
+  if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(password)) {
+    return res.status(400).json({ message: 'Password must contain at least one special character' });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: 'Please provide a valid email address' });
+  }
+
+  // Validate username
+  if (username.length < 3 || username.length > 30) {
+    return res.status(400).json({ message: 'Username must be between 3 and 30 characters' });
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+    return res.status(400).json({ message: 'Username can only contain letters, numbers, underscores, and hyphens' });
+  }
+
   try {
     // Verify OTP
     const otpRecord = await OTP.findOne({ 

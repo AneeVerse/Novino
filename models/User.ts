@@ -5,6 +5,8 @@ export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
+  googleId?: string;
+  avatar?: string;
   isBlocked: boolean;
   lastBlockedAt?: Date;
   createdAt: Date;
@@ -31,9 +33,28 @@ const UserSchema: Schema = new Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please provide a password'],
-    minlength: [6, 'Password must be at least 6 characters'],
+    required: function(this: IUser) {
+      // Password is required only if not using OAuth
+      return !this.googleId
+    },
+    minlength: [8, 'Password must be at least 8 characters'],
+    validate: {
+      validator: function(v: string) {
+        if (!v) return true // Will be caught by required
+        // Must contain: lowercase, uppercase, number, special char
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/.test(v)
+      },
+      message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+    },
     select: false // Don't return password in queries by default
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true // Allow multiple null values
+  },
+  avatar: {
+    type: String
   },
   isBlocked: {
     type: Boolean,

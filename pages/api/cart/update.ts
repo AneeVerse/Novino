@@ -11,8 +11,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Get token from cookies
-    const token = req.cookies.token;
+    // Get token from cookies using getTokenFromReq
+    const { getTokenFromReq } = await import('@/lib/auth');
+    const token = getTokenFromReq(req);
     if (!token) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
@@ -32,9 +33,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Connect to database
     await connectToDatabase();
     
-    // Add addedAt field to items that don't have it
+    // Add addedAt field to items that don't have it and ensure IDs are preserved
     const itemsWithTimestamp = items.map((item: CartItem) => ({
       ...item,
+      id: item.id, // Preserve original ID type (string or number)
       addedAt: item.addedAt || new Date()
     }));
 

@@ -97,51 +97,23 @@ export default function ProfilePage() {
           });
         }
         
-        // Always set mock orders and addresses for demonstration
-        setOrders([
-          {
-            id: "ORD-123456",
-            date: "2023-05-15",
-            status: "Delivered",
-            total: 249.99,
-            items: [
-              { name: "Abstract Landscape Painting", price: 249.99, quantity: 1 }
-            ]
-          },
-          {
-            id: "ORD-789012",
-            date: "2023-06-22",
-            status: "Processing",
-            total: 129.99,
-            items: [
-              { name: "Ceramic Vase", price: 129.99, quantity: 1 }
-            ]
-          }
-        ]);
-        
-        setAddresses([
-          {
-            id: 1,
-            fullName: "John Doe",
-            addressLine1: "123 Art Street",
-            addressLine2: "Apt 4B",
-            city: "New York",
-            state: "NY",
-            postalCode: "10001",
-            country: "United States",
-            isDefault: true
-          }
-        ]);
+        // Orders and addresses will be fetched from API when available
+        // For now, start with empty arrays
+        setOrders([]);
+        setAddresses([]);
       } catch (err) {
         console.error(err);
         setMessage("Error fetching user data. For demonstration, using mock data.");
         
-        // Even if there's an error, set mock data for demonstration
+        // Even if there's an error, set basic user data
         setUser({
           username: "user123",
           email: "user@example.com",
           name: "John Doe"
         });
+        // Keep orders and addresses empty
+        setOrders([]);
+        setAddresses([]);
       } finally {
         setLoading(false);
       }
@@ -170,13 +142,39 @@ export default function ProfilePage() {
     }
   };
   
+  // Password validation function
+  const validatePassword = (password: string): string | null => {
+    if (!password) return 'Password is required';
+    if (password.length < 8) return 'Password must be at least 8 characters';
+    if (password.length > 128) return 'Password is too long';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return 'Password must contain at least one special character';
+    return null;
+  };
+
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordLoading(true);
     setPasswordMessage("");
     
+    // Validate new password
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      setPasswordMessage(passwordError);
+      setPasswordLoading(false);
+      return;
+    }
+    
     if (newPassword !== confirmPassword) {
       setPasswordMessage("New passwords don't match");
+      setPasswordLoading(false);
+      return;
+    }
+    
+    if (currentPassword === newPassword) {
+      setPasswordMessage("New password must be different from current password");
       setPasswordLoading(false);
       return;
     }
@@ -255,20 +253,35 @@ export default function ProfilePage() {
         
         {/* Profile Tab */}
         <TabsContent value="profile">
-          <div className="bg-[#333333] rounded-lg shadow-sm p-6 border border-[#444444]">
-            <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
+          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+            <h2 className="text-xl font-semibold mb-6 text-[#2D2D2D]">Profile Information</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1 text-white/70">Username</label>
-                <p className="p-2 bg-[#222222] border border-[#444444] rounded">{user?.username}</p>
+                <label className="block text-sm font-medium mb-1 text-[#2D2D2D]">Username</label>
+                <Input
+                  type="text"
+                  value={user?.username || ""}
+                  disabled
+                  className="bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1 text-white/70">Email</label>
-                <p className="p-2 bg-[#222222] border border-[#444444] rounded">{user?.email}</p>
+                <label className="block text-sm font-medium mb-1 text-[#2D2D2D]">Email</label>
+                <Input
+                  type="email"
+                  value={user?.email || ""}
+                  disabled
+                  className="bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1 text-white/70">Name</label>
-                <p className="p-2 bg-[#222222] border border-[#444444] rounded">{user?.name || "Not set"}</p>
+                <label className="block text-sm font-medium mb-1 text-[#2D2D2D]">Name</label>
+                <Input
+                  type="text"
+                  value={user?.name || "Not set"}
+                  disabled
+                  className="bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
+                />
               </div>
             </div>
           </div>
@@ -332,40 +345,49 @@ export default function ProfilePage() {
               </div>
             )}
             
-            <div className="space-y-6">
-              {addresses.map((address) => (
-                <div key={address.id} className="border border-gray-200 rounded-md p-4 hover:shadow-sm transition-shadow">
-                  {address.isDefault && (
-                    <span className="bg-[#AE876D] text-white text-xs px-2 py-1 rounded mb-2 inline-block">
-                      Default
-                    </span>
-                  )}
-                  <p className="font-medium text-[#2D2D2D]">{address.fullName}</p>
-                  <p className="text-gray-700">{address.addressLine1}</p>
-                  {address.addressLine2 && <p className="text-gray-700">{address.addressLine2}</p>}
-                  <p className="text-gray-700">{address.city}, {address.state} {address.postalCode}</p>
-                  <p className="text-gray-700">{address.country}</p>
-                  
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm" className="border-[#AE876D] text-[#AE876D] hover:bg-[#AE876D]/10">
-                      Edit
-                    </Button>
-                    <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-50">
-                      Delete
-                    </Button>
-                    {!address.isDefault && (
-                      <Button variant="outline" size="sm" className="border-gray-400 text-gray-700 hover:bg-gray-50">
-                        Set as Default
-                      </Button>
+            {addresses.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">You haven't added any addresses yet.</p>
+                <Button className="bg-[#AE876D] hover:bg-[#8d6c58] text-white">
+                  Add New Address
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {addresses.map((address) => (
+                  <div key={address.id} className="border border-gray-200 rounded-md p-4 hover:shadow-sm transition-shadow">
+                    {address.isDefault && (
+                      <span className="bg-[#AE876D] text-white text-xs px-2 py-1 rounded mb-2 inline-block">
+                        Default
+                      </span>
                     )}
+                    <p className="font-medium text-[#2D2D2D]">{address.fullName}</p>
+                    <p className="text-gray-700">{address.addressLine1}</p>
+                    {address.addressLine2 && <p className="text-gray-700">{address.addressLine2}</p>}
+                    <p className="text-gray-700">{address.city}, {address.state} {address.postalCode}</p>
+                    <p className="text-gray-700">{address.country}</p>
+                    
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Button variant="outline" size="sm" className="border-[#AE876D] text-[#AE876D] hover:bg-[#AE876D]/10">
+                        Edit
+                      </Button>
+                      <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-50">
+                        Delete
+                      </Button>
+                      {!address.isDefault && (
+                        <Button variant="outline" size="sm" className="border-gray-400 text-gray-700 hover:bg-gray-50">
+                          Set as Default
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-              
-              <Button className="mt-4 bg-[#AE876D] hover:bg-[#8d6c58] text-white">
-                Add New Address
-              </Button>
-            </div>
+                ))}
+                
+                <Button className="mt-4 bg-[#AE876D] hover:bg-[#8d6c58] text-white">
+                  Add New Address
+                </Button>
+              </div>
+            )}
           </div>
         </TabsContent>
         
@@ -397,6 +419,7 @@ export default function ProfilePage() {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="w-full border-gray-300 focus:border-[#AE876D] focus:ring-[#AE876D]"
                   disabled={passwordLoading}
+                  placeholder="Enter your current password"
                 />
               </div>
               
@@ -412,7 +435,14 @@ export default function ProfilePage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full border-gray-300 focus:border-[#AE876D] focus:ring-[#AE876D]"
                   disabled={passwordLoading}
+                  placeholder="Enter your new password"
+                  minLength={8}
                 />
+                {newPassword && !validatePassword(newPassword) && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Password must be at least 8 characters with uppercase, lowercase, number & special character
+                  </p>
+                )}
               </div>
               
               <div>
@@ -427,13 +457,18 @@ export default function ProfilePage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full border-gray-300 focus:border-[#AE876D] focus:ring-[#AE876D]"
                   disabled={passwordLoading}
+                  placeholder="Confirm your new password"
+                  minLength={8}
                 />
+                {confirmPassword && newPassword !== confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1">Passwords don't match</p>
+                )}
               </div>
               
               <Button 
                 type="submit" 
                 className="bg-[#AE876D] hover:bg-[#8d6c58] text-white"
-                disabled={passwordLoading}
+                disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword}
               >
                 {passwordLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Update Password

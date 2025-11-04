@@ -10,8 +10,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Get token from cookies
-    const token = req.cookies.token;
+    // Get token from cookies using getTokenFromReq
+    const { getTokenFromReq } = await import('@/lib/auth');
+    const token = getTokenFromReq(req);
     if (!token) {
       return res.status(401).json({ message: 'Unauthorized' });
     }

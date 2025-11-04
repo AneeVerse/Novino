@@ -397,47 +397,62 @@ export default function EnhancedProductForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#222222] rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">
-              {mode === 'add' ? `Add New ${productType === 'painting' ? 'Painting' : 'Artefact'}` : 'Edit Product'}
-            </h2>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div className="bg-[#1A1A1A] rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] flex flex-col border border-[#333333]">
+        {/* Modern Header - Fixed */}
+        <div className="flex-shrink-0 bg-gradient-to-r from-[#1A1A1A] to-[#222222] border-b border-[#333333] px-6 py-4 rounded-t-2xl">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold text-white mb-0.5">
+                {mode === 'add' ? `Add New ${productType === 'painting' ? 'Painting' : 'Artefact'}` : 'Edit Product'}
+              </h2>
+              <p className="text-white/60 text-xs">
+                {mode === 'add' ? 'Fill in the details to create a new product' : 'Update product information'}
+              </p>
+            </div>
             <button 
               onClick={onCancel}
-              className="text-white/70 hover:text-white"
+              className="w-9 h-9 rounded-full bg-[#333333] hover:bg-red-500/20 text-white/70 hover:text-red-400 transition-all duration-200 flex items-center justify-center flex-shrink-0"
             >
-              <X size={24} />
+              <X size={18} />
             </button>
           </div>
-          
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6">          
           {error && (
-            <div className="mb-4 p-3 bg-red-500/20 text-red-300 rounded">
-              {error}
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-300 rounded-lg flex items-start gap-2 text-sm">
+              <div className="w-4 h-4 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-red-400 text-xs">!</span>
+              </div>
+              <p className="flex-1">{error}</p>
             </div>
           )}
           
           {success && (
-            <div className="mb-4 p-3 bg-green-500/20 text-green-300 rounded">
-              {mode === 'add' ? 'Product created successfully!' : 'Product updated successfully!'}
+            <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 rounded-lg flex items-start gap-2 text-sm">
+              <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-emerald-400 text-xs">✓</span>
+              </div>
+              <p className="flex-1">{mode === 'add' ? 'Product created successfully!' : 'Product updated successfully!'}</p>
             </div>
           )}
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="flex flex-col h-full">
             {/* Tab Navigation */}
-            <div className="border-b border-[#333333] mb-6">
+            <div className="mb-6 flex-shrink-0">
               <Tabs 
                 defaultValue="tab-0" 
                 value={`tab-${activeTab}`} 
                 onValueChange={(value) => setActiveTab(Number(value.split('-')[1]))}
               >
-                <TabsList className="flex border-b border-[#333333] bg-transparent p-0">
+                <TabsList className="flex gap-1.5 bg-[#222222] p-1 rounded-lg border border-[#333333] overflow-x-auto">
                   {tabs.map((tab, index) => (
                     <TabsTrigger
                       key={tab}
                       value={`tab-${index}`}
-                      className={`pb-2 px-4 font-medium text-sm rounded-none data-[state=active]:text-[#A47E3B] data-[state=active]:border-b-2 data-[state=active]:border-[#A47E3B] data-[state=inactive]:text-white/70 data-[state=inactive]:hover:text-white`}
+                      className="px-3 py-2 font-medium text-xs rounded-md transition-all duration-200 whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#A47E3B] data-[state=active]:to-[#C4A962] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-white/60 data-[state=inactive]:hover:text-white data-[state=inactive]:hover:bg-[#2A2A2A]"
                     >
                       {tab}
                     </TabsTrigger>
@@ -445,42 +460,43 @@ export default function EnhancedProductForm({
                 </TabsList>
 
                 {/* Tab Panels */}
-                <TabsContent value="tab-0">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <TabsContent value="tab-0" className="mt-4 flex-1">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left column - Text fields */}
                     <div className="space-y-4">
                       <div>
-                        <label htmlFor="name" className="block text-white font-medium mb-1">
-                          Product Name*
+                        <label htmlFor="name" className="block text-white font-medium mb-1.5 text-sm">
+                          Product Name <span className="text-red-400">*</span>
                         </label>
                         <input
                           type="text"
                           id="name"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white focus:border-[#A47E3B] focus:outline-none"
+                          className="w-full bg-[#222222] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#A47E3B] focus:ring-1 focus:ring-[#A47E3B]/20 focus:outline-none transition-all"
                           placeholder="Enter product name"
                           required
                         />
                       </div>
                       
                       <div>
-                        <label htmlFor="price" className="block text-white font-medium mb-1">
-                          Base Price*
+                        <label htmlFor="price" className="block text-white font-medium mb-1.5 text-sm">
+                          Base Price <span className="text-red-400">*</span>
                         </label>
                         <input
                           type="text"
                           id="price"
                           value={basePrice}
                           onChange={(e) => setBasePrice(e.target.value)}
-                          className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white focus:border-[#A47E3B] focus:outline-none"
-                          placeholder="e.g. $1,250"
+                          className="w-full bg-[#222222] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#A47E3B] focus:ring-1 focus:ring-[#A47E3B]/20 focus:outline-none transition-all"
+                          placeholder="e.g., $1,250"
                           required
                         />
+                        <p className="mt-1 text-xs text-white/50">Include currency symbol and formatting</p>
                       </div>
                       
                       <div>
-                        <label htmlFor="quantity" className="block text-white font-medium mb-1">
+                        <label htmlFor="quantity" className="block text-white font-medium mb-1.5 text-sm">
                           Quantity
                         </label>
                         <input
@@ -489,19 +505,20 @@ export default function EnhancedProductForm({
                           value={quantity}
                           onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
                           min="0"
-                          className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white focus:border-[#A47E3B] focus:outline-none"
+                          className="w-full bg-[#222222] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#A47E3B] focus:ring-1 focus:ring-[#A47E3B]/20 focus:outline-none transition-all"
+                          placeholder="1"
                         />
                       </div>
                       
                       <div>
-                        <label htmlFor="category" className="block text-white font-medium mb-1">
-                          Category*
+                        <label htmlFor="category" className="block text-white font-medium mb-1.5 text-sm">
+                          Category <span className="text-red-400">*</span>
                         </label>
                         <select
                           id="category"
                           value={selectedCategory}
                           onChange={(e) => setSelectedCategory(e.target.value)}
-                          className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white focus:border-[#A47E3B] focus:outline-none"
+                          className="w-full bg-[#222222] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#A47E3B] focus:ring-1 focus:ring-[#A47E3B]/20 focus:outline-none transition-all"
                           required
                         >
                           {categories.length > 0 ? (
@@ -515,19 +532,19 @@ export default function EnhancedProductForm({
                           )}
                         </select>
                         <div className="text-xs text-white/50 mt-1">
-                          {`Selected category ID: ${selectedCategory}`}
+                          Selected category ID: {selectedCategory}
                         </div>
                       </div>
                       
                       <div>
-                        <label htmlFor="description" className="block text-white font-medium mb-1">
-                          Description*
+                        <label htmlFor="description" className="block text-white font-medium mb-1.5 text-sm">
+                          Description <span className="text-red-400">*</span>
                         </label>
                         <textarea
                           id="description"
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
-                          className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white focus:border-[#A47E3B] focus:outline-none h-32"
+                          className="w-full bg-[#222222] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#A47E3B] focus:ring-1 focus:ring-[#A47E3B]/20 focus:outline-none transition-all h-28 resize-none"
                           placeholder="Enter product description"
                           required
                         ></textarea>
@@ -536,17 +553,17 @@ export default function EnhancedProductForm({
                     
                     {/* Right column - Images */}
                     <div>
-                      <div className="flex justify-between items-center mb-4">
-                        <label className="block text-white font-medium">
-                          Product Images (max 10)
+                      <div className="flex justify-between items-center mb-3">
+                        <label className="block text-white font-medium text-sm">
+                          Product Images <span className="text-white/60 text-xs">(max 10)</span>
                         </label>
                         {images.length < 10 && (
                           <button
                             type="button"
                             onClick={() => setIsAddingImage(true)}
-                            className="text-[#A47E3B] hover:text-[#8a6a31] flex items-center text-sm"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-[#A47E3B] text-white text-xs rounded-lg hover:bg-[#8a6a31] transition-all"
                           >
-                            <Plus size={16} className="mr-1" />
+                            <Plus size={14} />
                             Add Image
                           </button>
                         )}
@@ -1111,19 +1128,19 @@ export default function EnhancedProductForm({
               </Tabs>
             </div>
             
-            {/* Submission buttons */}
-            <div className="mt-8 flex justify-end gap-3">
+            {/* Submission buttons - Fixed at bottom */}
+            <div className="mt-6 pt-4 border-t border-[#333333] flex justify-end gap-3 flex-shrink-0">
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 bg-[#333333] text-white/70 rounded hover:bg-[#444444] hover:text-white transition-colors"
+                className="px-5 py-2.5 bg-[#222222] text-white/80 rounded-lg hover:bg-[#2A2A2A] hover:text-white transition-all border border-[#333333] font-medium text-sm"
                 disabled={isLoading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition-colors flex items-center"
+                className="px-6 py-2.5 bg-gradient-to-r from-[#A47E3B] to-[#C4A962] text-white rounded-lg hover:from-[#8a6a31] hover:to-[#A47E3B] transition-all shadow-lg shadow-[#A47E3B]/20 flex items-center gap-2 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading}
               >
                 {isLoading ? (

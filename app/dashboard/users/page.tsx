@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   BarChart, 
   Bar, 
@@ -13,6 +15,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
+import { Users as UsersIcon, UserCheck, UserX, Mail, Calendar, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface User {
   _id: string;
@@ -144,19 +147,84 @@ export default function UsersPage() {
   };
   
   return (
-    <div className="bg-[#1A1A1A] min-h-screen text-white p-6">
-      <div className="container mx-auto">
-        <h1 className="text-3xl font-bold mb-8">User Management</h1>
-        
-        {error && (
-          <div className="bg-red-900/50 text-white p-4 rounded-md mb-6">
-            {error}
-          </div>
-        )}
-        
-        {/* User Statistics Chart */}
-        <div className="bg-[#222222] rounded-lg p-6 mb-8 shadow-md">
-          <h2 className="text-xl font-bold mb-4">User Statistics</h2>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">User Management</h1>
+          <p className="text-white/60">Manage and monitor user accounts</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge className="bg-white/10 text-white border-0 text-base px-4 py-2">
+            <UsersIcon className="w-4 h-4 mr-2" />
+            {pagination.total} Total Users
+          </Badge>
+        </div>
+      </div>
+      
+      {error && (
+        <Card className="bg-red-500/10 border-red-500/20">
+          <CardContent className="py-4">
+            <p className="text-red-400">{error}</p>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-white/70">Active Users</CardTitle>
+              <div className="p-2 bg-emerald-500/20 rounded-lg">
+                <UserCheck className="w-4 h-4 text-emerald-400" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-white">{chartData[0].value}</div>
+            <p className="text-sm text-emerald-400 mt-1">Currently active</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-red-500/10 to-red-600/5 border-red-500/20">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-white/70">Blocked Users</CardTitle>
+              <div className="p-2 bg-red-500/20 rounded-lg">
+                <UserX className="w-4 h-4 text-red-400" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-white">{chartData[1].value}</div>
+            <p className="text-sm text-red-400 mt-1">Account suspended</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-white/70">Total Users</CardTitle>
+              <div className="p-2 bg-blue-500/20 rounded-lg">
+                <UsersIcon className="w-4 h-4 text-blue-400" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-white">{pagination.total}</div>
+            <p className="text-sm text-blue-400 mt-1">All registered</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* User Statistics Chart */}
+      <Card className="bg-[#1A1A1A] border-[#333333]">
+        <CardHeader>
+          <CardTitle className="text-white">User Statistics</CardTitle>
+          <CardDescription className="text-white/60">Distribution of user statuses</CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
@@ -164,17 +232,17 @@ export default function UsersPage() {
                 margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="name" tick={{ fill: '#fff' }} />
-                <YAxis tick={{ fill: '#fff' }} />
+                <XAxis dataKey="name" tick={{ fill: '#888' }} />
+                <YAxis tick={{ fill: '#888' }} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#333', 
-                    border: 'none', 
-                    borderRadius: '4px',
+                    backgroundColor: '#222', 
+                    border: '1px solid #333', 
+                    borderRadius: '8px',
                     color: '#fff'
                   }} 
                 />
-                <Bar dataKey="value">
+                <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
@@ -182,133 +250,127 @@ export default function UsersPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex justify-center mt-4 space-x-8">
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-[#4CAF50] rounded-full mr-2"></div>
-              <span>Active Users: {chartData[0].value}</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-[#F44336] rounded-full mr-2"></div>
-              <span>Blocked Users: {chartData[1].value}</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 bg-[#AE876D] rounded-full mr-2"></div>
-              <span>Total Users: {pagination.total}</span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Users Table */}
-        <div className="bg-[#222222] rounded-lg overflow-hidden shadow-md">
-          <div className="p-6 border-b border-[#333333]">
-            <h2 className="text-xl font-bold">All Users</h2>
-          </div>
-          
+        </CardContent>
+      </Card>
+      
+      {/* Users List */}
+      <Card className="bg-[#1A1A1A] border-[#333333]">
+        <CardHeader>
+          <CardTitle className="text-white">All Users</CardTitle>
+          <CardDescription className="text-white/60">
+            Manage user accounts and permissions
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           {loading ? (
-            <div className="flex justify-center items-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            <div className="flex justify-center items-center py-12">
+              <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : users.length === 0 ? (
-            <div className="p-8 text-center text-gray-400">
-              No users found
+            <div className="text-center py-12">
+              <UsersIcon className="w-16 h-16 mx-auto mb-4 text-white/20" />
+              <p className="text-white/50">No users found</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-[#333333]">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Username
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Joined
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#333333]">
-                  {users.map((user) => (
-                    <tr key={user._id} className="hover:bg-[#2A2A2A]">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {user.username}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {user.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {formatDate(user.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.isBlocked ? 'bg-red-900/20 text-red-400' : 'bg-green-900/20 text-green-400'
-                        }`}>
-                          {user.isBlocked ? 'Blocked' : 'Active'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+            <div className="space-y-3">
+              {users.map((user) => (
+                <Card key={user._id} className="bg-[#222222] border-[#333333] hover:border-white/10 transition-all duration-200">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      {/* User Info */}
+                      <div className="flex items-start gap-4 flex-1">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                          {user.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+                            {user.username}
+                            {!user.isBlocked && (
+                              <Shield className="w-4 h-4 text-emerald-400" />
+                            )}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-3 mt-1">
+                            <div className="flex items-center text-sm text-white/60">
+                              <Mail className="w-3 h-3 mr-1" />
+                              {user.email}
+                            </div>
+                            <div className="flex items-center text-sm text-white/60">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              Joined {formatDate(user.createdAt)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Status and Actions */}
+                      <div className="flex items-center gap-3">
+                        <Badge className={`${
+                          user.isBlocked 
+                            ? 'bg-red-500/20 text-red-300 border-red-500/30' 
+                            : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                        } border`}>
+                          {user.isBlocked ? (
+                            <><UserX className="w-3 h-3 mr-1" /> Blocked</>
+                          ) : (
+                            <><UserCheck className="w-3 h-3 mr-1" /> Active</>
+                          )}
+                        </Badge>
                         <button
                           onClick={() => toggleUserStatus(user._id)}
-                          className={`px-3 py-1 rounded text-xs font-medium ${
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                             user.isBlocked 
-                              ? 'bg-green-900/20 text-green-400 hover:bg-green-900/30' 
-                              : 'bg-red-900/20 text-red-400 hover:bg-red-900/30'
+                              ? 'bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-white' 
+                              : 'bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white'
                           }`}
                         >
-                          {user.isBlocked ? 'Unblock' : 'Block'}
+                          {user.isBlocked ? 'Unblock User' : 'Block User'}
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
           
           {/* Pagination */}
           {pagination.pages > 1 && (
-            <div className="px-6 py-4 border-t border-[#333333] flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">
-                  Showing {(pagination.page - 1) * pagination.limit + 1}-
-                  {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}
-                </p>
-              </div>
-              <div className="flex space-x-2">
+            <div className="mt-6 pt-6 border-t border-[#333333] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-white/60">
+                Showing <span className="text-white font-medium">{(pagination.page - 1) * pagination.limit + 1}</span>-
+                <span className="text-white font-medium">{Math.min(pagination.page * pagination.limit, pagination.total)}</span> of{' '}
+                <span className="text-white font-medium">{pagination.total}</span> users
+              </p>
+              <div className="flex gap-2">
                 <button
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page === 1}
-                  className={`px-3 py-1 rounded text-sm ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                     pagination.page === 1
-                      ? 'bg-[#333333] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#333333] text-white hover:bg-[#444444]'
+                      ? 'bg-[#222222] text-white/30 cursor-not-allowed'
+                      : 'bg-[#222222] text-white hover:bg-[#2A2A2A]'
                   }`}
                 >
+                  <ChevronLeft className="w-4 h-4" />
                   Previous
                 </button>
                 <button
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page === pagination.pages}
-                  className={`px-3 py-1 rounded text-sm ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                     pagination.page === pagination.pages
-                      ? 'bg-[#333333] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#333333] text-white hover:bg-[#444444]'
+                      ? 'bg-[#222222] text-white/30 cursor-not-allowed'
+                      : 'bg-[#222222] text-white hover:bg-[#2A2A2A]'
                   }`}
                 >
                   Next
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 } 

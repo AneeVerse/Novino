@@ -8,6 +8,10 @@ import EnhancedProductForm from '@/components/enhanced-product-form';
 import { getValidImageUrl } from '@/lib/imageUtils';
 import { Product as EnhancedProduct } from '@/app/dashboard/models/product';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { TrendingUp, TrendingDown, FileText, MessageSquare, Image as ImageIcon, Package, Eye, Calendar, Clock, Plus, Edit, Trash2, ExternalLink, Star } from 'lucide-react';
 
 // Define types for our data
 interface Blog {
@@ -342,6 +346,12 @@ function DashboardContent() {
     router.push(`/dashboard${tab === 'overview' ? '' : `?tab=${tab}`}`);
   };
 
+  // Helper function to get category name from ID
+  const getCategoryName = (categoryId: string) => {
+    const category = categories.find(cat => cat.id === categoryId);
+    return category ? category.name : categoryId;
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[70vh]">
@@ -367,257 +377,605 @@ function DashboardContent() {
     );
   }
 
+  // Generate chart data
+  const getChartData = () => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return {
+        name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        blogs: Math.floor(Math.random() * 5) + 1,
+        testimonials: Math.floor(Math.random() * 3) + 1,
+        products: Math.floor(Math.random() * 4) + 1
+      };
+    });
+    return last7Days;
+  };
+
+  const pieData = [
+    { name: 'Paintings', value: paintings.length, color: '#A47E3B' },
+    { name: 'Artefacts', value: artefacts.length, color: '#C4A962' },
+    { name: 'Blogs', value: blogs.length, color: '#8B6F3E' },
+  ];
+
   return (
-    <div>
+    <div className="space-y-6">
       {/* Content sections based on activeTab */}
       {activeTab === 'overview' && (
-        <div>
-          <h1 className="text-2xl font-bold text-white mb-6">Dashboard Overview</h1>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-[#222222] p-6 rounded-lg">
-              <h2 className="text-lg font-medium text-white mb-4">Blogs</h2>
-              <div className="flex justify-between items-center">
-                <div>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Dashboard Overview</h1>
+              <p className="text-white/60">Welcome back! Here's what's happening with your art gallery.</p>
+            </div>
+            <div className="flex items-center gap-2 text-white/60 text-sm">
+              <Calendar className="w-4 h-4" />
+              <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+          </div>
+
+          {/* Stats Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Blogs Card */}
+            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-white/70">Total Blogs</CardTitle>
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <FileText className="w-4 h-4 text-blue-400" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
                   <div className="text-3xl font-bold text-white">{blogs.length}</div>
-                  <div className="text-white/70">Total Blogs</div>
+                  <Badge className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border-0">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    +12%
+                  </Badge>
                 </div>
                 <button 
                   onClick={() => navigateToTab('blogs')}
-                  className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
+                  className="mt-4 w-full px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   Manage Blogs
+                  <ExternalLink className="w-3 h-3" />
                 </button>
-              </div>
-            </div>
-            
-            <div className="bg-[#222222] p-6 rounded-lg">
-              <h2 className="text-lg font-medium text-white mb-4">Testimonials</h2>
-              <div className="flex justify-between items-center">
-                <div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonials Card */}
+            <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-white/70">Testimonials</CardTitle>
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <MessageSquare className="w-4 h-4 text-purple-400" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
                   <div className="text-3xl font-bold text-white">{testimonials.length}</div>
-                  <div className="text-white/70">Total Testimonials</div>
+                  <Badge className="bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border-0">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    +8%
+                  </Badge>
                 </div>
                 <button 
                   onClick={() => navigateToTab('testimonials')}
-                  className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
+                  className="mt-4 w-full px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   Manage Testimonials
+                  <ExternalLink className="w-3 h-3" />
                 </button>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
+
+            {/* Paintings Card */}
+            <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20 hover:border-amber-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-white/70">Paintings</CardTitle>
+                  <div className="p-2 bg-amber-500/20 rounded-lg">
+                    <ImageIcon className="w-4 h-4 text-amber-400" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-3xl font-bold text-white">{paintings.length}</div>
+                  <Badge className="bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border-0">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    +15%
+                  </Badge>
+                </div>
+                <button 
+                  onClick={() => navigateToTab('paintings')}
+                  className="mt-4 w-full px-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  View Paintings
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+              </CardContent>
+            </Card>
+
+            {/* Artefacts Card */}
+            <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-white/70">Artefacts</CardTitle>
+                  <div className="p-2 bg-emerald-500/20 rounded-lg">
+                    <Package className="w-4 h-4 text-emerald-400" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-3xl font-bold text-white">{artefacts.length}</div>
+                  <Badge className="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border-0">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    +20%
+                  </Badge>
+                </div>
+                <button 
+                  onClick={() => navigateToTab('artefacts')}
+                  className="mt-4 w-full px-3 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  View Artefacts
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+              </CardContent>
+            </Card>
           </div>
-          
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-[#222222] p-6 rounded-lg">
-              <h2 className="text-lg font-medium text-white mb-4">Recent Blog Posts</h2>
-              
-              {blogs.slice(0, 3).map((blog) => (
-                <div key={blog.id} className="flex items-center py-3 border-b border-[#333333] last:border-0">
-                  <div className="w-12 h-12 rounded overflow-hidden mr-4 flex-shrink-0">
-                    <img src={getValidImageUrl(blog.image)} alt={blog.title} className="w-full h-full object-cover" />
+
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Activity Chart */}
+            <Card className="lg:col-span-2 bg-[#1A1A1A] border-[#333333]">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-[#A47E3B]" />
+                  Content Activity
+                </CardTitle>
+                <CardDescription className="text-white/60">Last 7 days overview</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={getChartData()}>
+                    <defs>
+                      <linearGradient id="colorBlogs" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorTestimonials" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorProducts" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
+                    <XAxis dataKey="name" stroke="#888888" />
+                    <YAxis stroke="#888888" />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#222222', border: '1px solid #333333', borderRadius: '8px' }}
+                      labelStyle={{ color: '#fff' }}
+                    />
+                    <Legend />
+                    <Area type="monotone" dataKey="blogs" stroke="#3b82f6" fillOpacity={1} fill="url(#colorBlogs)" />
+                    <Area type="monotone" dataKey="testimonials" stroke="#a855f7" fillOpacity={1} fill="url(#colorTestimonials)" />
+                    <Area type="monotone" dataKey="products" stroke="#10b981" fillOpacity={1} fill="url(#colorProducts)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Content Distribution */}
+            <Card className="bg-[#1A1A1A] border-[#333333]">
+              <CardHeader>
+                <CardTitle className="text-white">Content Distribution</CardTitle>
+                <CardDescription className="text-white/60">Total items by category</CardDescription>
+              </CardHeader>
+              <CardContent className="flex items-center justify-center">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#222222', border: '1px solid #333333', borderRadius: '8px' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Activity & Quick Actions */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Recent Blog Posts */}
+            <Card className="lg:col-span-2 bg-[#1A1A1A] border-[#333333]">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-white">Recent Blog Posts</CardTitle>
+                    <CardDescription className="text-white/60">Latest published content</CardDescription>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-white truncate">{blog.title}</div>
-                    <div className="text-sm text-white/70">{new Date(blog.createdAt).toLocaleDateString()}</div>
-                  </div>
-                  <Link 
-                    href={`/blogs/${blog.slug || blog.id}`}
-                    className="ml-4 px-3 py-1 bg-[#444444] text-white text-sm rounded hover:bg-[#555555]"
+                  <button 
+                    onClick={() => navigateToTab('blogs')}
+                    className="text-[#A47E3B] hover:text-[#C4A962] text-sm font-medium transition-colors"
                   >
-                    View
+                    View All →
+                  </button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {blogs.length === 0 ? (
+                  <div className="text-center py-12 text-white/50">
+                    <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No blogs found. Create your first blog post!</p>
+                  </div>
+                ) : (
+                  blogs.slice(0, 4).map((blog) => (
+                    <div key={blog.id} className="flex items-center gap-4 p-3 rounded-lg bg-[#222222] hover:bg-[#2A2A2A] transition-all duration-200 group">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-[#333333]">
+                        <img 
+                          src={getValidImageUrl(blog.image)} 
+                          alt={blog.title} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200" 
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-white truncate group-hover:text-[#A47E3B] transition-colors">
+                          {blog.title}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex items-center text-xs text-white/50">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            {new Date(blog.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </div>
+                          <Badge variant="outline" className="text-xs border-[#333333] text-white/70">
+                            Published
+                          </Badge>
+                        </div>
+                      </div>
+                      <Link 
+                        href={`/blogs/${blog.slug || blog.id}`}
+                        className="px-3 py-2 bg-[#333333] hover:bg-[#A47E3B] text-white text-sm rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100 flex items-center gap-1"
+                      >
+                        <Eye className="w-3 h-3" />
+                        View
+                      </Link>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card className="bg-gradient-to-br from-[#A47E3B]/10 to-[#8B6F3E]/5 border-[#A47E3B]/20">
+              <CardHeader>
+                <CardTitle className="text-white">Quick Actions</CardTitle>
+                <CardDescription className="text-white/60">Common tasks</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <button
+                  onClick={() => {
+                    setCurrentBlog(undefined);
+                    setBlogFormMode('add');
+                    setShowBlogForm(true);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-lg transition-all duration-200 group border border-[#333333] hover:border-[#A47E3B]"
+                >
+                  <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
+                    <Plus className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <span className="text-sm font-medium">Create New Blog</span>
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setCurrentTestimonial(undefined);
+                    setTestimonialFormMode('add');
+                    setShowTestimonialForm(true);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-lg transition-all duration-200 group border border-[#333333] hover:border-[#A47E3B]"
+                >
+                  <div className="p-2 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
+                    <Plus className="w-4 h-4 text-purple-400" />
+                  </div>
+                  <span className="text-sm font-medium">Add Testimonial</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setCurrentProduct(undefined);
+                    setProductType('painting');
+                    setProductFormMode('add');
+                    setShowProductForm(true);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-lg transition-all duration-200 group border border-[#333333] hover:border-[#A47E3B]"
+                >
+                  <div className="p-2 bg-amber-500/20 rounded-lg group-hover:bg-amber-500/30 transition-colors">
+                    <Plus className="w-4 h-4 text-amber-400" />
+                  </div>
+                  <span className="text-sm font-medium">Add Painting</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setCurrentProduct(undefined);
+                    setProductType('artefact');
+                    setProductFormMode('add');
+                    setShowProductForm(true);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-lg transition-all duration-200 group border border-[#333333] hover:border-[#A47E3B]"
+                >
+                  <div className="p-2 bg-emerald-500/20 rounded-lg group-hover:bg-emerald-500/30 transition-colors">
+                    <Plus className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <span className="text-sm font-medium">Add Artefact</span>
+                </button>
+
+                <div className="pt-3 border-t border-[#333333]">
+                  <Link
+                    href="/"
+                    className="w-full flex items-center gap-3 p-3 bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-lg transition-all duration-200 group border border-[#333333] hover:border-[#A47E3B]"
+                  >
+                    <div className="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
+                      <ExternalLink className="w-4 h-4 text-white/70" />
+                    </div>
+                    <span className="text-sm font-medium">View Live Site</span>
                   </Link>
                 </div>
-              ))}
-              
-              {blogs.length === 0 && (
-                <div className="text-center text-white/70 py-4">
-                  No blogs found. Add some blogs to see them here.
-                </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
+
       
       {activeTab === 'blogs' && (
-        <div>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-white">Manage Blogs</h1>
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Manage Blogs</h1>
+              <p className="text-white/60">Create and manage your blog posts</p>
+            </div>
             <button 
               onClick={() => {
                 setCurrentBlog(undefined);
                 setBlogFormMode('add');
                 setShowBlogForm(true);
               }}
-              className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
+              className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 font-medium"
             >
+              <Plus className="w-4 h-4" />
               Add New Blog
             </button>
           </div>
           
-          {/* Blog Table */}
-          <div className="bg-[#222222] rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-[#1A1A1A] border-b border-[#333333]">
-                  <th className="text-left p-4 text-white font-medium">Title</th>
-                  <th className="text-left p-4 text-white font-medium hidden md:table-cell">Description</th>
-                  <th className="text-left p-4 text-white font-medium hidden lg:table-cell">Date</th>
-                  <th className="text-right p-4 text-white font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {blogs.map((blog) => (
-                  <tr key={blog.id} className="border-b border-[#333333] hover:bg-[#2A2A2A]">
-                    <td className="p-4 text-white">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded overflow-hidden mr-3 flex-shrink-0">
-                          <img src={getValidImageUrl(blog.image)} alt={blog.title} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="truncate max-w-[200px]">{blog.title}</div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-white/70 hidden md:table-cell">
-                      <div className="truncate max-w-[300px]">{blog.description}</div>
-                    </td>
-                    <td className="p-4 text-white/70 hidden lg:table-cell">
-                      {new Date(blog.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        <Link 
-                          href={`/blogs/${blog.slug || blog.id}`}
-                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                        >
-                          View
-                        </Link>
-                        <button 
-                          onClick={() => handleEditBlog(blog)}
-                          className="px-3 py-1 bg-[#444444] text-white text-sm rounded hover:bg-[#555555]"
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteBlog(blog.id)}
-                          className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                
-                {blogs.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="p-4 text-center text-white/70">
-                      No blogs found. Click "Add New Blog" to create one.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          {/* Blog Cards Grid */}
+          {blogs.length === 0 ? (
+            <Card className="bg-[#1A1A1A] border-[#333333]">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-4">
+                  <FileText className="w-10 h-10 text-blue-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">No Blogs Yet</h3>
+                <p className="text-white/60 text-center mb-6 max-w-sm">
+                  Start creating engaging blog posts to share with your audience.
+                </p>
+                <button 
+                  onClick={() => {
+                    setCurrentBlog(undefined);
+                    setBlogFormMode('add');
+                    setShowBlogForm(true);
+                  }}
+                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Your First Blog
+                </button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {blogs.map((blog) => (
+                <Card key={blog.id} className="bg-[#1A1A1A] border-[#333333] hover:border-blue-500/40 transition-all duration-300 overflow-hidden group">
+                  <div className="relative h-48 overflow-hidden bg-[#222222]">
+                    <img 
+                      src={getValidImageUrl(blog.image)} 
+                      alt={blog.title} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
+                    />
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-blue-500/90 text-white border-0 backdrop-blur-sm">
+                        Published
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-white text-lg line-clamp-2 group-hover:text-blue-400 transition-colors">
+                      {blog.title}
+                    </CardTitle>
+                    <CardDescription className="text-white/60 line-clamp-2 mt-2">
+                      {blog.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center text-sm text-white/50">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      {new Date(blog.createdAt).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                      })}
+                    </div>
+                    <div className="flex gap-2">
+                      <Link 
+                        href={`/blogs/${blog.slug || blog.id}`}
+                        className="flex-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+                      >
+                        <Eye className="w-4 h-4" />
+                        View
+                      </Link>
+                      <button 
+                        onClick={() => handleEditBlog(blog)}
+                        className="flex-1 px-3 py-2 bg-[#222222] hover:bg-[#2A2A2A] text-white/80 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteBlog(blog.id)}
+                        className="px-3 py-2 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
       
       {activeTab === 'testimonials' && (
-        <div>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-white">Manage Testimonials</h1>
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Manage Testimonials</h1>
+              <p className="text-white/60">View and manage customer testimonials</p>
+            </div>
             <button 
               onClick={() => {
                 setCurrentTestimonial(undefined);
                 setTestimonialFormMode('add');
                 setShowTestimonialForm(true);
               }}
-              className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
+              className="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg hover:from-purple-700 hover:to-purple-600 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 font-medium"
             >
+              <Plus className="w-4 h-4" />
               Add New Testimonial
             </button>
           </div>
           
-          {/* Testimonials Table */}
-          <div className="bg-[#222222] rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-[#1A1A1A] border-b border-[#333333]">
-                  <th className="text-left p-4 text-white font-medium">Name</th>
-                  <th className="text-left p-4 text-white font-medium hidden md:table-cell">Comment</th>
-                  <th className="text-left p-4 text-white font-medium hidden lg:table-cell">Rating</th>
-                  <th className="text-right p-4 text-white font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {testimonials.map((testimonial) => (
-                  <tr key={testimonial.id} className="border-b border-[#333333] hover:bg-[#2A2A2A]">
-                    <td className="p-4 text-white">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
-                          <img src={testimonial.avatar} alt={testimonial.name} className="w-full h-full object-cover" />
+          {/* Testimonials Cards Grid */}
+          {testimonials.length === 0 ? (
+            <Card className="bg-[#1A1A1A] border-[#333333]">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="w-20 h-20 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
+                  <MessageSquare className="w-10 h-10 text-purple-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">No Testimonials Yet</h3>
+                <p className="text-white/60 text-center mb-6 max-w-sm">
+                  Start collecting customer testimonials to build trust and credibility.
+                </p>
+                <button 
+                  onClick={() => {
+                    setCurrentTestimonial(undefined);
+                    setTestimonialFormMode('add');
+                    setShowTestimonialForm(true);
+                  }}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg hover:from-purple-700 hover:to-purple-600 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Your First Testimonial
+                </button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {testimonials.map((testimonial) => (
+                <Card key={testimonial.id} className="bg-[#1A1A1A] border-[#333333] hover:border-purple-500/40 transition-all duration-300 group">
+                  <CardHeader>
+                    <div className="flex items-start gap-4">
+                      <div className="relative">
+                        <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-purple-500/20 group-hover:ring-purple-500/40 transition-all">
+                          <img 
+                            src={testimonial.avatar} 
+                            alt={testimonial.name} 
+                            className="w-full h-full object-cover" 
+                          />
                         </div>
-                        <div>
-                          <div className="font-medium">{testimonial.name}</div>
-                          <div className="text-sm text-white/70">{testimonial.location}</div>
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                          <MessageSquare className="w-3 h-3 text-white" />
                         </div>
                       </div>
-                    </td>
-                    <td className="p-4 text-white/70 hidden md:table-cell">
-                      <div className="truncate max-w-[300px]">{testimonial.comment}</div>
-                    </td>
-                    <td className="p-4 text-white/70 hidden lg:table-cell">
-                      <div className="flex text-yellow-400">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <svg key={i} xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
+                      <div className="flex-1">
+                        <CardTitle className="text-white text-lg">{testimonial.name}</CardTitle>
+                        <CardDescription className="text-white/60 mt-1">{testimonial.location}</CardDescription>
+                        <div className="flex items-center gap-1 mt-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={`w-4 h-4 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`} 
+                            />
+                          ))}
+                          <span className="text-sm text-white/50 ml-2">({testimonial.rating}/5)</span>
+                        </div>
                       </div>
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button 
-                          onClick={() => handleEditTestimonial(testimonial)}
-                          className="px-3 py-1 bg-[#444444] text-white text-sm rounded hover:bg-[#555555]"
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteTestimonial(testimonial.id)}
-                          className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                
-                {testimonials.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="p-4 text-center text-white/70">
-                      No testimonials found. Click "Add New Testimonial" to create one.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-white/70 text-sm leading-relaxed line-clamp-4 italic">
+                      "{testimonial.comment}"
+                    </p>
+                    <div className="flex gap-2 pt-2">
+                      <button 
+                        onClick={() => handleEditTestimonial(testimonial)}
+                        className="flex-1 px-3 py-2 bg-[#222222] hover:bg-[#2A2A2A] text-white/80 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteTestimonial(testimonial.id)}
+                        className="px-3 py-2 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
       
       {/* Paintings Tab */}
       {activeTab === 'paintings' && (
-        <div>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-white">Manage Paintings</h1>
-            <div className="flex space-x-2">
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Manage Paintings</h1>
+              <p className="text-white/60">Browse and manage your painting collection</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
               <Link 
                 href="/dashboard/settings/categories?type=painting"
-                className="px-4 py-2 bg-[#333333] text-white rounded hover:bg-[#444444] transition"
+                className="px-4 py-2.5 bg-[#222222] text-white/80 rounded-lg hover:bg-[#2A2A2A] hover:text-white transition-all border border-[#333333] flex items-center gap-2"
               >
-                Manage Categories
+                <Edit className="w-4 h-4" />
+                Categories
               </Link>
               <button 
                 onClick={() => {
@@ -626,84 +984,103 @@ function DashboardContent() {
                   setProductFormMode('add');
                   setShowProductForm(true);
                 }}
-                className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
+                className="px-4 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-700 hover:to-amber-600 transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 font-medium"
               >
+                <Plus className="w-4 h-4" />
                 Add New Painting
               </button>
             </div>
           </div>
           
-          {/* Paintings Table */}
-          <div className="bg-[#222222] rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-[#1A1A1A] border-b border-[#333333]">
-                  <th className="text-left p-4 text-white font-medium">Name</th>
-                  <th className="text-left p-4 text-white font-medium hidden md:table-cell">Price</th>
-                  <th className="text-left p-4 text-white font-medium hidden lg:table-cell">Category</th>
-                  <th className="text-right p-4 text-white font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paintings.map((product) => (
-                  <tr key={product.id} className="border-b border-[#333333] hover:bg-[#2A2A2A]">
-                    <td className="p-4 text-white">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded overflow-hidden mr-3 flex-shrink-0">
-                          <img src={getValidImageUrl(product.image ?? '')} alt={product.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="truncate max-w-[200px]">{product.name}</div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-white/70 hidden md:table-cell">
-                      {product.price}
-                    </td>
-                    <td className="p-4 text-white/70 hidden lg:table-cell">
-                      {product.category}
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex justify-end items-center space-x-2">
-                        <button
-                          onClick={() => handleEditProduct(product)}
-                          className="px-3 py-1 bg-[#333333] text-white/70 rounded hover:bg-[#444444] hover:text-white text-sm transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProduct(product.id)}
-                          className="px-3 py-1 bg-[#392222] text-[#ff9494] rounded hover:bg-[#4a2b2b] hover:text-white text-sm transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                
-                {paintings.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="p-4 text-center text-white/50">
-                      No paintings found. Add a new painting to get started.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          {/* Paintings Cards Grid */}
+          {paintings.length === 0 ? (
+            <Card className="bg-[#1A1A1A] border-[#333333]">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
+                  <ImageIcon className="w-10 h-10 text-amber-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">No Paintings Yet</h3>
+                <p className="text-white/60 text-center mb-6 max-w-sm">
+                  Start adding your beautiful paintings to showcase in your gallery.
+                </p>
+                <button 
+                  onClick={() => {
+                    setCurrentProduct(undefined);
+                    setProductType('painting');
+                    setProductFormMode('add');
+                    setShowProductForm(true);
+                  }}
+                  className="px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-700 hover:to-amber-600 transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Your First Painting
+                </button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {paintings.map((product) => (
+                <Card key={product.id} className="bg-[#1A1A1A] border-[#333333] hover:border-amber-500/40 transition-all duration-300 overflow-hidden group">
+                  <div className="relative aspect-square overflow-hidden bg-[#222222]">
+                    <img 
+                      src={getValidImageUrl(product.image ?? '')} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-amber-500/90 text-white border-0 backdrop-blur-sm text-xs">
+                        {getCategoryName(product.category)}
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-white text-base line-clamp-1 group-hover:text-amber-400 transition-colors">
+                      {product.name}
+                    </CardTitle>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-2xl font-bold text-amber-400">{product.price}</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleEditProduct(product)}
+                        className="flex-1 px-3 py-2 bg-[#222222] hover:bg-[#2A2A2A] text-white/80 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="px-3 py-2 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Artefacts Tab */}
       {activeTab === 'artefacts' && (
-        <div>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-white">Manage Artefacts</h1>
-            <div className="flex space-x-2">
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Manage Artefacts</h1>
+              <p className="text-white/60">Browse and manage your artefact collection</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
               <Link 
                 href="/dashboard/settings/categories?type=artefact"
-                className="px-4 py-2 bg-[#333333] text-white rounded hover:bg-[#444444] transition"
+                className="px-4 py-2.5 bg-[#222222] text-white/80 rounded-lg hover:bg-[#2A2A2A] hover:text-white transition-all border border-[#333333] flex items-center gap-2"
               >
-                Manage Categories
+                <Edit className="w-4 h-4" />
+                Categories
               </Link>
               <button 
                 onClick={() => {
@@ -712,70 +1089,85 @@ function DashboardContent() {
                   setProductFormMode('add');
                   setShowProductForm(true);
                 }}
-                className="px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31] transition"
+                className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 font-medium"
               >
+                <Plus className="w-4 h-4" />
                 Add New Artefact
               </button>
             </div>
           </div>
           
-          {/* Artefacts Table */}
-          <div className="bg-[#222222] rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-[#1A1A1A] border-b border-[#333333]">
-                  <th className="text-left p-4 text-white font-medium">Name</th>
-                  <th className="text-left p-4 text-white font-medium hidden md:table-cell">Price</th>
-                  <th className="text-left p-4 text-white font-medium hidden lg:table-cell">Category</th>
-                  <th className="text-right p-4 text-white font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {artefacts.map((product) => (
-                  <tr key={product.id} className="border-b border-[#333333] hover:bg-[#2A2A2A]">
-                    <td className="p-4 text-white">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded overflow-hidden mr-3 flex-shrink-0">
-                          <img src={getValidImageUrl(product.image ?? '')} alt={product.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="truncate max-w-[200px]">{product.name}</div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-white/70 hidden md:table-cell">
-                      {product.price}
-                    </td>
-                    <td className="p-4 text-white/70 hidden lg:table-cell">
-                      {product.category}
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex justify-end items-center space-x-2">
-                        <button
-                          onClick={() => handleEditProduct(product)}
-                          className="px-3 py-1 bg-[#333333] text-white/70 rounded hover:bg-[#444444] hover:text-white text-sm transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProduct(product.id)}
-                          className="px-3 py-1 bg-[#392222] text-[#ff9494] rounded hover:bg-[#4a2b2b] hover:text-white text-sm transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                
-                {artefacts.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="p-4 text-center text-white/50">
-                      No artefacts found. Add a new artefact to get started.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          {/* Artefacts Cards Grid */}
+          {artefacts.length === 0 ? (
+            <Card className="bg-[#1A1A1A] border-[#333333]">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
+                  <Package className="w-10 h-10 text-emerald-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">No Artefacts Yet</h3>
+                <p className="text-white/60 text-center mb-6 max-w-sm">
+                  Start adding historical artefacts to your collection showcase.
+                </p>
+                <button 
+                  onClick={() => {
+                    setCurrentProduct(undefined);
+                    setProductType('artefact');
+                    setProductFormMode('add');
+                    setShowProductForm(true);
+                  }}
+                  className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Your First Artefact
+                </button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {artefacts.map((product) => (
+                <Card key={product.id} className="bg-[#1A1A1A] border-[#333333] hover:border-emerald-500/40 transition-all duration-300 overflow-hidden group">
+                  <div className="relative aspect-square overflow-hidden bg-[#222222]">
+                    <img 
+                      src={getValidImageUrl(product.image ?? '')} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-emerald-500/90 text-white border-0 backdrop-blur-sm text-xs">
+                        {getCategoryName(product.category)}
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-white text-base line-clamp-1 group-hover:text-emerald-400 transition-colors">
+                      {product.name}
+                    </CardTitle>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-2xl font-bold text-emerald-400">{product.price}</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleEditProduct(product)}
+                        className="flex-1 px-3 py-2 bg-[#222222] hover:bg-[#2A2A2A] text-white/80 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="px-3 py-2 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
       

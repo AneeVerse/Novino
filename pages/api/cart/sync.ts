@@ -11,8 +11,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Get token from cookies
-    const token = req.cookies.token;
+    // Get token from cookies using getTokenFromReq
+    const { getTokenFromReq } = await import('@/lib/auth');
+    const token = getTokenFromReq(req);
     if (!token) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
@@ -41,20 +42,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const now = new Date();
     
     for (const guestItem of guestCartItems) {
-      // Find if item already exists in server cart
-      const existingItemIndex = mergedItems.findIndex(item => 
-        item.id === guestItem.id && 
-        ((!item.variant && !guestItem.variant) || item.variant === guestItem.variant)
-      );
+      // Normalize IDs for comparison
+      const guestItemId = String(guestItem.id).trim();
+      
+      // Find if item already exists in server cart (check ID, name, and variant)
+      const existingItemIndex = mergedItems.findIndex(item => {
+        const itemId = String(item.id).trim();
+        const idMatch = itemId === guestItemId;
+        const nameMatch = item.name === guestItem.name;
+        const variantMatch = (!item.variant && !guestItem.variant) || item.variant === guestItem.variant;
+        
+        // Only merge if ALL three match: ID, name, and variant
+        return idMatch && nameMatch && variantMatch;
+      });
       
       if (existingItemIndex !== -1) {
-        // Update quantity if item exists
-        mergedItems[existingItemIndex].quantity += guestItem.quantity;
+        // Update quantity if item exists (same product, same variant)
+        mergedItems[existingItemIndex].quantity += guestItem.quantity || 1;
       } else {
-        // Add new item with timestamp
+        // Add new item with timestamp (different product)
         mergedItems.push({
           ...guestItem,
-          addedAt: now
+          id: guestItem.id, // Preserve original ID
+          addedAt: guestItem.addedAt || now
         });
       }
     }
