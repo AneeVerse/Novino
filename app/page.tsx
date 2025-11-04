@@ -20,16 +20,20 @@ import Preloader from "@/components/ui/preloader"
 // Hero carousel images
 const heroImages = [
   {
-    src: "/images/hero-section/bg01.png",
+    src: "/images/hero-section/AKV_2111 (Custom).jpg",
     alt: "Novino hero image 1"
   },
   {
-    src: "/images/hero-section/bg02.png", 
+    src: "/images/hero-section/AKV_2113 (Custom).jpg", 
     alt: "Novino hero image 2"
   },
   {
-    src: "/images/hero-section/bg03.png",
+    src: "/images/hero-section/AKV_2112 (Custom).jpg",
     alt: "Novino hero image 3"
+  },
+  {
+    src: "/images/hero-section/HERO.jpg",
+    alt: "Novino hero image 4"
   }
 ];
 
@@ -261,7 +265,7 @@ export default function Home() {
   return (
     <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
       {/* Hero Section - Full width that extends to the top */}
-      <div className="relative w-full h-[600px] md:h-[730px]">
+      <div className="relative w-full h-[600px] md:h-[740px]">
         {/* Embla Carousel */}
         <div className="overflow-hidden w-full h-full" ref={emblaRef}>
           <div className="flex h-full">
@@ -315,7 +319,7 @@ export default function Home() {
         {/* ELEVATE ORDINARY WALLS Section */}
         <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
           <div className="max-w-[2400px] mx-auto px-4 md:pl-8">
-            <div className="mb-8 sm:mb-16 p-6 rounded bg-[#2D2D2D]" style={{ position: 'relative', zIndex: 30 }}>
+            <div className="mb-8 sm:mb-16 p-6 rounded " style={{ position: 'relative', zIndex: 30 }}>
               <h2 className="text-white text-lg sm:text-[24px] md:text-[38px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em] mb-4 sm:mb-8 text-center font-['Roboto_Mono']">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h2>
               <p className="text-white text-xs sm:text-sm md:text-base leading-normal text-center mx-auto max-w-3xl font-['Roboto_Mono']">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
             </div>

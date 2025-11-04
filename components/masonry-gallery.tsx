@@ -18,8 +18,6 @@ import { Loader } from './blog-section';
 //   kids: [5, 8]
 // };
 
-type CategoryType = 'all' | string;
-
 interface Product {
   id: string | number;
   name?: string;
@@ -31,38 +29,8 @@ interface Product {
 }
 
 export default function MasonryGallery() {
-  const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<{[key: string]: string}>({
-    all: 'All'
-  });
   const [loading, setLoading] = useState(true);
-
-  // Fetch categories from API
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch('/api/categories');
-        if (!res.ok) throw new Error('Failed to fetch categories');
-        const data = await res.json();
-        
-        // Build category mapping
-        const catMap: {[key: string]: string} = { all: 'All' };
-        data.forEach((cat: any) => {
-          if (cat.type === 'painting') {
-            const id = cat._id || cat.id;
-            if (id) catMap[id] = cat.name;
-          }
-        });
-        
-        setCategories(catMap);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-      }
-    };
-    
-    fetchCategories();
-  }, []);
   
   // Fetch products from API
   useEffect(() => {
@@ -96,12 +64,6 @@ export default function MasonryGallery() {
     
     fetchProducts();
   }, []);
-  
-  // Filter products based on active category
-  const filteredProducts = products.filter(product => {
-    if (activeCategory === 'all') return true;
-    return product.category === activeCategory || product.categoryId === activeCategory;
-  });
 
   // Configure for more columns to match Figma design
   const breakpointColumnsObj = {
@@ -113,79 +75,37 @@ export default function MasonryGallery() {
   };
 
   return (
-    // Add border around the entire gallery
-    <div className="w-full p-3 sm:p-4 relative" style={{ 
-      backgroundImage: "url('/Container (2).png')",
-      backgroundSize: "100% 100%",
-      backgroundRepeat: "no-repeat",
-      backgroundOrigin: "border-box",
-      overflow: "visible"
-    }}>
+    // Add border around the entire gallery using CSS instead of background image
+    <div
+      className="relative w-full p-6 sm:p-8 overflow-visible rounded-[28px]"
+      style={{
+        backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='28' ry='28' stroke='rgba(255,255,255,0.8)' stroke-width='3' stroke-dasharray='20%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e")`,
+      }}
+    >
       {/* Left side overlay */}
-      <div className="absolute top-[-20%] -left-[300px] w-[800px] h-[120%] pointer-events-none" style={{
-        zIndex: 20
-      }}>
-        <Image 
-          src="/Ellipse 2 (1).png"
-          alt="Left overlay effect"
-          fill
-          style={{ objectFit: 'contain', opacity: 0.8 }}
-          priority
-          className="mix-blend-screen"
-        />
+      <div
+        className="pointer-events-none absolute inset-y-[-10%] -left-[260px] w-[520px]"
+        style={{ zIndex: 20 }}
+      >
+        <div className="hidden h-full w-full rounded-[32px] bg-gradient-to-r from-white/30 via-white/5 to-transparent blur-[110px] opacity-80 sm:block" />
       </div>
 
       {/* Right side overlay */}
-      <div className="absolute top-[5%] -right-[300px] w-[800px] h-[120%] pointer-events-none" style={{
-        zIndex: 20
-      }}>
-        <Image 
-          src="/Ellipse 4.png"
-          alt="Right overlay effect"
-          fill
-          style={{ objectFit: 'contain', opacity: 0.8 }}
-          priority
-          className="mix-blend-screen"
-        />
+      <div
+        className="pointer-events-none absolute inset-y-[-10%] -right-[260px] w-[520px]"
+        style={{ zIndex: 20 }}
+      >
+        <div className="hidden h-full w-full rounded-[32px] bg-gradient-to-l from-white/25 via-white/5 to-transparent blur-[110px] opacity-80 sm:block" />
       </div>
       
-      {/* Category Filters - Adjusted main container margin for mobile */}
-      <div className="flex flex-wrap justify-center items-center gap-2 xs:gap-3 sm:gap-4 mb-8 sm:mb-12 mt-8 relative">
-        {Object.entries(categories).map(([categoryId, categoryName]) => (
-          <div key={categoryId} className="relative inline-block my-4">
-            <button 
-              className={`relative z-10 px-3 sm:px-5 py-2 font-normal text-sm font-['Roboto Mono'] transition-colors ${
-                activeCategory === categoryId ? "text-white" : "text-[#B3B3B2] hover:text-white"
-              }`}
-              onClick={() => setActiveCategory(categoryId)}
-            >
-              {categoryName}
-            </button>
-            <div className="absolute inset-0 z-0 pointer-events-none">
-              <svg width="100%" height="100%" viewBox="0 0 100 55" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                <rect 
-                  x="1" y="1" 
-                  width="98%" height="53" 
-                  rx="10" 
-                  stroke="white" 
-                  strokeOpacity="1" 
-                  strokeDasharray="16 4" 
-                  style={{ mixBlendMode: "normal" }}
-                />
-              </svg>
-            </div>
-          </div>
-        ))}
-        
-        {/* Shop Now button 1 (Desktop/Tablet) - Hidden on mobile */}
-        <div className="hidden sm:flex w-full sm:w-auto mt-4 sm:mt-0 sm:absolute right-4 sm:right-6 z-10 justify-center sm:justify-end">
-          <Link href="/paintings" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-[#AE876D]/80 transition-colors text-sm sm:text-base cursor-pointer" style={{ borderRadius: '10px' }}>
-            View all
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-2">
-              <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
-        </div>
+      {/* View all button (Desktop/Tablet) - Hidden on mobile */}
+      <div className="hidden sm:flex justify-end mb-8 sm:mb-12 mt-8 relative z-10">
+        <Link href="/paintings" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-[#AE876D]/80 transition-colors text-sm sm:text-base cursor-pointer" style={{ borderRadius: '10px' }}>
+          View all
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-2">
+            <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Link>
       </div>
 
       {/* Loading state */}
@@ -200,7 +120,7 @@ export default function MasonryGallery() {
           className="my-masonry-grid"
           columnClassName="my-masonry-grid_column"
         >
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <div key={product.id} className="overflow-hidden gallery-image-container md:mb-3">
               <Link href={`/product/${product.id}`} className="relative border-0 rounded-sm overflow-hidden block">
                 <Image
@@ -212,9 +132,6 @@ export default function MasonryGallery() {
                   className="w-full h-auto object-cover gallery-image"
                 />
                 <div className="gallery-image-overlay">
-                  <span className="inline-block bg-white/90 text-black text-xs px-2 py-1 rounded mb-1">
-                    {categories[product.categoryId || ''] || categories[product.category] || 'Painting'}
-                  </span>
                   <h3 className="text-white text-xs font-medium">
                     {product.name} {product.price && `- ${product.price}`}
                   </h3>
@@ -228,7 +145,7 @@ export default function MasonryGallery() {
       {/* Horizontal Scroll Gallery (Mobile) */}
       {!loading && (
         <div className="mobile-scroll-gallery flex overflow-x-auto space-x-3 pb-4 scrollbar-hide pl-1">
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <div key={`mobile-${product.id}`} className="overflow-hidden gallery-image-container w-52 sm:w-60 flex-shrink-0">
               <Link href={`/product/${product.id}`} className="relative border-0 rounded-sm overflow-hidden block">
                 <Image
@@ -240,9 +157,6 @@ export default function MasonryGallery() {
                   className="w-full h-auto object-cover gallery-image"
                 />
                 <div className="gallery-image-overlay">
-                  <span className="inline-block bg-white/90 text-black text-xs px-2 py-1 rounded mb-1">
-                    {categories[product.categoryId || ''] || categories[product.category] || 'Painting'}
-                  </span>
                   <h3 className="text-white text-xs font-medium">
                     {product.name} {product.price && `- ${product.price}`}
                   </h3>
