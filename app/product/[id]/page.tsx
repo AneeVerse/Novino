@@ -110,6 +110,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1)
   const [currentImage, setCurrentImage] = useState(0)
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
 
   // Next.js useParams returns string | string[] | undefined
   const rawId = params?.id
@@ -345,6 +346,20 @@ export default function ProductDetail() {
     fetchProduct()
   }, [productId, router])
 
+  // Auto-scroll through images
+  useEffect(() => {
+    if (!isAutoScrolling || !product?.images || product.images.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => {
+        const nextIndex = (prev + 1) % (product.images?.length || 1);
+        return nextIndex;
+      });
+    }, 4000); // Change image every 4 seconds
+    
+    return () => clearInterval(interval);
+  }, [isAutoScrolling, product?.images]);
+
   const increaseQuantity = () => {
     setQuantity(prev => prev + 1)
   }
@@ -424,10 +439,10 @@ export default function ProductDetail() {
 
   return (
     <div className="bg-[#2D2D2D] text-white min-h-screen">
-      <div className="w-full px-8 sm:px-12 lg:px-16 pt-24 pb-0">
+      <div className="w-full px-4 md:px-0 pt-24 pb-0">
        
         {isInvalidRoute && (
-          <div className="bg-[#3D3D3D] text-white p-4 mb-6 rounded-md mx-auto" style={{ maxWidth: "1600px" }}>
+          <div className="bg-[#3D3D3D] text-white p-4 mb-6 rounded-md mx-auto" style={{ maxWidth: "1440px" }}>
             <p className="text-center font-light">
               <span className="text-amber-400 font-medium">Featured Product</span> — The requested product was not found. Showing a featured item instead.
               <Link href="/paintings" className="ml-2 underline text-white/80 hover:text-white">
@@ -445,216 +460,233 @@ export default function ProductDetail() {
           </div>
         )}
        
-        {/* Main product display with container image */}
-        <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1600px" }}>
-          <div className="absolute inset-0 hidden sm:block" style={{ 
-            backgroundImage: 'url("/images/product/Container (4).png")',
-            backgroundSize: '100% 100%',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}></div>
-          
-          {/* Mobile-only border */}
-          <div className="absolute inset-0 sm:hidden" style={{ 
-            backgroundImage: 'url("/paint-product-all-border.png")',
-            backgroundSize: '100% 100%',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}></div>
-
-          <div className="relative z-10 pl-4 pr-8 pt-8 pb-8 md:pl-6 md:pr-12 md:pt-12 md:pb-12">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+        {/* Main product display - Clean layout without borders */}
+        <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
+          <div className="relative z-10 px-4 md:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
               {/* Left column - Product title and description */}
-              <div className="flex flex-col justify-center px-4">
-                <div className="uppercase text-xs text-white/60 mb-2">
+              <div className="lg:col-span-3 flex flex-col justify-start py-8">
+                <div className="uppercase text-xs text-white/50 mb-3 tracking-wider font-['Roboto_Mono']">
                   {categoryName}
                 </div>
-                <h1 className="text-4xl md:text-5xl font-light mb-6 tracking-wide -ml-1">
-                  {product.name?.split(' ').map(word => 
-                    <span key={word} className="capitalize">{word.toLowerCase()} </span>
-                  )}
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light mb-8 tracking-wide font-['Roboto_Mono']" style={{ lineHeight: '1.2' }}>
+                  {product.name?.toUpperCase()}
                 </h1>
                 
-                <div className="prose prose-lg prose-invert max-w-none text-white/80">
-                  <p className="whitespace-pre-line break-words text-base">{product.description}</p>
+                <div className="text-white/70 leading-relaxed text-sm sm:text-base font-['Roboto_Mono']" style={{ maxWidth: '480px' }}>
+                  <p className="whitespace-pre-line">{product.description}</p>
                 </div>
               </div>
 
-              {/* Middle column - Product Image */}
-              <div className="flex items-center justify-center">
-                <div className="relative w-full aspect-square">
-                  {/* Ellipse overlay */}
-                  <div className="absolute inset-0 -z-10 overflow-hidden" 
-                    style={{
-                      background: 'radial-gradient(circle, rgba(174, 135, 109, 0.5) 0%, rgba(174, 135, 109, 0.35) 25%, rgba(174, 135, 109, 0.2) 40%, transparent 60%)',
-                      width: '200%',
-                      height: '200%',
-                      top: '-45%',
-                      left: '-50%',
-                      opacity: 0.8,
-                      mixBlendMode: 'screen'
-                    }}>
+              {/* Right section - Product Image and Purchase Details */}
+              <div className="lg:col-span-9 grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12">
+                {/* Product Image - Fixed size with drag scroll */}
+                <div 
+                  className="md:col-span-3 flex items-start justify-center order-1 md:order-1" 
+                  data-product-image
+                  onMouseEnter={() => setIsAutoScrolling(false)}
+                  onMouseLeave={() => setIsAutoScrolling(true)}
+                >
+                  <div 
+                    className="relative w-full h-[380px] sm:h-[480px] lg:h-[560px] overflow-hidden select-none group cursor-grab active:cursor-grabbing"
+                    style={{ touchAction: 'pan-y' }}
+                    onMouseDown={(e) => {
+                      const startX = e.pageX;
+                      let hasMoved = false;
+                      
+                      const handleMouseMove = (moveEvent: MouseEvent) => {
+                        const deltaX = moveEvent.pageX - startX;
+                        
+                        // If dragged more than 50px, change image
+                        if (Math.abs(deltaX) > 50 && !hasMoved) {
+                          hasMoved = true;
+                          if (deltaX > 0) {
+                            // Dragged right - go to previous image
+                            setCurrentImage((prev) => prev === 0 ? productImages.length - 1 : prev - 1);
+                          } else {
+                            // Dragged left - go to next image
+                            setCurrentImage((prev) => (prev + 1) % productImages.length);
+                          }
+                          setIsAutoScrolling(false);
+                          setTimeout(() => setIsAutoScrolling(true), 5000);
+                        }
+                      };
+                      
+                      const handleMouseUp = () => {
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                      };
+                      
+                      document.addEventListener('mousemove', handleMouseMove);
+                      document.addEventListener('mouseup', handleMouseUp);
+                    }}
+                  >
+                    <Image
+                      src={displayedImage}
+                      alt={product.name || "Product Image"}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      priority
+                      className="pointer-events-none transition-all duration-300"
+                      draggable={false}
+                    />
                   </div>
-                  <Image
-                    src={displayedImage}
-                    alt={product.name || "Product Image"}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    priority
-                  />
                 </div>
-              </div>
 
-              {/* Right column - Price and cart actions */}
-              <div className="flex flex-col justify-center">
-                <div className="text-2xl font-light mb-4">{displayedPrice} <span className="text-xs text-white/60 ml-1">inc Tax</span></div>
-                
-                {/* Variant Options */}
-                {(frameVariants.length > 0 || colorVariants.length > 0) && (
-                  <div className="flex flex-col gap-4 mt-8">
-                    {frameVariants.length > 0 && (
-                      <div className="flex flex-col gap-2">
-                        <div className="text-xs text-white/50">FRAME</div>
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            key="basic"
-                            onClick={() => {
-                              // If a color is selected, keep it selected while removing frame
-                              if (hasSelectedColor) {
-                                // Find the current color variant
-                                const currentColor = colorVariants.find(v => v.id === selectedVariant?.id);
-                                setSelectedVariant(currentColor);
-                              } else {
-                                setSelectedVariant(null);
-                              }
-                            }}
-                            className={`px-4 py-2 text-xs border ${
-                              !hasSelectedFrame
-                                ? 'border-white text-white'
-                                : 'border-white/30 text-white/70 hover:border-white/50'
-                            }`}
-                          >
-                            Basic
-                          </button>
-                          {frameVariants.map((variant: any) => (
+                {/* Price and cart actions */}
+                <div className="md:col-span-2 flex flex-col justify-start order-2 md:order-2 py-8">
+                    {/* Variant Options */}
+                  {(frameVariants.length > 0 || colorVariants.length > 0) && (
+                    <div className="flex flex-col gap-6 mb-8">
+                      {colorVariants.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                          <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">Finish</div>
+                          <div className="flex flex-wrap gap-3">
+                            {colorVariants.map((variant: any) => (
+                              <button
+                                key={variant.id}
+                                onClick={() => setSelectedVariant(variant)}
+                                className={`w-10 h-10 rounded-full border-2 transition-all ${
+                                  selectedVariant?.id === variant.id
+                                    ? 'border-white ring-2 ring-white/30 ring-offset-2 ring-offset-[#2D2D2D]'
+                                    : 'border-white/20 hover:border-white/40'
+                                }`}
+                                style={{ 
+                                  backgroundColor: variant.colorCode || '#8B4513'
+                                }}
+                                title={variant.name}
+                              />
+                            ))}
+                          </div>
+                          {selectedVariant && colorVariants.some(v => v.id === selectedVariant.id) && (
+                            <div className="text-xs text-white/60 font-['Roboto_Mono']">
+                              {selectedVariant.name}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {frameVariants.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                          <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">Frame Type</div>
+                          <div className="flex flex-wrap gap-2">
                             <button
-                              key={variant.id}
-                              onClick={() => setSelectedVariant(variant)}
-                              className={`px-4 py-2 text-xs border ${
-                                selectedVariant?.id === variant.id
-                                  ? 'border-white text-white'
-                                  : 'border-white/30 text-white/70 hover:border-white/50'
+                              key="basic"
+                              onClick={() => {
+                                if (hasSelectedColor) {
+                                  const currentColor = colorVariants.find(v => v.id === selectedVariant?.id);
+                                  setSelectedVariant(currentColor);
+                                } else {
+                                  setSelectedVariant(null);
+                                }
+                              }}
+                              className={`px-5 py-2.5 text-xs uppercase tracking-wide border transition-all font-['Roboto_Mono'] ${
+                                !hasSelectedFrame
+                                  ? 'border-white bg-white/10 text-white'
+                                  : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white/80'
                               }`}
                             >
-                              {variant.name}
+                              Standard
                             </button>
-                          ))}
+                            {frameVariants.map((variant: any) => (
+                              <button
+                                key={variant.id}
+                                onClick={() => setSelectedVariant(variant)}
+                                className={`px-5 py-2.5 text-xs uppercase tracking-wide border transition-all font-['Roboto_Mono'] ${
+                                  selectedVariant?.id === variant.id
+                                    ? 'border-white bg-white/10 text-white'
+                                    : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white/80'
+                                }`}
+                              >
+                                {variant.name}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    
-                    {colorVariants.length > 0 && (
-                      <div className="flex flex-col gap-2">
-                        <div className="text-xs text-white/50">COLOR</div>
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            key="basic-color"
-                            onClick={() => {
-                              // If a frame is selected, keep it selected while removing color
-                              if (hasSelectedFrame) {
-                                // Find the current frame variant
-                                const currentFrame = frameVariants.find(v => v.id === selectedVariant?.id);
-                                setSelectedVariant(currentFrame);
-                              } else {
-                                setSelectedVariant(null);
-                              }
-                            }}
-                            className={`px-4 py-2 text-xs border ${
-                              !hasSelectedColor
-                                ? 'border-white text-white'
-                                : 'border-white/30 text-white/70 hover:border-white/50'
-                            }`}
-                          >
-                            Basic
-                          </button>
-                          {colorVariants.map((variant: any) => (
-                            <button
-                              key={variant.id}
-                              onClick={() => setSelectedVariant(variant)}
-                              className={`px-4 py-2 text-xs border ${
-                                selectedVariant?.id === variant.id
-                                  ? 'border-white text-white'
-                                  : 'border-white/30 text-white/70 hover:border-white/50'
-                              }`}
-                            >
-                              {variant.name}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                <div className="text-xs text-white/60 mb-4">Lead time 6-8 weeks</div>
-                
-                <div className="flex items-center gap-1">
-                  <button 
-                    onClick={decreaseQuantity}
-                    className="w-8 h-8 flex items-center justify-center border border-white/20 hover:bg-white/5 transition"
-                  >
-                    -
-                  </button>
-                  <span className="w-8 text-center">{quantity}</span>
-                  <button 
-                    onClick={increaseQuantity}
-                    className="w-8 h-8 flex items-center justify-center border border-white/20 hover:bg-white/5 transition"
-                  >
-                    +
-                  </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Price */}
+                  <div className="text-3xl font-light mb-2 font-['Roboto_Mono']">{displayedPrice}</div>
+                  <div className="text-xs text-white/40 mb-6 font-['Roboto_Mono']">Inc. Tax • Lead time 6-8 weeks</div>
                   
-                  <button 
-                    onClick={handleAddToCart}
-                    className="ml-4 flex-1 bg-neutral-800 hover:bg-neutral-700 text-white py-2.5 uppercase tracking-widest text-sm transition"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-                
-                <div className="flex items-center justify-between text-sm mt-auto pt-4 border-t border-white/10">
-                  <span className="text-white/60 text-xs">Are you a specifier?</span>
-                  <Link href="/login" className="uppercase tracking-wider text-white/70 hover:text-white transition text-xs">
-                    LOGIN TO TRADE PORTAL
-                  </Link>
+                  {/* Quantity and Add to Cart */}
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="flex items-center border border-white/20">
+                      <button 
+                        onClick={decreaseQuantity}
+                        className="w-10 h-12 flex items-center justify-center hover:bg-white/5 transition text-lg font-light"
+                        aria-label="Decrease quantity"
+                      >
+                        -
+                      </button>
+                      <span className="w-12 text-center font-['Roboto_Mono'] text-sm">{quantity}</span>
+                      <button 
+                        onClick={increaseQuantity}
+                        className="w-10 h-12 flex items-center justify-center hover:bg-white/5 transition text-lg font-light"
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
+                    
+                    <button 
+                      onClick={handleAddToCart}
+                      className="flex-1 bg-white text-black hover:bg-white/90 py-3 px-6 uppercase tracking-widest text-xs font-medium transition-all font-['Roboto_Mono']"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                  
+                  {/* Trade Portal Link */}
+                  <div className="pt-6 border-t border-white/10">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-white/40 font-['Roboto_Mono']">Are you a specifier?</span>
+                      <Link href="/login" className="uppercase tracking-wider text-white/70 hover:text-white transition font-['Roboto_Mono']">
+                        Login to Trade Portal
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Image pagination */}
-            {totalImages > 1 && (
-              <div className="flex justify-center gap-4 mt-8">
-                {productImages.map((imageUrl, i) => (
-                  <button 
-                    key={i} 
-                    onClick={() => setCurrentImage(i)}
-                    className={`text-sm transition-all ${
-                      currentImage === i 
-                        ? 'text-white font-medium' 
-                        : 'text-white/60 hover:text-white/80'
-                    }`}
-                  >
-                    {i+1}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
+
+          {/* Image pagination - Centered below the entire product section */}
+          {totalImages > 1 && (
+            <div className="flex justify-center items-center gap-3 mt-12 pb-8">
+              {productImages.map((imageUrl, i) => (
+                <button 
+                  key={i} 
+                  onClick={() => {
+                    setCurrentImage(i);
+                    setIsAutoScrolling(false); // Pause auto-scroll when user manually clicks
+                    // Smooth scroll to top of product section
+                    const productSection = document.querySelector('[data-product-image]');
+                    if (productSection) {
+                      productSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    // Resume auto-scroll after 10 seconds
+                    setTimeout(() => setIsAutoScrolling(true), 10000);
+                  }}
+                  className={`text-base transition-all font-['Roboto_Mono'] cursor-pointer ${
+                    currentImage === i 
+                      ? 'text-white underline underline-offset-4 font-medium' 
+                      : 'text-white/40 hover:text-white/70'
+                  }`}
+                >
+                  {i+1}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Specification section - Always visible now */}
-        <div className="mx-auto border-t border-white/10 pt-12 pb-6 w-full" style={{ maxWidth: "1600px" }}>
-          <h2 style={{ fontFamily: 'DM Serif Display' }} className="text-2xl font-light mb-8 px-6 md:px-12">Specifications</h2>
-          <div className="flex flex-col md:flex-row gap-12 w-full py-8 px-6 md:px-12">
+        <div className="mx-auto border-t border-white/10 pt-12 pb-6 w-full" style={{ maxWidth: "1440px" }}>
+          <h2 style={{ fontFamily: 'DM Serif Display' }} className="text-2xl font-light mb-8 px-4 md:px-6">Specifications</h2>
+          <div className="flex flex-col md:flex-row gap-12 w-full py-8 px-4 md:px-6">
             {/* Image on the left (wider) */}
             <div className="md:w-7/12">
               <div className="relative w-full pt-[100%]">
@@ -681,9 +713,9 @@ export default function ProductDetail() {
         </div>
 
         {/* FAQs section - accordion layout */}
-        <div className="mx-auto border-t border-white/10 pt-20 pb-6 w-full" style={{ maxWidth: "1600px" }}>
-          <h2 className="text-2xl font-light mb-8 px-6 md:px-12">FAQs</h2>
-          <div className="flex flex-col-reverse md:flex-row gap-8 px-6 md:px-12">
+        <div className="mx-auto border-t border-white/10 pt-20 pb-6 w-full" style={{ maxWidth: "1440px" }}>
+          <h2 className="text-2xl font-light mb-8 px-4 md:px-6">FAQs</h2>
+          <div className="flex flex-col-reverse md:flex-row gap-8 px-4 md:px-6">
             {/* FAQs list */}
             <div className="w-full md:w-4/12 space-y-4 pt-8 md:pt-44">
               {product.faqSection?.faqs.map((faq: any, index: number) => (
@@ -734,7 +766,7 @@ export default function ProductDetail() {
         </div>
 
         {/* Related Products */}
-        <div className="mt-16 px-6 md:px-12 mx-auto w-full" style={{ maxWidth: "1600px" }}>
+        <div className="mt-16 px-4 md:px-6 mx-auto w-full" style={{ maxWidth: "1440px" }}>
           <h2 className="text-2xl font-light mb-8 text-center">Related Products</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {relatedProducts.map((relatedProduct) => (
@@ -778,8 +810,8 @@ export default function ProductDetail() {
       </div>
 
       {/* Footer with specific width constraints and padding */}
-      <div className="w-full px-8 sm:px-12 lg:px-16">
-        <div className="mx-auto" style={{ maxWidth: "1600px" }}>
+      <div className="w-full px-4 md:px-6">
+        <div className="mx-auto" style={{ maxWidth: "1440px" }}>
           <Footer />
         </div>
       </div>

@@ -554,26 +554,66 @@ export default function EnhancedProductForm({
                       
                       {/* Image grid */}
                       {images.length > 0 ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                          {images.map((image, index) => (
-                            <div key={index} className="relative group">
-                              <div className="aspect-square bg-[#333333] rounded-lg overflow-hidden">
-                                <img 
-                                  src={getValidImageUrl(image)} 
-                                  alt={`Product image ${index + 1}`}
-                                  className="w-full h-full object-contain" 
-                                />
+                        <>
+                          <div className="text-xs text-white/50 mb-3 bg-[#1A1A1A] p-2 rounded">
+                            💡 <strong>First image</strong> will be the main product image (shown large with cover fit). Additional images appear in pagination.
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                            {images.map((image, index) => (
+                              <div key={index} className="relative group">
+                                <div className={`aspect-square bg-[#333333] rounded-lg overflow-hidden ${index === 0 ? 'ring-2 ring-[#A47E3B]' : ''}`}>
+                                  <img 
+                                    src={getValidImageUrl(image)} 
+                                    alt={`Product image ${index + 1}`}
+                                    className="w-full h-full object-cover" 
+                                  />
+                                  {index === 0 && (
+                                    <div className="absolute top-2 left-2 bg-[#A47E3B] text-white text-xs px-2 py-1 rounded">
+                                      Main
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="absolute bottom-2 left-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  {index > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newImages = [...images];
+                                        [newImages[index], newImages[index - 1]] = [newImages[index - 1], newImages[index]];
+                                        setImages(newImages);
+                                      }}
+                                      className="flex-1 bg-[#333333] hover:bg-[#444444] text-white text-xs py-1 rounded"
+                                      title="Move left"
+                                    >
+                                      ←
+                                    </button>
+                                  )}
+                                  {index < images.length - 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newImages = [...images];
+                                        [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
+                                        setImages(newImages);
+                                      }}
+                                      className="flex-1 bg-[#333333] hover:bg-[#444444] text-white text-xs py-1 rounded"
+                                      title="Move right"
+                                    >
+                                      →
+                                    </button>
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(index)}
+                                  className="absolute top-2 right-2 bg-red-600/90 hover:bg-red-600 rounded-full p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <X size={16} />
+                                </button>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => removeImage(index)}
-                                className="absolute top-2 right-2 bg-[#333333] rounded-full p-1 text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
+                        </>
                       ) : (
                         <div className="border border-dashed border-[#444444] rounded-lg p-8 text-center mb-4">
                           <div className="text-white/70">
