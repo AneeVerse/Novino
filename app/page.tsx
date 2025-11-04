@@ -372,9 +372,9 @@ export default function Home() {
         </div> */}
 
         {/* Wardrobe Section */}
-        {/* <div className="mb-16">
+        <div className="mb-16">
           <WardrobeSection />
-        </div> */}
+        </div>
 
         {/* Footer Section */}
         <Footer />
