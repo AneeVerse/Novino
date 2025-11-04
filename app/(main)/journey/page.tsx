@@ -52,7 +52,7 @@ export default function JourneyPage() {
   }, []);
   
   return (
-    <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
+    <main className="relative min-h-screen bg-[#2D2D2D]">
       {/* Hero Section */}
       <div className="relative w-full h-[350px]">
                 <Image

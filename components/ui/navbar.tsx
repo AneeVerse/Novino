@@ -96,9 +96,9 @@ const Navbar = () => {
             <Link href="/journey" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
               JOURNEY
             </Link>
-            <Link href="/journal" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
+            {/* <Link href="/journal" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
               JOURNAL
-            </Link>
+            </Link> */}
           </div>
           
           {/* Hamburger menu (Mobile) */}
@@ -231,7 +231,7 @@ const Navbar = () => {
                   <Map size={26} className="text-[#AE876D]" />
                 </Link>
               </li>
-              <li className="border-b border-[#333333] pb-6">
+              {/* <li className="border-b border-[#333333] pb-6">
                 <Link 
                   href="/journal" 
                   className="text-2xl font-medium font-roboto-mono text-white hover:text-[#AE876D] transition-colors flex items-center justify-between"
@@ -240,7 +240,7 @@ const Navbar = () => {
                   JOURNAL
                   <FileText size={26} className="text-[#AE876D]" />
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
           

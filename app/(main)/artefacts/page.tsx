@@ -215,7 +215,7 @@ export default function ArtefactsPage() {
   }
   
   return (
-    <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
+    <main className="relative min-h-screen bg-[#2D2D2D]">
       {/* Hero Section - Full width that extends to the top */}
       <div className="relative w-full h-[350px]">
         {/* Embla Carousel */}
@@ -265,7 +265,7 @@ export default function ArtefactsPage() {
       </div>
 
       {/* Clear separation from the hero section with negative margin to prevent overlap */}
-      <div className="container mx-auto px-0 mt-4 z-50 relative" style={{ marginTop: '2rem', clear: 'both' }}>
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 mt-4 z-50 relative" style={{ marginTop: '2rem', clear: 'both' }}>
         {/* Product Grid Section */}
         <div className="mb-16 relative z-10 font-['Roboto_Mono']">
           <ProductGrid 
@@ -301,16 +301,16 @@ export default function ArtefactsPage() {
       </div>
 
       {/* New container for remaining sections */}
-      <div className="container mx-auto px-0 z-10 relative">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 z-10 relative">
         {/* Testimonial Collection */}
         <div className="mb-16">
           <TestimonialCollection />
         </div>
 
         {/* Blog Section */}
-        <div className="mb-16">
+        {/* <div className="mb-16">
           <BlogSection />
-        </div>
+        </div> */}
 
         {/* Wardrobe Section */}
         <div className="mb-16">

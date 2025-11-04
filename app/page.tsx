@@ -263,7 +263,7 @@ export default function Home() {
   }
 
   return (
-    <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
+    <main className="relative min-h-screen bg-[#2D2D2D]">
       {/* Hero Section - Full width that extends to the top */}
       <div className="relative w-full h-[600px] md:h-[740px]">
         {/* Embla Carousel */}
@@ -327,7 +327,7 @@ export default function Home() {
         </div>
 
         {/* Gallery Grid - with negative margins to make it wider */}
-        <div className="mb-16 relative">
+        <div className="mb-16 relative" style={{ overflowX: 'hidden', overflowY: 'visible' }}>
           <MasonryGallery />
         </div>
 
@@ -360,21 +360,21 @@ export default function Home() {
       </div>
 
       {/* New container for remaining sections */}
-      <div className="container mx-auto px-0 z-10 relative">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 z-10 relative">
         {/* Testimonial Collection */}
         <div className="mb-16">
           <TestimonialCollection />
         </div>
 
         {/* Blog Section */}
-        <div className="mb-16">
+        {/* <div className="mb-16">
           <BlogSection />
-        </div>
+        </div> */}
 
         {/* Wardrobe Section */}
-        <div className="mb-16">
+        {/* <div className="mb-16">
           <WardrobeSection />
-        </div>
+        </div> */}
 
         {/* Footer Section */}
         <Footer />

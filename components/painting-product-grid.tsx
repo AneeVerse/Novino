@@ -35,30 +35,10 @@ export default function ProductGrid({
   categories: propCategories = ["All Paintings", "Oil", "Acrylic", "Watercolor", "Mixed Media"],
   viewAllText = "View all" 
 }: ProductGridProps) {
-  const [activeCategory, setActiveCategory] = useState<string>("All Paintings");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
-  // Simple direct filtering approach with improved category matching
+  // Always show all products, ensure no duplicate images
   const filteredProducts = React.useMemo(() => {
-    console.log("FILTERING - Active Category:", activeCategory);
-    console.log("FILTERING - Products before filter:", propProducts);
-    
-    // For categories other than "All Paintings", strictly filter by category
-    if (activeCategory !== "All Paintings") {
-      const filtered = propProducts.filter(product => {
-        // Match either by category name or category ID
-        return product.category === activeCategory || 
-               product.categoryId === activeCategory;
-      });
-      
-      // Sort the filtered products by id to ensure consistent order
-      filtered.sort((a, b) => Number(a.id) - Number(b.id));
-      
-      console.log(`FILTERING - Found ${filtered.length} products in category "${activeCategory}":`, filtered);
-      return filtered;
-    }
-    
-    // For "All Paintings", return all products but ensure no duplicate images
     const uniqueProducts: Product[] = [];
     const imageSet = new Set<string>();
     
@@ -69,14 +49,8 @@ export default function ProductGrid({
       }
     });
     
-    console.log(`FILTERING - Found ${uniqueProducts.length} unique products for "All Paintings"`, uniqueProducts);
     return uniqueProducts;
-  }, [propProducts, activeCategory]);
-
-  useEffect(() => {
-    console.log("COMPONENT - Active Category changed to:", activeCategory);
-    console.log("COMPONENT - Filtered Products:", filteredProducts);
-  }, [activeCategory, filteredProducts]);
+  }, [propProducts]);
 
   // Function to determine if product should be displayed full-width
   const isWideProduct = (product: Product, index: number): boolean => {
@@ -134,13 +108,8 @@ export default function ProductGrid({
   }, [filteredProducts]);
 
   return (
-    <div className="py-8 sm:pt-12 sm:pb-16 px-4 sm:px-6 relative overflow-visible max-w-[2400px] mx-auto font-['Roboto_Mono'] min-h-[600px] sm:min-h-[800px]" style={{ 
-      backgroundImage: activeCategory === "All Paintings" 
-        ? "url('/paint-product-all-border.png')" 
-        : "url('/Container (2).png')",
-      backgroundSize: "100% 100%", 
-      backgroundRepeat: "no-repeat",
-      backgroundPosition: "center"
+    <div className="py-8 sm:pt-12 sm:pb-16 px-6 sm:px-8 relative overflow-visible max-w-[2400px] mx-auto font-['Roboto_Mono'] min-h-[600px] sm:min-h-[800px] rounded-[28px]" style={{ 
+      backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='28' ry='28' stroke='rgba(255,255,255,0.8)' stroke-width='3' stroke-dasharray='20%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e")`,
     }}>
       {/* Bottom right overlay */}
       <div className="absolute -bottom-[-30%] -right-[-650px] w-[1000px] h-[120%] pointer-events-none hidden md:block" style={{
@@ -162,23 +131,6 @@ export default function ProductGrid({
           <div className="px-0 sm:pl-4 md:pl-6">
             <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono'] font-medium">{subtitle}</div>
             <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono'] relative">{title}</h2>
-
-            {/* Category Filters - Displayed horizontally and wrapped */}
-            <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 relative">
-              {propCategories.map((category) => (
-                <button
-                  key={category}
-                  className={`${
-                    category === activeCategory 
-                      ? "bg-white text-black font-medium" 
-                      : "border border-white/60 text-white hover:bg-white/10 font-medium"
-                  } px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 text-xs sm:text-sm rounded-full transition-colors font-['Roboto_Mono']`}
-                  onClick={() => setActiveCategory(category)}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 

@@ -167,9 +167,9 @@ export default function BlogDetail() {
       </div>
       
       {/* Related Blog Posts */}
-      <div className="container mx-auto px-0 mt-16">
+      {/* <div className="container mx-auto px-0 mt-16">
         <BlogSection />
-      </div>
+      </div> */}
       
       {/* Wardrobe Section */}
       <div className="container mx-auto px-0 mt-12">

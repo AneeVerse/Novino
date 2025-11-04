@@ -423,7 +423,7 @@ export default function ProductDetail() {
   const hasSelectedFrame = frameVariants.some(v => selectedVariant?.id === v.id);
 
   return (
-    <div className="bg-[#2D2D2D] text-white min-h-screen overflow-x-hidden">
+    <div className="bg-[#2D2D2D] text-white min-h-screen">
       <div className="w-full px-8 sm:px-12 lg:px-16 pt-24 pb-0">
        
         {isInvalidRoute && (
@@ -723,7 +723,7 @@ export default function ProductDetail() {
         </div>
 
         {/* Full-width image section after FAQs */}
-        <div className="relative w-full left-1/2 transform -translate-x-1/2 mt-16 mb-16 overflow-hidden" style={{ width: "100vw" }}>
+        <div className="relative w-screen mt-16 mb-16 overflow-hidden" style={{ marginLeft: 'calc(-50vw + 50%)' }}>
           <div className="relative w-full" style={{ paddingTop: "56.25%" }}>  {/* 16:9 aspect ratio */}
             <Image
               src={product.additionalImageUrl || "/images/product/image 13.png"}
@@ -770,9 +770,9 @@ export default function ProductDetail() {
         </div>
 
         {/* Blog Section - reduced spacing */}
-        <div className="mt-8">
+        {/* <div className="mt-8">
           <BlogSection />
-        </div>
+        </div> */}
 
         {/* Wardrobe Section - reduced spacing */}
         <div className="mt-8">

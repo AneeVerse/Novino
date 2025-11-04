@@ -92,10 +92,10 @@ export default function TestimonialCollection() {
   const displayTestimonials = testimonials.slice(0, 3);
 
   return (
-    <div className="mx-2 mb-16 relative overflow-visible">
+    <div className="mx-2 mb-16 relative overflow-hidden">
       {/* Desktop abstract logo (top right, outside card content) */}
       {/* Main container with dashed border - matched to Figma */}
-      <div className="relative flex flex-col items-start w-full overflow-visible" style={{ 
+      <div className="relative flex flex-col items-start w-full overflow-hidden" style={{ 
         boxSizing: 'border-box',
         border: '2px dashed #FFFFFF',
         borderRadius: '20px',

@@ -77,7 +77,7 @@ export default function MasonryGallery() {
   return (
     // Add border around the entire gallery using CSS instead of background image
     <div
-      className="relative w-full p-6 sm:p-8 overflow-visible rounded-[28px]"
+      className="relative w-full p-6 sm:p-8 overflow-hidden rounded-[28px]"
       style={{
         backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='28' ry='28' stroke='rgba(255,255,255,0.8)' stroke-width='3' stroke-dasharray='20%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e")`,
       }}

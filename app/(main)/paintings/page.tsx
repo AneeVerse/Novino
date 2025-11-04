@@ -16,16 +16,20 @@ import Preloader from "@/components/ui/preloader"
 // Hero carousel images
 const heroImages = [
   {
-    src: "/images/hero-section/bg01.png",
+    src: "/images/hero-section/AKV_2111 (Custom).jpg",
     alt: "Paintings hero image 1"
   },
   {
-    src: "/images/hero-section/bg02.png", 
+    src: "/images/hero-section/AKV_2113 (Custom).jpg", 
     alt: "Paintings hero image 2"
   },
   {
-    src: "/images/hero-section/bg03.png",
+    src: "/images/hero-section/AKV_2112 (Custom).jpg",
     alt: "Paintings hero image 3"
+  },
+  {
+    src: "/images/hero-section/HERO.jpg",
+    alt: "Paintings hero image 4"
   }
 ];
 
@@ -33,8 +37,6 @@ const heroImages = [
 // const categories = ["All Paintings", "Oil", "Acrylic", "Watercolor", "Mixed Media"];
 
 export default function PaintingsPage() {
-  const [activeCategory, setActiveCategory] = useState("All Paintings");
-  const [categories, setCategories] = useState<string[]>(["All Paintings"]);
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
     duration: 50
@@ -55,42 +57,7 @@ export default function PaintingsPage() {
     categoryId?: string;
   }
   const [paintingProducts, setPaintingProducts] = useState<SimpleProduct[]>([]);
-  const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
   const [loading, setLoading] = useState(true);
-  
-  // Fetch categories from API
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch('/api/categories');
-        if (!res.ok) throw new Error('Failed to fetch categories');
-        const data = await res.json();
-        
-        // Filter to get only painting categories
-        const paintingCategories = data
-          .filter((cat: any) => cat.type === 'painting')
-          .map((cat: any) => cat.name);
-          
-        // Build category ID to name mapping
-        const catMap: {[key: string]: string} = {};
-        data.forEach((cat: any) => {
-          if (cat.type === 'painting') {
-            const id = cat._id || cat.id;
-            if (id) catMap[id] = cat.name;
-          }
-        });
-        setCategoryMap(catMap);
-        
-        // Always add "All Paintings" as the first option
-        setCategories(["All Paintings", ...paintingCategories]);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-        // Fallback to default categories
-        setCategories(["All Paintings", "Oil", "Acrylic", "Watercolor", "Mixed Media"]);
-      }
-    };
-    fetchCategories();
-  }, []);
   
   // Fetch painting products from API
   useEffect(() => {
@@ -107,8 +74,8 @@ export default function PaintingsPage() {
             name: p.name,
             price: p.basePrice || p.price,
             image: p.images?.[0] || p.image,
-            category: categoryMap[p.category] || p.category, // Use name from map if available
-            categoryId: p.category // Store the category ID/reference
+            category: p.category,
+            categoryId: p.category
           }));
         setPaintingProducts(filtered);
       } catch (err) {
@@ -118,7 +85,7 @@ export default function PaintingsPage() {
       }
     };
     fetchProducts();
-  }, [categoryMap]); // Add categoryMap as dependency to update products when categories load
+  }, []);
 
   // Initial load - delay text appearance
   useEffect(() => {
@@ -213,7 +180,7 @@ export default function PaintingsPage() {
   }
   
   return (
-    <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
+    <main className="relative min-h-screen bg-[#2D2D2D]">
       {/* Hero Section - Full width that extends to the top */}
       <div className="relative w-full h-[250px] sm:h-[300px] md:h-[350px]">
         {/* Embla Carousel */}
@@ -269,7 +236,6 @@ export default function PaintingsPage() {
             title="Masterpiece Collection" 
             subtitle="Featured Collection" 
             products={paintingProducts}
-            categories={categories}
             viewAllText="View all paintings"
           />
         </div>
@@ -288,9 +254,9 @@ export default function PaintingsPage() {
         </div>
 
         {/* Blog Section */}
-        <div className="mb-16">
+        {/* <div className="mb-16">
           <BlogSection />
-        </div>
+        </div> */}
 
         {/* Wardrobe Section */}
         <div className="mb-16">

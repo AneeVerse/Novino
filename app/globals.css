@@ -15,6 +15,13 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+html {
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 @layer base {

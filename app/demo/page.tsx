@@ -161,7 +161,7 @@ export default function DemoPage() {
   }, [emblaApi]);
   
   return (
-    <main className="relative min-h-screen bg-[#2D2D2D] overflow-x-hidden">
+    <main className="relative min-h-screen bg-[#2D2D2D]">
       {/* Hero Section - Full width that extends to the top */}
       <div className="relative w-full h-[730px]">
         {/* Embla Carousel */}
@@ -381,9 +381,9 @@ export default function DemoPage() {
         </div>
 
         {/* Blog Section */}
-        <div className="mb-16">
+        {/* <div className="mb-16">
           <BlogSection />
-        </div>
+        </div> */}
 
         {/* Wardrobe Section */}
         <div className="relative mx-2 mb-16 overflow-hidden rounded-3xl max-w-[2400px]">
