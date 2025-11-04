@@ -13,6 +13,7 @@ import Footer from "@/components/footer"
 import { useRouter, useParams } from "next/navigation"
 import { useCallback } from "react"
 import { useCart } from '@/contexts/CartContext'
+import Preloader from "@/components/ui/preloader"
 
 // Artefact products data
 const artefactProducts = [
@@ -379,11 +380,7 @@ export default function ProductDetail() {
   };
 
   if (isLoading) {
-    return (
-      <div className="bg-[#2D2D2D] text-white min-h-screen flex items-center justify-center">
-        <div className="text-2xl">Loading product...</div>
-      </div>
-    )
+    return <Preloader ariaLabel="Loading Product" />
   }
 
   if (!product) {
