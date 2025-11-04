@@ -24,7 +24,7 @@ const RichTextEditor = ({ value, onChange, placeholder }: {
 interface ProductVariant {
   id: string;
   name: string;
-  type: 'frame' | 'color';
+  type: string; // Changed to string to allow any type
   price?: string;
   quantity: number;
   imageUrl?: string;
@@ -102,7 +102,7 @@ export default function EnhancedProductForm({
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [newVariant, setNewVariant] = useState<Partial<ProductVariant>>({
     name: "",
-    type: "frame",
+    type: "", // Changed to empty string, user can type anything
     price: "",
     quantity: 1
   });
@@ -337,7 +337,7 @@ export default function EnhancedProductForm({
     // Reset new variant form
     setNewVariant({
       name: "",
-      type: "frame",
+      type: "",
       price: "",
       quantity: 1
     });
@@ -715,15 +715,14 @@ export default function EnhancedProductForm({
                             <label htmlFor="variant-type" className="block text-white/70 text-sm mb-1">
                               Type
                             </label>
-                            <select
+                            <input
+                              type="text"
                               id="variant-type"
-                              value={newVariant.type || "frame"}
-                              onChange={(e) => setNewVariant({...newVariant, type: e.target.value as 'frame' | 'color'})}
+                              value={newVariant.type || ""}
+                              onChange={(e) => setNewVariant({...newVariant, type: e.target.value})}
                               className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
-                            >
-                              <option value="frame">Frame</option>
-                              <option value="color">Color</option>
-                            </select>
+                              placeholder="e.g. Frame, Color, Size, Material, etc."
+                            />
                           </div>
                           
                           <div>
@@ -775,7 +774,7 @@ export default function EnhancedProductForm({
                               type="button"
                               onClick={() => setNewVariant({
                                 name: "",
-                                type: "frame",
+                                type: "",
                                 price: "",
                                 quantity: 1
                               })}
