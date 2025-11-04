@@ -128,7 +128,10 @@ export default function ProductGrid({
     }}>
       {/* Bottom right overlay */}
       <div className="absolute -bottom-[-13%] -right-[-600px] w-[1300px] h-[120%] pointer-events-none" style={{
-        zIndex: 5
+        zIndex: 5,
+        background: 'radial-gradient(circle, rgba(174, 135, 109, 0.6) 0%, rgba(174, 135, 109, 0.4) 30%, rgba(174, 135, 109, 0.2) 50%, transparent 70%)',
+        opacity: 0.9,
+        mixBlendMode: 'screen'
       }}>
         {/* 
           POSITIONING GUIDE:
@@ -138,14 +141,6 @@ export default function ProductGrid({
           - To move DOWN: decrease the bottom value (make it more negative) e.g. bottom-[-130%]
           - You can also adjust width and height with w-[2000px] and h-[220%]
         */}
-        <Image 
-          src="/Ellipse 3.png"
-          alt="Background overlay effect"
-          fill
-          style={{ objectFit: 'contain', opacity: 0.9 }}
-          priority
-          className="mix-blend-screen"
-        />
       </div>
 
       <div className="flex flex-col md:flex-row md:gap-8 relative z-30">

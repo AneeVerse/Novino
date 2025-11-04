@@ -103,16 +103,11 @@ export default function TestimonialCollection() {
         {/* Middle overlay */}
         <div className="absolute top-[120%] left-[50%] w-[3000px] h-[300%] pointer-events-none" style={{
           transform: 'translate(-50%, -50%)',
-          zIndex: 5
+          zIndex: 5,
+          background: 'radial-gradient(circle, rgba(174, 135, 109, 0.6) 0%, rgba(174, 135, 109, 0.4) 30%, rgba(174, 135, 109, 0.2) 50%, transparent 70%)',
+          opacity: 0.6,
+          mixBlendMode: 'screen'
         }}>
-          <Image 
-            src="/Ellipse 9.png"
-            alt="Middle overlay effect"
-            fill
-            style={{ objectFit: 'contain', opacity: 0.6 }}
-            priority
-            className="mix-blend-screen"
-          />
         </div>
 
         {/* Corner accents using the provided images */}

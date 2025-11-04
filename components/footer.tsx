@@ -67,16 +67,10 @@ export default function Footer() {
               zIndex: 5,
               transform: 'rotate(90deg)',
               opacity: 0.6,
-              position: 'absolute'
+              position: 'absolute',
+              background: 'radial-gradient(circle, rgba(174, 135, 109, 0.6) 0%, rgba(174, 135, 109, 0.4) 30%, rgba(174, 135, 109, 0.2) 50%, transparent 70%)',
+              mixBlendMode: 'screen'
             }}>
-              <Image 
-                src="/Ellipse 4.png"
-                alt="Footer overlay effect"
-                fill
-                style={{ objectFit: 'contain' }}
-                priority
-                className="mix-blend-screen"
-              />
             </div>
 
             {/* Gradient effects similar to the product section */}

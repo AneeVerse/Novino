@@ -245,16 +245,11 @@ export default function DemoPage() {
           }}>
             {/* Bottom right overlay */}
             <div className="absolute bottom-[-90%] -right-[850px] w-[2000px] h-[220%] pointer-events-none" style={{
-              zIndex: 20
+              zIndex: 20,
+              background: 'radial-gradient(circle, rgba(174, 135, 109, 0.6) 0%, rgba(174, 135, 109, 0.4) 30%, rgba(174, 135, 109, 0.2) 50%, transparent 70%)',
+              opacity: 0.8,
+              mixBlendMode: 'screen'
             }}>
-              <Image 
-                src="/Ellipse 5.png"
-                alt="Bottom right overlay effect"
-                fill
-                style={{ objectFit: 'contain', opacity: 0.8 }}
-                priority
-                className="mix-blend-screen"
-              />
             </div>
 
             <div className="flex flex-col md:flex-row md:gap-8 relative z-10">

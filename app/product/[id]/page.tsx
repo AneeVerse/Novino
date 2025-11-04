@@ -486,10 +486,7 @@ export default function ProductDetail() {
                   {/* Ellipse overlay */}
                   <div className="absolute inset-0 -z-10 overflow-hidden" 
                     style={{
-                      backgroundImage: 'url("/images/product/Ellipse 11.png")',
-                      backgroundSize: '120% 120%',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat',
+                      background: 'radial-gradient(circle, rgba(174, 135, 109, 0.5) 0%, rgba(174, 135, 109, 0.35) 25%, rgba(174, 135, 109, 0.2) 40%, transparent 60%)',
                       width: '200%',
                       height: '200%',
                       top: '-45%',

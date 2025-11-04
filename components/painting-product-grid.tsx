@@ -113,16 +113,11 @@ export default function ProductGrid({
     }}>
       {/* Bottom right overlay */}
       <div className="absolute -bottom-[-30%] -right-[-650px] w-[1000px] h-[120%] pointer-events-none hidden md:block" style={{
-        zIndex: 5
+        zIndex: 5,
+        background: 'radial-gradient(circle, rgba(174, 135, 109, 0.6) 0%, rgba(174, 135, 109, 0.4) 30%, rgba(174, 135, 109, 0.2) 50%, transparent 70%)',
+        opacity: 0.9,
+        mixBlendMode: 'screen'
       }}>
-        <Image 
-          src="/Ellipse 3.png"
-          alt="Background overlay effect"
-          fill
-          style={{ objectFit: 'contain', opacity: 0.9 }}
-          priority
-          className="mix-blend-screen"
-        />
       </div>
 
       <div className="flex flex-col md:flex-row relative z-30">
