@@ -12,6 +12,7 @@ import CartDrawer from "@/components/ui/cart-drawer"
 import { useCart } from "@/contexts/CartContext"
 import { SessionProvider } from "next-auth/react"
 import { AuthProvider } from "@/contexts/AuthContext"
+import NavigationLoading from "@/components/navigation-loading"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -53,6 +54,7 @@ export default function RootLayout({
                 ) : !isLinkoPage && !isVCardPage ? (
                   <Navbar />
                 ) : null}
+                <NavigationLoading />
                 {children}
                 {!isLinkoPage && !isVCardPage && <CartDrawerWrapper />}
               </CartProvider>

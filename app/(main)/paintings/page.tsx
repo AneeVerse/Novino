@@ -11,7 +11,7 @@ import Footer from "@/components/footer"
 import PaintingProductGrid from "@/components/painting-product-grid"
 import { useState, useEffect, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
-import { Loader } from '@/components/blog-section'
+import Preloader from "@/components/ui/preloader"
 
 // Hero carousel images
 const heroImages = [
@@ -56,7 +56,7 @@ export default function PaintingsPage() {
   }
   const [paintingProducts, setPaintingProducts] = useState<SimpleProduct[]>([]);
   const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   // Fetch categories from API
   useEffect(() => {
@@ -209,7 +209,7 @@ export default function PaintingsPage() {
   }, [emblaApi]);
   
   if (loading) {
-    return <Loader />;
+    return <Preloader ariaLabel="Loading Paintings" />;
   }
   
   return (

@@ -15,7 +15,7 @@ import useEmblaCarousel from 'embla-carousel-react'
 import "@fontsource/dm-serif-display"
 import "@fontsource/roboto-mono"
 import ProductGrid from "@/components/product-grid"
-import { Loader } from '../components/blog-section'
+import Preloader from "@/components/ui/preloader"
 
 // Hero carousel images
 const heroImages = [
@@ -255,7 +255,7 @@ export default function Home() {
   }, []);
 
   if (loading) {
-    return <Loader />;
+    return <Preloader ariaLabel="Loading Home" />;
   }
 
   return (

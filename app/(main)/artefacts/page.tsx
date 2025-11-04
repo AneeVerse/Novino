@@ -12,7 +12,7 @@ import MasonryGallery from "@/components/masonry-gallery"
 import ProductGrid from "@/components/product-grid"
 import { useState, useEffect, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
-import { Loader } from '@/components/blog-section'
+import Preloader from "@/components/ui/preloader"
 
 // Hero carousel images
 const heroImages = [
@@ -58,7 +58,7 @@ export default function ArtefactsPage() {
     categoryId?: string;
   }
   const [artefactProducts, setArtefactProducts] = useState<SimpleProduct[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Initial load - delay text appearance
   useEffect(() => {
@@ -211,7 +211,7 @@ export default function ArtefactsPage() {
   }, [categoryMap]); // Add categoryMap as dependency to update products when categories load
   
   if (loading) {
-    return <Loader />;
+    return <Preloader ariaLabel="Loading Artefacts" />;
   }
   
   return (
