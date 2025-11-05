@@ -61,6 +61,8 @@ interface Product {
   specifications: ProductSpecification;
   faqSection: FaqSection;
   additionalImageUrl?: string;
+  featured?: boolean;
+  featuredImageUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -123,6 +125,8 @@ export default function EnhancedProductForm({
 
   // Additional state
   const [additionalImageUrl, setAdditionalImageUrl] = useState("");
+  const [featured, setFeatured] = useState(false);
+  const [featuredImageUrl, setFeaturedImageUrl] = useState("");
 
   // UI state
   const [isLoading, setIsLoading] = useState(false);
@@ -190,6 +194,10 @@ export default function EnhancedProductForm({
       
       // Set additional image
       setAdditionalImageUrl(product.additionalImageUrl || "");
+      
+      // Set featured fields
+      setFeatured(product.featured || false);
+      setFeaturedImageUrl(product.featuredImageUrl || "");
     } else {
       // Initialize with defaults for new product
       if (categories.length > 0) {
@@ -227,6 +235,8 @@ export default function EnhancedProductForm({
           setFaqs(full.faqSection?.faqs || []);
           setFaqImageUrl(full.faqSection?.imageUrl || '');
           setAdditionalImageUrl(full.additionalImageUrl || '');
+          setFeatured(full.featured || false);
+          setFeaturedImageUrl(full.featuredImageUrl || '');
         } catch (err) {
           console.error('Error loading full product data for edit:', err);
         }
@@ -266,7 +276,9 @@ export default function EnhancedProductForm({
           faqs,
           imageUrl: faqImageUrl
         },
-        additionalImageUrl
+        additionalImageUrl,
+        featured,
+        featuredImageUrl: featured ? featuredImageUrl : undefined
       };
       
       // API endpoint based on mode
@@ -678,6 +690,67 @@ export default function EnhancedProductForm({
                           </div>
                         </div>
                       )}
+                      
+                      {/* Featured Product Toggle */}
+                      <div className="mt-6 pt-6 border-t border-[#333333]">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <label htmlFor="featured" className="block text-white font-medium text-sm mb-1">
+                              Featured Product
+                            </label>
+                            <p className="text-white/60 text-xs">
+                              Featured products will appear in the Featured Products section
+                            </p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              id="featured"
+                              checked={featured}
+                              onChange={(e) => setFeatured(e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-[#333333] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#A47E3B]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-[#A47E3B] peer-checked:to-[#C4A962]"></div>
+                          </label>
+                        </div>
+                        
+                        {featured && (
+                          <div className="mt-4">
+                            <label htmlFor="featured-image" className="block text-white font-medium text-sm mb-2">
+                              Featured Image URL <span className="text-white/60 text-xs">(optional)</span>
+                            </label>
+                            <p className="text-white/60 text-xs mb-2">
+                              Use a different image for the featured section. If not provided, the main product image will be used.
+                            </p>
+                            <input
+                              type="url"
+                              id="featured-image"
+                              value={featuredImageUrl}
+                              onChange={(e) => setFeaturedImageUrl(e.target.value)}
+                              className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
+                              placeholder="Enter featured image URL"
+                            />
+                            {featuredImageUrl && (
+                              <div className="mt-3 relative group">
+                                <div className="aspect-video bg-[#333333] rounded-lg overflow-hidden">
+                                  <img 
+                                    src={getValidImageUrl(featuredImageUrl)} 
+                                    alt="Featured image preview"
+                                    className="w-full h-full object-contain" 
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setFeaturedImageUrl("")}
+                                  className="absolute top-2 right-2 bg-red-600/90 hover:bg-red-600 rounded-full p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </TabsContent>

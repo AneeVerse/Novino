@@ -47,6 +47,8 @@ type Product = {
   specifications?: ProductSpecification;
   faqSection?: FaqSection;
   additionalImageUrl?: string;
+  featured?: boolean;
+  featuredImageUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -139,6 +141,8 @@ export default async function handler(
           specifications: req.body.specifications || { title: '', content: '' },
           faqSection: req.body.faqSection || { faqs: [] },
           additionalImageUrl: req.body.additionalImageUrl,
+          featured: req.body.featured || false,
+          featuredImageUrl: req.body.featuredImageUrl,
           updatedAt: new Date().toISOString()
         };
         

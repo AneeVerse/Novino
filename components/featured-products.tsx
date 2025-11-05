@@ -11,6 +11,8 @@ interface Product {
   image: string;
   categoryId?: string;
   type?: string;
+  featured?: boolean;
+  featuredImageUrl?: string;
 }
 
 export default function FeaturedProducts() {
@@ -26,9 +28,9 @@ export default function FeaturedProducts() {
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
         
-        // Get artefact products, sort by latest (createdAt), and take first 3
-        const artefactProducts = data
-          .filter((p: any) => p.type === 'artefact')
+        // Get featured products, sort by latest (createdAt), and take first 3
+        const featuredProducts = data
+          .filter((p: any) => p.featured === true)
           .sort((a: any, b: any) => {
             // Sort by createdAt if available, otherwise by id
             if (a.createdAt && b.createdAt) {
@@ -41,13 +43,14 @@ export default function FeaturedProducts() {
             id: p.id || p._id,
             name: p.name,
             price: p.basePrice || p.price,
-            image: p.images?.[0] || p.image || "/images/placeholder.png",
+            image: p.featuredImageUrl || p.images?.[0] || p.image || "/images/placeholder.png",
             category: p.category,
             categoryId: p.category,
-            type: p.type
+            type: p.type,
+            featured: p.featured
           }));
         
-        setProducts(artefactProducts);
+        setProducts(featuredProducts);
       } catch (err) {
         console.error('Error fetching featured products:', err);
         setProducts([]);
@@ -85,20 +88,20 @@ export default function FeaturedProducts() {
   }
 
   return (
-    <div className="container mx-auto px-4 md:px-0 mb-16">
+    <div className="container mx-auto px-4 md:px-0 mb-6">
       <div className="max-w-[2400px] mx-auto">
-        <h2 className="text-white text-lg sm:text-[24px] md:text-[38px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em]  text-center font-['Roboto_Mono']">
+        <h2 className="text-white text-lg sm:text-[24px] md:text-[28px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em]  text-center font-['Roboto_Mono']">
           FEATURED PRODUCTS
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8 mt-6">
           {/* Left Product - Smaller height */}
           <div className="flex flex-col relative">
             <Link 
               href={`/product/${displayProducts[0].id}`}
               className="block group"
             >
-              <div className="relative w-full h-[400px] md:h-[450px] lg:h-[500px] bg-[#2D2D2D] overflow-visible">
+              <div className="relative w-full h-[400px] md:h-[450px] lg:h-[500px] bg-[#2D2D2D] overflow-visible mb-8">
                 <Image
                   src={displayProducts[0].image || "/images/placeholder.png"}
                   alt={displayProducts[0].name || "Featured product"}
@@ -109,7 +112,7 @@ export default function FeaturedProducts() {
                 />
               </div>
               {displayProducts[0].name && (
-                <div className="text-center -mt-2 relative z-10">
+                <div className="text-center relative z-10">
                   <h3 className="text-white text-sm md:text-base font-['Roboto_Mono'] uppercase">
                     {displayProducts[0].name}
                   </h3>
@@ -129,7 +132,7 @@ export default function FeaturedProducts() {
               href={`/product/${displayProducts[1].id}`}
               className="block group"
             >
-              <div className="relative w-full h-[500px] md:h-[550px] lg:h-[600px] -mb-16 bg-[#2D2D2D] overflow-visible">
+              <div className="relative w-full h-[500px] md:h-[550px] lg:h-[600px] bg-[#2D2D2D] overflow-visible mb-8">
                 <Image
                   src={displayProducts[1].image || "/images/placeholder.png"}
                   alt={displayProducts[1].name || "Featured product"}
@@ -140,7 +143,7 @@ export default function FeaturedProducts() {
                 />
               </div>
               {displayProducts[1].name && (
-                <div className="text-center -mt-2 relative z-10">
+                <div className="text-center relative z-10">
                   <h3 className="text-white text-sm md:text-base font-['Roboto_Mono'] uppercase">
                     {displayProducts[1].name}
                   </h3>
@@ -160,7 +163,7 @@ export default function FeaturedProducts() {
               href={`/product/${displayProducts[2].id}`}
               className="block group"
             >
-              <div className="relative w-full h-[400px] md:h-[450px] lg:h-[500px] bg-[#2D2D2D] overflow-visible">
+              <div className="relative w-full h-[400px] md:h-[450px] lg:h-[500px] bg-[#2D2D2D] overflow-visible mb-8">
                 <Image
                   src={displayProducts[2].image || "/images/placeholder.png"}
                   alt={displayProducts[2].name || "Featured product"}
@@ -171,7 +174,7 @@ export default function FeaturedProducts() {
                 />
               </div>
               {displayProducts[2].name && (
-                <div className="text-center -mt-2 relative z-10">
+                <div className="text-center relative z-10">
                   <h3 className="text-white text-sm md:text-base font-['Roboto_Mono'] uppercase">
                     {displayProducts[2].name}
                   </h3>
