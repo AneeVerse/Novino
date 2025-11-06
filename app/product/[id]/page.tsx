@@ -111,6 +111,27 @@ export default function ProductDetail() {
   const [currentImage, setCurrentImage] = useState(0)
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error);
+        setIsLoggedIn(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   // Next.js useParams returns string | string[] | undefined
   const rawId = params?.id
@@ -656,15 +677,17 @@ export default function ProductDetail() {
                     </button>
                   </div>
                   
-                  {/* Trade Portal Link */}
-                  <div className="pt-6 border-t border-white/10">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-white/40 font-['Roboto_Mono']">Are you a specifier?</span>
-                      <Link href="/login" className="uppercase tracking-wider text-white/70 hover:text-white transition font-['Roboto_Mono']">
-                        Login to Trade Portal
-                      </Link>
+                  {/* Trade Portal Link - Only show if user is NOT logged in */}
+                  {!isLoggedIn && (
+                    <div className="pt-6 border-t border-white/10">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-white/40 font-['Roboto_Mono']">Are you a specifier?</span>
+                        <Link href="/login" className="uppercase tracking-wider text-white/70 hover:text-white transition font-['Roboto_Mono']">
+                          Login to Trade Portal
+                        </Link>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

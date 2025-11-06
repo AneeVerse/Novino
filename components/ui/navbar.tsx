@@ -6,13 +6,15 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { X, Image as ImageIcon, Archive, Map, FileText } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname();
-  const { getCartCount, openCart } = useCart();
+  const router = useRouter();
+  const { getCartCount } = useCart();
 
   // Close mobile menu when path changes
   useEffect(() => {
@@ -75,10 +77,10 @@ const Navbar = () => {
     };
   }, []);
 
-  // Handle cart icon click
+  // Handle cart icon click - navigate to cart page
   const handleCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    openCart();
+    router.push('/cart');
   };
 
   return (

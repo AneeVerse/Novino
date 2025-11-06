@@ -13,6 +13,7 @@ import { useCart } from "@/contexts/CartContext"
 import { SessionProvider } from "next-auth/react"
 import { AuthProvider } from "@/contexts/AuthContext"
 import NavigationLoading from "@/components/navigation-loading"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -57,6 +58,7 @@ export default function RootLayout({
                 <NavigationLoading />
                 {children}
                 {!isLinkoPage && !isVCardPage && <CartDrawerWrapper />}
+                <Toaster />
               </CartProvider>
             </AuthProvider>
           </SessionProvider>
