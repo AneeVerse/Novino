@@ -88,20 +88,21 @@ export default function FeaturedProducts() {
   }
 
   return (
-    <div className="container mx-auto px-4 md:px-0 mb-6">
-      <div className="max-w-[2400px] mx-auto">
+    <div className="container mx-auto px-0 md:px-0 mb-6">
+      <div className="max-w-[2400px] mx-auto px-4 md:px-0">
         <h2 className="text-white text-lg sm:text-[24px] md:text-[28px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em]  text-center font-['Roboto_Mono']">
           FEATURED PRODUCTS
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8 mt-6">
+        {/* Mobile: Horizontal scroll, Desktop: Grid */}
+        <div className="flex md:grid md:grid-cols-3 gap-3 md:gap-6 lg:gap-8 mt-6 overflow-x-auto md:overflow-x-visible scrollbar-hide pb-4 md:pb-0 px-4 md:px-0 -mx-4 md:mx-0 items-start">
           {/* Left Product - Smaller height */}
-          <div className="flex flex-col relative">
+          <div className="flex flex-col relative min-w-[220px] md:min-w-0 flex-shrink-0 md:flex-shrink">
             <Link 
               href={`/product/${displayProducts[0].id}`}
-              className="block group"
+              className="block group w-full"
             >
-              <div className="relative w-full h-[400px] md:h-[450px] lg:h-[500px] bg-[#2D2D2D] overflow-visible mb-8">
+              <div className="relative w-full h-[280px] sm:h-[320px] md:h-[450px] lg:h-[500px] bg-[#2D2D2D] overflow-visible mb-4 md:mb-8">
                 <Image
                   src={displayProducts[0].image || "/images/placeholder.png"}
                   alt={displayProducts[0].name || "Featured product"}
@@ -112,12 +113,12 @@ export default function FeaturedProducts() {
                 />
               </div>
               {displayProducts[0].name && (
-                <div className="text-center relative z-10">
-                  <h3 className="text-white text-sm md:text-base font-['Roboto_Mono'] uppercase">
+                <div className="text-center relative z-10 mt-2">
+                  <h3 className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] uppercase leading-tight">
                     {displayProducts[0].name}
                   </h3>
                   {displayProducts[0].price && (
-                    <p className="text-white/70 text-xs md:text-sm font-['Roboto_Mono']">
+                    <p className="text-white/70 text-[10px] sm:text-xs md:text-sm font-['Roboto_Mono'] mt-1">
                       {displayProducts[0].price}
                     </p>
                   )}
@@ -127,12 +128,12 @@ export default function FeaturedProducts() {
           </div>
 
           {/* Middle Product - Taller height */}
-          <div className="flex flex-col relative">
+          <div className="flex flex-col relative min-w-[220px] md:min-w-0 flex-shrink-0 md:flex-shrink">
             <Link 
               href={`/product/${displayProducts[1].id}`}
-              className="block group"
+              className="block group w-full"
             >
-              <div className="relative w-full h-[500px] md:h-[550px] lg:h-[600px] bg-[#2D2D2D] overflow-visible mb-8">
+              <div className="relative w-full h-[280px] sm:h-[320px] md:h-[550px] lg:h-[600px] bg-[#2D2D2D] overflow-visible mb-4 md:mb-8">
                 <Image
                   src={displayProducts[1].image || "/images/placeholder.png"}
                   alt={displayProducts[1].name || "Featured product"}
@@ -143,12 +144,12 @@ export default function FeaturedProducts() {
                 />
               </div>
               {displayProducts[1].name && (
-                <div className="text-center relative z-10">
-                  <h3 className="text-white text-sm md:text-base font-['Roboto_Mono'] uppercase">
+                <div className="text-center relative z-10 mt-2">
+                  <h3 className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] uppercase leading-tight">
                     {displayProducts[1].name}
                   </h3>
                   {displayProducts[1].price && (
-                    <p className="text-white/70 text-xs md:text-sm font-['Roboto_Mono']">
+                    <p className="text-white/70 text-[10px] sm:text-xs md:text-sm font-['Roboto_Mono'] mt-1">
                       {displayProducts[1].price}
                     </p>
                   )}
@@ -158,12 +159,12 @@ export default function FeaturedProducts() {
           </div>
 
           {/* Right Product - Smaller height */}
-          <div className="flex flex-col relative">
+          <div className="flex flex-col relative min-w-[220px] md:min-w-0 flex-shrink-0 md:flex-shrink">
             <Link 
               href={`/product/${displayProducts[2].id}`}
-              className="block group"
+              className="block group w-full"
             >
-              <div className="relative w-full h-[400px] md:h-[450px] lg:h-[500px] bg-[#2D2D2D] overflow-visible mb-8">
+              <div className="relative w-full h-[280px] sm:h-[320px] md:h-[450px] lg:h-[500px] bg-[#2D2D2D] overflow-visible mb-4 md:mb-8">
                 <Image
                   src={displayProducts[2].image || "/images/placeholder.png"}
                   alt={displayProducts[2].name || "Featured product"}
@@ -174,12 +175,12 @@ export default function FeaturedProducts() {
                 />
               </div>
               {displayProducts[2].name && (
-                <div className="text-center relative z-10">
-                  <h3 className="text-white text-sm md:text-base font-['Roboto_Mono'] uppercase">
+                <div className="text-center relative z-10 mt-2">
+                  <h3 className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] uppercase leading-tight">
                     {displayProducts[2].name}
                   </h3>
                   {displayProducts[2].price && (
-                    <p className="text-white/70 text-xs md:text-sm font-['Roboto_Mono']">
+                    <p className="text-white/70 text-[10px] sm:text-xs md:text-sm font-['Roboto_Mono'] mt-1">
                       {displayProducts[2].price}
                     </p>
                   )}

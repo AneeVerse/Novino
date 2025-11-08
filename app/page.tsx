@@ -415,12 +415,13 @@ export default function Home() {
           letter-spacing: 0.15em;
         }
 
-        /* Mobile adjustment - move text down */
+        /* Mobile adjustment - move text down, smaller, and slightly left */
         @media (max-width: 767px) { /* Target screens smaller than md (768px) */
           .novino-hero-text {
-            top: 77%; /* Moved much lower to match green marking */
-            letter-spacing: 0.04em; /* Decreased letter spacing */
-            font-size: 105px !important; /* Increased font size */
+            top: 79%;
+            left: 50%; /* Shift slightly to the left */
+            letter-spacing: 0.04em;
+            font-size: 96px !important; /* Smaller font size */
           }
         }
         
