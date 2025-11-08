@@ -351,39 +351,39 @@ export default function CartPage() {
     <div className="min-h-screen bg-[#2D2D2D] text-white pt-24 pb-12">
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Progress Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center space-x-4">
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-[#AE876D] flex items-center justify-center text-sm font-semibold">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-center space-x-1 sm:space-x-4 overflow-x-auto pb-2 px-2">
+            <div className="flex items-center flex-shrink-0">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#AE876D] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 1
               </div>
-              <span className="ml-2 text-sm font-medium text-[#AE876D]">MY BAG</span>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-[#AE876D]">MY BAG</span>
             </div>
-            <div className="w-16 h-0.5 bg-[#444444]"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-[#444444] flex items-center justify-center text-sm font-semibold">
+            <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
+            <div className="flex items-center flex-shrink-0">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#444444] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 2
               </div>
-              <span className="ml-2 text-sm font-medium text-white/60">ADDRESS</span>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/60">ADDRESS</span>
             </div>
-            <div className="w-16 h-0.5 bg-[#444444]"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-[#444444] flex items-center justify-center text-sm font-semibold">
+            <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
+            <div className="flex items-center flex-shrink-0">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#444444] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 3
               </div>
-              <span className="ml-2 text-sm font-medium text-white/60">PAYMENT</span>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/60">PAYMENT</span>
             </div>
           </div>
         </div>
         
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
           {/* Left Column - Cart Items */}
           <div className="lg:w-2/3">
             {/* Delivery Information */}
-            <div className="bg-[#333333] rounded-lg p-6 mb-6 relative" data-address-section style={{ zIndex: 1 }}>
-              <div className="flex items-center mb-4">
-                <MapPin className="w-4 h-4 mr-2 text-[#AE876D]" />
-                <span className="text-sm font-medium">Deliver To:</span>
+            <div className="bg-[#333333] rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 relative" data-address-section style={{ zIndex: 1 }}>
+              <div className="flex items-center mb-3 sm:mb-4">
+                <MapPin className="w-4 h-4 mr-2 text-[#AE876D] flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-medium">Deliver To:</span>
               </div>
               
               {showAddressList ? (
@@ -521,7 +521,7 @@ export default function CartPage() {
               ) : showAddressForm ? (
                     <div className="space-y-4 relative z-10">
                       <div>
-                        <label className="block text-sm font-medium text-white/70 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
                           Full Name
                         </label>
                         <input
@@ -529,14 +529,14 @@ export default function CartPage() {
                           value={addressForm.name}
                           onChange={(e) => setAddressForm(prev => ({ ...prev, name: e.target.value }))}
                           onFocus={(e) => e.target.select()}
-                          className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
+                          className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm sm:text-base text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
                           placeholder="Enter full name"
                           autoFocus
                           style={{ pointerEvents: 'auto', zIndex: 10 }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-white/70 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
                           Address Line 1
                         </label>
                         <input
@@ -544,13 +544,13 @@ export default function CartPage() {
                           value={addressForm.line1}
                           onChange={(e) => setAddressForm(prev => ({ ...prev, line1: e.target.value }))}
                           onFocus={(e) => e.target.select()}
-                          className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
+                          className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm sm:text-base text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
                           placeholder="Street address"
                           style={{ pointerEvents: 'auto', zIndex: 10 }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-white/70 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
                           Address Line 2 (Optional)
                         </label>
                         <input
@@ -558,14 +558,14 @@ export default function CartPage() {
                           value={addressForm.line2}
                           onChange={(e) => setAddressForm(prev => ({ ...prev, line2: e.target.value }))}
                           onFocus={(e) => e.target.select()}
-                          className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
+                          className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm sm:text-base text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
                           placeholder="Apartment, suite, etc."
                           style={{ pointerEvents: 'auto', zIndex: 10 }}
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-white/70 mb-1">
+                          <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
                             City
                           </label>
                           <input
@@ -573,13 +573,13 @@ export default function CartPage() {
                             value={addressForm.city}
                             onChange={(e) => setAddressForm(prev => ({ ...prev, city: e.target.value }))}
                             onFocus={(e) => e.target.select()}
-                            className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
+                            className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm sm:text-base text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
                             placeholder="City"
                             style={{ pointerEvents: 'auto', zIndex: 10 }}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-white/70 mb-1">
+                          <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
                             Pincode
                           </label>
                           <input
@@ -587,14 +587,14 @@ export default function CartPage() {
                             value={addressForm.pincode}
                             onChange={(e) => setAddressForm(prev => ({ ...prev, pincode: e.target.value }))}
                             onFocus={(e) => e.target.select()}
-                            className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
+                            className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm sm:text-base text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
                             placeholder="Pincode"
                             style={{ pointerEvents: 'auto', zIndex: 10 }}
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-white/70 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
                           State
                         </label>
                         <input
@@ -602,7 +602,7 @@ export default function CartPage() {
                           value={addressForm.state}
                           onChange={(e) => setAddressForm(prev => ({ ...prev, state: e.target.value }))}
                           onFocus={(e) => e.target.select()}
-                          className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
+                          className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm sm:text-base text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
                           placeholder="State"
                           style={{ pointerEvents: 'auto', zIndex: 10 }}
                         />
@@ -725,15 +725,15 @@ export default function CartPage() {
             </div>
             
             {/* Select All Checkbox */}
-            <div className="bg-[#333333] rounded-lg p-4 mb-4">
+            <div className="bg-[#333333] rounded-lg p-3 sm:p-4 mb-4">
               <label className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
-                  className="w-5 h-5 rounded border-[#444444] bg-[#222222] text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0"
+                  className="w-4 h-4 sm:w-5 sm:h-5 rounded border-[#444444] bg-[#222222] text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
                 />
-                <span className="ml-3 text-sm font-medium">
+                <span className="ml-2 sm:ml-3 text-xs sm:text-sm font-medium break-words">
                   {selectedCount}/{totalItems} ITEMS SELECTED ({formatCurrency(total)})
                 </span>
               </label>
@@ -751,10 +751,10 @@ export default function CartPage() {
                 const itemTotal = itemPrice * item.quantity;
                 
                 return (
-                  <div key={`cart-item-${item.id}-${item.variant || 'basic'}-${index}`} className="bg-[#333333] rounded-lg p-6">
-                    <div className="flex gap-4">
+                  <div key={`cart-item-${item.id}-${item.variant || 'basic'}-${index}`} className="bg-[#333333] rounded-lg p-3 sm:p-4 md:p-6">
+                    <div className="flex gap-3 sm:gap-4">
                       {/* Checkbox */}
-                      <div className="flex items-start pt-1">
+                      <div className="flex items-start pt-1 flex-shrink-0">
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -766,7 +766,7 @@ export default function CartPage() {
                             const itemVariant = item.variant || undefined;
                             handleItemSelect(itemId, itemVariant);
                           }}
-                          className="w-5 h-5 rounded border-[#444444] bg-[#222222] text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0"
+                          className="w-4 h-4 sm:w-5 sm:h-5 rounded border-[#444444] bg-[#222222] text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0"
                           aria-label={`Select ${item.name}`}
                           data-item-id={String(item.id)}
                           data-item-variant={item.variant || 'basic'}
@@ -774,7 +774,7 @@ export default function CartPage() {
                       </div>
                       
                       {/* Product Image */}
-                      <div className="w-32 h-32 md:w-40 md:h-40 relative bg-[#222222] rounded-md overflow-hidden flex-shrink-0">
+                      <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-40 md:h-40 relative bg-[#222222] rounded-md overflow-hidden flex-shrink-0">
                       <Image 
                         src={item.image} 
                         alt={item.name} 
@@ -786,41 +786,41 @@ export default function CartPage() {
                       {/* Product Details */}
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start mb-2">
-                          <div className="flex-1">
-                            <h3 className="text-white font-semibold text-lg mb-1">{item.name}</h3>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-white font-semibold text-sm sm:text-base md:text-lg mb-1 truncate">{item.name}</h3>
                             {item.variant && (
-                              <p className="text-white/60 text-sm mb-2">Variant: {item.variant}</p>
+                              <p className="text-white/60 text-xs sm:text-sm mb-1 sm:mb-2">Variant: {item.variant}</p>
                             )}
-                            <p className="text-white/50 text-xs mb-3">Category: {item.variant || 'General'}</p>
+                            <p className="text-white/50 text-xs mb-2 sm:mb-3">Category: {item.variant || 'General'}</p>
                   </div>
                     </div>
                         
                         {/* Quantity and Size Selectors */}
-                        <div className="flex flex-wrap gap-4 mb-3">
+                        <div className="flex flex-wrap gap-2 sm:gap-4 mb-2 sm:mb-3">
                     {item.variant && (
                             <div className="flex items-center">
-                              <span className="text-sm text-white/70 mr-2">Size:</span>
-                              <select className="bg-[#222222] border border-[#444444] rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#AE876D]">
+                              <span className="text-xs sm:text-sm text-white/70 mr-1 sm:mr-2">Size:</span>
+                              <select className="bg-[#222222] border border-[#444444] rounded px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]">
                                 <option>{item.variant}</option>
                               </select>
                             </div>
                           )}
                       <div className="flex items-center">
-                            <span className="text-sm text-white/70 mr-2">Qty:</span>
+                            <span className="text-xs sm:text-sm text-white/70 mr-1 sm:mr-2">Qty:</span>
                             <div className="flex items-center border border-[#444444] rounded">
                         <button 
                           onClick={() => handleDecreaseQuantity(item.id, item.quantity, item.variant)}
                           disabled={item.quantity <= 1}
-                                className="px-3 py-1.5 text-white hover:bg-[#444444] disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-2 sm:px-3 py-1 sm:py-1.5 text-white hover:bg-[#444444] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                         >
                                 −
                         </button>
-                              <span className="px-4 py-1.5 text-white border-x border-[#444444]">
+                              <span className="px-2 sm:px-4 py-1 sm:py-1.5 text-white border-x border-[#444444] text-xs sm:text-sm">
                                 {item.quantity}
                               </span>
                         <button 
                           onClick={() => handleIncreaseQuantity(item.id, item.quantity, item.variant)}
-                                className="px-3 py-1.5 text-white hover:bg-[#444444]"
+                                className="px-2 sm:px-3 py-1 sm:py-1.5 text-white hover:bg-[#444444] text-sm"
                         >
                           +
                         </button>
@@ -829,8 +829,8 @@ export default function CartPage() {
                         </div>
                         
                         {/* Price */}
-                        <div className="mb-3">
-                          <p className="text-white font-semibold text-lg">
+                        <div className="mb-2 sm:mb-3">
+                          <p className="text-white font-semibold text-base sm:text-lg">
                             {formatCurrency(itemTotal)}
                           </p>
                           <p className="text-white/50 text-xs">MRP incl. of all taxes</p>
@@ -852,19 +852,20 @@ export default function CartPage() {
                         )}
                         
                         {/* Action Buttons */}
-                        <div className="flex gap-4 mt-4">
+                        <div className="flex flex-wrap gap-3 sm:gap-4 mt-3 sm:mt-4">
                           <button
                             onClick={() => removeFromCart(item.id, item.variant)}
-                            className="text-sm text-white/70 hover:text-[#AE876D] uppercase font-medium"
+                            className="text-xs sm:text-sm text-white/70 hover:text-[#AE876D] uppercase font-medium"
                           >
                             REMOVE
                           </button>
                           <button
                             onClick={() => handleMoveToWishlist(item.id, item.variant)}
-                            className="text-sm text-white/70 hover:text-[#AE876D] uppercase font-medium flex items-center"
+                            className="text-xs sm:text-sm text-white/70 hover:text-[#AE876D] uppercase font-medium flex items-center"
                           >
-                            <Heart className="w-4 h-4 mr-1" />
-                            MOVE TO WISHLIST
+                            <Heart className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            <span className="hidden sm:inline">MOVE TO WISHLIST</span>
+                            <span className="sm:hidden">WISHLIST</span>
                           </button>
                         </div>
                       </div>
@@ -877,48 +878,48 @@ export default function CartPage() {
           
           {/* Right Column - Order Summary */}
           <div className="lg:w-1/3">
-            <div className="bg-[#333333] rounded-lg p-6 sticky top-24">
+            <div className="bg-[#333333] rounded-lg p-4 sm:p-6 sticky top-20 sm:top-24">
               {/* Place Order Button */}
               <button
                 onClick={handlePlaceOrder}
                 disabled={selectedCount === 0}
-                className="w-full bg-[#22c55e] hover:bg-[#16a34a] disabled:bg-[#444444] disabled:cursor-not-allowed text-white py-4 rounded-md font-semibold text-lg mb-6 transition-colors"
+                className="w-full bg-[#22c55e] hover:bg-[#16a34a] disabled:bg-[#444444] disabled:cursor-not-allowed text-white py-3 sm:py-4 rounded-md font-semibold text-base sm:text-lg mb-4 sm:mb-6 transition-colors"
               >
                 PLACE ORDER
               </button>
               
               {/* Free Shipping */}
-              <div className="mb-6">
-                <p className="text-white/90 text-sm mb-2">Free shipping on all orders</p>
-                <button className="text-[#AE876D] hover:text-[#8d6c58] text-sm font-medium">
+              <div className="mb-4 sm:mb-6">
+                <p className="text-white/90 text-xs sm:text-sm mb-2">Free shipping on all orders</p>
+                <button className="text-[#AE876D] hover:text-[#8d6c58] text-xs sm:text-sm font-medium">
                   View all benefits
-                  <ChevronDown className="w-4 h-4 inline ml-1" />
+                  <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 inline ml-1" />
                 </button>
               </div>
               
               {/* Collapsible Sections */}
-              <div className="space-y-3 mb-6">
+              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                 {/* Apply Coupon */}
                 <div className="border border-[#444444] rounded-md">
                   <button
                     onClick={() => setPromoState(prev => ({ ...prev, coupon: !prev.coupon }))}
-                    className="w-full flex items-center justify-between p-3 text-left hover:bg-[#444444] transition-colors"
+                    className="w-full flex items-center justify-between p-2 sm:p-3 text-left hover:bg-[#444444] transition-colors"
                   >
-                    <span className="text-white text-sm font-medium">Apply Coupon</span>
+                    <span className="text-white text-xs sm:text-sm font-medium">Apply Coupon</span>
                     {promoState.coupon ? (
-                      <ChevronUp className="w-4 h-4 text-white/60" />
+                      <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-white/60" />
+                      <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
                     )}
                   </button>
                   {promoState.coupon && (
-                    <div className="p-3 border-t border-[#444444]">
+                    <div className="p-2 sm:p-3 border-t border-[#444444]">
                       <input
                         type="text"
                         placeholder="Enter coupon code"
-                        className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#AE876D]"
+                        className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
                       />
-                      <button className="mt-2 w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 rounded text-sm font-medium">
+                      <button className="mt-2 w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 rounded text-xs sm:text-sm font-medium">
                         Apply
                       </button>
                     </div>
@@ -929,23 +930,23 @@ export default function CartPage() {
                 <div className="border border-[#444444] rounded-md">
                   <button
                     onClick={() => setPromoState(prev => ({ ...prev, giftVoucher: !prev.giftVoucher }))}
-                    className="w-full flex items-center justify-between p-3 text-left hover:bg-[#444444] transition-colors"
+                    className="w-full flex items-center justify-between p-2 sm:p-3 text-left hover:bg-[#444444] transition-colors"
                   >
-                    <span className="text-white text-sm font-medium">Gift Voucher</span>
+                    <span className="text-white text-xs sm:text-sm font-medium">Gift Voucher</span>
                     {promoState.giftVoucher ? (
-                      <ChevronUp className="w-4 h-4 text-white/60" />
+                      <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-white/60" />
+                      <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
                     )}
                   </button>
                   {promoState.giftVoucher && (
-                    <div className="p-3 border-t border-[#444444]">
+                    <div className="p-2 sm:p-3 border-t border-[#444444]">
                       <input
                         type="text"
                         placeholder="Enter voucher code"
-                        className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#AE876D]"
+                        className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
                       />
-                      <button className="mt-2 w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 rounded text-sm font-medium">
+                      <button className="mt-2 w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 rounded text-xs sm:text-sm font-medium">
                         Apply
                       </button>
                     </div>
@@ -953,15 +954,15 @@ export default function CartPage() {
                 </div>
                 
                 {/* Gift Wrap */}
-                <div className="border border-[#444444] rounded-md p-3">
+                <div className="border border-[#444444] rounded-md p-2 sm:p-3">
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={promoState.giftWrap}
                       onChange={(e) => setPromoState(prev => ({ ...prev, giftWrap: e.target.checked }))}
-                      className="w-4 h-4 rounded border-[#444444] bg-[#222222] text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0"
+                      className="w-4 h-4 rounded border-[#444444] bg-[#222222] text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
                     />
-                    <span className="ml-3 text-white text-sm font-medium">Gift Wrap (₹ 25)</span>
+                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm font-medium">Gift Wrap (₹ 25)</span>
                   </label>
                 </div>
                 
@@ -969,24 +970,24 @@ export default function CartPage() {
                 <div className="border border-[#444444] rounded-md">
                   <button
                     onClick={() => setPromoState(prev => ({ ...prev, points: !prev.points }))}
-                    className="w-full flex items-center justify-between p-3 text-left hover:bg-[#444444] transition-colors"
+                    className="w-full flex items-center justify-between p-2 sm:p-3 text-left hover:bg-[#444444] transition-colors"
                   >
-                    <span className="text-white text-sm font-medium">TSS Money / TSS Points</span>
+                    <span className="text-white text-xs sm:text-sm font-medium">TSS Money / TSS Points</span>
                     {promoState.points ? (
-                      <ChevronUp className="w-4 h-4 text-white/60" />
+                      <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-white/60" />
+                      <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
                     )}
                   </button>
                   {promoState.points && (
-                    <div className="p-3 border-t border-[#444444]">
-                      <p className="text-white/70 text-sm mb-2">Available Points: 0</p>
+                    <div className="p-2 sm:p-3 border-t border-[#444444]">
+                      <p className="text-white/70 text-xs sm:text-sm mb-2">Available Points: 0</p>
                       <input
                         type="number"
                         placeholder="Enter points to redeem"
-                        className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-[#AE876D]"
+                        className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
                       />
-                      <button className="mt-2 w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 rounded text-sm font-medium">
+                      <button className="mt-2 w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 rounded text-xs sm:text-sm font-medium">
                         Apply
                       </button>
                     </div>
@@ -995,27 +996,27 @@ export default function CartPage() {
               </div>
               
               {/* Billing Details */}
-              <div className="border-t border-[#444444] pt-6">
-                <h3 className="text-white font-semibold mb-4 uppercase text-sm">Billing Details</h3>
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-white/70">Cart Total (Excl. of all taxes)</span>
-                    <span className="text-white">{formatCurrency(cartTotal)}</span>
+              <div className="border-t border-[#444444] pt-4 sm:pt-6">
+                <h3 className="text-white font-semibold mb-3 sm:mb-4 uppercase text-xs sm:text-sm">Billing Details</h3>
+                <div className="space-y-2 mb-3 sm:mb-4">
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="text-white/70 break-words pr-2">Cart Total (Excl. of all taxes)</span>
+                    <span className="text-white flex-shrink-0">{formatCurrency(cartTotal)}</span>
                   </div>
                   {giftWrapAmount > 0 && (
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-white/70">Gift Wrap</span>
                       <span className="text-white">{formatCurrency(giftWrapAmount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-white/70">GST</span>
                     <span className="text-white">{formatCurrency(gst)}</span>
                   </div>
                 </div>
                 
-                <div className="border-t border-[#444444] pt-4">
-                  <div className="flex justify-between font-semibold text-lg">
+                <div className="border-t border-[#444444] pt-3 sm:pt-4">
+                  <div className="flex justify-between font-semibold text-base sm:text-lg">
                     <span className="text-white">Total</span>
                     <span className="text-white">{formatCurrency(total)}</span>
                   </div>
@@ -1023,52 +1024,52 @@ export default function CartPage() {
               </div>
               
               {/* Payment Methods */}
-              <div className="mt-6 border-t border-[#444444] pt-6">
-                <h3 className="text-white font-semibold mb-4 uppercase text-sm">Payment Method</h3>
-                <div className="space-y-3">
-                  <label className="flex items-center p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
+              <div className="mt-4 sm:mt-6 border-t border-[#444444] pt-4 sm:pt-6">
+                <h3 className="text-white font-semibold mb-3 sm:mb-4 uppercase text-xs sm:text-sm">Payment Method</h3>
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="flex items-center p-2 sm:p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
                     <input
                       type="radio"
                       name="payment"
                       value="card"
                       checked={paymentMethod === "card"}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0"
+                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
                     />
-                    <span className="ml-3 text-white text-sm">Credit/Debit Card</span>
+                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm">Credit/Debit Card</span>
                   </label>
-                  <label className="flex items-center p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
+                  <label className="flex items-center p-2 sm:p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
                     <input
                       type="radio"
                       name="payment"
                       value="upi"
                       checked={paymentMethod === "upi"}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0"
+                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
                     />
-                    <span className="ml-3 text-white text-sm">UPI</span>
+                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm">UPI</span>
                   </label>
-                  <label className="flex items-center p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
+                  <label className="flex items-center p-2 sm:p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
                     <input
                       type="radio"
                       name="payment"
                       value="cod"
                       checked={paymentMethod === "cod"}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0"
+                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
                     />
-                    <span className="ml-3 text-white text-sm">Cash on Delivery</span>
+                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm">Cash on Delivery</span>
                   </label>
-                  <label className="flex items-center p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
+                  <label className="flex items-center p-2 sm:p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
                     <input
                       type="radio"
                       name="payment"
                       value="wallet"
                       checked={paymentMethod === "wallet"}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0"
+                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
                     />
-                    <span className="ml-3 text-white text-sm">Wallet</span>
+                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm">Wallet</span>
                   </label>
                 </div>
               </div>

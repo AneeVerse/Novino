@@ -358,65 +358,65 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-[#2D2D2D] text-white pt-24 pb-12">
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Progress Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center space-x-4">
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-[#444444] flex items-center justify-center text-sm font-semibold">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-center space-x-1 sm:space-x-4 overflow-x-auto pb-2 px-2">
+            <div className="flex items-center flex-shrink-0">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#444444] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 1
               </div>
-              <span className="ml-2 text-sm font-medium text-white/60">MY BAG</span>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/60">MY BAG</span>
             </div>
-            <div className="w-16 h-0.5 bg-[#444444]"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-[#AE876D] flex items-center justify-center text-sm font-semibold">
+            <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
+            <div className="flex items-center flex-shrink-0">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#AE876D] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 2
               </div>
-              <span className="ml-2 text-sm font-medium text-[#AE876D]">ADDRESS</span>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-[#AE876D]">ADDRESS</span>
             </div>
-            <div className="w-16 h-0.5 bg-[#444444]"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-[#444444] flex items-center justify-center text-sm font-semibold">
+            <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
+            <div className="flex items-center flex-shrink-0">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#444444] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 3
               </div>
-              <span className="ml-2 text-sm font-medium text-white/60">PAYMENT</span>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/60">PAYMENT</span>
             </div>
           </div>
         </div>
         
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
           {/* Left Column - Address and Payment */}
           <div className="lg:w-2/3">
             {/* Delivery Address Section */}
-            <div className="bg-[#333333] rounded-lg p-6 mb-6">
+            <div className="bg-[#333333] rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
               {deliveryAddress ? (
-                <div className="flex items-start justify-between">
-                  <div>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center mb-2">
-                      <MapPin className="w-4 h-4 mr-2 text-[#AE876D]" />
-                      <span className="text-sm font-medium">Deliver To:</span>
+                      <MapPin className="w-4 h-4 mr-2 text-[#AE876D] flex-shrink-0" />
+                      <span className="text-xs sm:text-sm font-medium">Deliver To:</span>
                     </div>
-                    <p className="text-white font-semibold mb-1">
+                    <p className="text-white font-semibold mb-1 text-sm sm:text-base">
                       {deliveryAddress.name}, {deliveryAddress.pincode}
                     </p>
-                    <p className="text-white/70 text-sm">{deliveryAddress.address}</p>
+                    <p className="text-white/70 text-xs sm:text-sm break-words">{deliveryAddress.address}</p>
                   </div>
                   <button 
                     onClick={() => router.push('/cart')}
-                    className="text-[#AE876D] hover:text-[#8d6c58] text-sm font-medium uppercase"
+                    className="text-[#AE876D] hover:text-[#8d6c58] text-xs sm:text-sm font-medium uppercase flex-shrink-0"
                   >
                     CHANGE
                   </button>
                 </div>
               ) : (
                 <div>
-                  <div className="flex items-center mb-4">
-                    <MapPin className="w-4 h-4 mr-2 text-[#AE876D]" />
-                    <span className="text-sm font-medium">Deliver To:</span>
+                  <div className="flex items-center mb-3 sm:mb-4">
+                    <MapPin className="w-4 h-4 mr-2 text-[#AE876D] flex-shrink-0" />
+                    <span className="text-xs sm:text-sm font-medium">Deliver To:</span>
                   </div>
-                  <p className="text-white/70 text-sm mb-4">No address added yet</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4">No address added yet</p>
                   <button
                     onClick={() => router.push('/cart')}
-                    className="bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 px-4 rounded-md font-medium transition-colors"
+                    className="bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 px-4 rounded-md text-xs sm:text-sm font-medium transition-colors"
                   >
                     Add Address
                   </button>
@@ -425,14 +425,14 @@ export default function CheckoutPage() {
             </div>
             
             {/* Payment Options Section */}
-            <div className="bg-[#333333] rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-6">Payment Options</h2>
+            <div className="bg-[#333333] rounded-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Payment Options</h2>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {paymentMethods.map((method) => (
                   <div key={method.id} className="border border-[#444444] rounded-md overflow-hidden">
                     <label
-                      className={`flex items-center p-4 cursor-pointer transition-colors ${
+                      className={`flex items-center p-3 sm:p-4 cursor-pointer transition-colors ${
                         method.disabled
                           ? 'bg-[#222222] opacity-50 cursor-not-allowed'
                           : selectedPayment === method.id
@@ -447,16 +447,16 @@ export default function CheckoutPage() {
                         checked={selectedPayment === method.id}
                         onChange={() => handlePaymentSelect(method.id)}
                         disabled={method.disabled}
-                        className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 mr-3"
+                        className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 mr-2 sm:mr-3 flex-shrink-0"
                       />
                       
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            {method.icon && <span className="text-white/70">{method.icon}</span>}
-                            <span className="text-white font-medium">{method.name}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                            {method.icon && <span className="text-white/70 flex-shrink-0">{method.icon}</span>}
+                            <span className="text-white font-medium text-xs sm:text-sm break-words">{method.name}</span>
                             {method.balance && (
-                              <span className="text-white/60 text-sm">(Balance: {method.balance})</span>
+                              <span className="text-white/60 text-xs sm:text-sm flex-shrink-0">(Balance: {method.balance})</span>
                             )}
                           </div>
                           
@@ -467,19 +467,19 @@ export default function CheckoutPage() {
                                 e.preventDefault();
                                 togglePaymentExpansion(method.id);
                               }}
-                              className="text-white/60 hover:text-white"
+                              className="text-white/60 hover:text-white flex-shrink-0"
                             >
                               {expandedPayments[method.id] ? (
-                                <ChevronUp className="w-5 h-5" />
+                                <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
                               ) : (
-                                <ChevronDown className="w-5 h-5" />
+                                <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
                               )}
                             </button>
                           )}
                         </div>
                         
                         {method.message && (
-                          <p className={`text-sm mt-2 ${
+                          <p className={`text-xs sm:text-sm mt-2 ${
                             method.id === "cod" ? "text-yellow-400" : "text-white/60"
                           }`}>
                             {method.message}
@@ -487,8 +487,8 @@ export default function CheckoutPage() {
                         )}
                         
                         {method.id === "cod" && !isCodAvailable && (
-                          <p className="text-sm mt-2 text-red-400 flex items-center gap-1">
-                            <AlertCircle className="w-4 h-4" />
+                          <p className="text-xs sm:text-sm mt-2 text-red-400 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                             Some products are not applicable for COD.
                           </p>
                         )}
@@ -497,11 +497,11 @@ export default function CheckoutPage() {
                     
                     {/* Expanded Content */}
                     {expandedPayments[method.id] && (
-                      <div className="border-t border-[#444444] p-4 bg-[#222222]">
+                      <div className="border-t border-[#444444] p-3 sm:p-4 bg-[#222222]">
                         {method.id === "cards" && (
-                          <div className="space-y-4">
+                          <div className="space-y-3 sm:space-y-4">
                             <div>
-                              <label className="block text-sm font-medium text-white/70 mb-2">
+                              <label className="block text-xs sm:text-sm font-medium text-white/70 mb-2">
                                 Card Number
                               </label>
                               <input
@@ -509,13 +509,13 @@ export default function CheckoutPage() {
                                 value={cardDetails.cardNumber}
                                 onChange={(e) => setCardDetails(prev => ({ ...prev, cardNumber: e.target.value }))}
                                 placeholder="1234 5678 9012 3456"
-                                className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D]"
+                                className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
                                 maxLength={19}
                               />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                               <div>
-                                <label className="block text-sm font-medium text-white/70 mb-2">
+                                <label className="block text-xs sm:text-sm font-medium text-white/70 mb-2">
                                   Expiry (MM/YY)
                                 </label>
                                 <input
@@ -523,12 +523,12 @@ export default function CheckoutPage() {
                                   value={cardDetails.expiry}
                                   onChange={(e) => setCardDetails(prev => ({ ...prev, expiry: e.target.value }))}
                                   placeholder="MM/YY"
-                                  className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D]"
+                                  className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
                                   maxLength={5}
                                 />
                               </div>
                               <div>
-                                <label className="block text-sm font-medium text-white/70 mb-2">
+                                <label className="block text-xs sm:text-sm font-medium text-white/70 mb-2">
                                   CVV
                                 </label>
                                 <input
@@ -536,13 +536,13 @@ export default function CheckoutPage() {
                                   value={cardDetails.cvv}
                                   onChange={(e) => setCardDetails(prev => ({ ...prev, cvv: e.target.value }))}
                                   placeholder="CVV"
-                                  className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D]"
+                                  className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
                                   maxLength={4}
                                 />
                               </div>
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-white/70 mb-2">
+                              <label className="block text-xs sm:text-sm font-medium text-white/70 mb-2">
                                 Cardholder Name
                               </label>
                               <input
@@ -550,7 +550,7 @@ export default function CheckoutPage() {
                                 value={cardDetails.name}
                                 onChange={(e) => setCardDetails(prev => ({ ...prev, name: e.target.value }))}
                                 placeholder="Name on card"
-                                className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D]"
+                                className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
                               />
                             </div>
                           </div>
@@ -558,7 +558,7 @@ export default function CheckoutPage() {
                         
                         {method.id === "upi" && (
                           <div>
-                            <label className="block text-sm font-medium text-white/70 mb-2">
+                            <label className="block text-xs sm:text-sm font-medium text-white/70 mb-2">
                               UPI ID
                             </label>
                             <input
@@ -566,17 +566,17 @@ export default function CheckoutPage() {
                               value={upiId}
                               onChange={(e) => setUpiId(e.target.value)}
                               placeholder="yourname@upi"
-                              className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D]"
+                              className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
                             />
                           </div>
                         )}
                         
                         {method.id === "wallets" && (
-                          <div className="space-y-3">
+                          <div className="space-y-2 sm:space-y-3">
                             {walletOptions.map((wallet) => (
                               <label
                                 key={wallet.id}
-                                className="flex items-center p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#333333] transition-colors"
+                                className="flex items-center p-2 sm:p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#333333] transition-colors"
                               >
                                 <input
                                   type="radio"
@@ -584,9 +584,9 @@ export default function CheckoutPage() {
                                   value={wallet.id}
                                   checked={selectedWallet === wallet.id}
                                   onChange={(e) => setSelectedWallet(e.target.value)}
-                                  className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 mr-3"
+                                  className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 mr-2 sm:mr-3 flex-shrink-0"
                                 />
-                                <span className="text-white">{wallet.name}</span>
+                                <span className="text-white text-xs sm:text-sm">{wallet.name}</span>
                               </label>
                             ))}
                           </div>
@@ -594,13 +594,13 @@ export default function CheckoutPage() {
                         
                         {method.id === "netbanking" && (
                           <div>
-                            <label className="block text-sm font-medium text-white/70 mb-2">
+                            <label className="block text-xs sm:text-sm font-medium text-white/70 mb-2">
                               Select Bank
                             </label>
                             <select
                               value={selectedBank}
                               onChange={(e) => setSelectedBank(e.target.value)}
-                              className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D]"
+                              className="w-full bg-[#333333] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
                             >
                               <option value="">Select a bank</option>
                               {bankOptions.map((bank) => (
@@ -621,35 +621,35 @@ export default function CheckoutPage() {
           
           {/* Right Column - Billing Details */}
           <div className="lg:w-1/3">
-            <div className="bg-[#333333] rounded-lg p-6 sticky top-24">
-              <h2 className="text-xl font-semibold mb-6 uppercase">Billing Details</h2>
+            <div className="bg-[#333333] rounded-lg p-4 sm:p-6 sticky top-20 sm:top-24">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 uppercase text-xs sm:text-base">Billing Details</h2>
               
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/70">Cart Total (Excl. of all taxes)</span>
-                  <span className="text-white">{formatCurrency(cartTotal)}</span>
+              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="text-white/70 break-words pr-2">Cart Total (Excl. of all taxes)</span>
+                  <span className="text-white flex-shrink-0">{formatCurrency(cartTotal)}</span>
                 </div>
                 {giftWrapAmount > 0 && (
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-white/70">Gift Wrap</span>
                     <span className="text-white">{formatCurrency(giftWrapAmount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-white/70">GST</span>
                   <span className="text-white">{formatCurrency(gst)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-white/70">Shipping Charges</span>
-                  <div className="text-right">
-                    <span className="text-white line-through text-white/50 mr-2">₹50.00</span>
-                    <span className="text-[#22c55e] font-semibold">Free</span>
+                  <div className="text-right flex-shrink-0">
+                    <span className="text-white line-through text-white/50 mr-1 sm:mr-2 text-xs">₹50.00</span>
+                    <span className="text-[#22c55e] font-semibold text-xs sm:text-sm">Free</span>
                   </div>
                 </div>
               </div>
               
-              <div className="border-t border-[#444444] pt-4 mb-6">
-                <div className="flex justify-between font-semibold text-lg">
+              <div className="border-t border-[#444444] pt-3 sm:pt-4 mb-4 sm:mb-6">
+                <div className="flex justify-between font-semibold text-base sm:text-lg">
                   <span className="text-white">Total Amount</span>
                   <span className="text-white">{formatCurrency(total)}</span>
                 </div>
@@ -658,12 +658,12 @@ export default function CheckoutPage() {
               <button
                 onClick={handleConfirmOrder}
                 disabled={!deliveryAddress || !selectedPayment}
-                className="w-full bg-[#22c55e] hover:bg-[#16a34a] disabled:bg-[#444444] disabled:cursor-not-allowed text-white py-4 rounded-md font-semibold text-lg mb-4 transition-colors"
+                className="w-full bg-[#22c55e] hover:bg-[#16a34a] disabled:bg-[#444444] disabled:cursor-not-allowed text-white py-3 sm:py-4 rounded-md font-semibold text-base sm:text-lg mb-3 sm:mb-4 transition-colors"
               >
                 CONFIRM ORDER
               </button>
               
-              <div className="mt-6 text-center text-xs text-white/60">
+              <div className="mt-4 sm:mt-6 text-center text-[10px] sm:text-xs text-white/60">
                 By completing your purchase, you agree to our Terms of Service and Privacy Policy
               </div>
             </div>
