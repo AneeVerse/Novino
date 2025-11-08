@@ -359,12 +359,13 @@ export default function ArtefactsPage() {
           font-size: 245px !important;
         }
 
-        /* Mobile adjustment - move text down */
+        /* Mobile adjustment - move text down, smaller, and slightly left */
         @media (max-width: 767px) { /* Target screens smaller than md (768px) */
           .artefacts-hero-text {
-            top: 70%; /* Moved much lower */
-            letter-spacing: 0.02em; /* Decreased letter spacing */
-            font-size: 80px !important; /* Decreased font size */
+            top: 77%;
+            left: 49%; /* Shift slightly to the left */
+            letter-spacing: 0.04em;
+            font-size: 60px !important; /* Smaller font size */
             width: 95%;
           }
         }

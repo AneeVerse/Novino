@@ -304,12 +304,13 @@ export default function PaintingsPage() {
           width: 90%;
         }
 
-        /* Mobile adjustment - move text down */
+        /* Mobile adjustment - move text down, smaller, and slightly left */
         @media (max-width: 767px) { /* Target screens smaller than md (768px) */
           .paintings-hero-text {
-            top: 64%; /* Moved much lower */
-            letter-spacing: 0.02em; /* Decreased letter spacing */
-            font-size: 70px !important; /* Decreased font size */
+            top: 68%;
+            left: 50%; /* Shift slightly to the left */
+            letter-spacing: 0.04em;
+            font-size: 60px !important; /* Smaller font size */
             width: 95%;
           }
         }
