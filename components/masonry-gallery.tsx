@@ -74,6 +74,36 @@ export default function MasonryGallery() {
     500: 1
   };
 
+  // Define different fixed heights for images to create varied shapes (cycling pattern)
+  const getImageSize = (index: number) => {
+    const sizes = [
+      { height: '280px' },      // Image 1 - Medium square-ish
+      { height: '320px' },      // Image 2 - Taller
+      { height: '240px' },      // Image 3 - Shorter
+      { height: '380px' },      // Image 4 - Very tall
+      { height: '260px' },      // Image 5 - Medium
+      { height: '340px' },      // Image 6 - Tall
+      { height: '220px' },      // Image 7 - Short
+      { height: '300px' },      // Image 8 - Medium tall
+    ];
+    return sizes[index % sizes.length];
+  };
+
+  // Define different aspect ratios for mobile to create varied shapes
+  const getMobileAspectRatio = (index: number) => {
+    const ratios = [
+      '1/1',      // Image 1 - Square
+      '4/3',      // Image 2 - Landscape
+      '3/4',      // Image 3 - Portrait
+      '16/9',     // Image 4 - Wide landscape
+      '2/3',      // Image 5 - Portrait
+      '1/1',      // Image 6 - Square
+      '5/4',      // Image 7 - Slightly tall
+      '4/5',      // Image 8 - Portrait
+    ];
+    return ratios[index % ratios.length];
+  };
+
   return (
     // Add border around the entire gallery using CSS instead of background image
     <div
@@ -98,14 +128,27 @@ export default function MasonryGallery() {
         <div className="hidden h-full w-full rounded-[32px] bg-gradient-to-l from-white/25 via-white/5 to-transparent blur-[110px] opacity-80 sm:block" />
       </div>
       
-      {/* View all button (Desktop/Tablet) - Hidden on mobile */}
-      <div className="hidden sm:flex justify-end mb-8 sm:mb-12 mt-8 relative z-10">
-        <Link href="/paintings" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-[#AE876D]/80 transition-colors text-sm sm:text-base cursor-pointer" style={{ borderRadius: '10px' }}>
-          View all
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-2">
-            <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </Link>
+      {/* Main Title and Subtitle */}
+      <div className="relative z-10 mb-8 sm:mb-12 mt-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-wider mb-2">
+              PAINTING
+            </h2>
+            <p className="text-white/80 text-sm sm:text-base">
+              Explore our collection of exquisite paintings
+            </p>
+          </div>
+          {/* View all button (Desktop/Tablet) - Hidden on mobile */}
+          <div className="hidden sm:flex">
+            <Link href="/paintings" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-[#AE876D]/80 transition-colors text-sm sm:text-base cursor-pointer" style={{ borderRadius: '10px' }}>
+              View all
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-2">
+                <path d="M14 16L18 12M18 12L14 8M18 12L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Loading state */}
@@ -120,50 +163,83 @@ export default function MasonryGallery() {
           className="my-masonry-grid"
           columnClassName="my-masonry-grid_column"
         >
-          {products.map((product) => (
-            <div key={product.id} className="overflow-hidden gallery-image-container md:mb-3">
-              <Link href={`/product/${product.id}`} className="relative border-0 rounded-sm overflow-hidden block">
-                <Image
-                  src={product.image || "/images/placeholder.png"}
-                  alt={product.name || "Painting"}
-                  width={280}
-                  height={280}
-                  priority
-                  className="w-full h-auto object-cover gallery-image"
-                />
-                <div className="gallery-image-overlay">
-                  <h3 className="text-white text-xs font-medium">
-                    {product.name} {product.price && `- ${product.price}`}
-                  </h3>
-                </div>
-              </Link>
-            </div>
-          ))}
+          {products.map((product, index) => {
+            const sizeConfig = getImageSize(index);
+            return (
+              <div key={product.id} className="overflow-hidden gallery-image-container md:mb-3">
+                <Link href={`/product/${product.id}`} className="relative border-0 rounded-sm overflow-hidden block w-full">
+                  {/* Product name above image */}
+                  <div className="gallery-card-heading">
+                    <span className="text-white text-xs font-semibold uppercase tracking-wider">
+                      {product.name || "Painting"}
+                    </span>
+                  </div>
+                  <div 
+                    className="relative w-full gallery-image-wrapper"
+                    style={{
+                      height: sizeConfig.height,
+                      width: '100%',
+                    }}
+                  >
+                    {/* Fixed height container with object-cover to fill */}
+                    <img
+                      src={product.image || "/images/placeholder.png"}
+                      alt={product.name || "Painting"}
+                      className="w-full h-full object-cover gallery-image"
+                      loading="lazy"
+                      style={{ display: 'block' }}
+                    />
+                  </div>
+                  <div className="gallery-image-overlay">
+                    <h3 className="text-white text-xs font-medium">
+                      {product.price && `₹${product.price}`}
+                    </h3>
+                  </div>
+                </Link>
+              </div>
+            );
+          })}
         </Masonry>
       )}
 
       {/* Horizontal Scroll Gallery (Mobile) */}
       {!loading && (
-        <div className="mobile-scroll-gallery flex overflow-x-auto space-x-3 pb-4 scrollbar-hide pl-1">
-          {products.map((product) => (
-            <div key={`mobile-${product.id}`} className="overflow-hidden gallery-image-container w-52 sm:w-60 flex-shrink-0">
-              <Link href={`/product/${product.id}`} className="relative border-0 rounded-sm overflow-hidden block">
-                <Image
-                  src={product.image || "/images/placeholder.png"}
-                  alt={product.name || "Painting"}
-                  width={280}
-                  height={280}
-                  priority
-                  className="w-full h-auto object-cover gallery-image"
-                />
-                <div className="gallery-image-overlay">
-                  <h3 className="text-white text-xs font-medium">
-                    {product.name} {product.price && `- ${product.price}`}
-                  </h3>
-                </div>
-              </Link>
-            </div>
-          ))}
+        <div className="mobile-scroll-gallery flex overflow-x-auto space-x-4 pb-4 scrollbar-hide pl-1">
+          {products.map((product, index) => {
+            const aspectRatio = getMobileAspectRatio(index);
+            return (
+              <div key={`mobile-${product.id}`} className="overflow-hidden gallery-image-container w-52 sm:w-60 flex-shrink-0">
+                <Link href={`/product/${product.id}`} className="relative border-0 rounded-sm overflow-hidden block w-full">
+                  {/* Product name above image */}
+                  <div className="gallery-card-heading">
+                    <span className="text-white text-xs font-semibold uppercase tracking-wider">
+                      {product.name || "Painting"}
+                    </span>
+                  </div>
+                  <div 
+                    className="relative w-full gallery-image-wrapper"
+                    style={{
+                      aspectRatio: aspectRatio,
+                    }}
+                  >
+                    {/* Fixed aspect ratio container with object-cover to fill */}
+                    <img
+                      src={product.image || "/images/placeholder.png"}
+                      alt={product.name || "Painting"}
+                      className="w-full h-full object-cover gallery-image"
+                      loading="lazy"
+                      style={{ display: 'block' }}
+                    />
+                  </div>
+                  <div className="gallery-image-overlay">
+                    <h3 className="text-white text-xs font-medium">
+                      {product.price && `₹${product.price}`}
+                    </h3>
+                  </div>
+                </Link>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -182,16 +258,50 @@ export default function MasonryGallery() {
         .my-masonry-grid {
           display: flex; 
           width: auto;
-          margin-left: -8px;
+          margin-left: -16px;
         }
         
         .my-masonry-grid_column {
-          padding-left: 8px;
+          padding-left: 16px;
         }
         
         .gallery-image-container {
           transition: transform 0.3s ease-in-out;
-          margin-bottom: 8px;
+          margin-bottom: 16px;
+          width: 100%;
+        }
+        
+        .gallery-card-heading {
+          padding: 10px 0 8px 0;
+          margin-bottom: 6px;
+          min-height: 32px;
+        }
+        
+        .gallery-card-heading span {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          letter-spacing: 1px;
+          font-size: 11px;
+          opacity: 0.9;
+          line-height: 1.4;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        .gallery-image-wrapper {
+          width: 100%;
+          display: block;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .gallery-image {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
         }
         
         .gallery-image-container:hover {
@@ -215,11 +325,27 @@ export default function MasonryGallery() {
         
         @media (max-width: 640px) {
           .my-masonry-grid {
-            margin-left: -4px;
+            margin-left: -12px;
           }
           
           .my-masonry-grid_column {
-            padding-left: 4px;
+            padding-left: 12px;
+          }
+          
+          .gallery-image-container {
+            margin-bottom: 12px;
+          }
+          
+          .gallery-card-heading {
+            padding: 8px 0 6px 0;
+            margin-bottom: 4px;
+            min-height: 28px;
+          }
+          
+          .gallery-card-heading span {
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            -webkit-line-clamp: 2;
           }
           
           .gallery-image-overlay {
