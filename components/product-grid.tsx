@@ -119,12 +119,8 @@ export default function ProductGrid({
   });
 
   return (
-    <div className="p-8 relative overflow-hidden max-w-[2400px] mx-auto font-['Roboto_Mono'] min-h-[600px]" style={{ 
-      backgroundImage: "url('/Container (2).png')",
-      backgroundSize: "100% 100%", 
-      backgroundRepeat: "no-repeat",
-      backgroundPosition: "center",
-      overflow: "visible"
+    <div className="py-8 sm:pt-12 sm:pb-16 px-6 sm:px-8 relative overflow-visible max-w-[2400px] mx-auto font-['Roboto_Mono'] min-h-[600px] sm:min-h-[800px] rounded-[28px]" style={{ 
+      backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='28' ry='28' stroke='rgba(255,255,255,0.8)' stroke-width='3' stroke-dasharray='20%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e")`,
     }}>
       {/* Gradient overlays - White */}
       {/* Main glow - bottom right */}
