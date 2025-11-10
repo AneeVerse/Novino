@@ -307,7 +307,7 @@ export default function Home() {
           ></div>
           {/* Updated NOVINO text with custom class for scroll animation */}
           <h1 
-            className={`novino-hero-text text-7xl sm:text-[160px] md:text-[230px] lg:text-[330px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            className={`novino-hero-text text-7xl sm:text-[160px] md:text-[230px] lg:text-[300px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
           >
             NOVINO
           </h1>
@@ -395,7 +395,7 @@ export default function Home() {
             opacity: 1;
           }
           100% {
-            transform: translate(-50%, 50%);
+            transform: translate(-50%, 53%);
             visibility: visible;
             opacity: 1;
           }
@@ -409,19 +409,19 @@ export default function Home() {
         .novino-hero-text {
           font-family: 'DM Serif Display', serif;
           /* Desktop styles */
-          top: 41%;
-          left: 51%;
+          top: 44%;
+          left: 51.5%;
           transform: translate(-50%, 200%); /* Initial position for animation */
-          letter-spacing: 0.15em;
+          letter-spacing: 0.2em;
         }
 
         /* Mobile adjustment - move text down, smaller, and slightly left */
         @media (max-width: 767px) { /* Target screens smaller than md (768px) */
           .novino-hero-text {
-            top: 79%;
+            top: 78%;
             left: 50%; /* Shift slightly to the left */
             letter-spacing: 0.04em;
-            font-size: 96px !important; /* Smaller font size */
+            font-size: 88px !important; /* Smaller font size */
           }
         }
         
