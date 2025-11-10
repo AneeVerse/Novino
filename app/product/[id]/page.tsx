@@ -14,6 +14,8 @@ import { useRouter, useParams } from "next/navigation"
 import { useCallback } from "react"
 import { useCart } from '@/contexts/CartContext'
 import Preloader from "@/components/ui/preloader"
+import { ProductSchema, BreadcrumbSchema, FAQSchema } from "@/components/seo"
+import { SITE_URL } from "@/lib/seo"
 
 // Artefact products data
 const artefactProducts = [
@@ -485,8 +487,46 @@ export default function ProductDetail() {
   const hasSelectedColor = colorVariants.some(v => selectedVariant?.id === v.id);
   const hasSelectedFrame = frameVariants.some(v => selectedVariant?.id === v.id);
 
+  // Generate breadcrumbs
+  const productUrl = product.slug || product.id?.toString() || productId?.toString() || '';
+  const breadcrumbs = [
+    { name: 'Home', url: SITE_URL },
+    { name: categoryName || 'Products', url: `${SITE_URL}/${product.type === 'artefact' ? 'artefacts' : 'paintings'}` },
+    { name: product.name || 'Product', url: `${SITE_URL}/product/${productUrl}` },
+  ];
+
   return (
     <div className="bg-[#2D2D2D] text-white min-h-screen">
+      {/* SEO Schema */}
+      {product && (
+        <>
+          <ProductSchema 
+            product={{
+              name: product.name || '',
+              description: product.description || '',
+              image: product.image,
+              images: product.images,
+              price: product.price,
+              basePrice: product.basePrice,
+              category: categoryName || product.category,
+              slug: product.slug || productUrl,
+              id: product.id?.toString() || productUrl,
+              availability: 'https://schema.org/InStock',
+              brand: 'Novino.io',
+            }}
+          />
+          <BreadcrumbSchema items={breadcrumbs} />
+          {product.faqSection?.faqs && product.faqSection.faqs.length > 0 && (
+            <FAQSchema 
+              faqs={product.faqSection.faqs.map((faq: any) => ({
+                question: faq.question || '',
+                answer: faq.answer || '',
+              }))}
+            />
+          )}
+        </>
+      )}
+      
       <div className="w-full px-4 md:px-0 pt-24 pb-0">
        
         {isInvalidRoute && (

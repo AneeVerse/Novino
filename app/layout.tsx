@@ -15,6 +15,7 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import NavigationLoading from "@/components/navigation-loading"
 import { Toaster } from "@/components/ui/toaster"
 import Analytics from "@/components/analytics"
+import { OrganizationSchema } from "@/components/seo"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -40,12 +41,41 @@ export default function RootLayout({
       <head>
         <title>Novino.io - Art Gallery</title>
         <meta name="description" content="Elevate ordinary walls with extraordinary galleries" />
+        <meta name="keywords" content="art gallery, paintings, artefacts, art collection, contemporary art, fine art, decorative art" />
+        <meta name="author" content="Novino.io" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#2D2D2D" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"} />
+        <meta property="og:title" content="Novino.io - Art Gallery" />
+        <meta property="og:description" content="Elevate ordinary walls with extraordinary galleries" />
+        <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}/images/og-image.png`} />
+        <meta property="og:site_name" content="Novino.io" />
+        <meta property="og:locale" content="en_US" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"} />
+        <meta name="twitter:title" content="Novino.io - Art Gallery" />
+        <meta name="twitter:description" content="Elevate ordinary walls with extraordinary galleries" />
+        <meta name="twitter:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}/images/og-image.png`} />
+        
+        {/* Additional SEO Meta Tags */}
+        <link rel="canonical" href={process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"} />
+        <link rel="alternate" type="application/rss+xml" title="Novino.io RSS Feed" href={`${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}/feed.xml`} />
+        
         {process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && (
           <meta
             name="google-site-verification"
             content={process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION}
           />
         )}
+        
+        <OrganizationSchema />
       </head>
       <body className={`${inter.className}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>

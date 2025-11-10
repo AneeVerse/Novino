@@ -9,6 +9,8 @@ import { getValidImageUrl } from '@/lib/imageUtils';
 import BlogSection from '@/components/blog-section';
 import WardrobeSection from '@/components/wardrobe-section';
 import Footer from '@/components/footer';
+import { BlogSchema, BreadcrumbSchema } from '@/components/seo';
+import { SITE_URL } from '@/lib/seo';
 
 interface Params {
   slug: string;
@@ -121,8 +123,31 @@ export default function BlogDetail() {
     );
   }
 
+  // Generate breadcrumbs
+  const breadcrumbs = [
+    { name: 'Home', url: SITE_URL },
+    { name: 'Journal', url: `${SITE_URL}/journal` },
+    { name: blog.title, url: `${SITE_URL}/blogs/${blog.slug}` },
+  ];
+
   return (
     <main className="min-h-screen bg-transparent">
+      {/* SEO Schema */}
+      {blog && (
+        <>
+          <BlogSchema 
+            blog={{
+              title: blog.title,
+              description: blog.description,
+              image: blog.image,
+              slug: blog.slug,
+              publishedTime: new Date().toISOString(),
+            }}
+          />
+          <BreadcrumbSchema items={breadcrumbs} />
+        </>
+      )}
+      
       {/* Back navigation */}
       <div className="container mx-auto px-4 pt-6">
         
