@@ -110,9 +110,22 @@ export default function RootLayout({
               "url": process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io",
               "description": "Elevate ordinary walls with extraordinary galleries. Discover unique art pieces, paintings, and artefacts.",
               "priceRange": "$$",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": process.env.NEXT_PUBLIC_BUSINESS_STREET || "Online Art Gallery",
+                "addressLocality": process.env.NEXT_PUBLIC_BUSINESS_CITY || "Global",
+                "addressRegion": process.env.NEXT_PUBLIC_BUSINESS_REGION || "",
+                "postalCode": process.env.NEXT_PUBLIC_BUSINESS_POSTAL || "",
+                "addressCountry": process.env.NEXT_PUBLIC_BUSINESS_COUNTRY || "US"
+              },
               "areaServed": {
                 "@type": "Country",
                 "name": "Global"
+              },
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "customer service",
+                "availableLanguage": ["English"]
               }
             })
           }}

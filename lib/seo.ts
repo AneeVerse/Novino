@@ -163,9 +163,22 @@ export function generateLocalBusinessSchema() {
     url: SITE_URL,
     description: SITE_DESCRIPTION,
     priceRange: '$$',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: process.env.NEXT_PUBLIC_BUSINESS_STREET || 'Online Art Gallery',
+      addressLocality: process.env.NEXT_PUBLIC_BUSINESS_CITY || 'Global',
+      addressRegion: process.env.NEXT_PUBLIC_BUSINESS_REGION || '',
+      postalCode: process.env.NEXT_PUBLIC_BUSINESS_POSTAL || '',
+      addressCountry: process.env.NEXT_PUBLIC_BUSINESS_COUNTRY || 'US',
+    },
     areaServed: {
       '@type': 'Country',
       name: 'Global',
+    },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      availableLanguage: ['English'],
     },
   };
 }
