@@ -9,8 +9,8 @@ import { getValidImageUrl } from '@/lib/imageUtils';
 import BlogSection from '@/components/blog-section';
 import WardrobeSection from '@/components/wardrobe-section';
 import Footer from '@/components/footer';
-import { BlogSchema, BreadcrumbSchema } from '@/components/seo';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL, generateBlogPostingSchema, generateBreadcrumbSchema } from '@/lib/seo';
+import SchemaInjector from '@/components/seo/SchemaInjector';
 
 interface Params {
   slug: string;
@@ -130,23 +130,29 @@ export default function BlogDetail() {
     { name: blog.title, url: `${SITE_URL}/blogs/${blog.slug}` },
   ];
 
+  // Prepare schemas for injection
+  const schemas = [];
+  if (blog) {
+    schemas.push({
+      id: 'blog-schema',
+      json: generateBlogPostingSchema({
+        title: blog.title,
+        description: blog.description,
+        image: blog.image,
+        slug: blog.slug,
+        publishedTime: new Date().toISOString(),
+      }),
+    });
+    schemas.push({
+      id: 'breadcrumb-schema',
+      json: generateBreadcrumbSchema(breadcrumbs),
+    });
+  }
+
   return (
     <main className="min-h-screen bg-transparent">
-      {/* SEO Schema */}
-      {blog && (
-        <>
-          <BlogSchema 
-            blog={{
-              title: blog.title,
-              description: blog.description,
-              image: blog.image,
-              slug: blog.slug,
-              publishedTime: new Date().toISOString(),
-            }}
-          />
-          <BreadcrumbSchema items={breadcrumbs} />
-        </>
-      )}
+      {/* SEO Schema - Injected into head for Google crawler */}
+      {schemas.length > 0 && <SchemaInjector schemas={schemas} />}
       
       {/* Back navigation */}
       <div className="container mx-auto px-4 pt-6">

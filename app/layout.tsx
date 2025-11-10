@@ -15,7 +15,6 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import NavigationLoading from "@/components/navigation-loading"
 import { Toaster } from "@/components/ui/toaster"
 import Analytics from "@/components/analytics"
-import { OrganizationSchema } from "@/components/seo"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -75,7 +74,49 @@ export default function RootLayout({
           />
         )}
         
-        <OrganizationSchema />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Novino.io",
+              "url": process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io",
+              "logo": {
+                "@type": "ImageObject",
+                "url": `${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}/logo.png`,
+                "width": 200,
+                "height": 60
+              },
+              "description": "Elevate ordinary walls with extraordinary galleries. Discover unique art pieces, paintings, and artefacts.",
+              "sameAs": [],
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "customer service",
+                "availableLanguage": ["English"]
+              }
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}#organization`,
+              "name": "Novino.io",
+              "image": `${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}/images/og-image.png`,
+              "url": process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io",
+              "description": "Elevate ordinary walls with extraordinary galleries. Discover unique art pieces, paintings, and artefacts.",
+              "priceRange": "$$",
+              "areaServed": {
+                "@type": "Country",
+                "name": "Global"
+              }
+            })
+          }}
+        />
       </head>
       <body className={`${inter.className}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>

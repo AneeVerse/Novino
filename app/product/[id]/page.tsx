@@ -14,8 +14,8 @@ import { useRouter, useParams } from "next/navigation"
 import { useCallback } from "react"
 import { useCart } from '@/contexts/CartContext'
 import Preloader from "@/components/ui/preloader"
-import { ProductSchema, BreadcrumbSchema, FAQSchema } from "@/components/seo"
-import { SITE_URL } from "@/lib/seo"
+import { SITE_URL, generateProductSchema, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/seo"
+import SchemaInjector from "@/components/seo/SchemaInjector"
 
 // Artefact products data
 const artefactProducts = [
@@ -495,37 +495,49 @@ export default function ProductDetail() {
     { name: product.name || 'Product', url: `${SITE_URL}/product/${productUrl}` },
   ];
 
+  // Generate schemas
+  const productSchemaData = product ? {
+    name: product.name || '',
+    description: product.description || '',
+    image: product.image,
+    images: product.images,
+    price: product.price,
+    basePrice: product.basePrice,
+    category: categoryName || product.category,
+    slug: product.slug || productUrl,
+    id: product.id?.toString() || productUrl,
+    availability: 'https://schema.org/InStock',
+    brand: 'Novino.io',
+  } : null;
+
+  // Prepare schemas for injection
+  const schemas = [];
+  if (product && productSchemaData) {
+    schemas.push({
+      id: 'product-schema',
+      json: generateProductSchema(productSchemaData),
+    });
+    schemas.push({
+      id: 'breadcrumb-schema',
+      json: generateBreadcrumbSchema(breadcrumbs),
+    });
+    if (product.faqSection?.faqs && product.faqSection.faqs.length > 0) {
+      schemas.push({
+        id: 'faq-schema',
+        json: generateFAQSchema(
+          product.faqSection.faqs.map((faq: any) => ({
+            question: faq.question || '',
+            answer: faq.answer || '',
+          }))
+        ),
+      });
+    }
+  }
+
   return (
     <div className="bg-[#2D2D2D] text-white min-h-screen">
-      {/* SEO Schema */}
-      {product && (
-        <>
-          <ProductSchema 
-            product={{
-              name: product.name || '',
-              description: product.description || '',
-              image: product.image,
-              images: product.images,
-              price: product.price,
-              basePrice: product.basePrice,
-              category: categoryName || product.category,
-              slug: product.slug || productUrl,
-              id: product.id?.toString() || productUrl,
-              availability: 'https://schema.org/InStock',
-              brand: 'Novino.io',
-            }}
-          />
-          <BreadcrumbSchema items={breadcrumbs} />
-          {product.faqSection?.faqs && product.faqSection.faqs.length > 0 && (
-            <FAQSchema 
-              faqs={product.faqSection.faqs.map((faq: any) => ({
-                question: faq.question || '',
-                answer: faq.answer || '',
-              }))}
-            />
-          )}
-        </>
-      )}
+      {/* SEO Schema - Injected into head for Google crawler */}
+      {schemas.length > 0 && <SchemaInjector schemas={schemas} />}
       
       <div className="w-full px-4 md:px-0 pt-24 pb-0">
        
