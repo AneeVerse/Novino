@@ -412,7 +412,7 @@ export default function Home() {
           top: 44%;
           left: 51.5%;
           transform: translate(-50%, 200%); /* Initial position for animation */
-          letter-spacing: 0.2em;
+          letter-spacing: 0.23em;
         }
 
         /* Mobile adjustment - move text down, smaller, and slightly left */
