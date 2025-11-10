@@ -24,6 +24,7 @@ interface Product {
   type?: string;
   featured?: boolean;
   featuredImageUrl?: string;
+  slug?: string;
 }
 
 export default function FeaturedProducts() {
@@ -70,7 +71,8 @@ export default function FeaturedProducts() {
             category: p.category,
             categoryId: p.category,
             type: p.type,
-            featured: p.featured
+            featured: p.featured,
+            slug: p.slug // Include slug for URL generation
           }));
         
         setProducts(featuredProducts);
@@ -152,6 +154,12 @@ export default function FeaturedProducts() {
     let hasMoved = false;
 
     const onPointerDown = (e: PointerEvent) => {
+      // Don't start dragging if clicking on a link
+      const target = e.target as HTMLElement;
+      if (target.closest('a')) {
+        return; // Let the link handle the click
+      }
+      
       isDragging = true;
       startX = e.clientX;
       startScrollLeft = container.scrollLeft;
@@ -163,7 +171,8 @@ export default function FeaturedProducts() {
     const onPointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
       const dx = e.clientX - startX;
-      if (Math.abs(dx) > 3) hasMoved = true;
+      // Only consider it a drag if movement is significant (more than 5px)
+      if (Math.abs(dx) > 5) hasMoved = true;
       container.scrollLeft = startScrollLeft - dx;
     };
 
@@ -173,9 +182,17 @@ export default function FeaturedProducts() {
     };
 
     const onClickCapture = (e: MouseEvent) => {
-      if (hasMoved) {
+      // Allow clicks on links and buttons to work normally
+      const target = e.target as HTMLElement;
+      const isLink = target.closest('a');
+      
+      // Only prevent default if user dragged AND it's not a link click
+      if (hasMoved && !isLink) {
         e.preventDefault();
         e.stopPropagation();
+        hasMoved = false;
+      } else if (hasMoved && isLink) {
+        // Reset hasMoved for link clicks to allow navigation
         hasMoved = false;
       }
     };
@@ -240,7 +257,7 @@ export default function FeaturedProducts() {
                 }}
               >
                 <Link 
-                  href={`/product/${product.id}`}
+                  href={`/product/${product.slug || String(product.id)}`}
                   className="block group w-full h-full"
                 >
                   <div 

@@ -49,6 +49,8 @@ type Product = {
   additionalImageUrl?: string;
   featured?: boolean;
   featuredImageUrl?: string;
+  metaDescription?: string;
+  slug?: string;
   createdAt?: string;
 };
 
@@ -131,6 +133,16 @@ export default async function handler(
 
       case 'POST':
         // Create a new product
+        // Auto-generate slug if not provided
+        let slug = req.body.slug;
+        if (!slug && req.body.name) {
+          slug = req.body.name
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '');
+        }
+        
         const newProduct = {
           name: req.body.name,
           description: req.body.description,
@@ -150,6 +162,8 @@ export default async function handler(
           additionalImageUrl: req.body.additionalImageUrl,
           featured: req.body.featured || false,
           featuredImageUrl: req.body.featuredImageUrl,
+          metaDescription: req.body.metaDescription,
+          slug: slug,
           createdAt: new Date().toISOString()
         };
         

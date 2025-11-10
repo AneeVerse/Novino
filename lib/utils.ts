@@ -14,3 +14,10 @@ export function formatPrice(price: number): string {
     currency: 'USD',
   }).format(price);
 }
+
+/**
+ * Get product URL - uses slug if available, otherwise falls back to ID
+ */
+export function getProductUrl(product: { id: string | number; slug?: string }): string {
+  return `/product/${product.slug || product.id}`;
+}

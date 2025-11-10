@@ -49,6 +49,8 @@ type Product = {
   additionalImageUrl?: string;
   featured?: boolean;
   featuredImageUrl?: string;
+  metaDescription?: string;
+  slug?: string;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -90,13 +92,27 @@ export default async function handler(
 
     switch (method) {
       case 'GET':
-        // Get a single product by id
+        // Get a single product by id or slug
         try {
-          // First try the original query
-          let product = await collection.findOne(query);
+          let product = null;
+          
+          // First, try to find by slug (if the id doesn't look like an ObjectId or numeric ID)
+          const isObjectId = typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
+          const isNumeric = !isNaN(Number(id));
+          
+          if (!isObjectId && !isNumeric) {
+            // Likely a slug, try to find by slug first
+            console.log('Trying to find product by slug:', id);
+            product = await collection.findOne({ slug: id });
+          }
+          
+          // If not found by slug, try the original query (by ID)
+          if (!product) {
+            product = await collection.findOne(query);
+          }
           
           // If no result and id is numeric, try to find by numeric ID
-          if (!product && !isNaN(Number(id))) {
+          if (!product && isNumeric) {
             const numericId = parseInt(id as string, 10);
             console.log('Trying numeric ID query:', numericId);
             product = await collection.findOne({ id: numericId });
@@ -124,6 +140,16 @@ export default async function handler(
 
       case 'PUT':
         // Update a product with enhanced properties
+        // Auto-generate slug if not provided but name exists
+        let slug = req.body.slug;
+        if (!slug && req.body.name) {
+          slug = req.body.name
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '');
+        }
+        
         const updateData: Partial<Product> = {
           name: req.body.name,
           description: req.body.description,
@@ -143,6 +169,8 @@ export default async function handler(
           additionalImageUrl: req.body.additionalImageUrl,
           featured: req.body.featured || false,
           featuredImageUrl: req.body.featuredImageUrl,
+          metaDescription: req.body.metaDescription,
+          slug: slug,
           updatedAt: new Date().toISOString()
         };
         

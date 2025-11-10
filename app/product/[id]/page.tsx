@@ -213,6 +213,15 @@ export default function ProductDetail() {
           console.log('API data received:', data);
           
           if (data && (data.id || data._id)) {
+            // Check if product has a slug and we're currently using an ID in the URL
+            // If so, redirect to the slug URL for better SEO
+            if (data.slug && (safeProductId === data._id?.toString() || safeProductId === data.id?.toString() || /^[0-9a-fA-F]{24}$/.test(safeProductId))) {
+              // We're using an ID but product has a slug - redirect to slug URL
+              console.log('Redirecting to slug URL:', data.slug);
+              router.replace(`/product/${data.slug}`);
+              return;
+            }
+            
             // Parse ID correctly depending on type
             let productId: number;
             if (data.id && typeof data.id === 'number') {
@@ -244,7 +253,8 @@ export default function ProductDetail() {
               type: data.type,
               specifications: data.specifications,
               faqSection: data.faqSection,
-              additionalImageUrl: data.additionalImageUrl
+              additionalImageUrl: data.additionalImageUrl,
+              slug: data.slug
             };
             
             console.log('Using API data for product display:', formattedProduct);
@@ -811,7 +821,7 @@ export default function ProductDetail() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {relatedProducts.map((relatedProduct) => (
               <Link 
-                href={`/product/${relatedProduct.id}`} 
+                href={`/product/${relatedProduct.slug || relatedProduct.id}`} 
                 key={relatedProduct.id}
                 className="block group"
               >

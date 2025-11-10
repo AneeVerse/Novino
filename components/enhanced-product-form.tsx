@@ -63,6 +63,8 @@ interface Product {
   additionalImageUrl?: string;
   featured?: boolean;
   featuredImageUrl?: string;
+  metaDescription?: string;
+  slug?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -83,7 +85,7 @@ export default function EnhancedProductForm({
   onCancel 
 }: EnhancedProductFormProps) {
   // Main form tabs
-  const tabs = ["Basic Info", "Variants", "Specifications", "FAQs", "Additional"];
+  const tabs = ["Basic Info", "Variants", "Specifications", "FAQs", "Additional", "Meta"];
   const [activeTab, setActiveTab] = useState(0);
   
   // Log categories for debugging
@@ -127,6 +129,10 @@ export default function EnhancedProductForm({
   const [additionalImageUrl, setAdditionalImageUrl] = useState("");
   const [featured, setFeatured] = useState(false);
   const [featuredImageUrl, setFeaturedImageUrl] = useState("");
+
+  // Meta state
+  const [metaDescription, setMetaDescription] = useState("");
+  const [slug, setSlug] = useState("");
 
   // UI state
   const [isLoading, setIsLoading] = useState(false);
@@ -198,6 +204,10 @@ export default function EnhancedProductForm({
       // Set featured fields
       setFeatured(product.featured || false);
       setFeaturedImageUrl(product.featuredImageUrl || "");
+
+      // Set meta fields
+      setMetaDescription((product as any).metaDescription || "");
+      setSlug((product as any).slug || "");
     } else {
       // Initialize with defaults for new product
       if (categories.length > 0) {
@@ -237,6 +247,8 @@ export default function EnhancedProductForm({
           setAdditionalImageUrl(full.additionalImageUrl || '');
           setFeatured(full.featured || false);
           setFeaturedImageUrl(full.featuredImageUrl || '');
+          setMetaDescription(full.metaDescription || '');
+          setSlug(full.slug || '');
         } catch (err) {
           console.error('Error loading full product data for edit:', err);
         }
@@ -278,7 +290,9 @@ export default function EnhancedProductForm({
         },
         additionalImageUrl,
         featured,
-        featuredImageUrl: featured ? featuredImageUrl : undefined
+        featuredImageUrl: featured ? featuredImageUrl : undefined,
+        ...(metaDescription && { metaDescription }),
+        ...(slug && { slug: slug.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })
       };
       
       // API endpoint based on mode
@@ -1192,6 +1206,98 @@ export default function EnhancedProductForm({
                             className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
                             placeholder="Enter additional image URL"
                           />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="tab-5">
+                  <div>
+                    <div className="mb-6">
+                      <h3 className="text-white text-lg font-medium mb-4">SEO & Meta Information</h3>
+                      <p className="text-white/70 text-sm mb-6">
+                        Add meta description and custom slug for better SEO. These fields are optional but recommended.
+                      </p>
+                      
+                      <div className="space-y-6">
+                        {/* Meta Description */}
+                        <div>
+                          <label htmlFor="meta-description" className="block text-white font-medium mb-2 text-sm">
+                            Meta Description
+                          </label>
+                          <p className="text-white/60 text-xs mb-2">
+                            A brief description for search engines (recommended: 150-160 characters). This appears in search results.
+                          </p>
+                          <textarea
+                            id="meta-description"
+                            value={metaDescription}
+                            onChange={(e) => setMetaDescription(e.target.value)}
+                            maxLength={160}
+                            className="w-full bg-[#222222] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#A47E3B] focus:ring-1 focus:ring-[#A47E3B]/20 focus:outline-none transition-all h-24 resize-none"
+                            placeholder="Enter meta description for SEO (e.g., Discover this beautiful artwork featuring...)"
+                          />
+                          <div className="mt-1 flex justify-between items-center">
+                            <p className="text-white/50 text-xs">
+                              Used for search engine results and social media previews
+                            </p>
+                            <span className={`text-xs ${metaDescription.length > 160 ? 'text-red-400' : metaDescription.length > 150 ? 'text-yellow-400' : 'text-white/50'}`}>
+                              {metaDescription.length}/160
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Slug */}
+                        <div>
+                          <label htmlFor="slug" className="block text-white font-medium mb-2 text-sm">
+                            Custom Slug (URL-friendly identifier)
+                          </label>
+                          <p className="text-white/60 text-xs mb-2">
+                            Optional: Create a custom URL-friendly identifier. If left empty, one will be auto-generated from the product name.
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              id="slug"
+                              value={slug}
+                              onChange={(e) => {
+                                // Auto-format slug as user types
+                                const formatted = e.target.value
+                                  .toLowerCase()
+                                  .replace(/\s+/g, '-')
+                                  .replace(/[^a-z0-9-]/g, '');
+                                setSlug(formatted);
+                              }}
+                              className="flex-1 bg-[#222222] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#A47E3B] focus:ring-1 focus:ring-[#A47E3B]/20 focus:outline-none transition-all"
+                              placeholder="e.g., beautiful-artwork-2024"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                // Auto-generate slug from product name
+                                if (name) {
+                                  const generated = name
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '-')
+                                    .replace(/[^a-z0-9-]/g, '');
+                                  setSlug(generated);
+                                }
+                              }}
+                              disabled={!name}
+                              className="px-3 py-2.5 bg-[#333333] hover:bg-[#444444] text-white text-xs rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-[#444444]"
+                              title="Generate slug from product name"
+                            >
+                              Auto
+                            </button>
+                          </div>
+                          <div className="mt-2 space-y-1">
+                            <p className="text-white/50 text-xs">
+                              Preview URL: <span className="text-white/70">/product/{slug || '[auto-generated]'}</span>
+                            </p>
+                            <p className="text-white/50 text-xs">
+                              💡 Best practices: Use lowercase, hyphens instead of spaces, no special characters
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
