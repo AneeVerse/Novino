@@ -14,6 +14,7 @@ import { SessionProvider } from "next-auth/react"
 import { AuthProvider } from "@/contexts/AuthContext"
 import NavigationLoading from "@/components/navigation-loading"
 import { Toaster } from "@/components/ui/toaster"
+import Analytics from "@/components/analytics"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -39,6 +40,12 @@ export default function RootLayout({
       <head>
         <title>Novino.io - Art Gallery</title>
         <meta name="description" content="Elevate ordinary walls with extraordinary galleries" />
+        {process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && (
+          <meta
+            name="google-site-verification"
+            content={process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION}
+          />
+        )}
       </head>
       <body className={`${inter.className}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
@@ -59,6 +66,7 @@ export default function RootLayout({
                 {children}
                 {!isLinkoPage && !isVCardPage && <CartDrawerWrapper />}
                 <Toaster />
+                <Analytics />
               </CartProvider>
             </AuthProvider>
           </SessionProvider>
