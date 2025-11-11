@@ -159,7 +159,44 @@ export default function ProductGrid({
 
       {/* Product cards */}
       <div className="relative max-w-[1440px] mx-auto px-6 sm:px-10 -mt-12 sm:-mt-44 pb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        {/* Mobile: Horizontal Scroll */}
+        <div className="sm:hidden flex overflow-x-auto gap-6 pb-6 scrollbar-hide snap-x snap-mandatory scroll-smooth -mx-6 px-6"
+          style={{
+            scrollSnapType: 'x mandatory',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          {displayProducts.map((product) => (
+            <Link href={`/product/${product.id}`} key={product.id} className="group flex-none w-[280px] snap-center">
+              <div className="h-full rounded-3xl overflow-hidden bg-gradient-to-br from-white/8 via-white/5 to-white/[0.02] border border-white/10 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
+                <div className="relative aspect-[5/4] bg-[#1F1F1F] overflow-hidden">
+                  <Image
+                    src={product.image}
+                    alt={(product.name || product.title || "Product") as string}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="280px"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <div className="p-5 space-y-2">
+                  <div className="text-xs uppercase tracking-[0.3em] text-white/60">{product.category}</div>
+                  <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors">
+                    {product.name || product.title || "Untitled"}
+                  </h3>
+                  {(product.price || product.date || product.role) && (
+                    <p className="text-sm text-white/60">
+                      {product.price || product.date || product.role}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Desktop: Grid */}
+        <div className="hidden sm:grid grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {displayProducts.map((product) => (
             <Link href={`/product/${product.id}`} key={product.id} className="group">
               <div className="h-full rounded-3xl overflow-hidden bg-gradient-to-br from-white/8 via-white/5 to-white/[0.02] border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
@@ -189,8 +226,16 @@ export default function ProductGrid({
           ))}
         </div>
 
+        {/* Empty state for mobile */}
         {displayProducts.length === 0 && (
-          <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm p-12 text-center text-white/70">
+          <div className="sm:hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm p-12 text-center text-white/70 mx-6">
+            No products found in this category yet. Please check back soon.
+          </div>
+        )}
+
+        {/* Empty state for desktop */}
+        {displayProducts.length === 0 && (
+          <div className="hidden sm:block rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm p-12 text-center text-white/70">
             No products found in this category yet. Please check back soon.
           </div>
         )}
@@ -207,6 +252,17 @@ export default function ProductGrid({
           </div>
         )}
       </div>
+
+      {/* Hide scrollbar for mobile horizontal scroll */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </section>
   );
 }

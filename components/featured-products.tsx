@@ -31,6 +31,7 @@ export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [centeredCard, setCenteredCard] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
   
@@ -42,6 +43,18 @@ export default function FeaturedProducts() {
     }
   };
   
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Fetch latest products from API
   useEffect(() => {
     const fetchProducts = async () => {
@@ -317,7 +330,7 @@ export default function FeaturedProducts() {
 
   return (
     <div className="container mx-auto px-0 md:px-0 mb-16 md:mb-24">
-      <div className="max-w-[2400px] mx-auto px-0 md:px-0">
+      <div className="max-w-[1800px] mx-auto px-0 md:px-0">
         <h2 className="text-white text-lg sm:text-[24px] md:text-[28px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em]  text-center font-['Roboto_Mono']">
           FEATURED PRODUCTS
         </h2>
@@ -325,50 +338,54 @@ export default function FeaturedProducts() {
         {/* Mobile & Desktop: Horizontal scroll with snap; desktop shows 3 cards */}
         <div 
           ref={scrollContainerRef}
-          className="flex gap-6 lg:gap-8 mt-6 overflow-x-auto scrollbar-hide pb-4 md:pb-0 px-6 md:px-0 items-center snap-x snap-mandatory select-none"
+          className="flex gap-6 md:gap-8 lg:gap-12 mt-6 overflow-x-auto scrollbar-hide pb-12 md:pb-16 px-4 md:px-12 lg:px-16 items-start snap-x snap-mandatory select-none"
           style={{ 
             scrollSnapType: 'x mandatory',
             cursor: 'grab',
             WebkitOverflowScrolling: 'touch',
-            scrollBehavior: 'smooth'
+            scrollBehavior: 'smooth',
+            paddingTop: '3rem',
+            paddingBottom: '4rem'
           }}
         >
           {displayProducts.map((product, index) => {
             const isCentered = centeredCard === index;
-
-            // Only the centered card scales up; others remain unchanged
-            const contentScaleClass = isCentered ? 'scale-110 md:scale-115' : 'scale-100 md:scale-100';
             
             return (
               <div
                 key={product.id}
                 ref={(el) => setCardRef(index, el)}
-                className={`flex flex-col relative w-[220px] min-w-[220px] md:w-1/3 md:min-w-[33.333%] flex-none snap-center ${isCentered ? 'z-10' : 'z-0'}`}
+                className={`flex flex-col relative w-[75%] min-w-[75%] md:w-[calc(33.333%-2rem)] md:min-w-[calc(33.333%-2rem)] flex-none snap-center ${isCentered ? 'z-10' : 'z-0'}`}
                 style={{ 
                   scrollSnapAlign: 'center',
-                  willChange: 'transform',
-                  transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                  willChange: 'transform'
                 }}
               >
                 <Link 
                   href={`/product/${product.slug || String(product.id)}`}
-                  className="block group w-full h-full cursor-pointer"
+                  className="block group w-full cursor-pointer"
                   style={{ cursor: 'inherit' }}
+                  draggable={false}
                 >
                   <div 
-                    className="relative w-full bg-[#2D2D2D] overflow-hidden"
+                    className="relative w-full bg-[#2D2D2D] overflow-hidden rounded-sm"
                     style={{
-                      aspectRatio: isCentered ? '1 / 1.15' : '1 / 1', // 15% taller when centered (reduced from 20%)
-                      transition: 'aspect-ratio 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                      aspectRatio: '1 / 1',
+                      transition: 'transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.7s cubic-bezier(0.4, 0, 0.2, 1), filter 0.7s ease',
+                      transform: isCentered ? 'scale(1.18) translateY(-16px)' : 'scale(0.96)',
+                      boxShadow: isCentered 
+                        ? isMobile 
+                          ? '0 15px 30px -10px rgba(0, 0, 0, 0.4), 0 8px 16px -8px rgba(0, 0, 0, 0.3)' 
+                          : '0 20px 40px -12px rgba(0, 0, 0, 0.5), 0 12px 24px -8px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06)'
+                        : isMobile
+                          ? '0 4px 8px -2px rgba(0, 0, 0, 0.2)'
+                          : '0 6px 12px -3px rgba(0, 0, 0, 0.3), 0 3px 6px -2px rgba(0, 0, 0, 0.2)',
+                      filter: isCentered ? 'brightness(1.08) contrast(1.02)' : 'brightness(0.88) contrast(0.95)'
                     }}
                   >
-                    {/* Scaled image/content wrapper grows from center for equal crop */}
+                    {/* Image wrapper */}
                     <div 
-                      className={`relative w-full h-full transform-gpu origin-center ${contentScaleClass}`} 
-                      style={{ 
-                        willChange: 'transform',
-                        transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
-                      }}
+                      className="relative w-full h-full transform-gpu origin-center"
                     >
                       {/* Main Image */}
                       <Image
