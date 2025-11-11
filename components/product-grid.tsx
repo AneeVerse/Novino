@@ -82,7 +82,7 @@ export default function ProductGrid({
   subtitle = "All Products", 
   products: propProducts = products, 
   categories: propCategories = ["All Products", "Books", "Mugs", "Costar", "Feeds"],
-  viewAllText = "View all",
+  viewAllText = "Discover the collection",
   showViewAllButton = true,
   activeCategory: propActiveCategory,
   onCategoryChange
@@ -118,197 +118,88 @@ export default function ProductGrid({
     return product.category === activeCategory || product.categoryId === activeCategory;
   });
 
+  const displayProducts = filteredProducts.slice(0, 9);
+
   return (
-    <div className="py-8 sm:pt-12 sm:pb-16 px-6 sm:px-8 relative overflow-visible max-w-[2400px] mx-auto font-['Roboto_Mono'] min-h-[600px] sm:min-h-[800px] rounded-[28px]" style={{ 
-      backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='28' ry='28' stroke='rgba(255,255,255,0.8)' stroke-width='3' stroke-dasharray='20%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e")`,
-    }}>
-      {/* Gradient overlays - White */}
-      {/* Main glow - bottom right */}
-      <div className="absolute pointer-events-none" style={{
-        bottom: '-20%',
-        right: '-40%',
-        width: '80%',
-        height: '100%',
-        zIndex: 5,
-        background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 25%, rgba(255, 255, 255, 0.08) 45%, transparent 70%)',
-        filter: 'blur(40px)',
-        mixBlendMode: 'overlay'
-      }}></div>
-      
-      {/* Secondary glow - center left */}
-      <div className="absolute pointer-events-none" style={{
-        top: '30%',
-        left: '-20%',
-        width: '60%',
-        height: '60%',
-        zIndex: 5,
-        background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.1) 35%, transparent 65%)',
-        filter: 'blur(50px)',
-        mixBlendMode: 'overlay'
-      }}></div>
-      
-      {/* Accent glow - top center */}
-      <div className="absolute pointer-events-none" style={{
-        top: '0%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '50%',
-        height: '40%',
-        zIndex: 5,
-        background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.08) 30%, transparent 60%)',
-        filter: 'blur(60px)',
-        mixBlendMode: 'overlay'
-      }}></div>
-
-      <div className="flex flex-col md:flex-row md:gap-8 relative z-30">
-        {/* Right side: Product Grid */}
-        <div className="w-full md:w-1/2 order-2 md:order-2">
-          {/* Desktop grid (hidden on mobile) */}
-          <div className="hidden md:grid md:grid-cols-2 md:gap-8">
-            {filteredProducts.slice(0, 2).map((product) => (
-              <Link href={`/product/${product.id}`} key={product.id}>
-                <div className="bg-white w-full max-w-[80%] mx-auto border border-white hover:opacity-95 transition-opacity">
-                  <div className="relative aspect-square overflow-hidden">
-                    <Image
-                      src={product.image}
-                      alt={(product.name || product.title || "Product") as string}
-                      fill
-                      className="object-cover" 
-                    />
-                  </div>
-                  <div className="p-4 bg-[#333333]">
-                    <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                    <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-          <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-8 items-end">
-            {filteredProducts.slice(2, 4).map((product) => (
-              <Link href={`/product/${product.id}`} key={product.id}>
-                <div className="bg-white w-full max-w-[80%] mx-auto border border-white hover:opacity-95 transition-opacity">
-                  <div className="relative aspect-square overflow-hidden">
-                    <Image
-                      src={product.image}
-                      alt={(product.name || product.title || "Product") as string}
-                      fill
-                      className="object-cover" 
-                    />
-                  </div>
-                  <div className="p-4 bg-[#333333]">
-                    <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                    <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Left side: Categories and Title */}
-        <div className="w-full md:w-1/2 mb-8 md:mb-0 order-1 md:order-1">
-          <div className="px-4 md:px-0 md:pl-10">
-            <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 font-['Roboto_Mono'] font-medium">{subtitle}</div>
-            <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-light mb-6 sm:mb-8 font-['Roboto_Mono'] relative">{title}</h2>
-
-            {/* Category Filters - Displayed horizontally and wrapped */}
-            <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 relative">
-              {propCategories.map((category) => (
-                <button
-                  key={category}
-                  className={`${
-                    category === activeCategory 
-                      ? "bg-white text-black font-medium" 
-                      : "border border-white/60 text-white hover:bg-white/10 font-medium"
-                  } px-4 sm:px-6 py-2 text-xs sm:text-sm rounded-full transition-colors font-['Roboto_Mono']`}
-                  onClick={() => handleCategoryChange(category)}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          {/* Two cards below filter on left side (Desktop) */}
-          <div className="hidden md:grid md:grid-cols-2 md:gap-8 md:mt-[165px] md:pl-10">
-            {filteredProducts.slice(4, 6).map((product) => (
-              <Link href={`/product/${product.id}`} key={product.id}>
-                <div className="bg-white w-full max-w-[85%] mx-auto border border-white hover:opacity-95 transition-opacity">
-                  <div className="relative aspect-square overflow-hidden">
-                    <Image
-                      src={product.image}
-                      alt={(product.name || product.title || "Product") as string}
-                      fill
-                      className="object-cover" 
-                    />
-                  </div>
-                  <div className="p-4 bg-[#333333]">
-                    <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                    <div className="text-white text-sm font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-        
-        {/* Mobile horizontal scroll (hidden on md and up) - Moved below filters */}
-        <div className="w-full md:hidden flex flex-col mt-6 mb-6 order-3">
-          <div className="flex overflow-x-auto space-x-3 pb-4 scrollbar-hide px-2 items-start">
-            {/* Display all products in a single row for mobile */}
-            {filteredProducts.map((product) => (
-              <Link href={`/product/${product.id}`} key={`mobile-${product.id}`} className="flex-shrink-0 w-48">
-                <div className="overflow-hidden gallery-image-container border border-white/60 rounded-sm hover:opacity-95 transition-all duration-300 hover:translate-y-[-3px]">
-                  <div className="relative aspect-square overflow-hidden bg-white">
-                    <Image
-                      src={product.image}
-                      alt={(product.name || product.title || "Product") as string}
-                      fill
-                      className="object-cover" 
-                    />
-                  </div>
-                  <div className="p-3 bg-[#333333]">
-                    <div className="text-white text-xs uppercase font-medium font-['Roboto_Mono']">{product.name || product.title}</div>
-                    <div className="text-white text-xs font-medium mt-1 font-['Roboto_Mono']">{product.price || product.date || product.role}</div>
-                  </div>
-                </div>
-              </Link>
+    <section className="w-full font-['Roboto_Mono']">
+      {/* Hero banner with background image */}
+      <div
+        className="relative w-full bg-cover bg-center"
+        style={{ backgroundImage: `url('/images/hero-section/bg03.png')` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-[#2D2D2D]/95"></div>
+        <div className="relative max-w-[1440px] mx-auto px-6 sm:px-10 py-16 sm:py-24 text-center text-white space-y-4">
+          <span className="text-xs sm:text-sm uppercase tracking-[0.6em] text-white/70">{subtitle}</span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-[0.1em]">Elevate Your Gallery</h2>
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 pt-4">
+            {propCategories.map((category) => (
+              <button
+                key={category}
+                className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm transition-all duration-200 ${
+                  category === activeCategory
+                    ? "bg-white text-black font-semibold"
+                    : "bg-white/10 text-white border border-white/20 hover:bg-white/20"
+                }`}
+                onClick={() => handleCategoryChange(category)}
+              >
+                {category}
+              </button>
             ))}
           </div>
         </div>
       </div>
-      
-      {/* View All Button */}
-      {showViewAllButton && (
-        <div className="mt-16 flex justify-center relative z-30">
-          <Link href="/artefacts" className="inline-flex items-center px-6 py-2 border-2 border-dashed border-white text-white hover:bg-[#AE876D]/80 transition-colors text-sm sm:text-base cursor-pointer font-['Roboto_Mono'] font-medium" style={{ borderRadius: '10px' }}>
-            {viewAllText}
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Link>
-        </div>
-      )}
 
-      {/* Add CSS utility to hide scrollbars */}
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-        }
-        
-        .gallery-image-container {
-          transition: transform 0.3s ease-in-out;
-          margin-bottom: 8px;
-        }
-        
-        .gallery-image-container:hover {
-          transform: translateY(-3px);
-        }
-      `}</style>
-    </div>
+      {/* Product cards */}
+      <div className="relative max-w-[1440px] mx-auto px-6 sm:px-10 -mt-10 sm:-mt-16 pb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {displayProducts.map((product) => (
+            <Link href={`/product/${product.id}`} key={product.id} className="group">
+              <div className="h-full rounded-3xl overflow-hidden bg-gradient-to-br from-white/8 via-white/5 to-white/[0.02] border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
+                <div className="relative aspect-[5/4] bg-[#1F1F1F] overflow-hidden">
+                  <Image
+                    src={product.image}
+                    alt={(product.name || product.title || "Product") as string}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(min-width: 1024px) 420px, (min-width: 640px) 50vw, 100vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <div className="p-5 sm:p-6 space-y-2">
+                  <div className="text-xs uppercase tracking-[0.3em] text-white/60">{product.category}</div>
+                  <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors">
+                    {product.name || product.title || "Untitled"}
+                  </h3>
+                  {(product.price || product.date || product.role) && (
+                    <p className="text-sm text-white/60">
+                      {product.price || product.date || product.role}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {displayProducts.length === 0 && (
+          <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm p-12 text-center text-white/70">
+            No products found in this category yet. Please check back soon.
+          </div>
+        )}
+
+        {showViewAllButton && (
+          <div className="mt-12 flex justify-center">
+            <Link
+              href="/artefacts"
+              className="inline-flex items-center gap-3 px-6 py-3 rounded-full border border-white/20 text-white/80 hover:text-white hover:border-white/40 hover:bg-white/10 transition-all duration-200 text-sm sm:text-base"
+            >
+              {viewAllText}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
