@@ -228,7 +228,7 @@ export default function FeaturedProducts() {
   const displayProducts = products;
 
   return (
-    <div className="container mx-auto px-0 md:px-0 mb-6">
+    <div className="container mx-auto px-0 md:px-0 mb-16 md:mb-24">
       <div className="max-w-[2400px] mx-auto px-0 md:px-0">
         <h2 className="text-white text-lg sm:text-[24px] md:text-[28px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em]  text-center font-['Roboto_Mono']">
           FEATURED PRODUCTS

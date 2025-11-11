@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { X, Image as ImageIcon, Archive, Map, FileText } from "lucide-react";
@@ -134,18 +133,11 @@ const Navbar = () => {
           
           {/* Center - Logo */}
           <div className="absolute left-1/2 transform -translate-x-1/2 text-center flex justify-center items-center h-full">
-            <Link href="/" className="flex items-center justify-center text-xl md:text-2xl font-bold font-roboto-mono text-white">
-              <div className="flex items-center">
-                <Image
-                  src="/images/navbar/N Logo.png"
-                  alt="N Logo"
-                  width={24}
-                  height={24}
-                  className="w-[60px] h-[45px] md:w-[80px] md:h-[60px] object-contain"
-                  priority
-                />
-                <span className="relative top-1 md:top-[10px] -ml-5 md:-ml-6">ovino<span className="text-[#AE876D]">.</span>io</span>
-              </div>
+            <Link
+              href="/"
+              className="flex items-center justify-center text-2xl md:text-3xl lg:text-4xl font-dm-serif-display tracking-[0.2em] text-white uppercase"
+            >
+              NOVINO
             </Link>
           </div>
           

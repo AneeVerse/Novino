@@ -333,9 +333,9 @@ export default function Home() {
         </div>
 
         {/* Gallery Grid - with negative margins to make it wider */}
-        <div className="mb-16 relative" style={{ overflowX: 'hidden', overflowY: 'visible' }}>
+        {/* <div className="mb-16 relative" style={{ overflowX: 'hidden', overflowY: 'visible' }}>
           <MasonryGallery />
-        </div>
+        </div> */}
 
         {/* Product Testimonial Section */}
         <div className="mb-16 relative z-10">
