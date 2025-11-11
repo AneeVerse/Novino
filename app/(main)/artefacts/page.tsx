@@ -266,15 +266,15 @@ export default function ArtefactsPage() {
 
       {/* Product Grid Section - Full width */}
       <section className="relative z-10 mt-8 sm:mt-12">
-        <ProductGrid 
-          key="artefact-product-grid"
-          title="Ancient Civilizations" 
-          subtitle="Featured Collection" 
-          products={artefactProducts}
-          categories={categories}
-          viewAllText="View all artefacts"
-          showViewAllButton={false}
-        />
+          <ProductGrid 
+            key="artefact-product-grid"
+            title="Ancient Civilizations" 
+            subtitle="Featured Collection" 
+            products={artefactProducts}
+            categories={categories}
+            viewAllText="View all artefacts"
+            showViewAllButton={false}
+          />
       </section>
 
       {/* Clear separation from the hero section with negative margin to prevent overlap */}

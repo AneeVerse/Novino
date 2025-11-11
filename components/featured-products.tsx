@@ -92,6 +92,9 @@ export default function FeaturedProducts() {
     const container = scrollContainerRef.current;
     if (!container) return;
 
+    let scrollTimeout: NodeJS.Timeout | null = null;
+    let isScrolling = false;
+
     const handleScroll = () => {
       // Use the scroll container's visual center for detection
       const containerRect = container.getBoundingClientRect();
@@ -115,35 +118,51 @@ export default function FeaturedProducts() {
         }
       });
 
-      setCenteredCard(closestCardIndex);
-    };
-
-    // Use requestAnimationFrame for smoother scroll detection
-    let rafId: number | null = null;
-    const scrollHandler = () => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        handleScroll();
-        rafId = null;
+      // Only update if the centered card actually changed
+      setCenteredCard(prev => {
+        if (prev !== closestCardIndex) {
+          return closestCardIndex;
+        }
+        return prev;
       });
     };
 
-    // Check on mount and on scroll
-    handleScroll();
+    // Use requestAnimationFrame for smoother scroll detection with debouncing
+    let rafId: number | null = null;
+    const scrollHandler = () => {
+      isScrolling = true;
+      
+      // Clear existing timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+
+      // Debounce: only update after scrolling stops for better mobile performance
+      scrollTimeout = setTimeout(() => {
+        isScrolling = false;
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          handleScroll();
+          rafId = null;
+        });
+      }, 50); // 50ms debounce to avoid excessive updates
+    };
+
+    // Check on mount
+    setTimeout(handleScroll, 100); // Delay initial check to ensure layout is ready
+    
     container.addEventListener('scroll', scrollHandler, { passive: true });
     window.addEventListener('resize', handleScroll);
-    // Also listen to window scroll in case the container isn't horizontally scrollable (desktop grid)
-    window.addEventListener('scroll', scrollHandler, { passive: true });
 
     return () => {
       container.removeEventListener('scroll', scrollHandler);
       window.removeEventListener('resize', handleScroll);
-      window.removeEventListener('scroll', scrollHandler);
       if (rafId) cancelAnimationFrame(rafId);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
     };
   }, [products]);
 
-  // Enable click-and-drag horizontal scrolling on desktop
+  // Enable smooth click-and-drag horizontal scrolling with momentum
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -152,60 +171,129 @@ export default function FeaturedProducts() {
     let startX = 0;
     let startScrollLeft = 0;
     let hasMoved = false;
+    let velocity = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let momentumId: number | null = null;
+
+    // Detect if it's a touch device
+    const isTouchDevice = () => {
+      return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    };
+
+    const applyMomentum = () => {
+      if (Math.abs(velocity) > 0.3) {
+        container.scrollLeft -= velocity;
+        velocity *= 0.93; // Slightly reduced damping for longer momentum
+        momentumId = requestAnimationFrame(applyMomentum);
+      } else {
+        velocity = 0;
+        momentumId = null;
+      }
+    };
+
+    const stopMomentum = () => {
+      if (momentumId) {
+        cancelAnimationFrame(momentumId);
+        momentumId = null;
+      }
+      velocity = 0;
+    };
 
     const onPointerDown = (e: PointerEvent) => {
-      // Don't start dragging if clicking on a link
-      const target = e.target as HTMLElement;
-      if (target.closest('a')) {
-        return; // Let the link handle the click
+      // On touch devices, let native scrolling handle it
+      if (isTouchDevice() && e.pointerType === 'touch') {
+        return;
       }
+
+      // Don't interfere with text selection or right-clicks
+      if (e.button !== 0) return;
+
+      const target = e.target as HTMLElement;
       
+      // Allow dragging even on links for better UX
+      stopMomentum();
       isDragging = true;
-      startX = e.clientX;
+      startX = e.pageX;
+      lastX = e.pageX;
+      lastTime = Date.now();
       startScrollLeft = container.scrollLeft;
       hasMoved = false;
-      try { container.setPointerCapture(e.pointerId); } catch {}
-      container.classList.add('cursor-grabbing');
+      
+      try { 
+        container.setPointerCapture(e.pointerId); 
+      } catch {}
+      
+      container.style.cursor = 'grabbing';
+      container.style.scrollSnapType = 'none'; // Disable snap while dragging
+      e.preventDefault(); // Prevent text selection
     };
 
     const onPointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
-      const dx = e.clientX - startX;
-      // Only consider it a drag if movement is significant (more than 5px)
-      if (Math.abs(dx) > 5) hasMoved = true;
-      container.scrollLeft = startScrollLeft - dx;
+      
+      e.preventDefault();
+      const x = e.pageX;
+      const dx = x - startX;
+      const now = Date.now();
+      const dt = now - lastTime;
+
+      // Calculate velocity for momentum with higher sensitivity
+      if (dt > 0) {
+        velocity = (x - lastX) / dt * 25; // High momentum for smooth scrolling
+      }
+
+      // Only consider it a drag if movement is significant (more than 3px)
+      if (Math.abs(dx) > 3) {
+        hasMoved = true;
+      }
+
+      // High scroll sensitivity for easy scrolling with minimal effort
+      const scrollSensitivity = 2.2;
+      container.scrollLeft = startScrollLeft - (dx * scrollSensitivity);
+      lastX = x;
+      lastTime = now;
     };
 
-    const onPointerUp = () => {
+    const onPointerUp = (e: PointerEvent) => {
+      if (!isDragging) return;
+      
       isDragging = false;
-      container.classList.remove('cursor-grabbing');
+      container.style.cursor = 'grab';
+      
+      // Re-enable snap after a short delay to allow momentum
+      setTimeout(() => {
+        container.style.scrollSnapType = 'x mandatory';
+      }, 100);
+
+      // Apply momentum scrolling
+      if (Math.abs(velocity) > 0.5) {
+        applyMomentum();
+      }
     };
 
     const onClickCapture = (e: MouseEvent) => {
-      // Allow clicks on links and buttons to work normally
-      const target = e.target as HTMLElement;
-      const isLink = target.closest('a');
-      
-      // Only prevent default if user dragged AND it's not a link click
-      if (hasMoved && !isLink) {
+      // If user dragged significantly, prevent click
+      if (hasMoved) {
         e.preventDefault();
         e.stopPropagation();
-        hasMoved = false;
-      } else if (hasMoved && isLink) {
-        // Reset hasMoved for link clicks to allow navigation
         hasMoved = false;
       }
     };
 
+    // Mouse/Pointer events
     container.addEventListener('pointerdown', onPointerDown);
     container.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
+    container.addEventListener('pointerup', onPointerUp);
+    container.addEventListener('pointercancel', onPointerUp);
     container.addEventListener('click', onClickCapture, true);
 
     return () => {
+      stopMomentum();
       container.removeEventListener('pointerdown', onPointerDown);
       container.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
+      container.removeEventListener('pointerup', onPointerUp);
+      container.removeEventListener('pointercancel', onPointerUp);
       container.removeEventListener('click', onClickCapture, true);
     };
   }, [products]);
@@ -237,8 +325,13 @@ export default function FeaturedProducts() {
         {/* Mobile & Desktop: Horizontal scroll with snap; desktop shows 3 cards */}
         <div 
           ref={scrollContainerRef}
-          className="flex gap-6 lg:gap-8 mt-6 overflow-x-auto scrollbar-hide pb-4 md:pb-0 px-6 md:px-0 items-center snap-x snap-mandatory scroll-smooth select-none cursor-grab"
-          style={{ scrollSnapType: 'x mandatory' }}
+          className="flex gap-6 lg:gap-8 mt-6 overflow-x-auto scrollbar-hide pb-4 md:pb-0 px-6 md:px-0 items-center snap-x snap-mandatory select-none"
+          style={{ 
+            scrollSnapType: 'x mandatory',
+            cursor: 'grab',
+            WebkitOverflowScrolling: 'touch',
+            scrollBehavior: 'smooth'
+          }}
         >
           {displayProducts.map((product, index) => {
             const isCentered = centeredCard === index;
@@ -250,24 +343,33 @@ export default function FeaturedProducts() {
               <div
                 key={product.id}
                 ref={(el) => setCardRef(index, el)}
-                className={`flex flex-col relative w-[220px] min-w-[220px] md:w-1/3 md:min-w-[33.333%] flex-none snap-center transition-all duration-500 ease-out ${isCentered ? 'z-10' : 'z-0'}`}
+                className={`flex flex-col relative w-[220px] min-w-[220px] md:w-1/3 md:min-w-[33.333%] flex-none snap-center ${isCentered ? 'z-10' : 'z-0'}`}
                 style={{ 
                   scrollSnapAlign: 'center',
-                  willChange: 'transform'
+                  willChange: 'transform',
+                  transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
                 <Link 
                   href={`/product/${product.slug || String(product.id)}`}
-                  className="block group w-full h-full"
+                  className="block group w-full h-full cursor-pointer"
+                  style={{ cursor: 'inherit' }}
                 >
                   <div 
-                    className="relative w-full bg-[#2D2D2D] overflow-hidden transition-all duration-500 ease-out"
+                    className="relative w-full bg-[#2D2D2D] overflow-hidden"
                     style={{
-                      aspectRatio: isCentered ? '1 / 1.2' : '1 / 1' // 20% taller when centered
+                      aspectRatio: isCentered ? '1 / 1.15' : '1 / 1', // 15% taller when centered (reduced from 20%)
+                      transition: 'aspect-ratio 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
                     {/* Scaled image/content wrapper grows from center for equal crop */}
-                    <div className={`relative w-full h-full transition-transform duration-500 ease-out transform-gpu origin-center ${contentScaleClass}`} style={{ willChange: 'transform' }}>
+                    <div 
+                      className={`relative w-full h-full transform-gpu origin-center ${contentScaleClass}`} 
+                      style={{ 
+                        willChange: 'transform',
+                        transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                    >
                       {/* Main Image */}
                       <Image
                         src={product.image || "/images/placeholder.png"}
@@ -328,6 +430,17 @@ export default function FeaturedProducts() {
           })}
         </div>
       </div>
+
+      {/* Custom styles for smooth drag experience */}
+      <style jsx>{`
+        :global(.scrollbar-hide::-webkit-scrollbar) {
+          display: none;
+        }
+        :global(.scrollbar-hide) {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
