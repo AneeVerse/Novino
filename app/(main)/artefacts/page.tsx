@@ -264,21 +264,21 @@ export default function ArtefactsPage() {
         </div>
       </div>
 
+      {/* Product Grid Section - Full width */}
+      <section className="relative z-10 mt-8 sm:mt-12">
+        <ProductGrid 
+          key="artefact-product-grid"
+          title="Ancient Civilizations" 
+          subtitle="Featured Collection" 
+          products={artefactProducts}
+          categories={categories}
+          viewAllText="View all artefacts"
+          showViewAllButton={false}
+        />
+      </section>
+
       {/* Clear separation from the hero section with negative margin to prevent overlap */}
       <div className="container mx-auto px-4 sm:px-6 md:px-8 mt-4 z-50 relative" style={{ marginTop: '2rem', clear: 'both' }}>
-        {/* Product Grid Section */}
-        <div className="mb-16 relative z-10 font-['Roboto_Mono']">
-          <ProductGrid 
-            key="artefact-product-grid"
-            title="Ancient Civilizations" 
-            subtitle="Featured Collection" 
-            products={artefactProducts}
-            categories={categories}
-            viewAllText="View all artefacts"
-            showViewAllButton={false}
-          />
-        </div>
-
         {/* DISCOVER EXTRAORDINARY ARTIFACTS Section */}
         <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
           <div className="max-w-[2400px] mx-auto">

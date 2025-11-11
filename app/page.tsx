@@ -342,23 +342,23 @@ export default function Home() {
           <ProductTestimonial />
         </div>
 
-        {/* Product Grid Section */}
-        <div className="mb-16 relative z-10 font-['Roboto_Mono']">
-          <ProductGrid 
-            key="home-product-grid"
-            title="Elevate Your Gallery" 
-            subtitle="All Products" 
-            products={products}
-            categories={categories}
-            viewAllText="View all"
-            showViewAllButton={true}
-            activeCategory={gridActiveCategory}
-            onCategoryChange={setGridActiveCategory}
-          />
-        </div>
-
         {/* Move out of container for full width */}
       </div>
+
+      {/* Product Grid Section */}
+      <section className="relative z-10 mt-12 sm:mt-20">
+        <ProductGrid 
+          key="home-product-grid"
+          title="Elevate Your Gallery" 
+          subtitle="All Products" 
+          products={products}
+          categories={categories}
+          viewAllText="View all"
+          showViewAllButton={true}
+          activeCategory={gridActiveCategory}
+          onCategoryChange={setGridActiveCategory}
+        />
+      </section>
 
       {/* Video Section - Full width */}
       <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[730px] bg-[#2D2D2D] mb-16 sm:mb-24 md:mb-32">

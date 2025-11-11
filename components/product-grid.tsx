@@ -123,22 +123,30 @@ export default function ProductGrid({
   return (
     <section className="w-full font-['Roboto_Mono']">
       {/* Hero banner with background image */}
-      <div
-        className="relative w-full bg-cover bg-center"
-        style={{ backgroundImage: `url('/images/hero-section/bg03.png')` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-[#2D2D2D]/95"></div>
-        <div className="relative max-w-[1440px] mx-auto px-6 sm:px-10 py-16 sm:py-24 text-center text-white space-y-4">
-          <span className="text-xs sm:text-sm uppercase tracking-[0.6em] text-white/70">{subtitle}</span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-[0.1em]">Elevate Your Gallery</h2>
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 pt-4">
+      <div className="relative w-full min-h-[480px] sm:min-h-[560px] lg:min-h-[620px] overflow-hidden ">
+        <Image
+          src="/images/hero-section/bg03.png"
+          alt="Framed artwork gallery wall"
+          fill
+          priority
+          className="object-cover object-center"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-[#2D2D2D]/95 mix-blend-multiply"></div>
+        <div className="absolute inset-x-0 bottom-0 h-44 sm:h-52 bg-gradient-to-b from-transparent via-[#2D2D2D]/70 to-[#2D2D2D]"></div>
+        <div className="relative z-10 max-w-[1440px] mx-auto px-6 sm:px-10 py-24 sm:py-32 text-center text-white space-y-6">
+          <span className="block text-sm sm:text-base uppercase tracking-[0.8em] text-white/70">{subtitle}</span>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-light tracking-[0.12em]">
+            Elevate Your Gallery
+          </h2>
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 pt-6">
             {propCategories.map((category) => (
               <button
                 key={category}
-                className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm transition-all duration-200 ${
+                className={`px-5 sm:px-7 py-2.5 rounded-full text-xs sm:text-sm transition-all duration-200 backdrop-blur ${
                   category === activeCategory
-                    ? "bg-white text-black font-semibold"
-                    : "bg-white/10 text-white border border-white/20 hover:bg-white/20"
+                    ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
+                    : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
                 }`}
                 onClick={() => handleCategoryChange(category)}
               >
@@ -150,7 +158,7 @@ export default function ProductGrid({
       </div>
 
       {/* Product cards */}
-      <div className="relative max-w-[1440px] mx-auto px-6 sm:px-10 -mt-10 sm:-mt-16 pb-16">
+      <div className="relative max-w-[1440px] mx-auto px-6 sm:px-10 -mt-12 sm:-mt-44 pb-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {displayProducts.map((product) => (
             <Link href={`/product/${product.id}`} key={product.id} className="group">
