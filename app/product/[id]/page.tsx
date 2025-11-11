@@ -267,8 +267,14 @@ export default function ProductDetail() {
               const catsRes = await fetch('/api/categories');
               if (catsRes.ok) {
                 const cats = await catsRes.json();
-                const catItem = cats.find((cat: any) => (cat._id || cat.id) === formattedProduct.category);
+                // Convert both to strings for comparison
+                const catItem = cats.find((cat: any) => {
+                  const catId = (cat._id || cat.id)?.toString();
+                  const productCatId = formattedProduct.category?.toString();
+                  return catId === productCatId;
+                });
                 setCategoryName(catItem?.name || formattedProduct.category);
+                console.log('Category found:', catItem?.name, 'for ID:', formattedProduct.category);
               } else {
                 setCategoryName(formattedProduct.category);
               }
@@ -403,11 +409,105 @@ export default function ProductDetail() {
     }
   }
 
-  // Related products - get 3 products from static data for now
-  // This could be enhanced to fetch from API in the future
-  const relatedProducts = isValidId && product?.id 
-    ? paintingProductData.filter(p => p.id !== product.id).slice(0, 3)
-    : paintingProductData.slice(1, 4) // If showing featured product, show other products as related
+  // State for dynamic related products
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  
+  // Fetch related products from the same category
+  useEffect(() => {
+    async function fetchRelatedProducts() {
+      if (!product) return;
+      
+      try {
+        // Fetch all products and categories
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/categories')
+        ]);
+        
+        if (productsRes.ok && categoriesRes.ok) {
+          const allProducts = await productsRes.json();
+          const categories = await categoriesRes.json();
+          
+          // Create a map of category IDs to names
+          const categoryMap: {[key: string]: string} = {};
+          categories.forEach((cat: any) => {
+            const catId = (cat._id || cat.id)?.toString();
+            if (catId) {
+              categoryMap[catId] = cat.name;
+            }
+          });
+          
+          // Filter products: prioritize same category, fallback to same type
+          const productCategoryId = product.category?.toString();
+          
+          // Helper function to check if a product is different from current product
+          const isDifferentProduct = (p: any) => {
+            // Compare all possible ID formats
+            const pId = p.id?.toString();
+            const pMongoId = p._id?.toString();
+            const pSlug = p.slug;
+            
+            const productId = product.id?.toString();
+            const productMongoId = product._id?.toString();
+            const productSlug = product.slug;
+            
+            // If any ID matches, it's the same product
+            if (pId && productId && pId === productId) return false;
+            if (pMongoId && productMongoId && pMongoId === productMongoId) return false;
+            if (pSlug && productSlug && pSlug === productSlug) return false;
+            if (pId && productMongoId && pId === productMongoId) return false;
+            if (pMongoId && productId && pMongoId === productId) return false;
+            
+            return true;
+          };
+          
+          // First, get same category products
+          const sameCategoryProducts = allProducts.filter((p: any) => {
+            const pCategoryId = p.category?.toString();
+            return pCategoryId === productCategoryId && isDifferentProduct(p);
+          });
+          
+          // If we don't have enough, add same type products
+          let related = [...sameCategoryProducts];
+          if (related.length < 3) {
+            const sameTypeProducts = allProducts.filter((p: any) => {
+              const notAlreadyIncluded = !related.some(r => 
+                r._id?.toString() === p._id?.toString() || 
+                r.id?.toString() === p.id?.toString() ||
+                (r.slug && p.slug && r.slug === p.slug)
+              );
+              return p.type === product.type && isDifferentProduct(p) && notAlreadyIncluded;
+            });
+            related = [...related, ...sameTypeProducts];
+          }
+          
+          // Map category IDs to names and limit to 3
+          const relatedWithNames = related.slice(0, 3).map((p: any) => ({
+            ...p,
+            categoryName: categoryMap[p.category?.toString()] || p.category || 'Product'
+          }));
+          
+          console.log('Related products found:', relatedWithNames.length, 'for category:', productCategoryId);
+          setRelatedProducts(relatedWithNames);
+        } else {
+          // Fallback to static data if API fails
+          const fallback = paintingProductData
+            .filter(p => p.id !== product.id && p.category === product.category)
+            .slice(0, 3);
+          setRelatedProducts(fallback);
+        }
+      } catch (error) {
+        console.error('Error fetching related products:', error);
+        // Fallback to static data
+        const fallback = paintingProductData
+          .filter(p => p.id !== product.id)
+          .slice(0, 3);
+        setRelatedProducts(fallback);
+      }
+    }
+    
+    fetchRelatedProducts();
+  }, [product])
 
   // Add to cart handler
   const handleAddToCart = () => {
@@ -810,119 +910,158 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* Specification section - Always visible now */}
-        <div className="mx-auto border-t border-white/10 pt-12 pb-6 w-full" style={{ maxWidth: "1440px" }}>
-          <h2 style={{ fontFamily: 'DM Serif Display' }} className="text-2xl font-light mb-8 px-4 md:px-6">Specifications</h2>
-          <div className="flex flex-col md:flex-row gap-12 w-full py-8 px-4 md:px-6">
-            {/* Image on the left (wider) */}
-            <div className="md:w-7/12">
-              <div className="relative w-full pt-[100%]">
-                <Image
-                  src={product.specifications?.imageUrl || "/images/product/image 12.png"}
-                  alt="Product specifications diagram"
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  className="opacity-95"
-                />
-              </div>
-            </div>
-            
-            {/* Specifications on the right */}
-            <div className="md:w-5/12 flex flex-col justify-center">
-              <h5 style={{ fontFamily: 'DM Serif Display' }} className="text-white text-2xl mb-4 capitalize">
-                {product.specifications?.title}
-              </h5>
-              <pre style={{ fontFamily: 'Roboto Mono' }} className="text-white/90 whitespace-pre-line text-base leading-relaxed">
-                {product.specifications?.content}
-              </pre>
-            </div>
-          </div>
-        </div>
-
-        {/* FAQs section - accordion layout */}
-        <div className="mx-auto border-t border-white/10 pt-20 pb-6 w-full" style={{ maxWidth: "1440px" }}>
-          <h2 className="text-2xl font-light mb-8 px-4 md:px-6">FAQs</h2>
-          <div className="flex flex-col-reverse md:flex-row gap-8 px-4 md:px-6">
-            {/* FAQs list */}
-            <div className="w-full md:w-4/12 space-y-4 pt-8 md:pt-44">
-              {product.faqSection?.faqs.map((faq: any, index: number) => (
-                <div key={faq.id || index} className="border-b border-white/20 pb-4">
-                  <button
-                    type="button"
-                    onClick={() => toggleFaq(index)}
-                    className="w-full flex justify-between items-center text-white text-base font-medium text-left"
-                  >
-                    <span className="pr-4">{faq.question}</span>
-                    {openFaqIndex === index ? <Minus size={24} /> : <Plus size={24} />}
-                  </button>
-                  {openFaqIndex === index && (
-                    <p className="mt-2 text-white/80 text-sm whitespace-pre-line">
-                      {faq.answer}
-                    </p>
+        {/* Specification section - Only show if specifications exist */}
+        {product.specifications && (product.specifications.title || product.specifications.content || product.specifications.imageUrl) && (
+          <div className="mx-auto border-t border-white/10 pt-12 pb-6 w-full" style={{ maxWidth: "1440px" }}>
+            <h2 style={{ fontFamily: 'DM Serif Display' }} className="text-2xl font-light mb-8 px-4 md:px-6">Specifications</h2>
+            <div className="flex flex-col md:flex-row gap-12 w-full py-8 px-4 md:px-6">
+              {/* Image on the left (wider) */}
+              {product.specifications.imageUrl && (
+                <div className="md:w-7/12">
+                  <div className="relative w-full pt-[100%]">
+                    <Image
+                      src={product.specifications.imageUrl}
+                      alt="Product specifications diagram"
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      className="opacity-95"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Specifications on the right */}
+              {(product.specifications.title || product.specifications.content) && (
+                <div className={`${product.specifications.imageUrl ? 'md:w-5/12' : 'w-full'} flex flex-col justify-center`}>
+                  {product.specifications.title && (
+                    <h5 style={{ fontFamily: 'DM Serif Display' }} className="text-white text-2xl mb-4 capitalize">
+                      {product.specifications.title}
+                    </h5>
+                  )}
+                  {product.specifications.content && (
+                    <pre style={{ fontFamily: 'Roboto Mono' }} className="text-white/90 whitespace-pre-line text-base leading-relaxed">
+                      {product.specifications.content}
+                    </pre>
                   )}
                 </div>
-              ))}
+              )}
             </div>
-            {/* FAQ Image on the right (wider) on desktop, top on mobile */}
-            <div className="w-full md:w-8/12">
-              <div className="relative w-full pt-[100%] md:pt-[100%]">
-                <Image
-                  src={product.faqSection?.imageUrl || "/images/product/image (7).png"}
-                  alt="Product image"
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  className="opacity-95"
-                />
+          </div>
+        )}
+
+        {/* FAQs section - accordion layout - Only show if FAQs exist */}
+        {product.faqSection?.faqs && product.faqSection.faqs.length > 0 && (
+          <div className="mx-auto border-t border-white/10 pt-20 pb-6 w-full" style={{ maxWidth: "1440px" }}>
+            <h2 className="text-2xl font-light mb-8 px-4 md:px-6">FAQs</h2>
+            <div className="flex flex-col-reverse md:flex-row gap-8 px-4 md:px-6">
+              {/* FAQs list */}
+              <div className={`w-full ${product.faqSection.imageUrl ? 'md:w-4/12' : 'md:w-full'} space-y-4 pt-8 ${product.faqSection.imageUrl ? 'md:pt-44' : 'md:pt-0'}`}>
+                {product.faqSection.faqs.map((faq: any, index: number) => (
+                  <div key={faq.id || index} className="border-b border-white/20 pb-4">
+                    <button
+                      type="button"
+                      onClick={() => toggleFaq(index)}
+                      className="w-full flex justify-between items-center text-white text-base font-medium text-left"
+                    >
+                      <span className="pr-4">{faq.question}</span>
+                      {openFaqIndex === index ? <Minus size={24} /> : <Plus size={24} />}
+                    </button>
+                    {openFaqIndex === index && (
+                      <p className="mt-2 text-white/80 text-sm whitespace-pre-line">
+                        {faq.answer}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {/* FAQ Image on the right (wider) on desktop, top on mobile - Only show if image exists */}
+              {product.faqSection.imageUrl && (
+                <div className="w-full md:w-8/12">
+                  <div className="relative w-full pt-[100%] md:pt-[100%]">
+                    <Image
+                      src={product.faqSection.imageUrl}
+                      alt="Product image"
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      className="opacity-95"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Full-width image section after FAQs - Only show if additionalImageUrl exists */}
+        {product.additionalImageUrl && (
+          <div className="relative w-screen mt-16 mb-16 overflow-hidden" style={{ marginLeft: 'calc(-50vw + 50%)' }}>
+            <div className="relative w-full" style={{ paddingTop: "56.25%" }}>  {/* 16:9 aspect ratio */}
+              <Image
+                src={product.additionalImageUrl}
+                alt="Product showcase"
+                fill
+                style={{ objectFit: 'cover' }}
+                className="opacity-100"
+                priority
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-16 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
+            <div className="px-4 md:px-6">
+              <h2 className="text-2xl sm:text-3xl font-light mb-8 text-center font-['Roboto_Mono'] tracking-wider">Related Products</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {relatedProducts.map((relatedProduct) => {
+                  const productImage = relatedProduct.images?.[0] || relatedProduct.image || '/images/placeholder.png';
+                  const productPrice = relatedProduct.basePrice || relatedProduct.price || 'Price on request';
+                  const productName = relatedProduct.name || 'Untitled';
+                  const productId = relatedProduct.slug || relatedProduct._id || relatedProduct.id;
+                  
+                  return (
+                    <Link 
+                      href={`/product/${productId}`} 
+                      key={relatedProduct._id || relatedProduct.id}
+                      className="group"
+                    >
+                      <div className="h-full rounded-3xl overflow-hidden bg-gradient-to-br from-white/8 via-white/5 to-white/[0.02] border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
+                        <div className="relative aspect-[5/4] bg-[#1F1F1F] overflow-hidden">
+                          <Image
+                            src={productImage}
+                            alt={productName}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="(min-width: 1024px) 420px, (min-width: 640px) 50vw, 100vw"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                        <div className="p-5 sm:p-6 space-y-2">
+                          <div className="text-xs uppercase tracking-[0.3em] text-white/60 font-['Roboto_Mono']">
+                            {relatedProduct.categoryName || relatedProduct.type || 'Product'}
+                          </div>
+                          <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors font-['Roboto_Mono']">
+                            {productName}
+                          </h3>
+                          <p className="text-sm text-white/60 font-['Roboto_Mono']">
+                            {productPrice}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Full-width image section after FAQs */}
-        <div className="relative w-screen mt-16 mb-16 overflow-hidden" style={{ marginLeft: 'calc(-50vw + 50%)' }}>
-          <div className="relative w-full" style={{ paddingTop: "56.25%" }}>  {/* 16:9 aspect ratio */}
-            <Image
-              src={product.additionalImageUrl || "/images/product/image 13.png"}
-              alt="Product showcase"
-              fill
-              style={{ objectFit: 'cover' }}
-              className="opacity-100"
-              priority
-            />
-          </div>
-        </div>
-
-        {/* Related Products */}
-        <div className="mt-16 px-4 md:px-6 mx-auto w-full" style={{ maxWidth: "1440px" }}>
-          <h2 className="text-2xl font-light mb-8 text-center">Related Products</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {relatedProducts.map((relatedProduct) => (
-              <Link 
-                href={`/product/${relatedProduct.slug || relatedProduct.id}`} 
-                key={relatedProduct.id}
-                className="block group"
-              >
-                <div className="relative aspect-square bg-neutral-800/10 mb-3 overflow-hidden max-w-xs mx-auto">
-                  <Image
-                    src={relatedProduct.image}
-                    alt={relatedProduct.name || "Related product"}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    className="transition-transform group-hover:scale-105"
-                  />
-                </div>
-                <div className="text-center">
-                  <h3 className="text-base font-light">{relatedProduct.name}</h3>
-                  <p className="text-white/60 text-sm">From {relatedProduct.price}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* Testimonial Collection */}
-        <div className="mt-12">
-          <TestimonialCollection />
+        <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
+          <div className="px-4 md:px-6">
+            <TestimonialCollection />
+          </div>
         </div>
 
         {/* Blog Section - reduced spacing */}
@@ -931,17 +1070,19 @@ export default function ProductDetail() {
         </div> */}
 
         {/* Wardrobe Section - reduced spacing */}
-        <div className="mt-8">
-          <WardrobeSection />
+        <div className="mt-8 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
+          <div className="px-4 md:px-6">
+            <WardrobeSection />
+          </div>
         </div>
       </div>
-
-      {/* Footer with specific width constraints and padding */}
-      <div className="w-full px-4 md:px-6">
-        <div className="mx-auto" style={{ maxWidth: "1440px" }}>
-          <Footer />
+      <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
+          <div className="px-4 md:px-6">
+            <Footer />
+          </div>
         </div>
-      </div>
+      
+        
     </div>
   )
 } 

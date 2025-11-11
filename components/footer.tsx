@@ -59,6 +59,8 @@ export default function Footer() {
           
           {/* Mobile border overlay */}
           <div className="absolute inset-0 border-2 border-dashed border-white rounded-[20px] block sm:hidden"></div>
+          {/* Desktop border overlay */}
+          <div className="absolute inset-0 border-2 border-dashed border-white rounded-[20px] hidden sm:block pointer-events-none"></div>
 
           {/* Content container with padding */}
           <div className="relative p-8 z-10">
