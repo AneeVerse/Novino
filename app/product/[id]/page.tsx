@@ -580,57 +580,64 @@ export default function ProductDetail() {
 
               {/* Right section - Product Image and Purchase Details */}
               <div className="lg:col-span-9 grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12">
-                {/* Product Image - Fixed size with drag scroll */}
+                {/* Product Image Gallery - Main image with thumbnails */}
                 <div 
-                  className="md:col-span-3 flex items-start justify-center order-1 md:order-1" 
+                  className="md:col-span-3 flex flex-col gap-4 order-1 md:order-1" 
                   data-product-image
+                >
+                  {/* Main Product Image */}
+                  <div 
+                    className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] overflow-hidden select-none bg-black/20 rounded-sm group cursor-pointer"
                   onMouseEnter={() => setIsAutoScrolling(false)}
                   onMouseLeave={() => setIsAutoScrolling(true)}
                 >
-                  <div 
-                    className="relative w-full h-[380px] sm:h-[480px] lg:h-[560px] overflow-hidden select-none group cursor-grab active:cursor-grabbing"
-                    style={{ touchAction: 'pan-y' }}
-                    onMouseDown={(e) => {
-                      const startX = e.pageX;
-                      let hasMoved = false;
-                      
-                      const handleMouseMove = (moveEvent: MouseEvent) => {
-                        const deltaX = moveEvent.pageX - startX;
-                        
-                        // If dragged more than 50px, change image
-                        if (Math.abs(deltaX) > 50 && !hasMoved) {
-                          hasMoved = true;
-                          if (deltaX > 0) {
-                            // Dragged right - go to previous image
-                            setCurrentImage((prev) => prev === 0 ? productImages.length - 1 : prev - 1);
-                          } else {
-                            // Dragged left - go to next image
-                            setCurrentImage((prev) => (prev + 1) % productImages.length);
-                          }
-                          setIsAutoScrolling(false);
-                          setTimeout(() => setIsAutoScrolling(true), 5000);
-                        }
-                      };
-                      
-                      const handleMouseUp = () => {
-                        document.removeEventListener('mousemove', handleMouseMove);
-                        document.removeEventListener('mouseup', handleMouseUp);
-                      };
-                      
-                      document.addEventListener('mousemove', handleMouseMove);
-                      document.addEventListener('mouseup', handleMouseUp);
-                    }}
-                  >
                     <Image
                       src={displayedImage}
                       alt={product.name || "Product Image"}
                       fill
                       style={{ objectFit: 'cover' }}
                       priority
-                      className="pointer-events-none transition-all duration-300"
+                      className="pointer-events-none transition-all duration-700 ease-out group-hover:scale-105"
                       draggable={false}
                     />
+                    
+                    {/* Subtle overlay on hover */}
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-500 pointer-events-none" />
                   </div>
+
+                  {/* Thumbnail Gallery */}
+                  {totalImages > 1 && (
+                    <div className="flex gap-2 justify-center flex-wrap">
+                      {productImages.map((imageUrl, i) => (
+                        <button
+                          key={i}
+                          onMouseEnter={() => {
+                            setCurrentImage(i);
+                          setIsAutoScrolling(false);
+                          }}
+                          onClick={() => {
+                            setCurrentImage(i);
+                            setIsAutoScrolling(false);
+                            setTimeout(() => setIsAutoScrolling(true), 10000);
+                          }}
+                          className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
+                            currentImage === i 
+                              ? 'border-white shadow-lg shadow-white/20' 
+                              : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                          }`}
+                  >
+                    <Image
+                            src={imageUrl}
+                            alt={`${product.name} view ${i + 1}`}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                            className="pointer-events-none"
+                      draggable={false}
+                    />
+                        </button>
+                      ))}
+                  </div>
+                  )}
                 </div>
 
                 {/* Price and cart actions */}
@@ -641,6 +648,51 @@ export default function ProductDetail() {
                       {colorVariants.length > 0 && (
                         <div className="flex flex-col gap-3">
                           <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">Finish</div>
+                          
+                          {/* Check if variants have images - show thumbnails, otherwise show color circles */}
+                          {colorVariants.some((v: any) => v.imageUrl) ? (
+                            <div className="flex gap-2 justify-center flex-wrap">
+                              <button
+                                onClick={() => setSelectedVariant(null)}
+                                className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
+                                  !selectedVariant || !colorVariants.some((v: any) => v.id === selectedVariant?.id)
+                                    ? 'border-white shadow-lg shadow-white/20' 
+                                    : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                                }`}
+                              >
+                                <Image
+                                  src={productImages[0]}
+                                  alt="Default"
+                                  fill
+                                  style={{ objectFit: 'cover' }}
+                                  className="pointer-events-none"
+                                  draggable={false}
+                                />
+                              </button>
+                              {colorVariants.map((variant: any) => (
+                                <button
+                                  key={variant.id}
+                                  onMouseEnter={() => setSelectedVariant(variant)}
+                                  onClick={() => setSelectedVariant(variant)}
+                                  className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
+                                    selectedVariant?.id === variant.id
+                                      ? 'border-white shadow-lg shadow-white/20' 
+                                      : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                                  }`}
+                                  title={variant.name}
+                                >
+                                  <Image
+                                    src={variant.imageUrl || productImages[0]}
+                                    alt={variant.name}
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                    className="pointer-events-none"
+                                    draggable={false}
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
                           <div className="flex flex-wrap gap-3">
                             {colorVariants.map((variant: any) => (
                               <button
@@ -658,7 +710,9 @@ export default function ProductDetail() {
                               />
                             ))}
                           </div>
-                          {selectedVariant && colorVariants.some(v => v.id === selectedVariant.id) && (
+                          )}
+                          
+                          {selectedVariant && colorVariants.some((v: any) => v.id === selectedVariant.id) && (
                             <div className="text-xs text-white/60 font-['Roboto_Mono']">
                               {selectedVariant.name}
                             </div>
@@ -713,18 +767,18 @@ export default function ProductDetail() {
                   
                   {/* Quantity and Add to Cart */}
                   <div className="flex items-center gap-3 mb-8">
-                    <div className="flex items-center border border-white/20">
+                    <div className="flex items-center border border-white/20 rounded-sm overflow-hidden backdrop-blur-sm">
                       <button 
                         onClick={decreaseQuantity}
-                        className="w-10 h-12 flex items-center justify-center hover:bg-white/5 transition text-lg font-light"
+                        className="w-10 h-12 flex items-center justify-center hover:bg-white/10 transition-all duration-300 text-lg font-light"
                         aria-label="Decrease quantity"
                       >
                         -
                       </button>
-                      <span className="w-12 text-center font-['Roboto_Mono'] text-sm">{quantity}</span>
+                      <span className="w-12 text-center font-['Roboto_Mono'] text-sm border-x border-white/10">{quantity}</span>
                       <button 
                         onClick={increaseQuantity}
-                        className="w-10 h-12 flex items-center justify-center hover:bg-white/5 transition text-lg font-light"
+                        className="w-10 h-12 flex items-center justify-center hover:bg-white/10 transition-all duration-300 text-lg font-light"
                         aria-label="Increase quantity"
                       >
                         +
@@ -733,7 +787,7 @@ export default function ProductDetail() {
                     
                     <button 
                       onClick={handleAddToCart}
-                      className="flex-1 bg-white text-black hover:bg-white/90 py-3 px-6 uppercase tracking-widest text-xs font-medium transition-all font-['Roboto_Mono']"
+                      className="flex-1 bg-white text-black hover:bg-white/90 hover:shadow-lg hover:shadow-white/20 py-3 px-6 uppercase tracking-widest text-xs font-medium transition-all duration-300 rounded-sm transform hover:scale-[1.02] active:scale-[0.98] font-['Roboto_Mono']"
                     >
                       Add to Cart
                     </button>
@@ -754,35 +808,6 @@ export default function ProductDetail() {
               </div>
             </div>
           </div>
-
-          {/* Image pagination - Centered below the entire product section */}
-          {totalImages > 1 && (
-            <div className="flex justify-center items-center gap-3 mt-12 pb-8">
-              {productImages.map((imageUrl, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => {
-                    setCurrentImage(i);
-                    setIsAutoScrolling(false); // Pause auto-scroll when user manually clicks
-                    // Smooth scroll to top of product section
-                    const productSection = document.querySelector('[data-product-image]');
-                    if (productSection) {
-                      productSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                    // Resume auto-scroll after 10 seconds
-                    setTimeout(() => setIsAutoScrolling(true), 10000);
-                  }}
-                  className={`text-base transition-all font-['Roboto_Mono'] cursor-pointer ${
-                    currentImage === i 
-                      ? 'text-white underline underline-offset-4 font-medium' 
-                      : 'text-white/40 hover:text-white/70'
-                  }`}
-                >
-                  {i+1}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Specification section - Always visible now */}

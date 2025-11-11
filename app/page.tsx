@@ -338,9 +338,9 @@ export default function Home() {
         </div> */}
 
         {/* Product Testimonial Section */}
-        <div className="mb-16 relative z-10">
+        {/* <div className="mb-16 relative z-10">
           <ProductTestimonial />
-        </div>
+        </div> */}
 
         {/* Move out of container for full width */}
       </div>

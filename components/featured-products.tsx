@@ -85,7 +85,7 @@ export default function FeaturedProducts() {
             categoryId: p.category,
             type: p.type,
             featured: p.featured,
-            slug: p.slug // Include slug for URL generation
+            slug: p.slug || p._id || p.id // Ensure we always have a slug in the URL so API fetch works
           }));
         
         setProducts(featuredProducts);
@@ -233,9 +233,7 @@ export default function FeaturedProducts() {
       startScrollLeft = container.scrollLeft;
       hasMoved = false;
       
-      try { 
-        container.setPointerCapture(e.pointerId); 
-      } catch {}
+      // Do not capture the pointer – this allows native click events on internal links to fire correctly
       
       container.style.cursor = 'grabbing';
       container.style.scrollSnapType = 'none'; // Disable snap while dragging

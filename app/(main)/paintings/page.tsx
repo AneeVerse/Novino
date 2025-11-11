@@ -8,7 +8,7 @@ import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
-import PaintingProductGrid from "@/components/painting-product-grid"
+import ProductGrid from "@/components/product-grid"
 import { useState, useEffect, useRef } from "react"
 import useEmblaCarousel from 'embla-carousel-react'
 import Preloader from "@/components/ui/preloader"
@@ -46,6 +46,10 @@ export default function PaintingsPage() {
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const [showText, setShowText] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
+  
+  // State for categories and painting products
+  const [categories, setCategories] = useState<string[]>(["All Paintings"]);
+  const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
 
   // State for dynamic painting products
   interface SimpleProduct {
@@ -58,24 +62,54 @@ export default function PaintingsPage() {
   }
   const [paintingProducts, setPaintingProducts] = useState<SimpleProduct[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        if (!res.ok) throw new Error('Failed to fetch categories');
+        const data = await res.json();
+        
+        // Filter to get only painting categories
+        // Build category ID to name mapping
+        const catMap: {[key: string]: string} = {};
+        data.forEach((cat: any) => {
+          if (cat.type === 'painting') {
+            const id = cat._id || cat.id;
+            if (id) catMap[id] = cat.name;
+          }
+        });
+        setCategoryMap(catMap);
+        
+        // Only show the single category option
+        setCategories(["All Paintings"]);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        // Fallback to single category
+        setCategories(["All Paintings"]);
+      }
+    };
+    fetchCategories();
+  }, []);
   
   // Fetch painting products from API
   useEffect(() => {
-    const fetchProducts = async () => {
+    async function fetchPaintings() {
       try {
         setLoading(true);
         const res = await fetch('/api/products');
-        if (!res.ok) throw new Error('Failed to fetch products');
+        if (!res.ok) throw new Error('Failed to fetch paintings');
         const data = await res.json();
         const filtered = data
           .filter((p: any) => p.type === 'painting')
           .map((p: any) => ({
-            id: p.id,
+            id: p.id || p._id,
             name: p.name,
             price: p.basePrice || p.price,
             image: p.images?.[0] || p.image,
-            category: p.category,
-            categoryId: p.category
+            category: categoryMap[p.category] || p.category, // Use name from map if available
+            categoryId: p.category // Store the category ID/reference
           }));
         setPaintingProducts(filtered);
       } catch (err) {
@@ -83,9 +117,9 @@ export default function PaintingsPage() {
       } finally {
         setLoading(false);
       }
-    };
-    fetchProducts();
-  }, []);
+    }
+    fetchPaintings();
+  }, [categoryMap]); // Add categoryMap as dependency to update products when categories load
 
   // Initial load - delay text appearance
   useEffect(() => {
@@ -228,18 +262,18 @@ export default function PaintingsPage() {
         </div>
       </div>
 
-      {/* Container for main content */}
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 mt-4 z-50 relative">
-        {/* Product Grid Section */}
-        <div className="mb-16 relative z-10 font-['Roboto_Mono']">
-          <PaintingProductGrid 
+      {/* Product Grid Section - Full width */}
+      <section className="relative z-10 mt-8 sm:mt-12">
+          <ProductGrid 
+            key="painting-product-grid"
             title="Masterpiece Collection" 
             subtitle="Featured Collection" 
             products={paintingProducts}
+            categories={categories}
             viewAllText="View all paintings"
+            showViewAllButton={false}
           />
-        </div>
-      </div>
+      </section>
 
       {/* Video Section - Full width */}
       <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[730px] bg-[#2D2D2D] mb-16 sm:mb-24 md:mb-32">
