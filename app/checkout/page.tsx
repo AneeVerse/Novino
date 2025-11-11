@@ -312,22 +312,76 @@ export default function CheckoutPage() {
       }
     }
     
-    // TODO: Process order
-    console.log('Order confirmed:', {
-      address: deliveryAddress,
-      paymentMethod: selectedPayment,
-      cardDetails: selectedPayment === "cards" ? cardDetails : null,
-      upiId: selectedPayment === "upi" ? upiId : null,
-      wallet: selectedPayment === "wallets" ? selectedWallet : null,
-      bank: selectedPayment === "netbanking" ? selectedBank : null,
-      total
-    });
-    
-    toast({
-      title: "Order Placed Successfully!",
-      description: "Your order has been confirmed and will be processed shortly",
-    });
-    // router.push('/order-confirmation');
+    // Place order via API
+    const placeOrder = async () => {
+      try {
+        const orderData = {
+          items: selectedCartItems.map((item: any) => ({
+            productId: String(item.id),
+            name: item.name,
+            price: typeof item.price === 'string' ? parseFloat(item.price.replace(/[^0-9.]/g, '')) : item.price,
+            quantity: item.quantity,
+            image: item.image,
+            variant: item.variant
+          })),
+          subtotal: cartTotal,
+          gst,
+          shippingCost: 0, // Free shipping
+          total,
+          deliveryAddress: {
+            name: deliveryAddress.name,
+            line1: deliveryAddress.line1 || deliveryAddress.address?.split(',')[0] || deliveryAddress.address,
+            line2: deliveryAddress.line2 || '',
+            city: deliveryAddress.city || '',
+            state: deliveryAddress.state || '',
+            pincode: deliveryAddress.pincode
+          },
+          paymentMethod: selectedPayment,
+          giftWrap: cartExtras.giftWrap
+        };
+
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+          const { order } = await response.json();
+          
+          toast({
+            title: "Order Placed Successfully!",
+            description: `Order #${order.orderNumber} has been confirmed. ${selectedPayment === 'cod' ? 'Payment will be collected on delivery.' : ''}`,
+          });
+          
+          // Clear selected items from localStorage
+          localStorage.removeItem('selectedCartItems');
+          localStorage.removeItem('cartExtras');
+          localStorage.removeItem('selectedAddress');
+          
+          // Navigate to profile orders page
+          setTimeout(() => {
+            router.push('/profile?tab=orders');
+          }, 2000);
+        } else {
+          const error = await response.json();
+          toast({
+            variant: "destructive",
+            title: "Order Failed",
+            description: error.message || "Failed to place order. Please try again.",
+          });
+        }
+      } catch (error) {
+        console.error('Order placement error:', error);
+        toast({
+          variant: "destructive",
+          title: "Order Failed",
+          description: "An error occurred while placing your order. Please try again.",
+        });
+      }
+    };
+
+    placeOrder();
   };
   
   if (selectedCartItems.length === 0) {

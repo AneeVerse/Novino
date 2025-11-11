@@ -3,11 +3,25 @@ import OTP from '@/models/OTP';
 import User from '@/models/User';
 import connectToDatabase from '@/lib/db';
 import { sendOtpEmail } from '@/lib/mailer';
+import { rateLimit } from '@/lib/rate-limit';
+import { validateEmail } from '@/lib/validation';
+
+// Create rate limiter for OTP sending (3 requests per 15 minutes)
+const otpRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: 'Too many OTP requests, please try again later'
+});
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  // Apply rate limiting
+  if (!otpRateLimit.check(req, res)) {
+    return; // Response already sent by rate limiter
   }
 
   // Connect to the database
@@ -16,6 +30,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { email, purpose = 'signup' } = req.body;
   if (!email) {
     return res.status(400).json({ message: 'Email is required' });
+  }
+
+  // Validate email
+  const emailValidation = validateEmail(email);
+  if (!emailValidation.isValid) {
+    return res.status(400).json({ message: emailValidation.error });
   }
 
   // Validate purpose

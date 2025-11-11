@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "vercel-build": "npm install --legacy-peer-deps && next build"
+    "vercel-build": "npm install --legacy-peer-deps && next build",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:auth": "node scripts/test-auth.js",
+    "test:oauth": "node scripts/test-google-oauth.js"
   },
   "dependencies": {
     "@fontsource/dm-serif-display": "^5.2.5",

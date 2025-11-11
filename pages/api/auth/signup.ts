@@ -3,11 +3,25 @@ import User from '@/models/User';
 import OTP from '@/models/OTP';
 import connectToDatabase from '@/lib/db';
 import jwt from 'jsonwebtoken';
+import { rateLimit } from '@/lib/rate-limit';
+import { validateEmail, validateUsername, validatePassword, validateOTP } from '@/lib/validation';
+
+// Create rate limiter for signup (3 requests per 15 minutes)
+const signupRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: 'Too many signup attempts, please try again later'
+});
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  // Apply rate limiting
+  if (!signupRateLimit.check(req, res)) {
+    return; // Response already sent by rate limiter
   }
 
   // Connect to the database
@@ -18,35 +32,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: 'Email, username, password and OTP are required' });
   }
 
-  // Validate password strength
-  if (password.length < 8) {
-    return res.status(400).json({ message: 'Password must be at least 8 characters' });
-  }
-  if (!/(?=.*[a-z])/.test(password)) {
-    return res.status(400).json({ message: 'Password must contain at least one lowercase letter' });
-  }
-  if (!/(?=.*[A-Z])/.test(password)) {
-    return res.status(400).json({ message: 'Password must contain at least one uppercase letter' });
-  }
-  if (!/(?=.*\d)/.test(password)) {
-    return res.status(400).json({ message: 'Password must contain at least one number' });
-  }
-  if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(password)) {
-    return res.status(400).json({ message: 'Password must contain at least one special character' });
-  }
-
-  // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ message: 'Please provide a valid email address' });
+  // Validate email
+  const emailValidation = validateEmail(email);
+  if (!emailValidation.isValid) {
+    return res.status(400).json({ message: emailValidation.error });
   }
 
   // Validate username
-  if (username.length < 3 || username.length > 30) {
-    return res.status(400).json({ message: 'Username must be between 3 and 30 characters' });
+  const usernameValidation = validateUsername(username);
+  if (!usernameValidation.isValid) {
+    return res.status(400).json({ message: usernameValidation.error });
   }
-  if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-    return res.status(400).json({ message: 'Username can only contain letters, numbers, underscores, and hyphens' });
+
+  // Validate password strength
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({ message: passwordValidation.error });
+  }
+
+  // Validate OTP
+  const otpValidation = validateOTP(otp);
+  if (!otpValidation.isValid) {
+    return res.status(400).json({ message: otpValidation.error });
   }
 
   try {

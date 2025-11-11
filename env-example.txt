@@ -1,0 +1,29 @@
+# Database Configuration
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+
+# JWT & Authentication
+JWT_SECRET=your-jwt-secret-here-minimum-32-characters
+NEXTAUTH_SECRET=your-nextauth-secret-here-minimum-32-characters
+NEXTAUTH_URL=http://localhost:3000
+
+# Google OAuth (Optional)
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Email Configuration (for OTP)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=465
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-specific-password
+EMAIL_FROM=noreply@yourdomain.com
+
+# Environment
+NODE_ENV=development
+
+# Rate Limiting
+RATE_LIMIT_MAX=5
+RATE_LIMIT_WINDOW_MS=900000
+
+# Security
+BCRYPT_ROUNDS=12
+

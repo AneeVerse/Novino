@@ -60,7 +60,12 @@ export function getTokenFromReq(req: NextApiRequest): string | null {
 export function verifyToken(token: string): { email: string; username: string; userId: string; isAdmin?: boolean; iat?: number } {
   try {
     // First try to decode as a JWT using the secret
-    const secret = process.env.JWT_SECRET || 'developmentsecret123';
+    const secret = process.env.JWT_SECRET;
+    
+    if (!secret) {
+      throw new Error('JWT_SECRET not configured');
+    }
+    
     try {
       return jwt.verify(token, secret) as { email: string; username: string; userId: string; iat: number };
     } catch (jwtError) {

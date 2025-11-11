@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import { Users as UsersIcon, UserCheck, UserX, Mail, Calendar, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users as UsersIcon, UserCheck, UserX, Mail, Calendar, Shield, ChevronLeft, ChevronRight, Eye, ShoppingCart, Package as PackageIcon, X } from 'lucide-react';
 
 interface User {
   _id: string;
@@ -32,6 +32,43 @@ interface PaginationData {
   pages: number;
 }
 
+interface OrderItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  variant?: string;
+}
+
+interface Order {
+  _id: string;
+  orderNumber: string;
+  items: OrderItem[];
+  total: number;
+  orderStatus: string;
+  paymentMethod: string;
+  paymentStatus: string;
+  orderedAt: string;
+}
+
+interface CartItem {
+  id: string | number;
+  name: string;
+  price: string | number;
+  image: string;
+  quantity: number;
+  variant?: string;
+  addedAt: string;
+}
+
+interface UserDetails {
+  orders: Order[];
+  cart: {
+    items: CartItem[];
+  };
+}
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +83,9 @@ export default function UsersPage() {
     { name: 'Active', value: 0, fill: '#4CAF50' },
     { name: 'Blocked', value: 0, fill: '#F44336' }
   ]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   
   const router = useRouter();
   const { getAuthToken } = useAuth();
@@ -143,6 +183,96 @@ export default function UsersPage() {
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= pagination.pages) {
       setPagination({ ...pagination, page: newPage });
+    }
+  };
+
+  // Fetch user details (orders and cart)
+  const fetchUserDetails = async (userId: string) => {
+    try {
+      setLoadingDetails(true);
+      const token = getAuthToken();
+
+      // Fetch orders
+      const ordersRes = await fetch(`/api/admin/orders?userId=${userId}`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+
+      // Fetch cart
+      const cartRes = await fetch(`/api/admin/cart?userId=${userId}`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+
+      if (ordersRes.ok && cartRes.ok) {
+        const ordersData = await ordersRes.json();
+        const cartData = await cartRes.json();
+
+        setUserDetails({
+          orders: ordersData.orders || [],
+          cart: cartData.cart || { items: [] }
+        });
+      }
+    } catch (err: any) {
+      console.error('Error fetching user details:', err);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  // Handle view user details
+  const handleViewDetails = async (user: User) => {
+    setSelectedUser(user);
+    await fetchUserDetails(user._id);
+  };
+
+  // Close details modal
+  const closeDetails = () => {
+    setSelectedUser(null);
+    setUserDetails(null);
+  };
+
+  // Format currency
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+
+  // Format date with time
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  // Get status color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+      case 'confirmed':
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'processing':
+        return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+      case 'shipped':
+        return 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30';
+      case 'delivered':
+        return 'bg-green-500/20 text-green-300 border-green-500/30';
+      case 'cancelled':
+        return 'bg-red-500/20 text-red-300 border-red-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
   };
   
@@ -316,6 +446,13 @@ export default function UsersPage() {
                           )}
                         </Badge>
                         <button
+                          onClick={() => handleViewDetails(user)}
+                          className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-500/20 hover:bg-blue-500 text-blue-300 hover:text-white flex items-center gap-2"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View Details
+                        </button>
+                        <button
                           onClick={() => toggleUserStatus(user._id)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                             user.isBlocked 
@@ -323,7 +460,7 @@ export default function UsersPage() {
                               : 'bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white'
                           }`}
                         >
-                          {user.isBlocked ? 'Unblock User' : 'Block User'}
+                          {user.isBlocked ? 'Unblock' : 'Block'}
                         </button>
                       </div>
                     </div>
@@ -371,6 +508,157 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* User Details Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1A1A1A] border border-[#333333] rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-[#1A1A1A] border-b border-[#333333] p-6 flex items-center justify-between z-10">
+              <div>
+                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                    {selectedUser.username.charAt(0).toUpperCase()}
+                  </div>
+                  {selectedUser.username}
+                </h2>
+                <p className="text-white/60 mt-1">{selectedUser.email}</p>
+              </div>
+              <button
+                onClick={closeDetails}
+                className="text-white/60 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-all"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {loadingDetails ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <div className="p-6 space-y-6">
+                {/* Orders Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <PackageIcon className="w-5 h-5 text-blue-400" />
+                    <h3 className="text-xl font-bold text-white">Orders ({userDetails?.orders.length || 0})</h3>
+                  </div>
+                  
+                  {!userDetails?.orders || userDetails.orders.length === 0 ? (
+                    <Card className="bg-[#222222] border-[#333333]">
+                      <CardContent className="py-12 text-center">
+                        <PackageIcon className="w-16 h-16 mx-auto mb-4 text-white/20" />
+                        <p className="text-white/50">No orders yet</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-3">
+                      {userDetails.orders.map((order) => (
+                        <Card key={order._id} className="bg-[#222222] border-[#333333] hover:border-white/10 transition-all">
+                          <CardContent className="p-4">
+                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h4 className="text-white font-semibold">{order.orderNumber}</h4>
+                                  <Badge className={`${getStatusColor(order.orderStatus)} border`}>
+                                    {order.orderStatus}
+                                  </Badge>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                  <div className="text-white/60">
+                                    <span className="font-medium">Total:</span> {formatCurrency(order.total)}
+                                  </div>
+                                  <div className="text-white/60">
+                                    <span className="font-medium">Payment:</span> {order.paymentMethod.toUpperCase()}
+                                  </div>
+                                  <div className="text-white/60">
+                                    <span className="font-medium">Items:</span> {order.items.length}
+                                  </div>
+                                  <div className="text-white/60">
+                                    <span className="font-medium">Date:</span> {formatDate(order.orderedAt)}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex gap-2 flex-wrap">
+                                {order.items.slice(0, 3).map((item, idx) => (
+                                  <img
+                                    key={idx}
+                                    src={item.image}
+                                    alt={item.name}
+                                    className="w-12 h-12 object-cover rounded"
+                                  />
+                                ))}
+                                {order.items.length > 3 && (
+                                  <div className="w-12 h-12 bg-white/10 rounded flex items-center justify-center text-white/60 text-xs">
+                                    +{order.items.length - 3}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Cart Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <ShoppingCart className="w-5 h-5 text-emerald-400" />
+                    <h3 className="text-xl font-bold text-white">Current Cart ({userDetails?.cart.items.length || 0} items)</h3>
+                  </div>
+                  
+                  {!userDetails?.cart.items || userDetails.cart.items.length === 0 ? (
+                    <Card className="bg-[#222222] border-[#333333]">
+                      <CardContent className="py-12 text-center">
+                        <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-white/20" />
+                        <p className="text-white/50">Cart is empty</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-3">
+                      {userDetails.cart.items.map((item, index) => (
+                        <Card key={index} className="bg-[#222222] border-[#333333] hover:border-white/10 transition-all">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-4">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-20 h-20 object-cover rounded-lg"
+                              />
+                              <div className="flex-1">
+                                <h4 className="text-white font-medium">{item.name}</h4>
+                                {item.variant && (
+                                  <p className="text-white/60 text-sm mt-1">{item.variant}</p>
+                                )}
+                                <div className="flex items-center gap-4 mt-2 text-sm">
+                                  <span className="text-white/60">Qty: <span className="text-white font-medium">{item.quantity}</span></span>
+                                  <span className="text-white/60">
+                                    Added: <span className="text-white">{formatDate(item.addedAt)}</span>
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-white font-semibold text-lg">
+                                  {typeof item.price === 'number' 
+                                    ? formatCurrency(item.price * item.quantity)
+                                    : item.price}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

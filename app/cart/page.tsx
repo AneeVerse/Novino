@@ -66,48 +66,46 @@ export default function CartPage() {
     state: ""
   });
   
-  // Load saved addresses and selected address on mount
+  // Load saved addresses from API for authenticated user
   useEffect(() => {
-    // Load all saved addresses
-    const savedAddressesData = localStorage.getItem('savedAddresses');
-    if (savedAddressesData) {
+    const fetchAddresses = async () => {
       try {
-        const addresses = JSON.parse(savedAddressesData) as SavedAddress[];
-        setSavedAddresses(addresses);
-        
-        // Find default address or first address
-        const defaultAddress = addresses.find((addr: SavedAddress) => addr.isDefault) || addresses[0];
-        if (defaultAddress) {
-          setDeliveryAddress(defaultAddress);
+        const response = await fetch('/api/addresses');
+        if (response.ok) {
+          const data = await response.json();
+          const formattedAddresses = data.addresses.map((addr: any) => ({
+            id: addr._id,
+            name: addr.name,
+            pincode: addr.pincode,
+            address: `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}`,
+            line1: addr.line1,
+            line2: addr.line2,
+            city: addr.city,
+            state: addr.state,
+            estimatedDelivery: "3-5 business days",
+            isDefault: addr.isDefault
+          }));
+          
+          setSavedAddresses(formattedAddresses);
+          
+          // Set default or first address as delivery address
+          const defaultAddress = formattedAddresses.find((addr: SavedAddress) => addr.isDefault) || formattedAddresses[0];
+          if (defaultAddress) {
+            setDeliveryAddress(defaultAddress);
+            localStorage.setItem('selectedAddress', JSON.stringify(defaultAddress));
+          }
+        } else if (response.status === 401) {
+          // Not authenticated - clear any local addresses
+          setSavedAddresses([]);
+          setDeliveryAddress(null);
         }
       } catch (error) {
-        console.error('Error parsing saved addresses:', error);
+        console.error('Error fetching addresses:', error);
       }
-    }
-    
-    // Load selected address (for backward compatibility)
-    const selectedAddress = localStorage.getItem('selectedAddress');
-    if (selectedAddress) {
-      try {
-        const address = JSON.parse(selectedAddress) as SavedAddress;
-        // Check if we already have addresses loaded
-        const savedAddressesData = localStorage.getItem('savedAddresses');
-        if (!savedAddressesData) {
-          // If no saved addresses, use the selected address
-          setDeliveryAddress(address);
-        }
-      } catch (error) {
-        console.error('Error parsing selected address:', error);
-      }
-    }
+    };
+
+    fetchAddresses();
   }, []);
-  
-  // Save addresses to localStorage whenever they change
-  useEffect(() => {
-    if (savedAddresses.length > 0) {
-      localStorage.setItem('savedAddresses', JSON.stringify(savedAddresses));
-    }
-  }, [savedAddresses]);
   
   // State for payment method
   const [paymentMethod, setPaymentMethod] = useState<string>("card");
@@ -462,17 +460,38 @@ export default function CartPage() {
                               Edit
                             </button>
                             <button
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
-                                const updated = savedAddresses.filter((addr: SavedAddress) => addr.id !== address.id);
-                                setSavedAddresses(updated);
-                                if (isAddressSelected(address.id)) {
-                                  setDeliveryAddress(updated[0] || null);
+                                try {
+                                  const response = await fetch(`/api/addresses/${address.id}`, {
+                                    method: 'DELETE'
+                                  });
+                                  
+                                  if (response.ok) {
+                                    const updated = savedAddresses.filter((addr: SavedAddress) => addr.id !== address.id);
+                                    setSavedAddresses(updated);
+                                    if (isAddressSelected(address.id)) {
+                                      setDeliveryAddress(updated[0] || null);
+                                    }
+                                    toast({
+                                      title: "Address Deleted",
+                                      description: "Address has been removed",
+                                    });
+                                  } else {
+                                    toast({
+                                      variant: "destructive",
+                                      title: "Delete Failed",
+                                      description: "Failed to delete address. Please try again.",
+                                    });
+                                  }
+                                } catch (error) {
+                                  console.error('Error deleting address:', error);
+                                  toast({
+                                    variant: "destructive",
+                                    title: "Error",
+                                    description: "An error occurred while deleting the address",
+                                  });
                                 }
-                                toast({
-                                  title: "Address Deleted",
-                                  description: "Address has been removed",
-                                });
                               }}
                               className="text-xs text-red-400 hover:text-red-300 uppercase"
                             >
@@ -480,17 +499,38 @@ export default function CartPage() {
                             </button>
                             {!address.isDefault && (
                               <button
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                   e.stopPropagation();
-                                  const updated = savedAddresses.map((addr: SavedAddress) => ({
-                                    ...addr,
-                                    isDefault: addr.id === address.id
-                                  }));
-                                  setSavedAddresses(updated);
-                                  toast({
-                                    title: "Default Address Set",
-                                    description: "This address is now your default",
-                                  });
+                                  try {
+                                    const response = await fetch(`/api/addresses/${address.id}`, {
+                                      method: 'PATCH'
+                                    });
+                                    
+                                    if (response.ok) {
+                                      const updated = savedAddresses.map((addr: SavedAddress) => ({
+                                        ...addr,
+                                        isDefault: addr.id === address.id
+                                      }));
+                                      setSavedAddresses(updated);
+                                      toast({
+                                        title: "Default Address Set",
+                                        description: "This address is now your default",
+                                      });
+                                    } else {
+                                      toast({
+                                        variant: "destructive",
+                                        title: "Update Failed",
+                                        description: "Failed to set default address. Please try again.",
+                                      });
+                                    }
+                                  } catch (error) {
+                                    console.error('Error setting default address:', error);
+                                    toast({
+                                      variant: "destructive",
+                                      title: "Error",
+                                      description: "An error occurred while setting default address",
+                                    });
+                                  }
                                 }}
                                 className="text-xs text-white/60 hover:text-white uppercase"
                               >
@@ -609,57 +649,112 @@ export default function CartPage() {
                       </div>
                       <div className="flex gap-3">
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             if (addressForm.name && addressForm.line1 && addressForm.city && addressForm.pincode && addressForm.state) {
-                              const addressData = {
+                              const addressPayload = {
                                 name: addressForm.name,
-                                pincode: addressForm.pincode,
-                                address: `${addressForm.line1}${addressForm.line2 ? ', ' + addressForm.line2 : ''}, ${addressForm.city}, ${addressForm.state}`,
                                 line1: addressForm.line1,
                                 line2: addressForm.line2,
                                 city: addressForm.city,
                                 state: addressForm.state,
-                                estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+                                pincode: addressForm.pincode,
+                                isDefault: savedAddresses.length === 0 // First address is default
                               };
                               
-                              if (editingAddressId) {
-                                // Update existing address
-                                const updated = savedAddresses.map(addr => 
-                                  addr.id === editingAddressId 
-                                    ? { ...addr, ...addressData }
-                                    : addr
-                                );
-                                setSavedAddresses(updated);
-                                const updatedAddress = updated.find(addr => addr.id === editingAddressId);
-                                if (updatedAddress) {
-                                  setDeliveryAddress(updatedAddress);
-                                  localStorage.setItem('selectedAddress', JSON.stringify(updatedAddress));
+                              try {
+                                if (editingAddressId) {
+                                  // Update existing address via API
+                                  const response = await fetch(`/api/addresses/${editingAddressId}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(addressPayload)
+                                  });
+                                  
+                                  if (response.ok) {
+                                    const { address } = await response.json();
+                                    const formattedAddress = {
+                                      id: address._id,
+                                      name: address.name,
+                                      pincode: address.pincode,
+                                      address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
+                                      line1: address.line1,
+                                      line2: address.line2,
+                                      city: address.city,
+                                      state: address.state,
+                                      estimatedDelivery: "3-5 business days",
+                                      isDefault: address.isDefault
+                                    };
+                                    
+                                    const updated = savedAddresses.map(addr => 
+                                      addr.id === editingAddressId ? formattedAddress : addr
+                                    );
+                                    setSavedAddresses(updated);
+                                    setDeliveryAddress(formattedAddress);
+                                    localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
+                                    
+                                    toast({
+                                      title: "Address Updated",
+                                      description: "Address has been updated successfully",
+                                    });
+                                  } else {
+                                    toast({
+                                      variant: "destructive",
+                                      title: "Update Failed",
+                                      description: "Failed to update address. Please try again.",
+                                    });
+                                  }
+                                } else {
+                                  // Add new address via API
+                                  const response = await fetch('/api/addresses', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(addressPayload)
+                                  });
+                                  
+                                  if (response.ok) {
+                                    const { address } = await response.json();
+                                    const formattedAddress = {
+                                      id: address._id,
+                                      name: address.name,
+                                      pincode: address.pincode,
+                                      address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
+                                      line1: address.line1,
+                                      line2: address.line2,
+                                      city: address.city,
+                                      state: address.state,
+                                      estimatedDelivery: "3-5 business days",
+                                      isDefault: address.isDefault
+                                    };
+                                    
+                                    const updated = [...savedAddresses, formattedAddress];
+                                    setSavedAddresses(updated);
+                                    setDeliveryAddress(formattedAddress);
+                                    localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
+                                    
+                                    toast({
+                                      title: "Address Added",
+                                      description: "Delivery address has been saved successfully",
+                                    });
+                                  } else {
+                                    toast({
+                                      variant: "destructive",
+                                      title: "Save Failed",
+                                      description: "Failed to save address. Please try again.",
+                                    });
+                                  }
                                 }
-                                toast({
-                                  title: "Address Updated",
-                                  description: "Address has been updated successfully",
-                                });
-                              } else {
-                                // Add new address
-                                const newAddress: SavedAddress = {
-                                  ...addressData,
-                                  id: Date.now().toString(),
-                                  isDefault: savedAddresses.length === 0 // First address is default
-                                };
                                 
-                                const updated = [...savedAddresses, newAddress];
-                                setSavedAddresses(updated);
-                                setDeliveryAddress(newAddress);
-                                localStorage.setItem('selectedAddress', JSON.stringify(newAddress));
+                                setShowAddressForm(false);
+                                setEditingAddressId(null);
+                                setAddressForm({ name: "", line1: "", line2: "", city: "", pincode: "", state: "" });
+                              } catch (error) {
+                                console.error('Error saving address:', error);
                                 toast({
-                                  title: "Address Added",
-                                  description: "Delivery address has been saved successfully",
+                                  variant: "destructive",
+                                  title: "Error",
+                                  description: "An error occurred while saving the address",
                                 });
                               }
-                              
-                              setShowAddressForm(false);
-                              setEditingAddressId(null);
-                              setAddressForm({ name: "", line1: "", line2: "", city: "", pincode: "", state: "" });
                             } else {
                               toast({
                                 variant: "destructive",

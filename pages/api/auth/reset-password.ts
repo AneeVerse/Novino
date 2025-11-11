@@ -2,11 +2,25 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import User from '@/models/User';
 import OTP from '@/models/OTP';
 import connectToDatabase from '@/lib/db';
+import { validatePassword, validateEmail, validateOTP } from '@/lib/validation';
+import { rateLimit } from '@/lib/rate-limit';
+
+// Create rate limiter for password reset (3 requests per 15 minutes)
+const resetPasswordRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: 'Too many password reset attempts, please try again later'
+});
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  // Apply rate limiting
+  if (!resetPasswordRateLimit.check(req, res)) {
+    return; // Response already sent by rate limiter
   }
 
   // Connect to the database
@@ -15,6 +29,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { email, password, otp } = req.body;
   if (!email || !password || !otp) {
     return res.status(400).json({ message: 'Email, password and OTP are required' });
+  }
+
+  // Validate email format
+  const emailValidation = validateEmail(email);
+  if (!emailValidation.isValid) {
+    return res.status(400).json({ message: emailValidation.error });
+  }
+
+  // Validate password strength
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({ message: passwordValidation.error });
+  }
+
+  // Validate OTP
+  const otpValidation = validateOTP(otp);
+  if (!otpValidation.isValid) {
+    return res.status(400).json({ message: otpValidation.error });
   }
 
   try {
