@@ -39,6 +39,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <title>Novino.io - Art Gallery</title>
+        <link rel="icon" type="image/gif" href="/images/preloader.gif" />
+        <link rel="shortcut icon" type="image/gif" href="/images/preloader.gif" />
+        <link rel="apple-touch-icon" href="/images/preloader.gif" />
         <meta name="description" content="Elevate ordinary walls with extraordinary galleries" />
         <meta name="keywords" content="art gallery, paintings, artefacts, art collection, contemporary art, fine art, decorative art" />
         <meta name="author" content="Novino.io" />
