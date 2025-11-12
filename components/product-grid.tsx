@@ -182,7 +182,7 @@ export default function ProductGrid({
                 onMouseEnter={() => setHoveredProductId(product.id)}
                 onMouseLeave={() => setHoveredProductId(null)}
               >
-                <div className="h-[420px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
+                <div className="h-[380px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
                   <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
                     <Image
                       key={displayImage}
