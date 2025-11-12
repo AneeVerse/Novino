@@ -249,7 +249,9 @@ export default function FeaturedProducts() {
 
   // Handle wheel/touchpad scroll for horizontal scrolling
   const handleWheel = (e: React.WheelEvent) => {
+    // Prevent default browser behavior (back/forward navigation)
     e.preventDefault();
+    e.stopPropagation();
     
     // Use deltaX for horizontal scroll, or deltaY if horizontal scroll isn't available
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
@@ -273,6 +275,27 @@ export default function FeaturedProducts() {
       scrollContainerRef.current.style.transform = `translateX(${translateX.current}px)`;
     }
   };
+
+  // Add wheel event listener with passive: false to allow preventDefault
+  useEffect(() => {
+    const container = scrollContainerRef.current?.parentElement;
+    if (!container) return;
+
+    const wheelHandler = (e: WheelEvent) => {
+      // Prevent browser back/forward navigation on horizontal scroll
+      if (Math.abs(e.deltaX) > 0 || Math.abs(e.deltaY) > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    // Add listener with passive: false to allow preventDefault
+    container.addEventListener('wheel', wheelHandler, { passive: false });
+
+    return () => {
+      container.removeEventListener('wheel', wheelHandler);
+    };
+  }, []);
 
   // Initialize width calculation and setup
   useEffect(() => {
