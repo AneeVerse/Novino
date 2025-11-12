@@ -186,7 +186,7 @@ export default function FeaturedProducts() {
   }, [products, detectCenteredCard]);
 
   // Handle Pointer Events for Drag with Infinite Loop (same logic as CreativeSection)
-  const handlePointerDown = (e: React.PointerEvent | React.TouchEvent) => {
+  const handlePointerDown = (e: React.MouseEvent | React.PointerEvent | React.TouchEvent) => {
     e.preventDefault(); // Prevent text selection and default behaviors
     isDragging.current = true;
     wasDraggingRef.current = false;
@@ -199,7 +199,7 @@ export default function FeaturedProducts() {
     }
   };
 
-  const handlePointerMove = (e: React.PointerEvent | React.TouchEvent) => {
+  const handlePointerMove = (e: React.MouseEvent | React.PointerEvent | React.TouchEvent) => {
     if (!isDragging.current) return;
     
     e.preventDefault(); // Prevent default touch/pointer behaviors
@@ -247,6 +247,33 @@ export default function FeaturedProducts() {
     }, 100);
   };
 
+  // Handle wheel/touchpad scroll for horizontal scrolling
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    
+    // Use deltaX for horizontal scroll, or deltaY if horizontal scroll isn't available
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    
+    // Apply scroll with same sensitivity as drag
+    translateX.current -= delta;
+    
+    // Infinite loop logic - same as drag
+    if (totalWidth.current > 0) {
+      // Moving right (negative translateX, showing later cards)
+      if (Math.abs(translateX.current) >= totalWidth.current) {
+        translateX.current = 0; // Reset to beginning
+      }
+      // Moving left (positive translateX, going backwards) - wrap around to end
+      else if (translateX.current > 0) {
+        translateX.current = -totalWidth.current + translateX.current;
+      }
+    }
+    
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.transform = `translateX(${translateX.current}px)`;
+    }
+  };
+
   // Initialize width calculation and setup
   useEffect(() => {
     calculateWidth();
@@ -277,16 +304,16 @@ export default function FeaturedProducts() {
   return (
     <div className="container mx-auto px-0 md:px-0 mb-16 md:mb-24">
       <div className="max-w-[1440px] mx-auto px-0 md:px-0">
-        <h2 className="text-white text-lg sm:text-[24px] md:text-[28px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em]  text-center font-['Roboto_Mono']">
+        <h2 className="text-white text-lg sm:text-[24px] md:text-[28px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em] text-center font-['Roboto_Mono'] mb-8 md:mb-12">
           FEATURED PRODUCTS
         </h2>
         
         {/* Mobile & Desktop: Transform-based infinite scroll; desktop shows 3 cards */}
         <div 
-          className="mt-6 overflow-hidden relative pb-12 md:pb-16"
+          className="overflow-hidden relative pb-12 md:pb-16"
           style={{ 
-            paddingTop: '3rem',
-            paddingBottom: '4rem'
+            paddingTop: '4rem',
+            paddingBottom: '2rem'
           }}
           onMouseDown={handlePointerDown}
           onMouseMove={handlePointerMove}
@@ -295,6 +322,7 @@ export default function FeaturedProducts() {
           onTouchStart={handlePointerDown}
           onTouchMove={handlePointerMove}
           onTouchEnd={handlePointerUp}
+          onWheel={handleWheel}
         >
           <div
             ref={scrollContainerRef}
