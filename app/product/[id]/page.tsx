@@ -118,37 +118,10 @@ export default function ProductDetail() {
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
-  // Reset current image when variant changes
+  // Reset current image when switching products
   useEffect(() => {
     setCurrentImage(0);
-  }, [selectedVariant]);
-
-  // Auto-select variant from URL query parameter
-  useEffect(() => {
-    const variantId = searchParams.get('variant');
-    console.log('Variant selection effect - variantId from URL:', variantId);
-    
-    if (!product || !product.variants) {
-      console.log('Product or variants not loaded yet');
-      return;
-    }
-    
-    if (variantId && Array.isArray(product.variants)) {
-      const foundVariant = product.variants.find((v: any) => v.id === variantId);
-      if (foundVariant) {
-        if (foundVariant.id !== selectedVariant?.id) {
-          console.log('Auto-selecting variant from URL:', foundVariant.name, 'ID:', foundVariant.id);
-          setSelectedVariant(foundVariant);
-        }
-      } else {
-        console.log('Variant not found with ID:', variantId, 'Available variants:', product.variants.map((v: any) => v.id));
-      }
-    } else if (!variantId && selectedVariant) {
-      // No variant in URL but one is selected - reset to default
-      console.log('No variant in URL, resetting to default');
-      setSelectedVariant(null);
-    }
-  }, [searchParams, product]);
+  }, [product]);
 
   // Check if user is logged in
   useEffect(() => {
@@ -457,136 +430,74 @@ export default function ProductDetail() {
   // State for dynamic related products
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   
-  // Fetch related products from the same category
+  // Fetch related products from the same category using new artefact-categories API
   useEffect(() => {
     async function fetchRelatedProducts() {
       if (!product) return;
       
       try {
-        // Fetch all products with variants expanded and categories
-        const [productsRes, categoriesRes] = await Promise.all([
-          fetch('/api/products?includeVariants=true'),
-          fetch('/api/categories')
-        ]);
+        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
+          cache: 'no-store'
+        });
         
-        if (productsRes.ok && categoriesRes.ok) {
-          const allProducts = await productsRes.json();
-          const categories = await categoriesRes.json();
+        if (res.ok) {
+          const categories = await res.json();
           
-          // Create a map of category IDs to names
-          const categoryMap: {[key: string]: string} = {};
-          categories.forEach((cat: any) => {
-            const catId = (cat._id || cat.id)?.toString();
-            if (catId) {
-              categoryMap[catId] = cat.name;
-            }
-          });
-          
-          // Filter products: prioritize same category, fallback to same type
-          const productCategoryId = product.category?.toString();
-          
-          // Helper function to check if a product is different from current product
-          const isDifferentProduct = (p: any) => {
-            // For variants, check against parent product ID
-            if (p.isVariant && p.parentProductId) {
-              const productId = product.id?.toString();
-              const productMongoId = product._id?.toString();
-              const productSlug = product.slug;
-              const parentId = p.parentProductId?.toString();
-              
-              // If variant's parent matches current product, exclude it
-              if (parentId === productId || parentId === productMongoId || parentId === productSlug) {
-                return false;
-              }
-            }
-            
-            // Compare all possible ID formats
-            const pId = p.id?.toString();
-            const pMongoId = p._id?.toString();
-            const pSlug = p.slug;
-            
-            const productId = product.id?.toString();
-            const productMongoId = product._id?.toString();
-            const productSlug = product.slug;
-            
-            // If any ID matches, it's the same product
-            if (pId && productId && pId === productId) return false;
-            if (pMongoId && productMongoId && pMongoId === productMongoId) return false;
-            if (pSlug && productSlug && pSlug === productSlug) return false;
-            if (pId && productMongoId && pId === productMongoId) return false;
-            if (pMongoId && productId && pMongoId === productId) return false;
-            
-            return true;
-          };
-          
-          // First, get same category products (including variants)
-          const sameCategoryProducts = allProducts.filter((p: any) => {
-            const pCategoryId = p.category?.toString();
-            // For variants, check if parent product category matches
-            // Variants inherit category from parent product
-            return pCategoryId === productCategoryId && isDifferentProduct(p);
-          });
-          
-          // If we don't have enough, add same type products
-          let related = [...sameCategoryProducts];
-          if (related.length < 3) {
-            const sameTypeProducts = allProducts.filter((p: any) => {
-              const notAlreadyIncluded = !related.some(r => {
-                // Check if product is already included (handle both regular and variant IDs)
-                const rId = r._id?.toString() || r.id?.toString();
-                const pId = p._id?.toString() || p.id?.toString();
-                const rSlug = r.slug;
-                const pSlug = p.slug;
-                
-                return (rId && pId && rId === pId) || 
-                       (rSlug && pSlug && rSlug === pSlug) ||
-                       (r.isVariant && p.isVariant && r.variantId === p.variantId);
+          // Get all products from all categories
+          const allProducts: any[] = [];
+          categories.forEach((category: any) => {
+            if (category.products && Array.isArray(category.products)) {
+              category.products.forEach((p: any) => {
+                allProducts.push({
+                  id: p.id,
+                  name: p.name,
+                  price: p.basePrice,
+                  basePrice: p.basePrice,
+                  image: p.images?.[0] || '/images/placeholder.png',
+                  images: p.images || [],
+                  category: category.name,
+                  categoryId: category.id || category._id,
+                  categoryName: category.name
+                });
               });
-              return p.type === product.type && isDifferentProduct(p) && notAlreadyIncluded;
-            });
-            related = [...related, ...sameTypeProducts];
-          }
+            }
+          });
           
-          // Map category IDs to names and limit to 3
-          const relatedWithNames = related.slice(0, 3).map((p: any) => ({
-            ...p,
-            categoryName: categoryMap[p.category?.toString()] || p.category || 'Product'
-          }));
+          // Find the current product's category
+          const currentCategory = categories.find((cat: any) => {
+            return cat.products?.some((p: any) => p.id === product.id);
+          });
           
-          console.log('Related products found:', relatedWithNames.length, 'for category:', productCategoryId);
-          setRelatedProducts(relatedWithNames);
+          // Filter products: get products from same category, excluding current product
+          const related = allProducts.filter((p: any) => {
+            // Exclude current product
+            if (p.id === product.id) return false;
+            
+            // If we found the category, match by category ID
+            if (currentCategory) {
+              const currentCatId = currentCategory.id || currentCategory._id;
+              return p.categoryId === currentCatId;
+            }
+            
+            // Fallback: match by category name
+            return p.categoryName === categoryName;
+          });
+          
+          console.log('✅ Related products found:', related.length, 'from category:', categoryName);
+          setRelatedProducts(related);
         } else {
-          // Fallback to static data if API fails
-          const fallback = paintingProductData
-            .filter(p => p.id !== product.id && p.category === product.category)
-            .slice(0, 3);
-          setRelatedProducts(fallback);
+          console.error('Failed to fetch related products');
+          setRelatedProducts([]);
         }
       } catch (error) {
         console.error('Error fetching related products:', error);
-        // Fallback to static data
-        const fallback = paintingProductData
-          .filter(p => p.id !== product.id)
-          .slice(0, 3);
-        setRelatedProducts(fallback);
+        setRelatedProducts([]);
       }
     }
     
     fetchRelatedProducts();
-  }, [product])
+  }, [product, categoryName])
 
-  // Handle variant selection and update URL
-  const handleVariantSelect = (variant: any | null) => {
-    setSelectedVariant(variant);
-    
-    // Update URL with variant parameter using replace to avoid navigation
-    const currentPath = window.location.pathname;
-    if (variant) {
-      router.replace(`${currentPath}?variant=${variant.id}`, { scroll: false });
-    } else {
-      router.replace(currentPath, { scroll: false });
-    }
-  };
 
   // Add to cart handler
   const handleAddToCart = () => {
@@ -637,26 +548,28 @@ export default function ProductDetail() {
   const productImages = product.images || [productImage];
   const totalImages = productImages.length;
   
-  // Get the current image to display based on the current index
-  // Use hoveredVariant for preview, otherwise use selectedVariant
-  // Priority: hovered/selected variant images[currentImage] > variant imageUrl > product images[currentImage]
+  // Treat all products in same category as variants
+  // Get all related products from the same category (excluding current product)
+  const categoryVariants = relatedProducts; // These are already filtered by category
+  
+  // Get the current image to display based on hover or selection
+  // Priority: hoveredVariant > selectedVariant > original product
   const activeVariant = hoveredVariant || selectedVariant;
   
-  // Derive displayed values based on active variant (hovered or selected)
-  const displayedVariant = activeVariant;
-  const displayedPrice = displayedVariant?.price || productPrice;
+  // Use variant data if hovering or selected, otherwise use product data
+  const displayedName = activeVariant?.name || product.name;
+  const displayedDescription = activeVariant?.description || product.description;
+  const displayedPrice = activeVariant?.basePrice || activeVariant?.price || productPrice;
   const variantImages = activeVariant?.images && activeVariant.images.length > 0 
     ? activeVariant.images 
     : null;
   
   const displayedImage = variantImages 
     ? (currentImage < variantImages.length ? variantImages[currentImage] : variantImages[0])
-    : activeVariant?.imageUrl 
-      ? activeVariant.imageUrl
-      : (currentImage < productImages.length ? productImages[currentImage] : productImage);
-
-  // Get ALL variants (not filtered by type)
-  const allVariants = Array.isArray(product?.variants) ? product.variants : [];
+    : (currentImage < productImages.length ? productImages[currentImage] : productImage);
+  
+  // Get display images array for thumbnails
+  const displayImages = variantImages || productImages;
 
   // Generate breadcrumbs
   const productUrl = product.slug || product.id?.toString() || productId?.toString() || '';
@@ -761,13 +674,13 @@ export default function ProductDetail() {
                   — Design —
                 </div>
                 
-                {/* Product Name and Description */}
-                <h1 className="text-2xl sm:text-3xl lg:text-3xl font-light mb-4 tracking-wide font-['Roboto_Mono']" style={{ lineHeight: '1.2' }}>
-                  {activeVariant ? activeVariant.name?.toUpperCase() : product.name?.toUpperCase()}
+                {/* Product Name and Description - Changes on variant hover/select */}
+                <h1 className="text-2xl sm:text-3xl lg:text-3xl font-light mb-4 tracking-wide font-['Roboto_Mono'] transition-opacity duration-300" style={{ lineHeight: '1.2' }}>
+                  {displayedName?.toUpperCase()}
                 </h1>
                 
-                <div className="text-white/70 leading-relaxed text-sm sm:text-base lg:text-base font-['Roboto_Mono']">
-                  <p className="whitespace-pre-line">{product.description}</p>
+                <div className="text-white/70 leading-relaxed text-sm sm:text-base lg:text-base font-['Roboto_Mono'] transition-opacity duration-300">
+                  <p className="whitespace-pre-line">{displayedDescription}</p>
                 </div>
               </div>
 
@@ -798,15 +711,10 @@ export default function ProductDetail() {
                     <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-500 pointer-events-none" />
                   </div>
 
-                  {/* Thumbnail Gallery - show variant images if variant active, otherwise product images */}
-                  {(() => {
-                    const imagesToShow = activeVariant?.images && activeVariant.images.length > 0 
-                      ? activeVariant.images 
-                      : productImages;
-                    
-                    return imagesToShow.length > 1 ? (
-                      <div className="flex gap-2 justify-center flex-wrap">
-                        {imagesToShow.map((imageUrl, i) => (
+                  {/* Thumbnail Gallery - Changes based on variant hover/select */}
+                  {displayImages.length > 1 && (
+                    <div className="flex gap-2 justify-center flex-wrap">
+                      {displayImages.map((imageUrl, i) => (
                           <button
                             key={i}
                             onMouseEnter={() => {
@@ -832,24 +740,25 @@ export default function ProductDetail() {
                               className="pointer-events-none"
                               draggable={false}
                             />
-                          </button>
-                        ))}
-                      </div>
-                    ) : null;
-                  })()}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Price and cart actions */}
                 <div className="md:col-span-3 md:col-start-5 flex flex-col justify-start order-2 md:order-2 py-8 pl-4 lg:pl-8">
-                  {/* Variant Options - Show ALL variants + main product */}
-                  {allVariants.length > 0 && (
-                    <div className="flex flex-col gap-3 mb-8" onMouseLeave={() => setHoveredVariant(null)}>
-                      <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">Select Variant</div>
+                  {/* Select Product (acting as variants from same category) */}
+                  {categoryVariants.length > 0 && (
+                    <div className="flex flex-col gap-3 mb-8">
+                      <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">
+                        Select Product
+                      </div>
                       
                       <div className="flex gap-2 flex-wrap">
-                        {/* Main Product as Default Option */}
+                        {/* Current Product */}
                         <button
-                          onClick={() => handleVariantSelect(null)}
+                          onClick={() => setSelectedVariant(null)}
                           onMouseEnter={() => setHoveredVariant(null)}
                           onMouseLeave={() => setHoveredVariant(null)}
                           className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
@@ -861,7 +770,7 @@ export default function ProductDetail() {
                         >
                           <Image
                             src={productImages[0]}
-                            alt={product.name || "Default"}
+                            alt={product.name || "Current"}
                             fill
                             style={{ objectFit: 'cover' }}
                             className="pointer-events-none"
@@ -869,26 +778,29 @@ export default function ProductDetail() {
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           <div className="absolute bottom-1 left-1 right-1 text-[8px] text-white/90 truncate uppercase font-['Roboto_Mono'] opacity-0 group-hover:opacity-100 transition-opacity">
-                            Default
+                            {product.name}
                           </div>
                         </button>
                         
-                        {/* All Variants */}
-                        {allVariants.map((variant: any) => (
+                        {/* Other Products in Category (treated as variants) - Hover to preview, Click to navigate */}
+                        {categoryVariants.slice(0, 5).map((variant: any) => (
                           <button
                             key={variant.id}
                             onMouseEnter={() => setHoveredVariant(variant)}
                             onMouseLeave={() => setHoveredVariant(null)}
-                            onClick={() => handleVariantSelect(variant)}
+                            onClick={() => {
+                              // Navigate to the product when clicked
+                              window.location.href = `/product/${variant.id}`;
+                            }}
                             className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
-                              selectedVariant?.id === variant.id
-                                ? 'border-white shadow-lg shadow-white/20' 
+                              hoveredVariant?.id === variant.id
+                                ? 'border-white/60 opacity-100'
                                 : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
                             }`}
                             title={variant.name}
                           >
                             <Image
-                              src={variant.images?.[0] || variant.imageUrl || productImages[0]}
+                              src={variant.images?.[0] || variant.image || '/images/placeholder.png'}
                               alt={variant.name}
                               fill
                               style={{ objectFit: 'cover' }}
@@ -903,25 +815,17 @@ export default function ProductDetail() {
                         ))}
                       </div>
                       
-                      {/* Display selected variant info */}
-                      {selectedVariant && (
-                        <div className="flex flex-col gap-1 mt-2">
-                          <div className="text-sm text-white font-['Roboto_Mono']">
-                            {selectedVariant.name}
-                          </div>
-                          {selectedVariant.type && (
-                            <div className="text-xs text-white/60 font-['Roboto_Mono']">
-                              Type: {selectedVariant.type}
-                            </div>
-                          )}
+                      {/* Display hover preview hint */}
+                      {hoveredVariant && (
+                        <div className="text-xs text-white/40 font-['Roboto_Mono'] italic">
+                          Previewing: {hoveredVariant.name} • Click to view
                         </div>
                       )}
                     </div>
                   )}
 
                   {/* Price */}
-                  <div className="text-3xl font-light mb-2 font-['Roboto_Mono']">Rs {displayedPrice}</div>
-                  <div className="text-xs text-white/40 mb-6 font-['Roboto_Mono']">Inc. Tax • Lead time 6-8 weeks</div>
+                  <div className="text-3xl font-light mb-6 font-['Roboto_Mono']">Rs {displayedPrice}</div>
                   
                   {/* Quantity and Add to Cart */}
                   <div className="flex items-center gap-3 mb-8">
@@ -945,7 +849,7 @@ export default function ProductDetail() {
                     
                     <button 
                       onClick={handleAddToCart}
-                      className="flex-1 bg-white text-black hover:bg-white/90 hover:shadow-lg hover:shadow-white/20 py-3 px-6 uppercase tracking-widest text-xs font-medium transition-all duration-300 rounded-sm transform hover:scale-[1.02] active:scale-[0.98] font-['Roboto_Mono']"
+                      className="flex-1 h-12 bg-white text-black hover:bg-white/90 hover:shadow-lg hover:shadow-white/20 px-6 uppercase tracking-widest text-xs font-medium transition-all duration-300 rounded-sm transform hover:scale-[1.02] active:scale-[0.98] font-['Roboto_Mono'] flex items-center justify-center"
                     >
                       Add to Cart
                     </button>
@@ -1076,17 +980,12 @@ export default function ProductDetail() {
                   const productImage = relatedProduct.images?.[0] || relatedProduct.image || '/images/placeholder.png';
                   const productPrice = relatedProduct.basePrice || relatedProduct.price || 'Price on request';
                   const productName = relatedProduct.name || 'Untitled';
-                  
-                  // Use parent product ID for variants, otherwise use the product's own ID
-                  // For variants, add the variantId as a query parameter to auto-select it
-                  const productLink = relatedProduct.isVariant && relatedProduct.parentProductId 
-                    ? `/product/${relatedProduct.parentProductSlug || relatedProduct.parentProductId}?variant=${relatedProduct.variantId}`
-                    : `/product/${relatedProduct.slug || relatedProduct._id || relatedProduct.id}`;
+                  const productLink = `/product/${relatedProduct.id}`;
                   
                   return (
                     <Link 
                       href={productLink} 
-                      key={relatedProduct._id || relatedProduct.id}
+                      key={relatedProduct.id}
                       className="group"
                     >
                       <div className="h-full rounded-3xl overflow-hidden bg-gradient-to-br from-white/8 via-white/5 to-white/[0.02] border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
