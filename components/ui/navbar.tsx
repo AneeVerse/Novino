@@ -57,15 +57,16 @@ const Navbar = () => {
   // Track scroll position to change navbar transparency
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setScrolled(true);
+      // Make navbar solid as soon as scrolling starts (even within hero section)
+      if (window.scrollY > 0) {
+        setScrolled(true); // Scrolling - make solid
       } else {
-        setScrolled(false);
+        setScrolled(false); // At top - keep fully transparent
       }
     };
 
-    // Add scroll event listener
-    window.addEventListener("scroll", handleScroll);
+    // Add scroll event listener with passive for better performance
+    window.addEventListener("scroll", handleScroll, { passive: true });
     
     // Check initial scroll position
     handleScroll();
@@ -84,7 +85,9 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-[1000] bg-[#2D2D2D]/70 h-[80px]">
+      <nav className={`fixed top-0 left-0 w-full z-[1000] h-[80px] transition-all duration-300 ${
+        scrolled ? 'bg-[#2D2D2D]' : 'bg-transparent'
+      }`}>
         <div className="relative max-w-[1440px] mx-auto h-full flex justify-between items-center px-4 md:px-0">
           {/* Left section - Menu items (Desktop) */}
           <div className="hidden md:flex items-center space-x-6 h-full md:pl-6">

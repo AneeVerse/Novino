@@ -12,31 +12,10 @@ import ProductTestimonial from "@/components/product-testimonial"
 import MasonryGallery from "@/components/masonry-gallery"
 import FeaturedProducts from "@/components/featured-products"
 import { useState, useEffect, useCallback, useRef } from "react"
-import useEmblaCarousel from 'embla-carousel-react'
 import "@fontsource/dm-serif-display"
 import "@fontsource/roboto-mono"
 import ProductGrid from "@/components/product-grid"
 import Preloader from "@/components/ui/preloader"
-
-// Hero carousel images
-const heroImages = [
-  {
-    src: "/images/hero-section/AKV_2111 (Custom).jpg",
-    alt: "Novino hero image 1"
-  },
-  {
-    src: "/images/hero-section/AKV_2113 (Custom).jpg", 
-    alt: "Novino hero image 2"
-  },
-  {
-    src: "/images/hero-section/AKV_2112 (Custom).jpg",
-    alt: "Novino hero image 3"
-  },
-  {
-    src: "/images/hero-section/HERO.jpg",
-    alt: "Novino hero image 4"
-  }
-];
 
 // Product data - We'll replace this with API data
 // const products = [
@@ -52,15 +31,9 @@ const heroImages = [
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All Products");
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
-    loop: true, 
-    duration: 50
-  });
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [totalSlides, setTotalSlides] = useState(heroImages.length);
-  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const [showText, setShowText] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [heroParallax, setHeroParallax] = useState(0);
   
   // State for filtering in the ProductGrid
   const [gridActiveCategory, setGridActiveCategory] = useState("All Products");
@@ -156,14 +129,6 @@ export default function Home() {
            product.categoryId === activeCategory; // Match by ID
   });
 
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev();
-  }, [emblaApi]);
-
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
-  }, [emblaApi]);
-
   // Initial load - delay text appearance
   useEffect(() => {
     // Delay showing text on initial load
@@ -174,80 +139,46 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle automatic sliding and slide tracking
+  // Add scroll event listener for parallax effect and text color transition
   useEffect(() => {
-    if (!emblaApi) return;
-
-    const onSelect = () => {
-      setCurrentSlide(emblaApi.selectedScrollSnap());
-      // No text animation on slide change
-    };
-
-    emblaApi.on('select', onSelect);
-    setTotalSlides(emblaApi.scrollSnapList().length);
-
-    // Initial selection
-    onSelect();
-
-    return () => {
-      emblaApi.off('select', onSelect);
-    };
-  }, [emblaApi]);
-
-  // Setup autoplay
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    const startAutoplay = () => {
-      if (autoplayRef.current) clearTimeout(autoplayRef.current);
-      autoplayRef.current = setTimeout(() => {
-        emblaApi.scrollNext();
-      }, 7000); // 7 seconds between slides
-    };
-
-    // Start autoplay
-    startAutoplay();
-
-    // Reset on slide change
-    emblaApi.on('select', startAutoplay);
-    emblaApi.on('pointerDown', () => {
-      if (autoplayRef.current) clearTimeout(autoplayRef.current);
-    });
-    emblaApi.on('pointerUp', startAutoplay);
-
-    return () => {
-      if (autoplayRef.current) clearTimeout(autoplayRef.current);
-      emblaApi.off('select', startAutoplay);
-      emblaApi.off('pointerDown', () => {});
-      emblaApi.off('pointerUp', startAutoplay);
-    };
-  }, [emblaApi]);
-
-  // Add scroll event listener for the text color transition
-  useEffect(() => {
+    let ticking = false;
+    
     const handleScroll = () => {
       const position = window.scrollY;
-      setScrollPosition(position);
       
-      // Calculate transition percentage (0 to 100)
-      // Adjust these values to control when the color change happens
-      const startChange = 0;   // Start from first scroll
-      const endChange = 300;   // End point for full color change (reduced for faster transition)
-      const scrollRange = endChange - startChange;
-      const currentScroll = Math.max(0, position - startChange);
-      const percentage = Math.min(100, (currentScroll / scrollRange) * 100);
-      
-      // Apply the background position to control the color transition
-      const heroText = document.querySelector('.novino-hero-text') as HTMLElement;
-      if (heroText) {
-        // This controls the gradient position - changing from 0% (white) to 100% (#312F30)
-        heroText.style.backgroundPosition = `0% ${percentage}%`;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrollPosition(position);
+          
+          // Parallax effect - image moves down slower than scroll (0.5 speed)
+          const parallaxValue = position * 0.5;
+          setHeroParallax(parallaxValue);
+          
+          // Calculate transition percentage (0 to 100)
+          // Adjust these values to control when the color change happens
+          const startChange = 0;   // Start from first scroll
+          const endChange = 300;   // End point for full color change (reduced for faster transition)
+          const scrollRange = endChange - startChange;
+          const currentScroll = Math.max(0, position - startChange);
+          const percentage = Math.min(100, (currentScroll / scrollRange) * 100);
+          
+          // Apply the background position to control the color transition
+          const heroText = document.querySelector('.novino-hero-text') as HTMLElement;
+          if (heroText) {
+            // This controls the gradient position - changing from 0% (white) to 100% (#312F30)
+            heroText.style.backgroundPosition = `0% ${percentage}%`;
+          }
+          
+          ticking = false;
+        });
+        
+        ticking = true;
       }
     };
     
     // Only add the scroll listener after the initial animation completes
     const timer = setTimeout(() => {
-      window.addEventListener('scroll', handleScroll);
+      window.addEventListener('scroll', handleScroll, { passive: true });
       // Initial call to set correct position
       handleScroll();
     }, 1500); // Match this with the rise-up animation duration
@@ -266,25 +197,25 @@ export default function Home() {
   return (
     <main className="relative min-h-screen bg-[#2D2D2D]">
       {/* Hero Section - Full width that extends to the top */}
-      <div className="relative w-full h-[600px] md:h-[740px]">
-        {/* Embla Carousel */}
-        <div className="overflow-hidden w-full h-full" ref={emblaRef}>
-          <div className="flex h-full">
-            {heroImages.map((image, index) => (
-              <div 
-                key={index}
-                className="relative flex-[0_0_100%] min-w-0 h-full"
-              >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  fill
-                  className="object-cover"
-                  priority={index === 0}
-                />
-              </div>
-            ))}
-          </div>
+      <div className="relative w-full h-[600px] md:h-[740px] overflow-hidden">
+        {/* Hero Image with Parallax Effect */}
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{
+            transform: `translateY(${heroParallax}px)`,
+            willChange: 'transform'
+          }}
+        >
+          <Image
+            src="/images/hero-section/HERO.jpg"
+            alt="Novino hero background"
+            fill
+            className="object-cover"
+            priority
+            style={{
+              transform: 'translate3d(0, 0, 0)'
+            }}
+          />
         </div>
 
         {/* NOVINO text overlay - IMPORTANT: limit its position to stay above the hero section only */}
