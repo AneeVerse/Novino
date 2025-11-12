@@ -62,6 +62,7 @@ interface Product {
   date?: string;
   role?: string;
   image: string;
+  images?: string[];
   category: string;
   categoryId?: string;
 }
@@ -89,6 +90,7 @@ export default function ProductGrid({
 }: ProductGridProps) {
   // Use internal state only if no external state is provided
   const [internalActiveCategory, setInternalActiveCategory] = useState<string>(propCategories[0]);
+  const [hoveredProductId, setHoveredProductId] = useState<number | string | null>(null);
   
   // Use external category state if provided, otherwise use internal
   const activeCategory = propActiveCategory !== undefined ? propActiveCategory : internalActiveCategory;
@@ -166,76 +168,120 @@ export default function ProductGrid({
             WebkitOverflowScrolling: 'touch'
           }}
         >
-          {displayProducts.map((product) => (
-            <Link href={`/product/${product.id}`} key={product.id} className="group flex-none w-[280px] snap-center">
-              <div className="h-full rounded-3xl overflow-hidden bg-gradient-to-br from-white/8 via-white/5 to-white/[0.02] border border-white/10 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
-                <div className="relative aspect-[5/4] bg-[#1F1F1F] overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={(product.name || product.title || "Product") as string}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="280px"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          {displayProducts.map((product) => {
+            const isHovered = hoveredProductId === product.id;
+            const displayImage = isHovered && product.images && product.images[1] 
+              ? product.images[1] 
+              : product.image;
+            
+            return (
+              <Link 
+                href={`/product/${product.id}`} 
+                key={product.id} 
+                className="group flex-none w-[280px] snap-center"
+                onMouseEnter={() => setHoveredProductId(product.id)}
+                onMouseLeave={() => setHoveredProductId(null)}
+              >
+                <div className="h-[420px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
+                  <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
+                    <Image
+                      key={displayImage}
+                      src={displayImage}
+                      alt={(product.name || product.title || "Product") as string}
+                      fill
+                      className="object-cover transition-all duration-500 group-hover:scale-105"
+                      sizes="280px"
+                    />
+                    {/* Bottom shadow gradient for text visibility */}
+                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none"></div>
+                    
+                    {/* Text overlay at bottom - animates on hover */}
+                    <div className="absolute inset-x-0 bottom-0 p-5 z-10 transition-all duration-300 group-hover:-translate-y-2">
+                      <div className="space-y-2">
+                        <div className="text-xs uppercase tracking-[0.3em] text-white/90 drop-shadow-lg transition-all duration-300">
+                          {product.category}
+                        </div>
+                        <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-lg">
+                          {product.name || product.title || "Untitled"}
+                        </h3>
+                        {/* Price - hidden by default, shows on hover */}
+                        {(product.price || product.date || product.role) && (
+                          <p className="text-sm text-white/80 drop-shadow-lg opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-10 transition-all duration-300">
+                            {product.price || product.date || product.role}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-5 space-y-2">
-                  <div className="text-xs uppercase tracking-[0.3em] text-white/60">{product.category}</div>
-                  <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors">
-                    {product.name || product.title || "Untitled"}
-                  </h3>
-                  {(product.price || product.date || product.role) && (
-                    <p className="text-sm text-white/60">
-                      {product.price || product.date || product.role}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Desktop: Grid */}
         <div className="hidden sm:grid grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {displayProducts.map((product) => (
-            <Link href={`/product/${product.id}`} key={product.id} className="group">
-              <div className="h-full rounded-3xl overflow-hidden bg-gradient-to-br from-white/8 via-white/5 to-white/[0.02] border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
-                <div className="relative aspect-[5/4] bg-[#1F1F1F] overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={(product.name || product.title || "Product") as string}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(min-width: 1024px) 420px, (min-width: 640px) 50vw, 100vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          {displayProducts.map((product) => {
+            const isHovered = hoveredProductId === product.id;
+            const displayImage = isHovered && product.images && product.images[1] 
+              ? product.images[1] 
+              : product.image;
+            
+            return (
+              <Link 
+                href={`/product/${product.id}`} 
+                key={product.id} 
+                className="group"
+                onMouseEnter={() => setHoveredProductId(product.id)}
+                onMouseLeave={() => setHoveredProductId(null)}
+              >
+                <div className="h-[480px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
+                  <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
+                    <Image
+                      key={displayImage}
+                      src={displayImage}
+                      alt={(product.name || product.title || "Product") as string}
+                      fill
+                      className="object-cover transition-all duration-500 group-hover:scale-105"
+                      sizes="(min-width: 1024px) 420px, (min-width: 640px) 50vw, 100vw"
+                    />
+                    {/* Bottom shadow gradient for text visibility */}
+                    <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none"></div>
+                    
+                    {/* Text overlay at bottom - animates on hover */}
+                    <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-10 transition-all duration-300 group-hover:-translate-y-3">
+                      <div className="space-y-2">
+                        <div className="text-xs uppercase tracking-[0.3em] text-white/90 drop-shadow-lg transition-all duration-300">
+                          {product.category}
+                        </div>
+                        <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-lg">
+                          {product.name || product.title || "Untitled"}
+                        </h3>
+                        {/* Price - hidden by default, shows on hover */}
+                        {(product.price || product.date || product.role) && (
+                          <p className="text-sm text-white/80 drop-shadow-lg opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-10 transition-all duration-300">
+                            {product.price || product.date || product.role}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-5 sm:p-6 space-y-2">
-                  <div className="text-xs uppercase tracking-[0.3em] text-white/60">{product.category}</div>
-                  <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors">
-                    {product.name || product.title || "Untitled"}
-                  </h3>
-                  {(product.price || product.date || product.role) && (
-                    <p className="text-sm text-white/60">
-                      {product.price || product.date || product.role}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Empty state for mobile */}
         {displayProducts.length === 0 && (
-          <div className="sm:hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm p-12 text-center text-white/70 mx-6">
+          <div className="sm:hidden rounded-3xl border border-white/10 backdrop-blur-sm p-12 text-center text-white/80 drop-shadow-lg mx-6">
             No products found in this category yet. Please check back soon.
           </div>
         )}
 
         {/* Empty state for desktop */}
         {displayProducts.length === 0 && (
-          <div className="hidden sm:block rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm p-12 text-center text-white/70">
+          <div className="hidden sm:block rounded-3xl border border-white/10 backdrop-blur-sm p-12 text-center text-white/80 drop-shadow-lg">
             No products found in this category yet. Please check back soon.
           </div>
         )}
