@@ -617,16 +617,9 @@ export default function ProductDetail() {
     }
   };
 
-  if (isLoading) {
+  // Show loading while fetching or if product is not yet loaded
+  if (isLoading || !product) {
     return <Preloader ariaLabel="Loading Product" />
-  }
-
-  if (!product) {
-    return (
-      <div className="bg-[#2D2D2D] text-white min-h-screen flex items-center justify-center">
-        <div className="text-2xl">Product not found</div>
-      </div>
-    )
   }
 
   // Use either the image array or fallback to a single image
@@ -899,7 +892,7 @@ export default function ProductDetail() {
                   )}
 
                   {/* Price */}
-                  <div className="text-3xl font-light mb-2 font-['Roboto_Mono']">{displayedPrice}</div>
+                  <div className="text-3xl font-light mb-2 font-['Roboto_Mono']">Rs {displayedPrice}</div>
                   <div className="text-xs text-white/40 mb-6 font-['Roboto_Mono']">Inc. Tax • Lead time 6-8 weeks</div>
                   
                   {/* Quantity and Add to Cart */}
@@ -1087,7 +1080,7 @@ export default function ProductDetail() {
                             {productName}
                           </h3>
                           <p className="text-sm text-white/60 font-['Roboto_Mono']">
-                            {productPrice}
+                            Rs {productPrice}
                           </p>
                         </div>
                       </div>

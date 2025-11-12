@@ -422,7 +422,7 @@ export default function FeaturedProducts() {
                     {isCentered && product.price && (
                       <div className="absolute bottom-0 right-0 p-4 z-20">
                         <div className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] text-right">
-                          {product.price.startsWith('$') ? product.price : `$${product.price}`}
+                          Rs {product.price.replace(/[$₹]/g, '')}
                         </div>
                       </div>
                     )}

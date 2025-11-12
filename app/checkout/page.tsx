@@ -102,12 +102,10 @@ export default function CheckoutPage() {
   
   // Format currency helper
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return `Rs ${new Intl.NumberFormat('en-IN', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(value);
+    }).format(value)}`;
   };
   
   // Parse price from string or number
@@ -161,7 +159,7 @@ export default function CheckoutPage() {
       id: "tss-money",
       name: "TSS Money",
       icon: <Wallet className="w-5 h-5" />,
-      balance: "₹0.00"
+      balance: "Rs 0.00"
     },
     {
       id: "upi",
@@ -696,7 +694,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-white/70">Shipping Charges</span>
                   <div className="text-right flex-shrink-0">
-                    <span className="text-white line-through text-white/50 mr-1 sm:mr-2 text-xs">₹50.00</span>
+                    <span className="text-white line-through text-white/50 mr-1 sm:mr-2 text-xs">Rs 50.00</span>
                     <span className="text-[#22c55e] font-semibold text-xs sm:text-sm">Free</span>
                   </div>
                 </div>

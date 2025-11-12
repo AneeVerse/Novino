@@ -18,10 +18,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   
   // Format currency helper
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
+    return `Rs ${new Intl.NumberFormat('en-IN', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)}`;
   };
   
   // Close drawer when pressing escape key

@@ -218,7 +218,7 @@ export default function ProductGrid({
                         {/* Price - hidden by default, shows on hover */}
                         {(product.price || product.date || product.role) && (
                           <p className="text-sm text-white/80 drop-shadow-lg opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-10 transition-all duration-300">
-                            {product.price || product.date || product.role}
+                            {product.price ? `Rs ${product.price}` : (product.date || product.role)}
                           </p>
                         )}
                       </div>
@@ -277,7 +277,7 @@ export default function ProductGrid({
                         {/* Price - hidden by default, shows on hover */}
                         {(product.price || product.date || product.role) && (
                           <p className="text-sm text-white/80 drop-shadow-lg opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-10 transition-all duration-300">
-                            {product.price || product.date || product.role}
+                            {product.price ? `Rs ${product.price}` : (product.date || product.role)}
                           </p>
                         )}
                       </div>

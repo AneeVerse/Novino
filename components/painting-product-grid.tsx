@@ -152,7 +152,7 @@ export default function ProductGrid({
                       />
                       {product.name && (
                         <div className="absolute bottom-6 sm:bottom-10 left-0 right-0 text-center py-2 px-2 text-white font-['Roboto_Mono'] text-xs sm:text-sm uppercase">
-                          {product.name} {product.price && `- ${product.price}`}
+                          {product.name} {product.price && `- Rs ${product.price}`}
                         </div>
                       )}
                     </Link>
@@ -226,7 +226,7 @@ export default function ProductGrid({
                   />
                   {product.name && (
                     <div className="absolute bottom-6 left-0 right-0 text-center py-2 px-2 text-white font-['Roboto_Mono'] text-xs uppercase">
-                      {product.name} {product.price && `- ${product.price}`}
+                      {product.name} {product.price && `- Rs ${product.price}`}
                     </div>
                   )}
                 </Link>

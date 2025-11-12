@@ -146,12 +146,10 @@ export default function CartPage() {
   
   // Format currency helper
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return `Rs ${new Intl.NumberFormat('en-IN', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value);
+    }).format(value)}`;
   };
   
   // Parse price from string or number
@@ -1057,7 +1055,7 @@ export default function CartPage() {
                       onChange={(e) => setPromoState(prev => ({ ...prev, giftWrap: e.target.checked }))}
                       className="w-4 h-4 rounded border-[#444444] bg-[#222222] text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
                     />
-                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm font-medium">Gift Wrap (₹ 25)</span>
+                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm font-medium">Gift Wrap (Rs 25)</span>
                   </label>
                 </div>
                 
