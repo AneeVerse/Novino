@@ -65,6 +65,11 @@ interface Product {
   images?: string[];
   category: string;
   categoryId?: string;
+  isVariant?: boolean;
+  variantId?: string;
+  variantName?: string;
+  variantType?: string;
+  parentProductId?: number | string;
 }
 
 interface ProductGridProps {
@@ -174,9 +179,15 @@ export default function ProductGrid({
               ? product.images[1] 
               : product.image;
             
+            // Use parent product ID for variants, otherwise use the product's own ID
+            // For variants, add the variantId as a query parameter to auto-select it
+            const productLink = product.isVariant && product.parentProductId 
+              ? `/product/${product.parentProductId}?variant=${product.variantId}`
+              : `/product/${product.id}`;
+            
             return (
               <Link 
-                href={`/product/${product.id}`} 
+                href={productLink} 
                 key={product.id} 
                 className="group flex-none w-[280px] snap-center"
                 onMouseEnter={() => setHoveredProductId(product.id)}
@@ -227,9 +238,15 @@ export default function ProductGrid({
               ? product.images[1] 
               : product.image;
             
+            // Use parent product ID for variants, otherwise use the product's own ID
+            // For variants, add the variantId as a query parameter to auto-select it
+            const productLink = product.isVariant && product.parentProductId 
+              ? `/product/${product.parentProductId}?variant=${product.variantId}`
+              : `/product/${product.id}`;
+            
             return (
               <Link 
-                href={`/product/${product.id}`} 
+                href={productLink} 
                 key={product.id} 
                 className="group"
                 onMouseEnter={() => setHoveredProductId(product.id)}

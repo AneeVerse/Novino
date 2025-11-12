@@ -91,11 +91,12 @@ export default function Home() {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/products');
+        // Fetch products with variants included as separate items
+        const res = await fetch('/api/products?includeVariants=true');
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
         
-        // Get artefact products
+        // Get artefact products and variants
         const artefactProducts = data
           .filter((p: any) => p.type === 'artefact')
           .map((p: any) => ({
@@ -103,8 +104,14 @@ export default function Home() {
             name: p.name,
             price: p.basePrice || p.price || "$0",
             image: p.images?.[0] || p.image || "/images/placeholder.png",
+            images: p.images || (p.image ? [p.image] : []),
             category: categoryMap[p.category] || p.category, // use display name
-            categoryId: p.category // Store original category ID for reference
+            categoryId: p.category, // Store original category ID for reference
+            isVariant: p.isVariant || false,
+            variantId: p.variantId,
+            variantName: p.variantName,
+            variantType: p.variantType,
+            parentProductId: p.parentProductId || p.id
           }));
         
         setProducts(artefactProducts);

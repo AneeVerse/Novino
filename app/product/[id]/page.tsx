@@ -10,7 +10,7 @@ import TestimonialCollection from "@/components/testimonial-collection"
 import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import Footer from "@/components/footer"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter, useParams, useSearchParams } from "next/navigation"
 import { useCallback } from "react"
 import { useCart } from '@/contexts/CartContext'
 import Preloader from "@/components/ui/preloader"
@@ -103,6 +103,7 @@ interface AccordionItem {
 export default function ProductDetail() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const [product, setProduct] = useState<ProductWithDescription | undefined>(undefined)
   const [categoryName, setCategoryName] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
@@ -112,8 +113,41 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1)
   const [currentImage, setCurrentImage] = useState(0)
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
+  const [hoveredVariant, setHoveredVariant] = useState<any>(null); // For preview on hover
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // Reset current image when variant changes
+  useEffect(() => {
+    setCurrentImage(0);
+  }, [selectedVariant]);
+
+  // Auto-select variant from URL query parameter
+  useEffect(() => {
+    const variantId = searchParams.get('variant');
+    console.log('Variant selection effect - variantId from URL:', variantId);
+    
+    if (!product || !product.variants) {
+      console.log('Product or variants not loaded yet');
+      return;
+    }
+    
+    if (variantId && Array.isArray(product.variants)) {
+      const foundVariant = product.variants.find((v: any) => v.id === variantId);
+      if (foundVariant) {
+        if (foundVariant.id !== selectedVariant?.id) {
+          console.log('Auto-selecting variant from URL:', foundVariant.name, 'ID:', foundVariant.id);
+          setSelectedVariant(foundVariant);
+        }
+      } else {
+        console.log('Variant not found with ID:', variantId, 'Available variants:', product.variants.map((v: any) => v.id));
+      }
+    } else if (!variantId && selectedVariant) {
+      // No variant in URL but one is selected - reset to default
+      console.log('No variant in URL, resetting to default');
+      setSelectedVariant(null);
+    }
+  }, [searchParams, product]);
 
   // Check if user is logged in
   useEffect(() => {
@@ -219,8 +253,13 @@ export default function ProductDetail() {
             // If so, redirect to the slug URL for better SEO
             if (data.slug && (safeProductId === data._id?.toString() || safeProductId === data.id?.toString() || /^[0-9a-fA-F]{24}$/.test(safeProductId))) {
               // We're using an ID but product has a slug - redirect to slug URL
-              console.log('Redirecting to slug URL:', data.slug);
-              router.replace(`/product/${data.slug}`);
+              // Preserve the variant query parameter if present
+              const variantParam = searchParams.get('variant');
+              const redirectUrl = variantParam 
+                ? `/product/${data.slug}?variant=${variantParam}`
+                : `/product/${data.slug}`;
+              console.log('Redirecting to slug URL:', redirectUrl);
+              router.replace(redirectUrl);
               return;
             }
             
@@ -286,7 +325,7 @@ export default function ProductDetail() {
             const frameVariants = Array.isArray(formattedProduct.variants)
               ? formattedProduct.variants.filter((v: any) => v.type === 'frame')
               : [];
-            setSelectedVariant(null);
+            // Don't reset selectedVariant here - let the URL parameter effect handle it
             setDataSource('api');
             setError(null);
           } else {
@@ -341,7 +380,7 @@ export default function ProductDetail() {
           
           setProduct(typedFallback);
           setCategoryName(typedFallback.category);
-          setSelectedVariant(null);
+          // Don't reset selectedVariant here - let the URL parameter effect handle it
           setDataSource('fallback');
           setError(`API Error (${response.status}): Could not load product from API, using fallback data`);
         }
@@ -372,7 +411,7 @@ export default function ProductDetail() {
         const frameVars = Array.isArray(typedFallback.variants)
           ? typedFallback.variants.filter((v: any) => v.type === 'frame')
           : [];
-        setSelectedVariant(null);
+        // Don't reset selectedVariant here - let the URL parameter effect handle it
         setCategoryName(typedFallback.category);
         setProduct(typedFallback);
         setDataSource('fallback');
@@ -509,6 +548,19 @@ export default function ProductDetail() {
     fetchRelatedProducts();
   }, [product])
 
+  // Handle variant selection and update URL
+  const handleVariantSelect = (variant: any | null) => {
+    setSelectedVariant(variant);
+    
+    // Update URL with variant parameter using replace to avoid navigation
+    const currentPath = window.location.pathname;
+    if (variant) {
+      router.replace(`${currentPath}?variant=${variant.id}`, { scroll: false });
+    } else {
+      router.replace(currentPath, { scroll: false });
+    }
+  };
+
   // Add to cart handler
   const handleAddToCart = () => {
     if (product) {
@@ -560,32 +612,31 @@ export default function ProductDetail() {
   const productImage = product.image || (product.images && product.images.length > 0 ? product.images[0] : "/images/painting/2.1.png")
   // Use either price or basePrice, whichever is available
   const productPrice = product.price || product.basePrice || "$0"
-  // Derive displayed values based on selected variant
-  const displayedVariant = selectedVariant;
-  const displayedPrice = displayedVariant?.price || productPrice;
   
   // Handle the product images array
   const productImages = product.images || [productImage];
   const totalImages = productImages.length;
   
   // Get the current image to display based on the current index
-  const displayedImage = selectedVariant?.imageUrl || 
-    (currentImage < productImages.length 
-      ? productImages[currentImage] 
-      : productImage);
+  // Use hoveredVariant for preview, otherwise use selectedVariant
+  // Priority: hovered/selected variant images[currentImage] > variant imageUrl > product images[currentImage]
+  const activeVariant = hoveredVariant || selectedVariant;
+  
+  // Derive displayed values based on active variant (hovered or selected)
+  const displayedVariant = activeVariant;
+  const displayedPrice = displayedVariant?.price || productPrice;
+  const variantImages = activeVariant?.images && activeVariant.images.length > 0 
+    ? activeVariant.images 
+    : null;
+  
+  const displayedImage = variantImages 
+    ? (currentImage < variantImages.length ? variantImages[currentImage] : variantImages[0])
+    : activeVariant?.imageUrl 
+      ? activeVariant.imageUrl
+      : (currentImage < productImages.length ? productImages[currentImage] : productImage);
 
-  // Prepare color variants from product
-  const colorVariants = Array.isArray(product?.variants)
-    ? product.variants.filter((v: any) => v.type === 'color')
-    : [];
-  // Prepare frame variants from product
-  const frameVariants = Array.isArray(product?.variants)
-    ? product.variants.filter((v: any) => v.type === 'frame')
-    : [];
-
-  // Get basic color and frame for "unstyled" button state
-  const hasSelectedColor = colorVariants.some(v => selectedVariant?.id === v.id);
-  const hasSelectedFrame = frameVariants.some(v => selectedVariant?.id === v.id);
+  // Get ALL variants (not filtered by type)
+  const allVariants = Array.isArray(product?.variants) ? product.variants : [];
 
   // Generate breadcrumbs
   const productUrl = product.slug || product.id?.toString() || productId?.toString() || '';
@@ -662,27 +713,27 @@ export default function ProductDetail() {
        
         {/* Main product display - Clean layout without borders */}
         <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
-          <div className="relative z-10 px-4 md:px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+          <div className="relative z-10 px-4 md:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
               {/* Left column - Product title and description */}
-              <div className="lg:col-span-3 flex flex-col justify-start py-8">
+              <div className="lg:col-span-3 flex flex-col justify-start py-8 pr-4 lg:pr-8">
                 <div className="uppercase text-xs text-white/50 mb-3 tracking-wider font-['Roboto_Mono']">
                   {categoryName}
                 </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light mb-8 tracking-wide font-['Roboto_Mono']" style={{ lineHeight: '1.2' }}>
-                  {product.name?.toUpperCase()}
+                <h1 className="text-2xl sm:text-3xl lg:text-3xl font-light mb-8 tracking-wide font-['Roboto_Mono']" style={{ lineHeight: '1.2' }}>
+                  {activeVariant ? activeVariant.name?.toUpperCase() : product.name?.toUpperCase()}
                 </h1>
                 
-                <div className="text-white/70 leading-relaxed text-sm sm:text-base font-['Roboto_Mono']" style={{ maxWidth: '480px' }}>
+                <div className="text-white/70 leading-relaxed text-sm sm:text-base lg:text-base font-['Roboto_Mono']">
                   <p className="whitespace-pre-line">{product.description}</p>
                 </div>
               </div>
 
               {/* Right section - Product Image and Purchase Details */}
-              <div className="lg:col-span-9 grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12">
+              <div className="lg:col-span-9 grid grid-cols-1 md:grid-cols-7 gap-6 lg:gap-8">
                 {/* Product Image Gallery - Main image with thumbnails */}
                 <div 
-                  className="md:col-span-3 flex flex-col gap-4 order-1 md:order-1" 
+                  className="md:col-span-4 md:col-start-1 flex flex-col gap-4 order-1 md:order-1 md:ml-12" 
                   data-product-image
                 >
                   {/* Main Product Image */}
@@ -695,7 +746,7 @@ export default function ProductDetail() {
                       src={displayedImage}
                       alt={product.name || "Product Image"}
                       fill
-                      style={{ objectFit: 'cover' }}
+                      style={{ objectFit: 'cover', objectPosition: 'center' }}
                       priority
                       className="pointer-events-none transition-all duration-700 ease-out group-hover:scale-105"
                       draggable={false}
@@ -705,157 +756,122 @@ export default function ProductDetail() {
                     <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-500 pointer-events-none" />
                   </div>
 
-                  {/* Thumbnail Gallery */}
-                  {totalImages > 1 && (
-                    <div className="flex gap-2 justify-center flex-wrap">
-                      {productImages.map((imageUrl, i) => (
-                        <button
-                          key={i}
-                          onMouseEnter={() => {
-                            setCurrentImage(i);
-                          setIsAutoScrolling(false);
-                          }}
-                          onClick={() => {
-                            setCurrentImage(i);
-                            setIsAutoScrolling(false);
-                            setTimeout(() => setIsAutoScrolling(true), 10000);
-                          }}
-                          className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
-                            currentImage === i 
-                              ? 'border-white shadow-lg shadow-white/20' 
-                              : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                          }`}
-                  >
-                    <Image
-                            src={imageUrl}
-                            alt={`${product.name} view ${i + 1}`}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                            className="pointer-events-none"
-                      draggable={false}
-                    />
-                        </button>
-                      ))}
-                  </div>
-                  )}
+                  {/* Thumbnail Gallery - show variant images if variant active, otherwise product images */}
+                  {(() => {
+                    const imagesToShow = activeVariant?.images && activeVariant.images.length > 0 
+                      ? activeVariant.images 
+                      : productImages;
+                    
+                    return imagesToShow.length > 1 ? (
+                      <div className="flex gap-2 justify-center flex-wrap">
+                        {imagesToShow.map((imageUrl, i) => (
+                          <button
+                            key={i}
+                            onMouseEnter={() => {
+                              setCurrentImage(i);
+                              setIsAutoScrolling(false);
+                            }}
+                            onClick={() => {
+                              setCurrentImage(i);
+                              setIsAutoScrolling(false);
+                              setTimeout(() => setIsAutoScrolling(true), 10000);
+                            }}
+                            className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
+                              currentImage === i 
+                                ? 'border-white shadow-lg shadow-white/20' 
+                                : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                            }`}
+                          >
+                            <Image
+                              src={imageUrl}
+                              alt={`${product.name} view ${i + 1}`}
+                              fill
+                              style={{ objectFit: 'cover' }}
+                              className="pointer-events-none"
+                              draggable={false}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
 
                 {/* Price and cart actions */}
-                <div className="md:col-span-2 flex flex-col justify-start order-2 md:order-2 py-8">
-                    {/* Variant Options */}
-                  {(frameVariants.length > 0 || colorVariants.length > 0) && (
-                    <div className="flex flex-col gap-6 mb-8">
-                      {colorVariants.length > 0 && (
-                        <div className="flex flex-col gap-3">
-                          <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">Finish</div>
-                          
-                          {/* Check if variants have images - show thumbnails, otherwise show color circles */}
-                          {colorVariants.some((v: any) => v.imageUrl) ? (
-                            <div className="flex gap-2 justify-center flex-wrap">
-                              <button
-                                onClick={() => setSelectedVariant(null)}
-                                className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
-                                  !selectedVariant || !colorVariants.some((v: any) => v.id === selectedVariant?.id)
-                                    ? 'border-white shadow-lg shadow-white/20' 
-                                    : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                                }`}
-                              >
-                                <Image
-                                  src={productImages[0]}
-                                  alt="Default"
-                                  fill
-                                  style={{ objectFit: 'cover' }}
-                                  className="pointer-events-none"
-                                  draggable={false}
-                                />
-                              </button>
-                              {colorVariants.map((variant: any) => (
-                                <button
-                                  key={variant.id}
-                                  onMouseEnter={() => setSelectedVariant(variant)}
-                                  onClick={() => setSelectedVariant(variant)}
-                                  className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
-                                    selectedVariant?.id === variant.id
-                                      ? 'border-white shadow-lg shadow-white/20' 
-                                      : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                                  }`}
-                                  title={variant.name}
-                                >
-                                  <Image
-                                    src={variant.imageUrl || productImages[0]}
-                                    alt={variant.name}
-                                    fill
-                                    style={{ objectFit: 'cover' }}
-                                    className="pointer-events-none"
-                                    draggable={false}
-                                  />
-                                </button>
-                              ))}
-                            </div>
-                          ) : (
-                          <div className="flex flex-wrap gap-3">
-                            {colorVariants.map((variant: any) => (
-                              <button
-                                key={variant.id}
-                                onClick={() => setSelectedVariant(variant)}
-                                className={`w-10 h-10 rounded-full border-2 transition-all ${
-                                  selectedVariant?.id === variant.id
-                                    ? 'border-white ring-2 ring-white/30 ring-offset-2 ring-offset-[#2D2D2D]'
-                                    : 'border-white/20 hover:border-white/40'
-                                }`}
-                                style={{ 
-                                  backgroundColor: variant.colorCode || '#8B4513'
-                                }}
-                                title={variant.name}
-                              />
-                            ))}
-                          </div>
-                          )}
-                          
-                          {selectedVariant && colorVariants.some((v: any) => v.id === selectedVariant.id) && (
-                            <div className="text-xs text-white/60 font-['Roboto_Mono']">
-                              {selectedVariant.name}
-                            </div>
-                          )}
-                        </div>
-                      )}
+                <div className="md:col-span-3 md:col-start-5 flex flex-col justify-start order-2 md:order-2 py-8 pl-4 lg:pl-8">
+                  {/* Variant Options - Show ALL variants + main product */}
+                  {allVariants.length > 0 && (
+                    <div className="flex flex-col gap-3 mb-8" onMouseLeave={() => setHoveredVariant(null)}>
+                      <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">Select Variant</div>
                       
-                      {frameVariants.length > 0 && (
-                        <div className="flex flex-col gap-3">
-                          <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">Frame Type</div>
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              key="basic"
-                              onClick={() => {
-                                if (hasSelectedColor) {
-                                  const currentColor = colorVariants.find(v => v.id === selectedVariant?.id);
-                                  setSelectedVariant(currentColor);
-                                } else {
-                                  setSelectedVariant(null);
-                                }
-                              }}
-                              className={`px-5 py-2.5 text-xs uppercase tracking-wide border transition-all font-['Roboto_Mono'] ${
-                                !hasSelectedFrame
-                                  ? 'border-white bg-white/10 text-white'
-                                  : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white/80'
-                              }`}
-                            >
-                              Standard
-                            </button>
-                            {frameVariants.map((variant: any) => (
-                              <button
-                                key={variant.id}
-                                onClick={() => setSelectedVariant(variant)}
-                                className={`px-5 py-2.5 text-xs uppercase tracking-wide border transition-all font-['Roboto_Mono'] ${
-                                  selectedVariant?.id === variant.id
-                                    ? 'border-white bg-white/10 text-white'
-                                    : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white/80'
-                                }`}
-                              >
-                                {variant.name}
-                              </button>
-                            ))}
+                      <div className="flex gap-2 flex-wrap">
+                        {/* Main Product as Default Option */}
+                        <button
+                          onClick={() => handleVariantSelect(null)}
+                          onMouseEnter={() => setHoveredVariant(null)}
+                          onMouseLeave={() => setHoveredVariant(null)}
+                          className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
+                            !selectedVariant
+                              ? 'border-white shadow-lg shadow-white/20' 
+                              : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                          }`}
+                          title={product.name}
+                        >
+                          <Image
+                            src={productImages[0]}
+                            alt={product.name || "Default"}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            className="pointer-events-none"
+                            draggable={false}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          <div className="absolute bottom-1 left-1 right-1 text-[8px] text-white/90 truncate uppercase font-['Roboto_Mono'] opacity-0 group-hover:opacity-100 transition-opacity">
+                            Default
                           </div>
+                        </button>
+                        
+                        {/* All Variants */}
+                        {allVariants.map((variant: any) => (
+                          <button
+                            key={variant.id}
+                            onMouseEnter={() => setHoveredVariant(variant)}
+                            onMouseLeave={() => setHoveredVariant(null)}
+                            onClick={() => handleVariantSelect(variant)}
+                            className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
+                              selectedVariant?.id === variant.id
+                                ? 'border-white shadow-lg shadow-white/20' 
+                                : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                            }`}
+                            title={variant.name}
+                          >
+                            <Image
+                              src={variant.images?.[0] || variant.imageUrl || productImages[0]}
+                              alt={variant.name}
+                              fill
+                              style={{ objectFit: 'cover' }}
+                              className="pointer-events-none"
+                              draggable={false}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="absolute bottom-1 left-1 right-1 text-[8px] text-white/90 truncate uppercase font-['Roboto_Mono'] opacity-0 group-hover:opacity-100 transition-opacity">
+                              {variant.name}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                      
+                      {/* Display selected variant info */}
+                      {selectedVariant && (
+                        <div className="flex flex-col gap-1 mt-2">
+                          <div className="text-sm text-white font-['Roboto_Mono']">
+                            {selectedVariant.name}
+                          </div>
+                          {selectedVariant.type && (
+                            <div className="text-xs text-white/60 font-['Roboto_Mono']">
+                              Type: {selectedVariant.type}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

@@ -1,17 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient } from 'mongodb';
-
-// MongoDB connection URI (would typically be in env variables)
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const MONGODB_DB = process.env.MONGODB_DB || 'novino';
+import connectToMongoDB from '@/lib/mongodb-client';
 
 type ProductVariant = {
   id: string;
   name: string;
-  type: 'frame' | 'color';
+  type: string;
   price?: string;
   quantity: number;
   imageUrl?: string;
+  images?: string[];
 };
 
 type ProductSpecification = {
@@ -60,12 +57,9 @@ export default async function handler(
 ) {
   const { method } = req;
 
-  // Create a MongoDB connection
-  const client = new MongoClient(MONGODB_URI);
-
   try {
-    await client.connect();
-    const db = client.db(MONGODB_DB);
+    // Use cached MongoDB connection
+    const { db } = await connectToMongoDB();
     const collection = db.collection('products');
 
     switch (method) {
@@ -122,6 +116,51 @@ export default async function handler(
             ];
             
             return res.status(200).json(sampleProducts);
+          }
+          
+          // Check if we should include variants as separate items
+          const includeVariants = req.query.includeVariants === 'true';
+          
+          if (includeVariants) {
+            // Flatten products and variants into a single array
+            const flattenedItems: any[] = [];
+            
+            serializedProducts.forEach((product: any) => {
+              // Add the main product
+              flattenedItems.push(product);
+              
+              // Add each variant as a separate item
+              if (product.variants && Array.isArray(product.variants)) {
+                product.variants.forEach((variant: ProductVariant) => {
+                  flattenedItems.push({
+                    ...product,
+                    // Override with variant-specific data
+                    id: `${product.id}-variant-${variant.id}`,
+                    _id: `${product._id}-variant-${variant.id}`,
+                    name: variant.name, // Show only variant name, not concatenated
+                    price: variant.price || product.price || product.basePrice,
+                    basePrice: variant.price || product.basePrice || product.price,
+                    image: variant.images?.[0] || variant.imageUrl || product.image || product.images?.[0],
+                    images: variant.images || (variant.imageUrl ? [variant.imageUrl] : product.images),
+                    quantity: variant.quantity,
+                    // Mark as variant for identification
+                    isVariant: true,
+                    variantId: variant.id,
+                    variantName: variant.name,
+                    variantType: variant.type,
+                    parentProductId: product.id,
+                    // Keep original product data for reference
+                    originalProduct: {
+                      id: product.id,
+                      name: product.name,
+                      category: product.category
+                    }
+                  });
+                });
+              }
+            });
+            
+            return res.status(200).json(flattenedItems);
           }
           
           res.status(200).json(serializedProducts);
@@ -186,7 +225,5 @@ export default async function handler(
   } catch (error) {
     console.error('API Error:', error);
     res.status(500).json({ success: false, error: 'Server error' });
-  } finally {
-    await client.close();
   }
 } 

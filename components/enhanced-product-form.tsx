@@ -28,6 +28,7 @@ interface ProductVariant {
   price?: string;
   quantity: number;
   imageUrl?: string;
+  images?: string[]; // Array of image URLs for variant
 }
 
 interface ProductSpecification {
@@ -85,7 +86,7 @@ export default function EnhancedProductForm({
   onCancel 
 }: EnhancedProductFormProps) {
   // Main form tabs
-  const tabs = ["Basic Info", "Variants", "Specifications", "FAQs", "Additional", "Meta"];
+  const tabs = ["Basic Info", "Variants", "Meta"];
   const [activeTab, setActiveTab] = useState(0);
   
   // Log categories for debugging
@@ -108,8 +109,11 @@ export default function EnhancedProductForm({
     name: "",
     type: "", // Changed to empty string, user can type anything
     price: "",
-    quantity: 1
+    quantity: 1,
+    images: []
   });
+  const [variantImageUrl, setVariantImageUrl] = useState("");
+  const [isAddingVariantImage, setIsAddingVariantImage] = useState(false);
 
   // Specifications state
   const [specificationTitle, setSpecificationTitle] = useState("");
@@ -280,15 +284,14 @@ export default function EnhancedProductForm({
         type: productType,
         variants,
         specifications: {
-          title: specificationTitle,
-          content: specificationContent,
-          imageUrl: specificationImage
+          title: "",
+          content: "",
+          imageUrl: ""
         },
         faqSection: {
-          faqs,
-          imageUrl: faqImageUrl
+          faqs: [],
+          imageUrl: ""
         },
-        additionalImageUrl,
         featured,
         featuredImageUrl: featured ? featuredImageUrl : undefined,
         ...(metaDescription && { metaDescription }),
@@ -345,6 +348,26 @@ export default function EnhancedProductForm({
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Add variant image
+  const addVariantImage = () => {
+    if (variantImageUrl && newVariant.images && !newVariant.images.includes(variantImageUrl)) {
+      setNewVariant(prev => ({
+        ...prev,
+        images: [...(prev.images || []), variantImageUrl]
+      }));
+      setVariantImageUrl("");
+      setIsAddingVariantImage(false);
+    }
+  };
+
+  // Remove variant image
+  const removeVariantImage = (index: number) => {
+    setNewVariant(prev => ({
+      ...prev,
+      images: (prev.images || []).filter((_, i) => i !== index)
+    }));
+  };
+
   // Add or update variant
   const handleVariant = () => {
     if (!newVariant.name) return;
@@ -365,13 +388,21 @@ export default function EnhancedProductForm({
       name: "",
       type: "",
       price: "",
-      quantity: 1
+      quantity: 1,
+      images: []
     });
+    setVariantImageUrl("");
+    setIsAddingVariantImage(false);
   };
 
   // Remove variant
   const removeVariant = (id: string) => {
     setVariants(prev => prev.filter(v => v.id !== id));
+  };
+
+  // Edit variant - populate form with variant data
+  const editVariant = (variant: ProductVariant) => {
+    setNewVariant(variant);
   };
 
   // Add FAQ
@@ -841,30 +872,148 @@ export default function EnhancedProductForm({
                           </div>
                         </div>
                         
-                        <div>
-                          <label htmlFor="variant-image" className="block text-white/70 text-sm mb-1">
-                            Image URL (optional)
-                          </label>
-                          <input
-                            type="url"
-                            id="variant-image"
-                            value={newVariant.imageUrl || ""}
-                            onChange={(e) => setNewVariant({...newVariant, imageUrl: e.target.value})}
-                            className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
-                            placeholder="Enter image URL for this variant"
-                          />
+                        {/* Variant Images Section */}
+                        <div className="mt-6 pt-6 border-t border-[#333333]">
+                          <div className="flex justify-between items-center mb-3">
+                            <label className="block text-white/70 text-sm font-medium">
+                              Variant Images <span className="text-white/60 text-xs">(max 10)</span>
+                            </label>
+                            {(newVariant.images?.length || 0) < 10 && (
+                              <button
+                                type="button"
+                                onClick={() => setIsAddingVariantImage(true)}
+                                className="flex items-center gap-1 px-3 py-1.5 bg-[#A47E3B] text-white text-xs rounded-lg hover:bg-[#8a6a31] transition-all"
+                              >
+                                <Plus size={14} />
+                                Add Image
+                              </button>
+                            )}
+                          </div>
+                          
+                          {/* Image grid */}
+                          {newVariant.images && newVariant.images.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                              {newVariant.images.map((image, index) => (
+                                <div key={index} className="relative group">
+                                  <div className={`aspect-square bg-[#333333] rounded-lg overflow-hidden ${index === 0 ? 'ring-2 ring-[#A47E3B]' : ''}`}>
+                                    <img 
+                                      src={getValidImageUrl(image)} 
+                                      alt={`Variant image ${index + 1}`}
+                                      className="w-full h-full object-cover" 
+                                    />
+                                    {index === 0 && (
+                                      <div className="absolute top-1 left-1 bg-[#A47E3B] text-white text-xs px-2 py-0.5 rounded">
+                                        Main
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="absolute bottom-1 left-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {index > 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const newImages = [...(newVariant.images || [])];
+                                          [newImages[index], newImages[index - 1]] = [newImages[index - 1], newImages[index]];
+                                          setNewVariant({...newVariant, images: newImages});
+                                        }}
+                                        className="flex-1 bg-[#333333] hover:bg-[#444444] text-white text-xs py-0.5 rounded"
+                                        title="Move left"
+                                      >
+                                        ←
+                                      </button>
+                                    )}
+                                    {index < (newVariant.images?.length || 0) - 1 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const newImages = [...(newVariant.images || [])];
+                                          [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
+                                          setNewVariant({...newVariant, images: newImages});
+                                        }}
+                                        className="flex-1 bg-[#333333] hover:bg-[#444444] text-white text-xs py-0.5 rounded"
+                                        title="Move right"
+                                      >
+                                        →
+                                      </button>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeVariantImage(index)}
+                                    className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-600 rounded-full p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="border border-dashed border-[#444444] rounded-lg p-6 text-center mb-4">
+                              <div className="text-white/70 text-sm">
+                                <div className="mx-auto w-10 h-10 rounded-full bg-[#333333] flex items-center justify-center mb-2">
+                                  <ImageIcon size={20} />
+                                </div>
+                                <p>No variant images added yet</p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Add image UI */}
+                          {isAddingVariantImage && (
+                            <div className="bg-[#222222] p-3 rounded-lg border border-[#333333]">
+                              <div className="flex justify-between items-center mb-2">
+                                <h3 className="text-white text-sm font-medium">Add Variant Image</h3>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setIsAddingVariantImage(false);
+                                    setVariantImageUrl("");
+                                  }}
+                                  className="text-white/70 hover:text-white"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </div>
+                              
+                              <div className="mb-3">
+                                <input
+                                  type="url"
+                                  placeholder="Enter image URL"
+                                  value={variantImageUrl}
+                                  onChange={(e) => setVariantImageUrl(e.target.value)}
+                                  className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
+                                />
+                              </div>
+                              
+                              <div className="flex justify-end">
+                                <button
+                                  type="button"
+                                  onClick={addVariantImage}
+                                  disabled={!variantImageUrl}
+                                  className="px-3 py-1 bg-[#A47E3B] text-white text-sm rounded hover:bg-[#8a6a31] disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  Add
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         
-                        <div className="mt-4 flex justify-end gap-3">
+                        <div className="mt-6 flex justify-end gap-3">
                           {newVariant.id && (
                             <button
                               type="button"
-                              onClick={() => setNewVariant({
-                                name: "",
-                                type: "",
-                                price: "",
-                                quantity: 1
-                              })}
+                              onClick={() => {
+                                setNewVariant({
+                                  name: "",
+                                  type: "",
+                                  price: "",
+                                  quantity: 1,
+                                  images: []
+                                });
+                                setVariantImageUrl("");
+                                setIsAddingVariantImage(false);
+                              }}
                               className="px-3 py-1 bg-transparent text-white/70 text-sm rounded hover:text-white"
                             >
                               Cancel
@@ -891,6 +1040,7 @@ export default function EnhancedProductForm({
                                 <th className="text-left p-3 text-white/70 text-sm font-medium">Type</th>
                                 <th className="text-left p-3 text-white/70 text-sm font-medium">Price</th>
                                 <th className="text-left p-3 text-white/70 text-sm font-medium">Quantity</th>
+                                <th className="text-left p-3 text-white/70 text-sm font-medium">Images</th>
                                 <th className="text-right p-3 text-white/70 text-sm font-medium">Actions</th>
                               </tr>
                             </thead>
@@ -903,11 +1053,31 @@ export default function EnhancedProductForm({
                                     {variant.price || 'Base price'}
                                   </td>
                                   <td className="p-3 text-white">{variant.quantity}</td>
+                                  <td className="p-3 text-white">
+                                    <div className="flex items-center gap-2">
+                                      {variant.images && variant.images.length > 0 ? (
+                                        <>
+                                          <div className="w-8 h-8 rounded overflow-hidden bg-[#333333]">
+                                            <img 
+                                              src={getValidImageUrl(variant.images[0])} 
+                                              alt={variant.name}
+                                              className="w-full h-full object-cover" 
+                                            />
+                                          </div>
+                                          <span className="text-xs text-white/70">
+                                            {variant.images.length} {variant.images.length === 1 ? 'image' : 'images'}
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <span className="text-xs text-white/50">No images</span>
+                                      )}
+                                    </div>
+                                  </td>
                                   <td className="p-3 text-right">
                                     <div className="flex items-center justify-end gap-2">
                                       <button
                                         type="button"
-                                        onClick={() => setNewVariant(variant)}
+                                        onClick={() => editVariant(variant)}
                                         className="text-[#A47E3B] hover:text-[#8a6a31] text-sm"
                                       >
                                         Edit
@@ -938,281 +1108,6 @@ export default function EnhancedProductForm({
                 </TabsContent>
 
                 <TabsContent value="tab-2">
-                  <div>
-                    <div className="mb-6">
-                      <h3 className="text-white text-lg font-medium mb-4">Product Specifications</h3>
-                      <p className="text-white/70 text-sm mb-6">
-                        Add technical specifications with rich text formatting and an optional image.
-                      </p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Left column - Title and Content */}
-                        <div className="space-y-4">
-                          <div>
-                            <label htmlFor="spec-title" className="block text-white font-medium mb-1">
-                              Specifications Title
-                            </label>
-                            <input
-                              type="text"
-                              id="spec-title"
-                              value={specificationTitle}
-                              onChange={(e) => setSpecificationTitle(e.target.value)}
-                              className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white focus:border-[#A47E3B] focus:outline-none"
-                              placeholder="e.g. Technical Details, Materials, Dimensions"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label htmlFor="spec-content" className="block text-white font-medium mb-1">
-                              Content
-                            </label>
-                            <div className="prose-invert max-w-none">
-                              <RichTextEditor
-                                value={specificationContent}
-                                onChange={setSpecificationContent}
-                                placeholder="Enter rich text specifications here..."
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Right column - Image */}
-                        <div>
-                          <label className="block text-white font-medium mb-4">
-                            Specification Image (Optional)
-                          </label>
-                          
-                          {/* Existing image preview */}
-                          {specificationImage ? (
-                            <div className="relative group mb-4">
-                              <div className="aspect-video bg-[#333333] rounded-lg overflow-hidden">
-                                <img 
-                                  src={getValidImageUrl(specificationImage)} 
-                                  alt="Specification image"
-                                  className="w-full h-full object-contain" 
-                                />
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setSpecificationImage("")}
-                                className="absolute top-2 right-2 bg-[#333333] rounded-full p-1 text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="border border-dashed border-[#444444] rounded-lg p-8 text-center mb-4">
-                              <div className="text-white/70">
-                                <div className="mx-auto w-12 h-12 rounded-full bg-[#333333] flex items-center justify-center mb-2">
-                                  <ImageIcon size={24} />
-                                </div>
-                                <p>No specification image added</p>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Add image input */}
-                          <div className="bg-[#1A1A1A] p-4 rounded-lg">
-                            <input
-                              type="url"
-                              placeholder="Enter specification image URL"
-                              value={specificationImage}
-                              onChange={(e) => setSpecificationImage(e.target.value)}
-                              className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="tab-3">
-                  <div>
-                    <div className="mb-6">
-                      <h3 className="text-white text-lg font-medium mb-4">Product FAQs</h3>
-                      <p className="text-white/70 text-sm mb-6">
-                        Add frequently asked questions and answers.
-                      </p>
-                      
-                      {/* Added section-level FAQ image input and preview */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
-                        <div>
-                          <label className="block text-white font-medium mb-2">
-                            FAQ Section Image (Optional)
-                          </label>
-                          {faqImageUrl ? (
-                            <div className="relative group mb-2">
-                              <div className="aspect-video bg-[#333333] rounded-lg overflow-hidden">
-                                <img
-                                  src={getValidImageUrl(faqImageUrl)}
-                                  alt="FAQ section image"
-                                  className="w-full h-full object-contain"
-                                />
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setFaqImageUrl("")}
-                                className="absolute top-2 right-2 bg-[#333333] rounded-full p-1 text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="border border-dashed border-[#444444] rounded-lg p-8 text-center mb-2">
-                              <div className="mx-auto w-12 h-12 rounded-full bg-[#333333] flex items-center justify-center mb-2">
-                                <ImageIcon size={24} />
-                              </div>
-                              <p className="text-white/70">No FAQ image added</p>
-                            </div>
-                          )}
-                          <input
-                            type="url"
-                            placeholder="Enter FAQ section image URL"
-                            value={faqImageUrl}
-                            onChange={(e) => setFaqImageUrl(e.target.value)}
-                            className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* New FAQ form */}
-                      <div className="bg-[#1A1A1A] p-4 rounded-lg mb-6">
-                        <h4 className="text-white text-sm font-medium mb-4">
-                          {currentFaq.id ? 'Edit FAQ' : 'Add New FAQ'}
-                        </h4>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <label htmlFor="faq-question" className="block text-white/70 text-sm mb-1">
-                              Question*
-                            </label>
-                            <input
-                              type="text"
-                              id="faq-question"
-                              value={currentFaq.question || ""}
-                              onChange={(e) => setCurrentFaq({...currentFaq, question: e.target.value})}
-                              className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
-                              placeholder="Enter FAQ question"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label htmlFor="faq-answer" className="block text-white/70 text-sm mb-1">
-                              Answer*
-                            </label>
-                            <textarea
-                              id="faq-answer"
-                              value={currentFaq.answer || ""}
-                              onChange={(e) => setCurrentFaq({...currentFaq, answer: e.target.value})}
-                              className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none h-32"
-                              placeholder="Enter FAQ answer"
-                            ></textarea>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-4 flex justify-end gap-3">
-                          {currentFaq.id && (
-                            <button
-                              type="button"
-                              onClick={() => setCurrentFaq({
-                                question: "",
-                                answer: ""
-                              })}
-                              className="px-3 py-1 bg-transparent text-white/70 text-sm rounded hover:text-white"
-                            >
-                              Cancel
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={handleFaq}
-                            disabled={!currentFaq.question || !currentFaq.answer}
-                            className="px-3 py-1 bg-[#A47E3B] text-white text-sm rounded hover:bg-[#8a6a31] disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {currentFaq.id ? 'Update FAQ' : 'Add FAQ'}
-                          </button>
-                        </div>
-                      </div>
-                      
-                      {/* FAQs list */}
-                      {faqs.length > 0 ? (
-                        <div className="bg-[#222222] rounded-lg border border-[#333333]">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b border-[#333333]">
-                                <th className="text-left p-3 text-white/70 text-sm font-medium">Question</th>
-                                <th className="text-left p-3 text-white/70 text-sm font-medium">Answer</th>
-                                <th className="text-right p-3 text-white/70 text-sm font-medium">Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {faqs.map((faq, index) => (
-                                <tr key={faq.id} className="border-b border-[#333333] last:border-0">
-                                  <td className="p-3 text-white">{faq.question}</td>
-                                  <td className="p-3 text-white">{faq.answer}</td>
-                                  <td className="p-3 text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => editFaq(index)}
-                                        className="text-[#A47E3B] hover:text-[#8a6a31] text-sm"
-                                      >
-                                        Edit
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => removeFaq(index)}
-                                        className="text-red-400 hover:text-red-300 text-sm"
-                                      >
-                                        Delete
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div className="border border-dashed border-[#444444] rounded-lg p-8 text-center">
-                          <div className="text-white/70">
-                            <p>No FAQs added yet</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="tab-4">
-                  <div>
-                    <div className="mb-6">
-                      <h3 className="text-white text-lg font-medium mb-4">Additional Product Information</h3>
-                      <p className="text-white/70 text-sm mb-6">
-                        Add any additional information about the product.
-                      </p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                          <label htmlFor="additional-image" className="block text-white font-medium mb-1">
-                            Additional Image URL (optional)
-                          </label>
-                          <input
-                            type="url"
-                            id="additional-image"
-                            value={additionalImageUrl}
-                            onChange={(e) => setAdditionalImageUrl(e.target.value)}
-                            className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
-                            placeholder="Enter additional image URL"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="tab-5">
                   <div>
                     <div className="mb-6">
                       <h3 className="text-white text-lg font-medium mb-4">SEO & Meta Information</h3>
