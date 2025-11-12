@@ -143,6 +143,7 @@ export default function EnhancedProductForm({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+
   // File input references
   const mainImageInputRef = useRef<HTMLInputElement>(null);
   const specImageInputRef = useRef<HTMLInputElement>(null);
@@ -451,6 +452,45 @@ export default function EnhancedProductForm({
       answer: faq.answer
     });
     setEditingFaqIndex(index);
+  };
+
+  // Convert variant to product (SWAP logic)
+  const handleConvertVariantToProduct = async (variant: ProductVariant) => {
+    if (!confirm(`🔄 SWAP POSITIONS\n\n"${variant.name}" → Becomes Main Product\n"${name}" → Becomes Variant\n\nContinue?`)) return;
+    
+    try {
+      setIsLoading(true);
+      
+      // Store current product data
+      const currentProductAsVariant: ProductVariant = {
+        id: Date.now().toString(),
+        name: name,
+        type: 'original',
+        price: basePrice,
+        quantity: quantity,
+        images: images
+      };
+
+      // Remove the selected variant from variants list
+      const remainingVariants = variants.filter(v => v.id !== variant.id);
+      
+      // The variant becomes the main product, current product becomes a variant
+      setName(variant.name);
+      setBasePrice(variant.price || basePrice);
+      setQuantity(variant.quantity);
+      setImages(variant.images || images);
+      setDescription(description); // Keep same description
+      
+      // Update variants: add current product as variant + keep remaining variants
+      setVariants([currentProductAsVariant, ...remainingVariants]);
+      
+      alert(`Successfully swapped! "${variant.name}" is now the main product.`);
+    } catch (err: any) {
+      console.error('Error swapping variant to product:', err);
+      alert(err.message || 'Failed to swap variant to product');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -804,9 +844,25 @@ export default function EnhancedProductForm({
                   <div>
                     <div className="mb-6">
                       <h3 className="text-white text-lg font-medium mb-4">Product Variants</h3>
-                      <p className="text-white/70 text-sm mb-6">
+                      <p className="text-white/70 text-sm mb-4">
                         Add variants such as different frames or colors. Each variant can have its own price and quantity.
                       </p>
+                      
+                      {/* Info banner for swap feature */}
+                      <div className="bg-gradient-to-r from-emerald-500/10 to-blue-500/10 border border-emerald-500/30 rounded-lg p-3 mb-6">
+                        <div className="flex items-start gap-2">
+                          <div className="text-emerald-400 flex-shrink-0 mt-0.5">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-white/80 text-xs leading-relaxed">
+                              <strong className="text-emerald-400">💡 Pro Tip:</strong> Click <span className="text-emerald-300">"Make Product"</span> on any variant to <strong>swap roles</strong> - the variant becomes the main product, and the current product becomes a variant. Simple!
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                       
                       {/* New variant form */}
                       <div className="bg-[#1A1A1A] p-4 rounded-lg mb-6">
@@ -1032,7 +1088,7 @@ export default function EnhancedProductForm({
                       
                       {/* Variants list */}
                       {variants.length > 0 ? (
-                        <div className="bg-[#222222] rounded-lg border border-[#333333]">
+                        <div className="bg-[#222222] rounded-lg border border-[#333333] overflow-x-auto">
                           <table className="w-full">
                             <thead>
                               <tr className="border-b border-[#333333]">
@@ -1046,7 +1102,7 @@ export default function EnhancedProductForm({
                             </thead>
                             <tbody>
                               {variants.map((variant) => (
-                                <tr key={variant.id} className="border-b border-[#333333] last:border-0">
+                                <tr key={variant.id} className="border-b border-[#333333] last:border-0 hover:bg-[#1A1A1A] transition-colors">
                                   <td className="p-3 text-white">{variant.name}</td>
                                   <td className="p-3 text-white capitalize">{variant.type}</td>
                                   <td className="p-3 text-white">
@@ -1074,7 +1130,18 @@ export default function EnhancedProductForm({
                                     </div>
                                   </td>
                                   <td className="p-3 text-right">
-                                    <div className="flex items-center justify-end gap-2">
+                                    <div className="flex items-center justify-end gap-2 flex-wrap">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleConvertVariantToProduct(variant)}
+                                        className="px-2 py-1 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs rounded transition-all flex items-center gap-1 font-medium"
+                                        title="Swap: Make this the main product"
+                                      >
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                        </svg>
+                                        Swap to Main
+                                      </button>
                                       <button
                                         type="button"
                                         onClick={() => editVariant(variant)}
