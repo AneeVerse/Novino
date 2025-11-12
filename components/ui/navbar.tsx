@@ -83,10 +83,13 @@ const Navbar = () => {
     router.push('/cart');
   };
 
+  // Check if we're on the home page
+  const isHomePage = pathname === '/';
+  
   return (
     <>
       <nav className={`fixed top-0 left-0 w-full z-[1000] h-[80px] transition-all duration-300 ${
-        scrolled ? 'bg-[#2D2D2D]' : 'bg-transparent'
+        scrolled || !isHomePage ? 'bg-[#2D2D2D]' : 'bg-transparent'
       }`}>
         <div className="relative max-w-[1440px] mx-auto h-full flex justify-between items-center px-4 md:px-0">
           {/* Left section - Menu items (Desktop) */}

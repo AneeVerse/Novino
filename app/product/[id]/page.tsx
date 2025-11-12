@@ -457,9 +457,9 @@ export default function ProductDetail() {
       if (!product) return;
       
       try {
-        // Fetch all products and categories
+        // Fetch all products with variants expanded and categories
         const [productsRes, categoriesRes] = await Promise.all([
-          fetch('/api/products'),
+          fetch('/api/products?includeVariants=true'),
           fetch('/api/categories')
         ]);
         
@@ -481,6 +481,19 @@ export default function ProductDetail() {
           
           // Helper function to check if a product is different from current product
           const isDifferentProduct = (p: any) => {
+            // For variants, check against parent product ID
+            if (p.isVariant && p.parentProductId) {
+              const productId = product.id?.toString();
+              const productMongoId = product._id?.toString();
+              const productSlug = product.slug;
+              const parentId = p.parentProductId?.toString();
+              
+              // If variant's parent matches current product, exclude it
+              if (parentId === productId || parentId === productMongoId || parentId === productSlug) {
+                return false;
+              }
+            }
+            
             // Compare all possible ID formats
             const pId = p.id?.toString();
             const pMongoId = p._id?.toString();
@@ -500,9 +513,11 @@ export default function ProductDetail() {
             return true;
           };
           
-          // First, get same category products
+          // First, get same category products (including variants)
           const sameCategoryProducts = allProducts.filter((p: any) => {
             const pCategoryId = p.category?.toString();
+            // For variants, check if parent product category matches
+            // Variants inherit category from parent product
             return pCategoryId === productCategoryId && isDifferentProduct(p);
           });
           
@@ -510,11 +525,17 @@ export default function ProductDetail() {
           let related = [...sameCategoryProducts];
           if (related.length < 3) {
             const sameTypeProducts = allProducts.filter((p: any) => {
-              const notAlreadyIncluded = !related.some(r => 
-                r._id?.toString() === p._id?.toString() || 
-                r.id?.toString() === p.id?.toString() ||
-                (r.slug && p.slug && r.slug === p.slug)
-              );
+              const notAlreadyIncluded = !related.some(r => {
+                // Check if product is already included (handle both regular and variant IDs)
+                const rId = r._id?.toString() || r.id?.toString();
+                const pId = p._id?.toString() || p.id?.toString();
+                const rSlug = r.slug;
+                const pSlug = p.slug;
+                
+                return (rId && pId && rId === pId) || 
+                       (rSlug && pSlug && rSlug === pSlug) ||
+                       (r.isVariant && p.isVariant && r.variantId === p.variantId);
+              });
               return p.type === product.type && isDifferentProduct(p) && notAlreadyIncluded;
             });
             related = [...related, ...sameTypeProducts];
@@ -1034,11 +1055,16 @@ export default function ProductDetail() {
                   const productImage = relatedProduct.images?.[0] || relatedProduct.image || '/images/placeholder.png';
                   const productPrice = relatedProduct.basePrice || relatedProduct.price || 'Price on request';
                   const productName = relatedProduct.name || 'Untitled';
-                  const productId = relatedProduct.slug || relatedProduct._id || relatedProduct.id;
+                  
+                  // Use parent product ID for variants, otherwise use the product's own ID
+                  // For variants, add the variantId as a query parameter to auto-select it
+                  const productLink = relatedProduct.isVariant && relatedProduct.parentProductId 
+                    ? `/product/${relatedProduct.parentProductSlug || relatedProduct.parentProductId}?variant=${relatedProduct.variantId}`
+                    : `/product/${relatedProduct.slug || relatedProduct._id || relatedProduct.id}`;
                   
                   return (
                     <Link 
-                      href={`/product/${productId}`} 
+                      href={productLink} 
                       key={relatedProduct._id || relatedProduct.id}
                       className="group"
                     >
