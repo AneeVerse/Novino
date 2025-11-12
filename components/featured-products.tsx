@@ -208,16 +208,18 @@ export default function FeaturedProducts() {
     const walk = (x - startX.current) * 2; // Same sensitivity as CreativeSection
     translateX.current = scrollLeft.current + walk;
     
-    // Infinite loop logic - reset when reaching the width of one set
+    // Infinite loop logic - exact same as CreativeSection
     if (totalWidth.current > 0) {
-      // Loop back when scrolling too far in either direction
-      if (translateX.current <= -totalWidth.current) {
-        translateX.current = 0;
+      // Moving right (negative translateX, showing later cards)
+      if (Math.abs(translateX.current) >= totalWidth.current) {
+        translateX.current = 0; // Reset to beginning
         scrollLeft.current = 0;
         startX.current = x;
-      } else if (translateX.current >= totalWidth.current) {
-        translateX.current = 0;
-        scrollLeft.current = 0;
+      }
+      // Moving left (positive translateX, going backwards) - wrap around to end
+      else if (translateX.current > 0) {
+        translateX.current = -totalWidth.current + translateX.current;
+        scrollLeft.current = translateX.current;
         startX.current = x;
       }
     }
