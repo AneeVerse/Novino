@@ -15,7 +15,6 @@ export default function PaintingsPage() {
   
   // State for categories and painting products
   const [categories, setCategories] = useState<string[]>([]);
-  const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
 
   // State for dynamic painting products
   interface SimpleProduct {
@@ -23,75 +22,69 @@ export default function PaintingsPage() {
     name: string;
     price: string;
     image: string;
+    images?: string[];
     category: string;
     categoryId?: string;
   }
   const [paintingProducts, setPaintingProducts] = useState<SimpleProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch categories from API
+  // Fetch painting categories and products from new artefact-categories API
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch('/api/categories');
-        if (!res.ok) throw new Error('Failed to fetch categories');
-        const data = await res.json();
-        
-        // Filter to get only painting categories
-        // Build category ID to name mapping
-        const catMap: {[key: string]: string} = {};
-        data.forEach((cat: any) => {
-          if (cat.type === 'painting') {
-            const id = cat._id || cat.id;
-            if (id) catMap[id] = cat.name;
-          }
-        });
-        setCategoryMap(catMap);
-        
-        // Don't show any category filters
-        setCategories([]);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-        // Don't show any category filters
-        setCategories([]);
-      }
-    };
-    fetchCategories();
-  }, []);
-  
-  // Fetch painting products from API
-  useEffect(() => {
-    async function fetchPaintings() {
+    const fetchPaintings = async () => {
       try {
         setLoading(true);
-        const res = await fetch('/api/products?includeVariants=true');
-        if (!res.ok) throw new Error('Failed to fetch paintings');
-        const data = await res.json();
-        const filtered = data
-          .filter((p: any) => p.type === 'painting')
-          .map((p: any) => ({
-            id: p.id || p._id,
-            name: p.name,
-            price: p.basePrice || p.price,
-            image: p.images?.[0] || p.image,
-            images: p.images || (p.image ? [p.image] : []),
-            category: categoryMap[p.category] || p.category, // Use name from map if available
-            categoryId: p.category, // Store the category ID/reference
-            isVariant: p.isVariant || false,
-            variantId: p.variantId,
-            variantName: p.variantName,
-            variantType: p.variantType,
-            parentProductId: p.parentProductId || p.id
-          }));
-        setPaintingProducts(filtered);
+        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
+          cache: 'no-store'
+        });
+        if (!res.ok) throw new Error('Failed to fetch categories');
+        const categories = await res.json();
+        
+        console.log('📂 All categories:', categories.map((c: any) => c.name));
+        
+        // Get all products from categories that contain "painting" in the name (case-insensitive)
+        const paintingProducts: SimpleProduct[] = [];
+        const paintingCategoryNames: string[] = [];
+        
+        categories.forEach((category: any) => {
+          // Check if category name contains "painting" (case-insensitive)
+          if (category.name && category.name.toLowerCase().includes('painting')) {
+            console.log('🎨 Found painting category:', category.name, '- Products:', category.products?.length || 0);
+            paintingCategoryNames.push(category.name);
+            
+            if (category.products && Array.isArray(category.products)) {
+              category.products.forEach((product: any) => {
+                console.log('  ➕ Adding product:', product.name);
+                paintingProducts.push({
+                  id: product.id,
+                  name: product.name,
+                  price: product.basePrice,
+                  image: product.images?.[0] || '',
+                  images: product.images || [],
+                  category: category.name,
+                  categoryId: category.id || category._id
+                });
+              });
+            }
+          }
+        });
+        
+        console.log('✅ Total painting products:', paintingProducts.length);
+        
+        // Set categories (for potential future filtering)
+        setCategories(paintingCategoryNames.length > 1 ? ['All Paintings', ...paintingCategoryNames] : []);
+        setPaintingProducts(paintingProducts);
       } catch (err) {
         console.error('Error fetching painting products:', err);
+        setCategories([]);
+        setPaintingProducts([]);
       } finally {
         setLoading(false);
       }
-    }
+    };
+    
     fetchPaintings();
-  }, [categoryMap]); // Add categoryMap as dependency to update products when categories load
+  }, []);
   
   if (loading) {
     return <Preloader ariaLabel="Loading Paintings" />;

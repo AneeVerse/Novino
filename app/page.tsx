@@ -49,72 +49,66 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
 
-  // Fetch categories from API
+  // Fetch categories from new artefact-categories API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('/api/categories');
+        const res = await fetch('/api/artefact-categories');
         if (!res.ok) throw new Error('Failed to fetch categories');
         const data = await res.json();
+        
+        // Extract category names
+        const categoryNames = data.map((cat: any) => cat.name);
         
         // Build mapping between category IDs and names
         const catMap: {[key: string]: string} = {};
         data.forEach((cat: any) => {
-          if (cat.type === 'artefact') {
-            const id = cat._id || cat.id;
-            if (id) catMap[id] = cat.name;
-          }
+          const id = cat._id || cat.id;
+          if (id) catMap[id] = cat.name;
         });
         setCategoryMap(catMap);
-        
-        // Get category names for various product types
-        const productCategories = data
-          .filter((cat: any) => cat.type === 'artefact')
-          .map((cat: any) => cat.name);
           
         // Always add "All Products" as the first option
-        setCategories(["All Products", ...productCategories]);
+        setCategories(["All Products", ...categoryNames]);
       } catch (err) {
         console.error('Error fetching categories:', err);
         // Fallback to default categories
-        setCategories(["All Products", "Books", "Mugs", "Costar", "Feeds"]);
+        setCategories(["All Products"]);
       }
     };
     fetchCategories();
   }, []);
 
-  // Fetch products from API, but only after categoryMap is set
+  // Fetch products from new artefact-categories API
   useEffect(() => {
-    // Don't fetch until categoryMap is ready (has more than 1 key)
-    if (!categoryMap || Object.keys(categoryMap).length === 0) return;
-
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        // Fetch products with variants included as separate items
-        const res = await fetch('/api/products?includeVariants=true');
+        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
+          cache: 'no-store'
+        });
         if (!res.ok) throw new Error('Failed to fetch products');
-        const data = await res.json();
+        const categories = await res.json();
         
-        // Get artefact products and variants
-        const artefactProducts = data
-          .filter((p: any) => p.type === 'artefact')
-          .map((p: any) => ({
-            id: p.id || p._id,
-            name: p.name,
-            price: p.basePrice || p.price || "$0",
-            image: p.images?.[0] || p.image || "/images/placeholder.png",
-            images: p.images || (p.image ? [p.image] : []),
-            category: categoryMap[p.category] || p.category, // use display name
-            categoryId: p.category, // Store original category ID for reference
-            isVariant: p.isVariant || false,
-            variantId: p.variantId,
-            variantName: p.variantName,
-            variantType: p.variantType,
-            parentProductId: p.parentProductId || p.id
-          }));
+        // Get ALL products from all categories (filtering handled by ProductGrid)
+        const allProducts: Product[] = [];
+        categories.forEach((category: any) => {
+          if (category.products && Array.isArray(category.products)) {
+            category.products.forEach((product: any) => {
+              allProducts.push({
+                id: product.id,
+                name: product.name,
+                price: product.basePrice,
+                image: product.images?.[0] || '/images/placeholder.png',
+                images: product.images || [],
+                category: category.name,
+                categoryId: category.id || category._id
+              });
+            });
+          }
+        });
         
-        setProducts(artefactProducts);
+        setProducts(allProducts);
       } catch (err) {
         console.error('Error fetching products:', err);
         setProducts([]);
@@ -124,7 +118,7 @@ export default function Home() {
     };
 
     fetchProducts();
-  }, [categoryMap]);
+  }, []);
 
   // Filter products based on active category
   const filteredProducts = products.filter(product => {
@@ -295,6 +289,7 @@ export default function Home() {
           showViewAllButton={true}
           activeCategory={gridActiveCategory}
           onCategoryChange={setGridActiveCategory}
+          showOnePerCategoryInAll={true}
         />
       </section>
 

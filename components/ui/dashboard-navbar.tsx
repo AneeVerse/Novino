@@ -184,24 +184,14 @@ function DashboardNavbarContent() {
               Testimonials
             </Link>
             <Link 
-              href="/dashboard?tab=paintings" 
+              href="/dashboard?tab=products" 
               className={`px-4 py-3 text-sm font-medium ${
-                currentTab === 'paintings'
+                currentTab === 'products'
                   ? 'text-white border-b-2 border-[#A47E3B]' 
                   : 'text-white/70 hover:text-white hover:bg-[#222222]'
               } transition-colors`}
             >
-              Paintings
-            </Link>
-            <Link 
-              href="/dashboard?tab=artefacts" 
-              className={`px-4 py-3 text-sm font-medium ${
-                currentTab === 'artefacts'
-                  ? 'text-white border-b-2 border-[#A47E3B]' 
-                  : 'text-white/70 hover:text-white hover:bg-[#222222]'
-              } transition-colors`}
-            >
-              Artefacts
+              Products
             </Link>
             <Link 
               href="/dashboard/users" 
@@ -260,26 +250,14 @@ function DashboardNavbarContent() {
               </li>
               <li>
                 <Link 
-                  href="/dashboard?tab=paintings" 
+                  href="/dashboard?tab=products" 
                   className={`block px-4 py-2 text-sm ${
-                    currentTab === 'paintings'
+                    currentTab === 'products'
                       ? 'text-white bg-[#2A2A2A] font-medium rounded'
                       : 'text-white/70 hover:text-white hover:bg-[#2A2A2A] rounded'
                   } transition-colors`}
                 >
-                  Paintings
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/dashboard?tab=artefacts" 
-                  className={`block px-4 py-2 text-sm ${
-                    currentTab === 'artefacts'
-                      ? 'text-white bg-[#2A2A2A] font-medium rounded'
-                      : 'text-white/70 hover:text-white hover:bg-[#2A2A2A] rounded'
-                  } transition-colors`}
-                >
-                  Artefacts
+                  Products
                 </Link>
               </li>
               <li>

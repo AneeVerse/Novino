@@ -81,17 +81,19 @@ interface ProductGridProps {
   showViewAllButton?: boolean;
   activeCategory?: string;
   onCategoryChange?: (category: string) => void;
+  showOnePerCategoryInAll?: boolean; // When true, shows only one product per category in "All Products" view
 }
 
 export default function ProductGrid({ 
   title = "Elevate Your Gallery", 
   subtitle = "All Products", 
   products: propProducts = products, 
-  categories: propCategories = ["All Products", "Books", "Mugs", "Costar", "Feeds"],
+  categories: propCategories = ["All Products"],
   viewAllText = "Discover the collection",
   showViewAllButton = true,
   activeCategory: propActiveCategory,
-  onCategoryChange
+  onCategoryChange,
+  showOnePerCategoryInAll = false
 }: ProductGridProps) {
   // Use internal state only if no external state is provided
   const [internalActiveCategory, setInternalActiveCategory] = useState<string>(propCategories[0]);
@@ -118,14 +120,44 @@ export default function ProductGrid({
   };
   
   // Filter products based on active category with improved category matching
-  const filteredProducts = propProducts.filter(product => {
+  let filteredProducts = propProducts.filter(product => {
     // Skip filtering if "All Products" or similar is selected
     if (activeCategory === propCategories[0]) return true; 
     // Only match products where category or categoryId matches exactly
     return product.category === activeCategory || product.categoryId === activeCategory;
   });
 
-  const displayProducts = filteredProducts.slice(0, 9);
+  console.log('🔍 ProductGrid Debug:', {
+    activeCategory,
+    isAllProducts: activeCategory === propCategories[0],
+    totalProducts: propProducts.length,
+    afterFilter: filteredProducts.length,
+    showOnePerCategoryInAll,
+    allProducts: propProducts.map(p => ({ name: p.name, category: p.category, categoryId: p.categoryId })),
+    filtered: filteredProducts.map(p => ({ name: p.name, category: p.category }))
+  });
+
+  // If "All Products" is selected and showOnePerCategoryInAll is true, show only one product per category
+  if (activeCategory === propCategories[0] && showOnePerCategoryInAll) {
+    console.log('✂️ Applying deduplication...');
+    const seenCategories = new Set<string>();
+    filteredProducts = filteredProducts.filter(product => {
+      const categoryKey = product.categoryId || product.category;
+      if (seenCategories.has(categoryKey)) {
+        return false; // Skip if we've already seen this category
+      }
+      seenCategories.add(categoryKey);
+      return true; // Keep the first product from this category
+    });
+    console.log('✅ After deduplication:', filteredProducts.length, 'products');
+  }
+
+  // Show up to 9 products for "All Products", unlimited for specific categories
+  const displayProducts = activeCategory === propCategories[0] 
+    ? filteredProducts.slice(0, 9)
+    : filteredProducts; // No limit for specific categories
+  
+  console.log('📦 Final displayProducts:', displayProducts.length, 'products');
 
   return (
     <section className="w-full font-['Roboto_Mono']">

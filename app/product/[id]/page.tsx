@@ -106,6 +106,7 @@ export default function ProductDetail() {
   const searchParams = useSearchParams()
   const [product, setProduct] = useState<ProductWithDescription | undefined>(undefined)
   const [categoryName, setCategoryName] = useState<string>('')
+  const [categoryDescription, setCategoryDescription] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [dataSource, setDataSource] = useState<'api' | 'fallback'>('fallback')
@@ -301,25 +302,30 @@ export default function ProductDetail() {
             console.log('Using API data for product display:', formattedProduct);
             console.log('Product images:', formattedProduct.images);
             setProduct(formattedProduct);
-            // Lookup category name
+            // Lookup category name and description from artefact-categories
             try {
-              const catsRes = await fetch('/api/categories');
+              const catsRes = await fetch('/api/artefact-categories');
               if (catsRes.ok) {
                 const cats = await catsRes.json();
-                // Convert both to strings for comparison
+                // Find the category that contains this product
                 const catItem = cats.find((cat: any) => {
                   const catId = (cat._id || cat.id)?.toString();
                   const productCatId = formattedProduct.category?.toString();
-                  return catId === productCatId;
+                  // Also check if this product exists in the category's products array
+                  const hasProduct = cat.products?.some((p: any) => p.id === formattedProduct.id);
+                  return catId === productCatId || hasProduct;
                 });
                 setCategoryName(catItem?.name || formattedProduct.category);
-                console.log('Category found:', catItem?.name, 'for ID:', formattedProduct.category);
+                setCategoryDescription(catItem?.description || '');
+                console.log('Category found:', catItem?.name, 'Description:', catItem?.description);
               } else {
                 setCategoryName(formattedProduct.category);
+                setCategoryDescription('');
               }
             } catch (e) {
               console.error('Error fetching categories:', e);
               setCategoryName(formattedProduct.category);
+              setCategoryDescription('');
             }
             // Initialize selected frame variant
             const frameVariants = Array.isArray(formattedProduct.variants)
@@ -729,12 +735,34 @@ export default function ProductDetail() {
         <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
           <div className="relative z-10 px-4 md:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-              {/* Left column - Product title and description */}
+              {/* Left column - About section with category and product info */}
               <div className="lg:col-span-3 flex flex-col justify-start py-8 pr-4 lg:pr-8">
-                <div className="uppercase text-xs text-white/50 mb-3 tracking-wider font-['Roboto_Mono']">
-                  {categoryName}
+                {/* About heading */}
+                <h2 className="text-xl uppercase tracking-widest text-white/40 mb-6 font-['Roboto_Mono']">
+                  About
+                </h2>
+                
+                {/* Category Name and Description */}
+                {categoryName && (
+                  <div className="mb-6">
+                    <h3 className="text-lg uppercase tracking-wider text-white/70 mb-2 font-['Roboto_Mono']">
+                      {categoryName}
+                    </h3>
+                    {categoryDescription && (
+                      <p className="text-white/60 leading-relaxed text-sm font-['Roboto_Mono']">
+                        {categoryDescription}
+                      </p>
+                    )}
+                  </div>
+                )}
+                
+                {/* Design divider */}
+                <div className="text-xs uppercase tracking-widest text-white/30 mb-4 font-['Roboto_Mono']">
+                  — Design —
                 </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-3xl font-light mb-8 tracking-wide font-['Roboto_Mono']" style={{ lineHeight: '1.2' }}>
+                
+                {/* Product Name and Description */}
+                <h1 className="text-2xl sm:text-3xl lg:text-3xl font-light mb-4 tracking-wide font-['Roboto_Mono']" style={{ lineHeight: '1.2' }}>
                   {activeVariant ? activeVariant.name?.toUpperCase() : product.name?.toUpperCase()}
                 </h1>
                 

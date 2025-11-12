@@ -15,8 +15,8 @@ import FeaturedProducts from "@/components/featured-products"
 
 export default function ArtefactsPage() {
   
-  // State for categories and artefact products
-  const [categories, setCategories] = useState<string[]>(["All Artefacts"]);
+  // State for categories and products
+  const [categories, setCategories] = useState<string[]>(["All Products"]);
   const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
   
   // State for dynamic artefact products
@@ -24,83 +24,94 @@ export default function ArtefactsPage() {
     id: string; 
     name: string; 
     price: string; 
-    image: string; 
+    image: string;
+    images?: string[];
     category: string;
     categoryId?: string;
   }
   const [artefactProducts, setArtefactProducts] = useState<SimpleProduct[]>([]);
+  const [products, setProducts] = useState<SimpleProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch categories from API
+  // Fetch categories from new artefact-categories API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('/api/categories');
+        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
+          cache: 'no-store'
+        });
         if (!res.ok) throw new Error('Failed to fetch categories');
         const data = await res.json();
         
-        // Filter to get only artefact categories
-        const artefactCategories = data
-          .filter((cat: any) => cat.type === 'artefact')
-          .map((cat: any) => cat.name);
+        // Extract category names
+        const categoryNames = data.map((cat: any) => cat.name);
           
         // Build category ID to name mapping
         const catMap: {[key: string]: string} = {};
         data.forEach((cat: any) => {
-          if (cat.type === 'artefact') {
-            const id = cat._id || cat.id;
-            if (id) catMap[id] = cat.name;
-          }
+          const id = cat._id || cat.id;
+          if (id) catMap[id] = cat.name;
         });
         setCategoryMap(catMap);
         
-        // Always add "All Artefacts" as the first option
-        setCategories(["All Artefacts", ...artefactCategories]);
+        // Always add "All Products" as the first option
+        setCategories(["All Products", ...categoryNames]);
       } catch (err) {
         console.error('Error fetching categories:', err);
         // Fallback to default categories
-        setCategories(["All Artefacts", "Egyptian", "Asian", "European", "American"]);
+        setCategories(["All Products"]);
       }
     };
     fetchCategories();
   }, []);
 
-  // Fetch artefact products from API
+  // Fetch products from new artefact-categories API
   useEffect(() => {
-    async function fetchArtefacts() {
+    async function fetchProducts() {
       try {
         setLoading(true);
-        const res = await fetch('/api/products?includeVariants=true');
-        if (!res.ok) throw new Error('Failed to fetch artefacts');
-        const data = await res.json();
-        const filtered = data
-          .filter((p: any) => p.type === 'artefact')
-          .map((p: any) => ({
-            id: p.id || p._id,
-            name: p.name,
-            price: p.basePrice || p.price,
-            image: p.images?.[0] || p.image,
-            images: p.images || (p.image ? [p.image] : []),
-            category: categoryMap[p.category] || p.category, // Use name from map if available
-            categoryId: p.category, // Store the category ID/reference
-            isVariant: p.isVariant || false,
-            variantId: p.variantId,
-            variantName: p.variantName,
-            variantType: p.variantType,
-            parentProductId: p.parentProductId || p.id
-          }));
-        setArtefactProducts(filtered);
+        // Add cache busting to always get fresh data
+        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
+          cache: 'no-store'
+        });
+        if (!res.ok) throw new Error('Failed to fetch products');
+        const categories = await res.json();
+        console.log('🔄 Fetched categories from API:', categories.length);
+        
+        // Get all products from all categories
+        const allProducts: SimpleProduct[] = [];
+        categories.forEach((category: any) => {
+          console.log('📂 Category:', category.name, '- Products:', category.products?.length || 0);
+          if (category.products && Array.isArray(category.products)) {
+            category.products.forEach((product: any) => {
+              console.log('  ➕ Adding product:', product.name, 'to category:', category.name);
+              allProducts.push({
+                id: product.id,
+                name: product.name,
+                price: product.basePrice,
+                image: product.images?.[0] || '',
+                images: product.images || [],
+                category: category.name,
+                categoryId: category.id || category._id
+              });
+            });
+          }
+        });
+        
+        console.log('✅ Total products fetched:', allProducts.length);
+        console.log('📋 All products:', allProducts.map(p => ({ name: p.name, category: p.category })));
+        setArtefactProducts(allProducts);
       } catch (err) {
-        console.error('Error fetching artefact products:', err);
+        console.error('Error fetching products:', err);
       } finally {
         setLoading(false);
       }
     }
-    fetchArtefacts();
-  }, [categoryMap]); // Add categoryMap as dependency to update products when categories load
+    fetchProducts();
+  }, []);
   
   if (loading) {
-    return <Preloader ariaLabel="Loading Artefacts" />;
+    return <Preloader ariaLabel="Loading Products" />;
   }
   
   return (
@@ -108,13 +119,14 @@ export default function ArtefactsPage() {
       {/* Product Grid Section - Full width */}
       <section className="relative z-10">
           <ProductGrid 
-            key="artefact-product-grid"
-            title="Ancient Civilizations" 
-            subtitle="Featured Collection" 
+            key={`artefact-grid-${artefactProducts.length}`}
+            title="Our Collection" 
+            subtitle="Featured Products" 
             products={artefactProducts}
             categories={categories}
-            viewAllText="View all artefacts"
+            viewAllText="View all products"
             showViewAllButton={false}
+            showOnePerCategoryInAll={true}
           />
       </section>
 

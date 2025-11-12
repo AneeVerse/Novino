@@ -63,41 +63,52 @@ export default function FeaturedProducts() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Fetch latest products from API
+  // Fetch latest products from API - now from artefact-categories
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
+          cache: 'no-store'
+        });
         if (!res.ok) throw new Error('Failed to fetch products');
-        const data = await res.json();
+        const categories = await res.json();
         
-        // Get all featured products, sort by latest (createdAt)
-        const featuredProducts = data
-          .filter((p: any) => p.featured === true)
-          .sort((a: any, b: any) => {
-            // Sort by createdAt if available, otherwise by id
-            if (a.createdAt && b.createdAt) {
-              return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        // Get all products from "Painting" category (case-insensitive)
+        const paintingProducts: any[] = [];
+        categories.forEach((category: any) => {
+          // Check if category name contains "painting" (case-insensitive)
+          if (category.name && category.name.toLowerCase().includes('painting')) {
+            if (category.products && Array.isArray(category.products)) {
+              category.products.forEach((product: any) => {
+                paintingProducts.push({
+                  id: product.id,
+                  name: product.name,
+                  price: product.basePrice,
+                  image: product.images?.[0] || "/images/placeholder.png",
+                  images: product.images || [],
+                  variants: [],
+                  category: category.name,
+                  categoryId: category.id || category._id,
+                  type: 'painting',
+                  featured: true,
+                  slug: product.id
+                });
+              });
             }
-            return 0;
-          })
-          .map((p: any) => ({
-            id: p.id || p._id,
-            name: p.name,
-            price: p.basePrice || p.price,
-            image: p.featuredImageUrl || p.images?.[0] || p.image || "/images/placeholder.png",
-            images: p.images || (p.image ? [p.image] : []),
-            variants: p.variants || [],
-            category: p.category,
-            categoryId: p.category,
-            type: p.type,
-            featured: p.featured,
-            slug: p.slug || p._id || p.id // Ensure we always have a slug in the URL so API fetch works
-          }));
+          }
+        });
         
-        // Duplicate products for infinite loop (like the example code)
-        const duplicatedProducts = [...featuredProducts, ...featuredProducts];
+        // Sort by createdAt (most recent first)
+        paintingProducts.sort((a: any, b: any) => {
+          if (a.createdAt && b.createdAt) {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          }
+          return 0;
+        });
+        
+        // Duplicate products for infinite loop
+        const duplicatedProducts = [...paintingProducts, ...paintingProducts];
         setProducts(duplicatedProducts);
       } catch (err) {
         console.error('Error fetching featured products:', err);

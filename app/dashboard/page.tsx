@@ -12,6 +12,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown, FileText, MessageSquare, Image as ImageIcon, Package, Eye, Calendar, Clock, Plus, Edit, Trash2, ExternalLink, Star } from 'lucide-react';
+import ArtefactCategoryModal from '@/components/artefact-category-modal';
+import ArtefactCategoryGrid from '@/components/artefact-category-grid';
+import ArtefactCategoryDetail from '@/components/artefact-category-detail';
+import ArtefactProductForm from '@/components/artefact-product-form';
+import { ArtefactCategory, ArtefactProduct } from '@/app/dashboard/models/artefact';
 
 // Define types for our data
 interface Blog {
@@ -93,6 +98,16 @@ function DashboardContent() {
   const [categories, setCategories] = useState<{id: string; name: string; type: 'painting' | 'artefact'}[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // New Artefact Category System States
+  const [artefactCategories, setArtefactCategories] = useState<ArtefactCategory[]>([]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [categoryModalMode, setCategoryModalMode] = useState<'create' | 'edit'>('create');
+  const [editingCategory, setEditingCategory] = useState<ArtefactCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<ArtefactCategory | null>(null);
+  const [showCategoryDetail, setShowCategoryDetail] = useState(false);
+  const [showArtefactProductForm, setShowArtefactProductForm] = useState(false);
+  const [currentArtefactProduct, setCurrentArtefactProduct] = useState<ArtefactProduct | undefined>(undefined);
   
   // Get tab from URL parameter
   const searchParams = useSearchParams();
@@ -224,7 +239,170 @@ function DashboardContent() {
 
   useEffect(() => {
     fetchData();
+    fetchArtefactCategories();
   }, []);
+  
+  // Fetch artefact categories
+  const fetchArtefactCategories = async () => {
+    try {
+      const response = await fetch('/api/artefact-categories');
+      if (response.ok) {
+        const data = await response.json();
+        setArtefactCategories(data);
+      }
+    } catch (error) {
+      console.error('Error fetching artefact categories:', error);
+    }
+  };
+  
+  // Create or update artefact category
+  const handleSaveCategory = async (name: string, description: string) => {
+    try {
+      if (categoryModalMode === 'edit' && editingCategory) {
+        // Update existing category
+        const response = await fetch(`/api/artefact-categories/${editingCategory.id || editingCategory._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            ...editingCategory,
+            name, 
+            description,
+            updatedAt: new Date().toISOString()
+          }),
+        });
+        
+        if (response.ok) {
+          await fetchArtefactCategories();
+          setEditingCategory(null);
+        }
+      } else {
+        // Create new category
+        const response = await fetch('/api/artefact-categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, description }),
+        });
+        
+        if (response.ok) {
+          await fetchArtefactCategories();
+        }
+      }
+    } catch (error) {
+      console.error('Error saving category:', error);
+    }
+  };
+
+  // Open modal to create new category
+  const handleCreateCategoryClick = () => {
+    setCategoryModalMode('create');
+    setEditingCategory(null);
+    setShowCategoryModal(true);
+  };
+
+  // Open modal to edit existing category
+  const handleEditCategory = (category: ArtefactCategory) => {
+    setCategoryModalMode('edit');
+    setEditingCategory(category);
+    setShowCategoryModal(true);
+  };
+  
+  // Update artefact category
+  const handleUpdateCategory = async (category: ArtefactCategory) => {
+    try {
+      const response = await fetch(`/api/artefact-categories/${category.id || category._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(category),
+      });
+      
+      if (response.ok) {
+        await fetchArtefactCategories();
+      }
+    } catch (error) {
+      console.error('Error updating category:', error);
+      alert('Failed to update category');
+    }
+  };
+  
+  // Delete artefact category
+  const handleDeleteCategory = async (categoryId: string) => {
+    try {
+      const response = await fetch(`/api/artefact-categories/${categoryId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        await fetchArtefactCategories();
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Failed to delete category');
+    }
+  };
+  
+  // Add product to category
+  const handleAddProduct = async (productData: Omit<ArtefactProduct, 'id' | 'order' | 'createdAt'>) => {
+    if (!selectedCategory) return;
+    
+    const newProduct: ArtefactProduct = {
+      ...productData,
+      id: Date.now().toString(),
+      order: selectedCategory.products?.length || 0,
+      createdAt: new Date().toISOString(),
+    };
+    
+    const updatedCategory = {
+      ...selectedCategory,
+      products: [...(selectedCategory.products || []), newProduct],
+      updatedAt: new Date().toISOString(),
+    };
+    
+    // Update in database
+    await handleUpdateCategory(updatedCategory);
+    
+    // Immediately update local state to show in UI
+    setSelectedCategory(updatedCategory);
+    
+    // Refresh the categories list to update thumbnails
+    await fetchArtefactCategories();
+  };
+  
+  // Edit artefact product in category
+  const handleEditArtefactProduct = (product: ArtefactProduct) => {
+    setCurrentArtefactProduct(product);
+    setShowArtefactProductForm(true);
+  };
+  
+  // Update product in category
+  const handleUpdateProduct = async (productData: Omit<ArtefactProduct, 'id' | 'order' | 'createdAt'>) => {
+    if (!selectedCategory || !currentArtefactProduct) return;
+    
+    const updatedProducts = selectedCategory.products.map(p =>
+      p.id === currentArtefactProduct.id
+        ? { ...p, ...productData }
+        : p
+    );
+    
+    const updatedCategory = {
+      ...selectedCategory,
+      products: updatedProducts,
+      updatedAt: new Date().toISOString(),
+    };
+    
+    // Update in database
+    await handleUpdateCategory(updatedCategory);
+    
+    // Immediately update local state to show in UI
+    setSelectedCategory(updatedCategory);
+    
+    // Refresh the categories list to update thumbnails
+    await fetchArtefactCategories();
+  };
+  
+  // Delete artefact product from category
+  const handleDeleteArtefactProduct = (productId: string) => {
+    // This is handled in the category detail component
+  };
 
   // Function to handle editing a blog
   const handleEditBlog = (blog: Blog) => {
@@ -233,8 +411,9 @@ function DashboardContent() {
     setShowBlogForm(true);
   };
 
-  // Function to handle deleting a blog
+  // Function to handle deleting a blog  
   const handleDeleteBlog = async (id: string) => {
+    // Note: Consider adding confirmation dialog here too
     if (!confirm('Are you sure you want to delete this blog?')) return;
     
     try {
@@ -263,6 +442,7 @@ function DashboardContent() {
 
   // Function to handle deleting a testimonial
   const handleDeleteTestimonial = async (id: string) => {
+    // Note: Consider adding confirmation dialog here too
     if (!confirm('Are you sure you want to delete this testimonial?')) return;
     
     try {
@@ -282,8 +462,8 @@ function DashboardContent() {
     }
   };
 
-  // Function to handle editing a product
-  const handleEditProduct = (product: Product) => {
+  // Function to handle editing a painting product
+  const handleEditPaintingProduct = (product: Product) => {
     setCurrentProduct(product);
     setProductType(product.type);
     setProductFormMode('edit');
@@ -292,6 +472,7 @@ function DashboardContent() {
 
   // Function to handle deleting a product
   const handleDeleteProduct = async (id: string) => {
+    // Note: Consider adding confirmation dialog here too
     if (!confirm('Are you sure you want to delete this product?')) return;
     
     try {
@@ -393,8 +574,8 @@ function DashboardContent() {
   };
 
   const pieData = [
-    { name: 'Paintings', value: paintings.length, color: '#A47E3B' },
-    { name: 'Artefacts', value: artefacts.length, color: '#C4A962' },
+    { name: 'Products', value: artefactCategories.reduce((sum, cat) => sum + (cat.products?.length || 0), 0), color: '#10B981' },
+    { name: 'Categories', value: artefactCategories.length, color: '#059669' },
     { name: 'Blogs', value: blogs.length, color: '#8B6F3E' },
   ];
 
@@ -473,39 +654,11 @@ function DashboardContent() {
               </CardContent>
             </Card>
 
-            {/* Paintings Card */}
-            <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20 hover:border-amber-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-white/70">Paintings</CardTitle>
-                  <div className="p-2 bg-amber-500/20 rounded-lg">
-                    <ImageIcon className="w-4 h-4 text-amber-400" />
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline justify-between">
-                  <div className="text-3xl font-bold text-white">{paintings.length}</div>
-                  <Badge className="bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border-0">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    +15%
-                  </Badge>
-                </div>
-                <button 
-                  onClick={() => navigateToTab('paintings')}
-                  className="mt-4 w-full px-3 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  View Paintings
-                  <ExternalLink className="w-3 h-3" />
-                </button>
-              </CardContent>
-            </Card>
-
-            {/* Artefacts Card */}
+            {/* Products Card */}
             <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-white/70">Artefacts</CardTitle>
+                  <CardTitle className="text-sm font-medium text-white/70">Products</CardTitle>
                   <div className="p-2 bg-emerald-500/20 rounded-lg">
                     <Package className="w-4 h-4 text-emerald-400" />
                   </div>
@@ -513,17 +666,17 @@ function DashboardContent() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline justify-between">
-                  <div className="text-3xl font-bold text-white">{artefacts.length}</div>
+                  <div className="text-3xl font-bold text-white">{artefactCategories.reduce((sum, cat) => sum + (cat.products?.length || 0), 0)}</div>
                   <Badge className="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border-0">
                     <TrendingUp className="w-3 h-3 mr-1" />
                     +20%
                   </Badge>
                 </div>
                 <button 
-                  onClick={() => navigateToTab('artefacts')}
+                  onClick={() => navigateToTab('products')}
                   className="mt-4 w-full px-3 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  View Artefacts
+                  View Products
                   <ExternalLink className="w-3 h-3" />
                 </button>
               </CardContent>
@@ -961,214 +1114,75 @@ function DashboardContent() {
         </div>
       )}
       
-      {/* Paintings Tab */}
-      {activeTab === 'paintings' && (
+      {/* Products Tab - New Category-Based System */}
+      {activeTab === 'products' && !showCategoryDetail && (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Manage Paintings</h1>
-              <p className="text-white/60">Browse and manage your painting collection</p>
+              <h1 className="text-3xl font-bold text-white mb-2">Manage Products</h1>
+              <p className="text-white/60">Organize your products by categories</p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Link 
-                href="/dashboard/settings/categories?type=painting"
-                className="px-4 py-2.5 bg-[#222222] text-white/80 rounded-lg hover:bg-[#2A2A2A] hover:text-white transition-all border border-[#333333] flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                Categories
-              </Link>
-              <button 
-                onClick={() => {
-                  setCurrentProduct(undefined);
-                  setProductType('painting');
-                  setProductFormMode('add');
-                  setShowProductForm(true);
-                }}
-                className="px-4 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-700 hover:to-amber-600 transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 font-medium"
-              >
-                <Plus className="w-4 h-4" />
-                Add New Painting
-              </button>
-            </div>
+            <button 
+              onClick={handleCreateCategoryClick}
+              className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 font-medium"
+            >
+              <Plus className="w-4 h-4" />
+              Create Category
+            </button>
           </div>
           
-          {/* Paintings Cards Grid */}
-          {paintings.length === 0 ? (
-            <Card className="bg-[#1A1A1A] border-[#333333]">
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
-                  <ImageIcon className="w-10 h-10 text-amber-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">No Paintings Yet</h3>
-                <p className="text-white/60 text-center mb-6 max-w-sm">
-                  Start adding your beautiful paintings to showcase in your gallery.
-                </p>
-                <button 
-                  onClick={() => {
-                    setCurrentProduct(undefined);
-                    setProductType('painting');
-                    setProductFormMode('add');
-                    setShowProductForm(true);
-                  }}
-                  className="px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-700 hover:to-amber-600 transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 font-medium"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Your First Painting
-                </button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {paintings.map((product) => (
-                <Card key={product.id} className="bg-[#1A1A1A] border-[#333333] hover:border-amber-500/40 transition-all duration-300 overflow-hidden group">
-                  <div className="relative aspect-square overflow-hidden bg-[#222222]">
-                    <img 
-                      src={getValidImageUrl(product.image ?? '')} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute top-3 right-3">
-                      <Badge className="bg-amber-500/90 text-white border-0 backdrop-blur-sm text-xs">
-                        {getCategoryName(product.category)}
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-white text-base line-clamp-1 group-hover:text-amber-400 transition-colors">
-                      {product.name}
-                    </CardTitle>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-2xl font-bold text-amber-400">{product.price}</span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => handleEditProduct(product)}
-                        className="flex-1 px-3 py-2 bg-[#222222] hover:bg-[#2A2A2A] text-white/80 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium"
-                      >
-                        <Edit className="w-4 h-4" />
-                        Edit
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteProduct(product.id)}
-                        className="px-3 py-2 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Artefacts Tab */}
-      {activeTab === 'artefacts' && (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Manage Artefacts</h1>
-              <p className="text-white/60">Browse and manage your artefact collection</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link 
-                href="/dashboard/settings/categories?type=artefact"
-                className="px-4 py-2.5 bg-[#222222] text-white/80 rounded-lg hover:bg-[#2A2A2A] hover:text-white transition-all border border-[#333333] flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                Categories
-              </Link>
-              <button 
-                onClick={() => {
-                  setCurrentProduct(undefined);
-                  setProductType('artefact');
-                  setProductFormMode('add');
-                  setShowProductForm(true);
-                }}
-                className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 font-medium"
-              >
-                <Plus className="w-4 h-4" />
-                Add New Artefact
-              </button>
-            </div>
-          </div>
-          
-          {/* Artefacts Cards Grid */}
-          {artefacts.length === 0 ? (
+          {/* Category Cards Grid */}
+          {artefactCategories.length === 0 ? (
             <Card className="bg-[#1A1A1A] border-[#333333]">
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
                   <Package className="w-10 h-10 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">No Artefacts Yet</h3>
+                <h3 className="text-xl font-semibold text-white mb-2">No Categories Yet</h3>
                 <p className="text-white/60 text-center mb-6 max-w-sm">
-                  Start adding historical artefacts to your collection showcase.
+                  Create categories to organize your products (like Mouse Pads, Desk Mats, etc.).
                 </p>
                 <button 
-                  onClick={() => {
-                    setCurrentProduct(undefined);
-                    setProductType('artefact');
-                    setProductFormMode('add');
-                    setShowProductForm(true);
-                  }}
+                  onClick={handleCreateCategoryClick}
                   className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 font-medium"
                 >
                   <Plus className="w-4 h-4" />
-                  Add Your First Artefact
+                  Create Your First Category
                 </button>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {artefacts.map((product) => (
-                <Card key={product.id} className="bg-[#1A1A1A] border-[#333333] hover:border-emerald-500/40 transition-all duration-300 overflow-hidden group">
-                  <div className="relative aspect-square overflow-hidden bg-[#222222]">
-                    <img 
-                      src={getValidImageUrl(product.image ?? '')} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute top-3 right-3">
-                      <Badge className="bg-emerald-500/90 text-white border-0 backdrop-blur-sm text-xs">
-                        {getCategoryName(product.category)}
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-white text-base line-clamp-1 group-hover:text-emerald-400 transition-colors">
-                      {product.name}
-                    </CardTitle>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-2xl font-bold text-emerald-400">{product.price}</span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => handleEditProduct(product)}
-                        className="flex-1 px-3 py-2 bg-[#222222] hover:bg-[#2A2A2A] text-white/80 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium"
-                      >
-                        <Edit className="w-4 h-4" />
-                        Edit
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteProduct(product.id)}
-                        className="px-3 py-2 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ArtefactCategoryGrid
+              categories={artefactCategories}
+              onCategoryClick={(category) => {
+                setSelectedCategory(category);
+                setShowCategoryDetail(true);
+              }}
+              onDeleteCategory={handleDeleteCategory}
+              onEditCategory={handleEditCategory}
+            />
           )}
         </div>
+      )}
+      
+      {/* Category Detail Overlay */}
+      {activeTab === 'products' && selectedCategory && (
+        <ArtefactCategoryDetail
+          category={selectedCategory}
+          isOpen={showCategoryDetail}
+          onClose={() => {
+            setShowCategoryDetail(false);
+            setSelectedCategory(null);
+            fetchArtefactCategories(); // Refresh categories when closing
+          }}
+          onUpdateCategory={handleUpdateCategory}
+          onAddProduct={() => {
+            setCurrentArtefactProduct(undefined);
+            setShowArtefactProductForm(true);
+          }}
+          onEditProduct={handleEditArtefactProduct}
+          onDeleteProduct={handleDeleteArtefactProduct}
+        />
       )}
       
       {/* Forms */}
@@ -1206,6 +1220,32 @@ function DashboardContent() {
             setShowProductForm(false);
             fetchData(); // Refresh data when form is closed
           }} 
+        />
+      )}
+      
+      {/* Artefact Category Modal */}
+      <ArtefactCategoryModal
+        isOpen={showCategoryModal}
+        onClose={() => {
+          setShowCategoryModal(false);
+          setEditingCategory(null);
+        }}
+        onSubmit={handleSaveCategory}
+        mode={categoryModalMode}
+        initialName={editingCategory?.name || ''}
+        initialDescription={editingCategory?.description || ''}
+      />
+      
+      {/* Artefact Product Form */}
+      {showArtefactProductForm && (
+        <ArtefactProductForm
+          isOpen={showArtefactProductForm}
+          onClose={() => {
+            setShowArtefactProductForm(false);
+            setCurrentArtefactProduct(undefined);
+          }}
+          onSubmit={currentArtefactProduct ? handleUpdateProduct : handleAddProduct}
+          product={currentArtefactProduct}
         />
       )}
     </div>

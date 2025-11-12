@@ -1,9 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient, ObjectId } from 'mongodb';
-
-// MongoDB connection URI (would typically be in env variables)
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const MONGODB_DB = process.env.MONGODB_DB || 'novino';
+import { ObjectId } from 'mongodb';
+import connectToMongoDB from '@/lib/mongodb-client';
 
 type ProductVariant = {
   id: string;
@@ -64,12 +61,9 @@ export default async function handler(
     method,
   } = req;
 
-  // Create a MongoDB connection
-  const client = new MongoClient(MONGODB_URI);
-
   try {
-    await client.connect();
-    const db = client.db(MONGODB_DB);
+    // Use cached MongoDB connection
+    const { db } = await connectToMongoDB();
     const collection = db.collection('products');
 
     // Convert string ID to ObjectId if needed
@@ -118,8 +112,40 @@ export default async function handler(
             product = await collection.findOne({ id: numericId });
           }
           
+          // If still not found, search in productCategories collection
+          if (!product) {
+            console.log('Product not found in products collection, searching in productCategories...');
+            const productCategoriesCollection = db.collection('productCategories');
+            
+            // Search for the product inside any category's products array
+            const categoryWithProduct = await productCategoriesCollection.findOne({
+              'products.id': id as string
+            });
+            
+            if (categoryWithProduct) {
+              // Find the specific product within the category
+              const foundProduct = categoryWithProduct.products?.find((p: any) => p.id === id);
+              
+              if (foundProduct) {
+                console.log('Product found in productCategories:', foundProduct.name);
+                // Transform the product to match the expected format
+                product = {
+                  ...foundProduct,
+                  _id: foundProduct.id,
+                  id: foundProduct.id,
+                  price: foundProduct.basePrice,
+                  image: foundProduct.images?.[0] || '',
+                  category: categoryWithProduct._id.toString(),
+                  type: 'artefact' as const,
+                  description: foundProduct.description || '',
+                };
+              }
+            }
+          }
+          
           // If no product found, return 404
           if (!product) {
+            console.log('Product not found in any collection');
             return res.status(404).json({ success: false, error: 'Product not found' });
           }
           
@@ -205,7 +231,5 @@ export default async function handler(
   } catch (error) {
     console.error('API Error:', error);
     res.status(500).json({ success: false, error: 'Server error' });
-  } finally {
-    await client.close();
   }
 } 
