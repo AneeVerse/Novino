@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import { X, Loader2, ChevronDown } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -15,14 +16,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { cart, removeFromCart, updateQuantity, getCartTotal, isLoading } = useCart();
   const [showOptions, setShowOptions] = useState(false);
   const optionsRef = useRef<HTMLDivElement>(null);
-  
-  // Format currency helper
-  const formatCurrency = (value: number) => {
-    return `Rs ${new Intl.NumberFormat('en-IN', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)}`;
-  };
   
   // Close drawer when pressing escape key
   useEffect(() => {
@@ -168,7 +161,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <p className="text-sm text-white/60 mb-1">{item.variant}</p>
                     )}
                     <p className="font-semibold mb-2 text-white">
-                      {typeof item.price === 'string' ? item.price : formatCurrency(item.price)}
+                      {formatPrice(item.price)}
                     </p>
                     <div className="flex items-center">
                       <button 
@@ -198,7 +191,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           <div className="absolute bottom-0 left-0 w-full bg-[#222222] border-t border-[#333333] p-6">
             <div className="flex justify-between items-center mb-4">
               <span className="text-white">TOTAL</span>
-              <span className="text-xl font-bold text-white">{formatCurrency(total)}</span>
+              <span className="text-xl font-bold text-white">{formatPrice(total)}</span>
             </div>
             <div className="flex flex-col gap-2">
               <Link 

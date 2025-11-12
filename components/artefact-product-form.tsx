@@ -158,7 +158,7 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
                   type="text"
                   value={formData.basePrice}
                   onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
-                  placeholder="e.g., $100 or 100"
+                  placeholder="e.g., Rs. 799.00 or 799"
                   className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                   disabled={isSubmitting}
                 />

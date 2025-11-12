@@ -233,7 +233,7 @@ export default function ProductForm({ mode, product, productType, onCancel }: Pr
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white focus:border-[#A47E3B] focus:outline-none"
-                    placeholder="e.g. $1,250"
+                    placeholder="e.g. Rs. 1250.00 or 1250"
                     required
                   />
                 </div>

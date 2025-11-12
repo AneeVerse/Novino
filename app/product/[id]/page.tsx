@@ -13,6 +13,7 @@ import Footer from "@/components/footer"
 import { useRouter, useParams, useSearchParams } from "next/navigation"
 import { useCallback } from "react"
 import { useCart } from '@/contexts/CartContext'
+import { formatPrice } from '@/lib/utils'
 import Preloader from "@/components/ui/preloader"
 import { SITE_URL, generateProductSchema, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/seo"
 import SchemaInjector from "@/components/seo/SchemaInjector"
@@ -825,7 +826,7 @@ export default function ProductDetail() {
                   )}
 
                   {/* Price */}
-                  <div className="text-3xl font-light mb-6 font-['Roboto_Mono']">Rs {displayedPrice}</div>
+                  <div className="text-3xl font-light mb-6 font-['Roboto_Mono']">{formatPrice(displayedPrice)}</div>
                   
                   {/* Quantity and Add to Cart */}
                   <div className="flex items-center gap-3 mb-8">
@@ -1007,7 +1008,7 @@ export default function ProductDetail() {
                             {productName}
                           </h3>
                           <p className="text-sm text-white/60 font-['Roboto_Mono']">
-                            Rs {productPrice}
+                            {formatPrice(productPrice)}
                           </p>
                         </div>
                       </div>

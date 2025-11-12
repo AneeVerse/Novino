@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Calendar, ChevronDown, ChevronUp, Wallet, CreditCard, Building2, AlertCircle } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
 
 interface PaymentMethod {
   id: string;
@@ -100,13 +101,6 @@ export default function CheckoutPage() {
     }
   }, [cart]);
   
-  // Format currency helper
-  const formatCurrency = (value: number) => {
-    return `Rs ${new Intl.NumberFormat('en-IN', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value)}`;
-  };
   
   // Parse price from string or number
   const parsePrice = (price: string | number): number => {
@@ -159,7 +153,7 @@ export default function CheckoutPage() {
       id: "tss-money",
       name: "TSS Money",
       icon: <Wallet className="w-5 h-5" />,
-      balance: "Rs 0.00"
+      balance: formatPrice(0)
     },
     {
       id: "upi",
@@ -679,22 +673,22 @@ export default function CheckoutPage() {
               <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                 <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-white/70 break-words pr-2">Cart Total (Excl. of all taxes)</span>
-                  <span className="text-white flex-shrink-0">{formatCurrency(cartTotal)}</span>
+                  <span className="text-white flex-shrink-0">{formatPrice(cartTotal)}</span>
                 </div>
                 {giftWrapAmount > 0 && (
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-white/70">Gift Wrap</span>
-                    <span className="text-white">{formatCurrency(giftWrapAmount)}</span>
+                    <span className="text-white">{formatPrice(giftWrapAmount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-white/70">GST</span>
-                  <span className="text-white">{formatCurrency(gst)}</span>
+                  <span className="text-white">{formatPrice(gst)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-white/70">Shipping Charges</span>
                   <div className="text-right flex-shrink-0">
-                    <span className="text-white line-through text-white/50 mr-1 sm:mr-2 text-xs">Rs 50.00</span>
+                    <span className="text-white line-through text-white/50 mr-1 sm:mr-2 text-xs">{formatPrice(50)}</span>
                     <span className="text-[#22c55e] font-semibold text-xs sm:text-sm">Free</span>
                   </div>
                 </div>
@@ -703,7 +697,7 @@ export default function CheckoutPage() {
               <div className="border-t border-[#444444] pt-3 sm:pt-4 mb-4 sm:mb-6">
                 <div className="flex justify-between font-semibold text-base sm:text-lg">
                   <span className="text-white">Total Amount</span>
-                  <span className="text-white">{formatCurrency(total)}</span>
+                  <span className="text-white">{formatPrice(total)}</span>
                 </div>
               </div>
               

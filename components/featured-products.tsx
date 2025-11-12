@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { formatPrice } from '@/lib/utils';
 
 interface ProductVariant {
   id: string;
@@ -216,7 +217,7 @@ export default function FeaturedProducts() {
     e.preventDefault(); // Prevent default touch/pointer behaviors
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const x = clientX;
-    const walk = (x - startX.current) * 2; // Same sensitivity as CreativeSection
+    const walk = (x - startX.current) * 0.8; // Reduced sensitivity from 2 to 0.8 for smoother scroll
     translateX.current = scrollLeft.current + walk;
     
     // Infinite loop logic - exact same as CreativeSection
@@ -250,6 +251,50 @@ export default function FeaturedProducts() {
     
     if (scrollContainerRef.current) {
       scrollContainerRef.current.style.cursor = 'grab';
+      
+      // Smooth snap to nearest centered card
+      const container = scrollContainerRef.current;
+      const containerRect = container.parentElement?.getBoundingClientRect();
+      if (containerRect) {
+        const viewportCenter = containerRect.left + containerRect.width / 2;
+        
+        let closestCardIndex: number | null = null;
+        let closestDistance = Infinity;
+        
+        // Find the closest card to center
+        cardRefsMap.current.forEach((card, index) => {
+          const cardRect = card.getBoundingClientRect();
+          const cardCenter = cardRect.left + cardRect.width / 2;
+          const distance = Math.abs(viewportCenter - cardCenter);
+          
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestCardIndex = index;
+          }
+        });
+        
+        // Snap to the closest card with smooth animation
+        if (closestCardIndex !== null) {
+          const closestCard = cardRefsMap.current.get(closestCardIndex);
+          if (closestCard) {
+            const cardRect = closestCard.getBoundingClientRect();
+            const cardCenter = cardRect.left + cardRect.width / 2;
+            const offset = viewportCenter - cardCenter;
+            
+            // Apply smooth snap with transition
+            translateX.current += offset;
+            container.style.transition = 'transform 0.3s ease-out';
+            container.style.transform = `translateX(${translateX.current}px)`;
+            
+            // Remove transition after animation
+            setTimeout(() => {
+              if (container) {
+                container.style.transition = '';
+              }
+            }, 300);
+          }
+        }
+      }
     }
     
     // Reset drag flag after a short delay
@@ -260,15 +305,23 @@ export default function FeaturedProducts() {
 
   // Handle wheel/touchpad scroll for horizontal scrolling
   const handleWheel = (e: React.WheelEvent) => {
-    // Prevent default browser behavior (back/forward navigation)
+    // Only handle horizontal scroll, let vertical scroll pass through to page
+    const isHorizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+    
+    // If it's a vertical scroll (scrolling page up/down), don't interfere
+    if (!isHorizontalScroll) {
+      return; // Let the page scroll naturally
+    }
+    
+    // Prevent default browser behavior for horizontal scroll only
     e.preventDefault();
     e.stopPropagation();
     
-    // Use deltaX for horizontal scroll, or deltaY if horizontal scroll isn't available
-    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    // Use deltaX for horizontal scroll
+    const delta = e.deltaX;
     
-    // Apply scroll with same sensitivity as drag
-    translateX.current -= delta;
+    // Apply scroll with reduced sensitivity (0.6x) for smoother control
+    translateX.current -= delta * 0.6;
     
     // Infinite loop logic - same as drag
     if (totalWidth.current > 0) {
@@ -293,8 +346,10 @@ export default function FeaturedProducts() {
     if (!container) return;
 
     const wheelHandler = (e: WheelEvent) => {
-      // Prevent browser back/forward navigation on horizontal scroll
-      if (Math.abs(e.deltaX) > 0 || Math.abs(e.deltaY) > 0) {
+      // Only prevent default for horizontal scroll, let vertical scroll work
+      const isHorizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      
+      if (isHorizontalScroll) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -317,6 +372,33 @@ export default function FeaturedProducts() {
       window.removeEventListener('resize', calculateWidth);
     };
   }, [calculateWidth]);
+
+  // Center the first card on initial load
+  useEffect(() => {
+    if (products.length === 0 || !scrollContainerRef.current) return;
+    
+    const centerFirstCard = () => {
+      const container = scrollContainerRef.current;
+      const containerRect = container?.parentElement?.getBoundingClientRect();
+      
+      if (container && containerRect) {
+        const firstCard = cardRefsMap.current.get(0);
+        if (firstCard) {
+          const firstCardRect = firstCard.getBoundingClientRect();
+          const firstCardCenter = firstCardRect.left + firstCardRect.width / 2;
+          const viewportCenter = containerRect.left + containerRect.width / 2;
+          const offset = viewportCenter - firstCardCenter;
+          
+          // Set initial position to center the first card
+          translateX.current = offset;
+          container.style.transform = `translateX(${translateX.current}px)`;
+        }
+      }
+    };
+    
+    // Wait for layout to complete
+    setTimeout(centerFirstCard, 200);
+  }, [products]);
 
   if (loading) {
     return (
@@ -433,7 +515,7 @@ export default function FeaturedProducts() {
                     {isCentered && product.price && (
                       <div className="absolute bottom-0 right-0 p-4 z-20">
                         <div className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] text-right">
-                          Rs {product.price.replace(/[$₹]/g, '')}
+                          {formatPrice(product.price)}
                         </div>
                       </div>
                     )}

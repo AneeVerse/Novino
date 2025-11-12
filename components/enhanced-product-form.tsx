@@ -586,7 +586,7 @@ export default function EnhancedProductForm({
                           value={basePrice}
                           onChange={(e) => setBasePrice(e.target.value)}
                           className="w-full bg-[#222222] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#A47E3B] focus:ring-1 focus:ring-[#A47E3B]/20 focus:outline-none transition-all"
-                          placeholder="e.g., $1,250"
+                          placeholder="e.g., Rs. 1250.00 or 1250"
                           required
                         />
                         <p className="mt-1 text-xs text-white/50">Include currency symbol and formatting</p>
@@ -909,7 +909,7 @@ export default function EnhancedProductForm({
                               value={newVariant.price || ""}
                               onChange={(e) => setNewVariant({...newVariant, price: e.target.value})}
                               className="w-full bg-[#333333] border border-[#444444] rounded p-2 text-white text-sm focus:border-[#A47E3B] focus:outline-none"
-                              placeholder="e.g. $1,350 (leave empty to use base price)"
+                              placeholder="e.g. Rs. 1350.00 or 1350 (leave empty to use base price)"
                             />
                           </div>
                           

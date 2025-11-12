@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ChevronDown, ChevronUp, Check, X, Heart, MapPin, Calendar, AlertCircle } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
 
 interface SelectedItems {
   [key: string]: boolean;
@@ -143,14 +144,6 @@ export default function CartPage() {
       setSelectedItems({});
     }
   }, [cart.length]); // Only depend on cart length, not full cart array
-  
-  // Format currency helper
-  const formatCurrency = (value: number) => {
-    return `Rs ${new Intl.NumberFormat('en-IN', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)}`;
-  };
   
   // Parse price from string or number
   const parsePrice = (price: string | number): number => {
@@ -827,7 +820,7 @@ export default function CartPage() {
                   className="w-4 h-4 sm:w-5 sm:h-5 rounded border-[#444444] bg-[#222222] text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
                 />
                 <span className="ml-2 sm:ml-3 text-xs sm:text-sm font-medium break-words">
-                  {selectedCount}/{totalItems} ITEMS SELECTED ({formatCurrency(total)})
+                  {selectedCount}/{totalItems} ITEMS SELECTED ({formatPrice(total)})
                 </span>
               </label>
               </div>
@@ -924,7 +917,7 @@ export default function CartPage() {
                         {/* Price */}
                         <div className="mb-2 sm:mb-3">
                           <p className="text-white font-semibold text-base sm:text-lg">
-                            {formatCurrency(itemTotal)}
+                            {formatPrice(itemTotal)}
                           </p>
                           <p className="text-white/50 text-xs">MRP incl. of all taxes</p>
                         </div>
@@ -1055,7 +1048,7 @@ export default function CartPage() {
                       onChange={(e) => setPromoState(prev => ({ ...prev, giftWrap: e.target.checked }))}
                       className="w-4 h-4 rounded border-[#444444] bg-[#222222] text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
                     />
-                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm font-medium">Gift Wrap (Rs 25)</span>
+                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm font-medium">Gift Wrap ({formatPrice(25)})</span>
                   </label>
                 </div>
                 
@@ -1094,24 +1087,24 @@ export default function CartPage() {
                 <div className="space-y-2 mb-3 sm:mb-4">
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-white/70 break-words pr-2">Cart Total (Excl. of all taxes)</span>
-                    <span className="text-white flex-shrink-0">{formatCurrency(cartTotal)}</span>
+                    <span className="text-white flex-shrink-0">{formatPrice(cartTotal)}</span>
                   </div>
                   {giftWrapAmount > 0 && (
                     <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-white/70">Gift Wrap</span>
-                      <span className="text-white">{formatCurrency(giftWrapAmount)}</span>
+                      <span className="text-white">{formatPrice(giftWrapAmount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-white/70">GST</span>
-                    <span className="text-white">{formatCurrency(gst)}</span>
+                    <span className="text-white">{formatPrice(gst)}</span>
                   </div>
                 </div>
                 
                 <div className="border-t border-[#444444] pt-3 sm:pt-4">
                   <div className="flex justify-between font-semibold text-base sm:text-lg">
                     <span className="text-white">Total</span>
-                    <span className="text-white">{formatCurrency(total)}</span>
+                    <span className="text-white">{formatPrice(total)}</span>
                   </div>
                 </div>
               </div>

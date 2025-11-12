@@ -6,13 +6,31 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Format a price to a currency string
+ * Format a price to Indian Rupee format: Rs. XXX.00
+ * @param price - Can be a number, string with/without currency symbols
+ * @returns Formatted string like "Rs. 799.00"
  */
-export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(price);
+export function formatPrice(price: number | string): string {
+  // Convert to number if string
+  let numPrice: number;
+  
+  if (typeof price === 'string') {
+    // Remove any currency symbols and commas
+    const cleanPrice = price.replace(/[Rs.₹$,\s]/g, '');
+    numPrice = parseFloat(cleanPrice);
+  } else {
+    numPrice = price;
+  }
+  
+  // Handle invalid numbers
+  if (isNaN(numPrice)) {
+    return 'Rs. 0.00';
+  }
+  
+  // Format to 2 decimal places
+  const formatted = numPrice.toFixed(2);
+  
+  return `Rs. ${formatted}`;
 }
 
 /**
