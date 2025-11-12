@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -34,6 +34,14 @@ export default function FeaturedProducts() {
   const [isMobile, setIsMobile] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
+  
+  // Transform-based infinite scroll refs
+  const translateX = useRef(0);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+  const totalWidth = useRef(0);
+  const wasDraggingRef = useRef(false);
   
   const setCardRef = (index: number, element: HTMLDivElement | null) => {
     if (element) {
@@ -88,7 +96,9 @@ export default function FeaturedProducts() {
             slug: p.slug || p._id || p.id // Ensure we always have a slug in the URL so API fetch works
           }));
         
-        setProducts(featuredProducts);
+        // Duplicate products for infinite loop (like the example code)
+        const duplicatedProducts = [...featuredProducts, ...featuredProducts];
+        setProducts(duplicatedProducts);
       } catch (err) {
         console.error('Error fetching featured products:', err);
         setProducts([]);
@@ -100,214 +110,150 @@ export default function FeaturedProducts() {
     fetchProducts();
   }, []);
 
-  // Track scroll position to detect centered card
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    let scrollTimeout: NodeJS.Timeout | null = null;
-    let isScrolling = false;
-
-    const handleScroll = () => {
-      // Use the scroll container's visual center for detection
-      const containerRect = container.getBoundingClientRect();
-      const containerCenter = containerRect.left + containerRect.width / 2;
-
-      let closestCardIndex: number | null = null;
-      let closestDistance = Infinity;
-
-      // Check cards for center detection
-      cardRefsMap.current.forEach((card, index) => {
-        if (!card) return;
-
-        const cardRect = card.getBoundingClientRect();
-        const cardCenter = cardRect.left + cardRect.width / 2;
-        const distance = Math.abs(containerCenter - cardCenter);
-
-        // Pick the closest card to the container's center
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestCardIndex = index;
-        }
-      });
-
-      // Only update if the centered card actually changed
-      setCenteredCard(prev => {
-        if (prev !== closestCardIndex) {
-          return closestCardIndex;
-        }
-        return prev;
-      });
-    };
-
-    // Use requestAnimationFrame for smoother scroll detection with debouncing
-    let rafId: number | null = null;
-    const scrollHandler = () => {
-      isScrolling = true;
-      
-      // Clear existing timeout
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
+  // Calculate total width of one set of products for infinite loop
+  const calculateWidth = useCallback(() => {
+    if (scrollContainerRef.current && products.length > 0) {
+      const firstChild = scrollContainerRef.current.children[0] as HTMLElement;
+      if (firstChild) {
+        // Get the original products count (half of duplicated)
+        const originalCount = products.length / 2;
+        const cardWidth = firstChild.offsetWidth;
+        // Get computed gap from CSS (gap-8 = 32px on mobile, gap-12 = 48px on desktop)
+        const computedStyle = window.getComputedStyle(scrollContainerRef.current);
+        const gap = parseFloat(computedStyle.gap) || 32;
+        totalWidth.current = (cardWidth + gap) * originalCount;
       }
+    }
+  }, [products]);
 
-      // Debounce: only update after scrolling stops for better mobile performance
-      scrollTimeout = setTimeout(() => {
-        isScrolling = false;
-        if (rafId) return;
-        rafId = requestAnimationFrame(() => {
-          handleScroll();
-          rafId = null;
-        });
-      }, 50); // 50ms debounce to avoid excessive updates
-    };
+  // Detect centered card based on current transform position
+  const detectCenteredCard = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container || !container.parentElement) return;
 
-    // Check on mount
-    setTimeout(handleScroll, 100); // Delay initial check to ensure layout is ready
+    // Use the parent container (the overflow-hidden wrapper) to get the viewport center
+    const parentRect = container.parentElement.getBoundingClientRect();
+    const viewportCenter = parentRect.left + parentRect.width / 2;
+
+    let closestCardIndex: number | null = null;
+    let closestDistance = Infinity;
+
+    // Check all cards for center detection
+    cardRefsMap.current.forEach((card, index) => {
+      if (!card) return;
+
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(viewportCenter - cardCenter);
+
+      // Pick the closest card to the viewport's center
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestCardIndex = index;
+      }
+    });
+
+    // Only update if the centered card actually changed
+    setCenteredCard(prev => {
+      if (prev !== closestCardIndex) {
+        return closestCardIndex;
+      }
+      return prev;
+    });
+  }, []);
+
+  // Continuous centered card detection with requestAnimationFrame
+  useEffect(() => {
+    if (products.length === 0) return;
     
-    container.addEventListener('scroll', scrollHandler, { passive: true });
-    window.addEventListener('resize', handleScroll);
+    let rafId: number | null = null;
+    const updateCenter = () => {
+      detectCenteredCard();
+      rafId = requestAnimationFrame(updateCenter);
+    };
+
+    // Initial detection after layout
+    setTimeout(detectCenteredCard, 100);
+    
+    // Start continuous detection loop
+    rafId = requestAnimationFrame(updateCenter);
+    window.addEventListener('resize', detectCenteredCard);
 
     return () => {
-      container.removeEventListener('scroll', scrollHandler);
-      window.removeEventListener('resize', handleScroll);
       if (rafId) cancelAnimationFrame(rafId);
-      if (scrollTimeout) clearTimeout(scrollTimeout);
+      window.removeEventListener('resize', detectCenteredCard);
     };
-  }, [products]);
+  }, [products, detectCenteredCard]);
 
-  // Enable smooth click-and-drag horizontal scrolling with momentum
+  // Handle Pointer Events for Drag with Infinite Loop (same logic as CreativeSection)
+  const handlePointerDown = (e: React.PointerEvent | React.TouchEvent) => {
+    e.preventDefault(); // Prevent text selection and default behaviors
+    isDragging.current = true;
+    wasDraggingRef.current = false;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    startX.current = clientX;
+    scrollLeft.current = translateX.current;
+    
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.cursor = 'grabbing';
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent | React.TouchEvent) => {
+    if (!isDragging.current) return;
+    
+    e.preventDefault(); // Prevent default touch/pointer behaviors
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const x = clientX;
+    const walk = (x - startX.current) * 2; // Same sensitivity as CreativeSection
+    translateX.current = scrollLeft.current + walk;
+    
+    // Infinite loop logic - reset when reaching the width of one set
+    if (totalWidth.current > 0) {
+      // Loop back when scrolling too far in either direction
+      if (translateX.current <= -totalWidth.current) {
+        translateX.current = 0;
+        scrollLeft.current = 0;
+        startX.current = x;
+      } else if (translateX.current >= totalWidth.current) {
+        translateX.current = 0;
+        scrollLeft.current = 0;
+        startX.current = x;
+      }
+    }
+    
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.transform = `translateX(${translateX.current}px)`;
+    }
+    
+    // Mark as dragging if moved significantly
+    if (Math.abs(walk) > 5) {
+      wasDraggingRef.current = true;
+    }
+  };
+
+  const handlePointerUp = () => {
+    isDragging.current = false;
+    
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.cursor = 'grab';
+    }
+    
+    // Reset drag flag after a short delay
+    setTimeout(() => {
+      wasDraggingRef.current = false;
+    }, 100);
+  };
+
+  // Initialize width calculation and setup
   useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    let isDragging = false;
-    let startX = 0;
-    let startScrollLeft = 0;
-    let hasMoved = false;
-    let velocity = 0;
-    let lastX = 0;
-    let lastTime = 0;
-    let momentumId: number | null = null;
-
-    // Detect if it's a touch device
-    const isTouchDevice = () => {
-      return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    };
-
-    const applyMomentum = () => {
-      if (Math.abs(velocity) > 0.3) {
-        container.scrollLeft -= velocity;
-        velocity *= 0.93; // Slightly reduced damping for longer momentum
-        momentumId = requestAnimationFrame(applyMomentum);
-      } else {
-        velocity = 0;
-        momentumId = null;
-      }
-    };
-
-    const stopMomentum = () => {
-      if (momentumId) {
-        cancelAnimationFrame(momentumId);
-        momentumId = null;
-      }
-      velocity = 0;
-    };
-
-    const onPointerDown = (e: PointerEvent) => {
-      // On touch devices, let native scrolling handle it
-      if (isTouchDevice() && e.pointerType === 'touch') {
-        return;
-      }
-
-      // Don't interfere with text selection or right-clicks
-      if (e.button !== 0) return;
-
-      const target = e.target as HTMLElement;
-      
-      // Allow dragging even on links for better UX
-      stopMomentum();
-      isDragging = true;
-      startX = e.pageX;
-      lastX = e.pageX;
-      lastTime = Date.now();
-      startScrollLeft = container.scrollLeft;
-      hasMoved = false;
-      
-      // Do not capture the pointer – this allows native click events on internal links to fire correctly
-      
-      container.style.cursor = 'grabbing';
-      container.style.scrollSnapType = 'none'; // Disable snap while dragging
-      e.preventDefault(); // Prevent text selection
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      if (!isDragging) return;
-      
-      e.preventDefault();
-      const x = e.pageX;
-      const dx = x - startX;
-      const now = Date.now();
-      const dt = now - lastTime;
-
-      // Calculate velocity for momentum with higher sensitivity
-      if (dt > 0) {
-        velocity = (x - lastX) / dt * 25; // High momentum for smooth scrolling
-      }
-
-      // Only consider it a drag if movement is significant (more than 3px)
-      if (Math.abs(dx) > 3) {
-        hasMoved = true;
-      }
-
-      // High scroll sensitivity for easy scrolling with minimal effort
-      const scrollSensitivity = 2.2;
-      container.scrollLeft = startScrollLeft - (dx * scrollSensitivity);
-      lastX = x;
-      lastTime = now;
-    };
-
-    const onPointerUp = (e: PointerEvent) => {
-      if (!isDragging) return;
-      
-      isDragging = false;
-      container.style.cursor = 'grab';
-      
-      // Re-enable snap after a short delay to allow momentum
-      setTimeout(() => {
-        container.style.scrollSnapType = 'x mandatory';
-      }, 100);
-
-      // Apply momentum scrolling
-      if (Math.abs(velocity) > 0.5) {
-        applyMomentum();
-      }
-    };
-
-    const onClickCapture = (e: MouseEvent) => {
-      // If user dragged significantly, prevent click
-      if (hasMoved) {
-        e.preventDefault();
-        e.stopPropagation();
-        hasMoved = false;
-      }
-    };
-
-    // Mouse/Pointer events
-    container.addEventListener('pointerdown', onPointerDown);
-    container.addEventListener('pointermove', onPointerMove);
-    container.addEventListener('pointerup', onPointerUp);
-    container.addEventListener('pointercancel', onPointerUp);
-    container.addEventListener('click', onClickCapture, true);
+    calculateWidth();
+    window.addEventListener('resize', calculateWidth);
 
     return () => {
-      stopMomentum();
-      container.removeEventListener('pointerdown', onPointerDown);
-      container.removeEventListener('pointermove', onPointerMove);
-      container.removeEventListener('pointerup', onPointerUp);
-      container.removeEventListener('pointercancel', onPointerUp);
-      container.removeEventListener('click', onClickCapture, true);
+      window.removeEventListener('resize', calculateWidth);
     };
-  }, [products]);
+  }, [calculateWidth]);
 
   if (loading) {
     return (
@@ -328,42 +274,57 @@ export default function FeaturedProducts() {
 
   return (
     <div className="container mx-auto px-0 md:px-0 mb-16 md:mb-24">
-      <div className="max-w-[1800px] mx-auto px-0 md:px-0">
+      <div className="max-w-[1440px] mx-auto px-0 md:px-0">
         <h2 className="text-white text-lg sm:text-[24px] md:text-[28px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em]  text-center font-['Roboto_Mono']">
           FEATURED PRODUCTS
         </h2>
         
-        {/* Mobile & Desktop: Horizontal scroll with snap; desktop shows 3 cards */}
+        {/* Mobile & Desktop: Transform-based infinite scroll; desktop shows 3 cards */}
         <div 
-          ref={scrollContainerRef}
-          className="flex gap-6 md:gap-8 lg:gap-12 mt-6 overflow-x-auto scrollbar-hide pb-12 md:pb-16 px-4 md:px-12 lg:px-16 items-start snap-x snap-mandatory select-none"
+          className="mt-6 overflow-hidden relative pb-12 md:pb-16"
           style={{ 
-            scrollSnapType: 'x mandatory',
-            cursor: 'grab',
-            WebkitOverflowScrolling: 'touch',
-            scrollBehavior: 'smooth',
             paddingTop: '3rem',
             paddingBottom: '4rem'
           }}
+          onMouseDown={handlePointerDown}
+          onMouseMove={handlePointerMove}
+          onMouseUp={handlePointerUp}
+          onMouseLeave={handlePointerUp}
+          onTouchStart={handlePointerDown}
+          onTouchMove={handlePointerMove}
+          onTouchEnd={handlePointerUp}
         >
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-8 md:gap-12 px-4 md:px-6 items-start w-max will-change-transform cursor-grab active:cursor-grabbing select-none"
+            style={{
+              transform: `translateX(${translateX.current}px)`,
+            }}
+          >
           {displayProducts.map((product, index) => {
             const isCentered = centeredCard === index;
             
             return (
               <div
-                key={product.id}
+                key={`${product.id}-${index}`}
                 ref={(el) => setCardRef(index, el)}
-                className={`flex flex-col relative w-[75%] min-w-[75%] md:w-[calc(33.333%-2rem)] md:min-w-[calc(33.333%-2rem)] flex-none snap-center ${isCentered ? 'z-10' : 'z-0'}`}
+                className={`flex flex-col relative w-[75%] min-w-[75%] md:w-[calc((1440px-96px)/3)] md:min-w-[calc((1440px-96px)/3)] flex-none ${isCentered ? 'z-10' : 'z-0'}`}
                 style={{ 
-                  scrollSnapAlign: 'center',
                   willChange: 'transform'
                 }}
               >
                 <Link 
                   href={`/product/${product.slug || String(product.id)}`}
-                  className="block group w-full cursor-pointer"
+                  className="block w-full cursor-pointer"
                   style={{ cursor: 'inherit' }}
                   draggable={false}
+                  onClick={(e) => {
+                    // Prevent navigation if user was dragging
+                    if (wasDraggingRef.current) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
+                  }}
                 >
                   <div 
                     className="relative w-full bg-[#2D2D2D] overflow-hidden rounded-sm"
@@ -381,81 +342,45 @@ export default function FeaturedProducts() {
                       filter: isCentered ? 'brightness(1.08) contrast(1.02)' : 'brightness(0.88) contrast(0.95)'
                     }}
                   >
-                    {/* Image wrapper */}
+                    {/* Image wrapper - NO hover effects */}
                     <div 
                       className="relative w-full h-full transform-gpu origin-center"
                     >
-                      {/* Main Image */}
+                      {/* Main Image - Always show first image, no hover change */}
                       <Image
                         src={product.image || "/images/placeholder.png"}
                         alt={product.name || "Featured product"}
                         fill
                         style={{ objectFit: 'cover' }}
-                        className={`transition-opacity duration-300 ${product.images && product.images.length > 1 ? 'group-hover:opacity-0' : ''}`}
-                        sizes="(max-width: 768px) 100vw, 33vw"
+                        sizes="(max-width: 768px) 100vw, calc((1440px - 96px) / 3)"
                       />
-                      {/* Hover Image (Second Image) - Only show if available */}
-                      {product.images && product.images.length > 1 && product.images[1] && (
-                        <Image
-                          src={product.images[1]}
-                          alt={product.name || "Featured product"}
-                          fill
-                          style={{ objectFit: 'cover' }}
-                          className="transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                        />
-                      )}
                     </div>
 
-                    {/* Product Name - Bottom Left (not scaled, stays readable) */}
+                    {/* Product Name - Bottom Left */}
                     {product.name && (
-                      <div className="absolute bottom-0 left-0 p-4 z-20 transition-transform duration-300 group-hover:-translate-y-8">
+                      <div className="absolute bottom-0 left-0 p-4 z-20">
                         <h3 className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] uppercase leading-tight">
                           {product.name}
                         </h3>
                       </div>
                     )}
 
-                    {/* Hover Overlay - Finishes on Left, Price on Right (not scaled) */}
-                    <div className="absolute inset-0 bg-black/20 transition-all duration-300 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 z-30 pointer-events-none">
-                      <div className="flex justify-between items-end w-full gap-4 pointer-events-auto">
-                        {/* Variants/Finishes - Bottom Left (Moves to name's original position on hover) */}
-                        {product.variants && product.variants.length > 0 && (
-                          <div className="flex-shrink-0 min-w-0 transition-transform duration-300 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
-                            <div className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono']">
-                              {product.variants.length} {product.variants.length === 1 ? 'Finish' : 'Finishes'}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Price - Bottom Right */}
-                        <div className="flex-shrink-0 transition-transform duration-300 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
-                          {product.price && (
-                            <div className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] text-right">
-                              {product.price.startsWith('$') ? product.price : `$${product.price}`}
-                            </div>
-                          )}
+                    {/* Price - Only show on centered card, bottom right */}
+                    {isCentered && product.price && (
+                      <div className="absolute bottom-0 right-0 p-4 z-20">
+                        <div className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] text-right">
+                          {product.price.startsWith('$') ? product.price : `$${product.price}`}
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </Link>
               </div>
             );
           })}
+          </div>
         </div>
       </div>
-
-      {/* Custom styles for smooth drag experience */}
-      <style jsx>{`
-        :global(.scrollbar-hide::-webkit-scrollbar) {
-          display: none;
-        }
-        :global(.scrollbar-hide) {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 }
