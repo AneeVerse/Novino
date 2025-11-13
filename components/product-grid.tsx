@@ -98,7 +98,6 @@ export default function ProductGrid({
 }: ProductGridProps) {
   // Use internal state only if no external state is provided
   const [internalActiveCategory, setInternalActiveCategory] = useState<string>(propCategories[0]);
-  const [hoveredProductId, setHoveredProductId] = useState<number | string | null>(null);
   
   // Use external category state if provided, otherwise use internal
   const activeCategory = propActiveCategory !== undefined ? propActiveCategory : internalActiveCategory;
@@ -207,13 +206,9 @@ export default function ProductGrid({
           }}
         >
           {displayProducts.map((product) => {
-            const isHovered = hoveredProductId === product.id;
-            const displayImage = isHovered && product.images && product.images[1] 
-              ? product.images[1] 
-              : product.image;
-            
-            // Use parent product ID for variants, otherwise use the product's own ID
-            // For variants, add the variantId as a query parameter to auto-select it
+            const primaryImage = product.image;
+            const secondaryImage = product.images && product.images[1];
+
             const productLink = product.isVariant && product.parentProductId 
               ? `/product/${product.parentProductId}?variant=${product.variantId}`
               : `/product/${product.id}`;
@@ -223,34 +218,41 @@ export default function ProductGrid({
                 href={productLink} 
                 key={product.id} 
                 className="group flex-none w-[280px] snap-center"
-                onMouseEnter={() => setHoveredProductId(product.id)}
-                onMouseLeave={() => setHoveredProductId(null)}
               >
-                <div className="h-[380px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
+                <div className="h-[380px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-500 hover:border-white/30 hover:shadow-[0_35px_70px_-30px_rgba(0,0,0,0.85)]">
                   <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
                     <Image
-                      key={displayImage}
-                      src={displayImage}
+                      src={primaryImage}
                       alt={(product.name || product.title || "Product") as string}
                       fill
-                      className="object-cover transition-all duration-500 group-hover:scale-105"
+                      className={`object-cover transition duration-700 ease-out group-hover:scale-105 ${
+                        secondaryImage ? "group-hover:opacity-0" : ""
+                      }`}
                       sizes="280px"
                     />
+                    {secondaryImage && (
+                      <Image
+                        src={secondaryImage}
+                        alt={(product.name || product.title || "Product") as string}
+                        fill
+                        className="object-cover transition duration-700 ease-out opacity-0 group-hover:opacity-100"
+                        sizes="280px"
+                      />
+                    )}
                     {/* Bottom shadow gradient for text visibility */}
-                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none"></div>
+                    <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/95 via-black/65 to-transparent pointer-events-none"></div>
                     
                     {/* Text overlay at bottom - animates on hover */}
-                    <div className="absolute inset-x-0 bottom-0 p-5 z-10 transition-all duration-300 group-hover:-translate-y-2">
+                    <div className="absolute inset-x-0 bottom-0 p-5 z-10 transition-all duration-400 group-hover:-translate-y-2">
                       <div className="space-y-2">
-                        <div className="text-xs uppercase tracking-[0.3em] text-white/90 drop-shadow-lg transition-all duration-300">
+                        <div className="text-xs uppercase tracking-[0.3em] text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] transition-all duration-400">
                           {product.category}
                         </div>
-                        <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-lg">
+                        <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)]">
                           {product.name || product.title || "Untitled"}
                         </h3>
-                        {/* Price - hidden by default, shows on hover */}
                         {(product.price || product.date || product.role) && (
-                          <p className="text-sm text-white/80 drop-shadow-lg opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-10 transition-all duration-300">
+                          <p className="text-sm text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-10 transition-all duration-400">
                             {product.price ? formatPrice(product.price) : (product.date || product.role)}
                           </p>
                         )}
@@ -266,13 +268,9 @@ export default function ProductGrid({
         {/* Desktop: Grid */}
         <div className="hidden sm:grid grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {displayProducts.map((product) => {
-            const isHovered = hoveredProductId === product.id;
-            const displayImage = isHovered && product.images && product.images[1] 
-              ? product.images[1] 
-              : product.image;
+            const primaryImage = product.image;
+            const secondaryImage = product.images && product.images[1];
             
-            // Use parent product ID for variants, otherwise use the product's own ID
-            // For variants, add the variantId as a query parameter to auto-select it
             const productLink = product.isVariant && product.parentProductId 
               ? `/product/${product.parentProductId}?variant=${product.variantId}`
               : `/product/${product.id}`;
@@ -282,34 +280,41 @@ export default function ProductGrid({
                 href={productLink} 
                 key={product.id} 
                 className="group"
-                onMouseEnter={() => setHoveredProductId(product.id)}
-                onMouseLeave={() => setHoveredProductId(null)}
               >
-                <div className="h-[480px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-white/30 hover:shadow-2xl hover:shadow-black/30">
+                <div className="h-[480px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-white/30 hover:shadow-[0_45px_90px_-35px_rgba(0,0,0,0.85)]">
                   <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
                     <Image
-                      key={displayImage}
-                      src={displayImage}
+                      src={primaryImage}
                       alt={(product.name || product.title || "Product") as string}
                       fill
-                      className="object-cover transition-all duration-500 group-hover:scale-105"
+                      className={`object-cover transition duration-700 ease-out group-hover:scale-105 ${
+                        secondaryImage ? "group-hover:opacity-0" : ""
+                      }`}
                       sizes="(min-width: 1024px) 420px, (min-width: 640px) 50vw, 100vw"
                     />
+                    {secondaryImage && (
+                      <Image
+                        src={secondaryImage}
+                        alt={(product.name || product.title || "Product") as string}
+                        fill
+                        className="object-cover transition duration-700 ease-out opacity-0 group-hover:opacity-100"
+                        sizes="(min-width: 1024px) 420px, (min-width: 640px) 50vw, 100vw"
+                      />
+                    )}
                     {/* Bottom shadow gradient for text visibility */}
-                    <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none"></div>
+                    <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/95 via-black/65 to-transparent pointer-events-none"></div>
                     
                     {/* Text overlay at bottom - animates on hover */}
-                    <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-10 transition-all duration-300 group-hover:-translate-y-3">
+                    <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-10 transition-all duration-400 group-hover:-translate-y-3">
                       <div className="space-y-2">
-                        <div className="text-xs uppercase tracking-[0.3em] text-white/90 drop-shadow-lg transition-all duration-300">
+                        <div className="text-xs uppercase tracking-[0.3em] text-white drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] transition-all duration-400">
                           {product.category}
                         </div>
-                        <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-lg">
+                        <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
                           {product.name || product.title || "Untitled"}
                         </h3>
-                        {/* Price - hidden by default, shows on hover */}
                         {(product.price || product.date || product.role) && (
-                          <p className="text-sm text-white/80 drop-shadow-lg opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-10 transition-all duration-300">
+                          <p className="text-sm text-white drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-10 transition-all duration-400">
                             {product.price ? formatPrice(product.price) : (product.date || product.role)}
                           </p>
                         )}
