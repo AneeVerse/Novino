@@ -1,8 +1,6 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
-import { Menu, X, Star, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
 import VideoSection from "@/components/video-section"
 import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
@@ -11,7 +9,7 @@ import Footer from "@/components/footer"
 import ProductTestimonial from "@/components/product-testimonial"
 import MasonryGallery from "@/components/masonry-gallery"
 import FeaturedProducts from "@/components/featured-products"
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import "@fontsource/dm-serif-display"
 import "@fontsource/roboto-mono"
 import ProductGrid from "@/components/product-grid"
@@ -93,7 +91,7 @@ export default function Home() {
         const categories = await res.json();
         
         // Get ALL products from all categories (filtering handled by ProductGrid)
-        const allProducts: Product[] = [];
+        const allProducts: any[] = [];
         categories.forEach((category: any) => {
           if (category.products && Array.isArray(category.products)) {
             category.products.forEach((product: any) => {
@@ -141,6 +139,36 @@ export default function Home() {
     
     return () => clearTimeout(timer);
   }, []);
+
+  // Scroll to footer when arriving with hash
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const scrollToFooter = () => {
+      if (window.location.hash === "#site-footer") {
+        window.setTimeout(() => {
+          const footerEl = document.getElementById("site-footer");
+          if (footerEl) {
+            const footerTop = footerEl.getBoundingClientRect().top + window.scrollY;
+            const bottomPosition = Math.min(
+              footerTop + footerEl.offsetHeight,
+              document.body.scrollHeight
+            );
+            window.scrollTo({ top: bottomPosition, behavior: "smooth" });
+          } else {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+          }
+        }, 150);
+      }
+    };
+
+    if (!loading) {
+      scrollToFooter();
+    }
+
+    window.addEventListener("hashchange", scrollToFooter);
+    return () => window.removeEventListener("hashchange", scrollToFooter);
+  }, [loading]);
 
   // Add scroll event listener for parallax effect and text color transition
   useEffect(() => {

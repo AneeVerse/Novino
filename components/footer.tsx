@@ -41,7 +41,7 @@ export default function Footer() {
 
   return (
     <div className="relative overflow-hidden">
-      <footer className="relative mx-2 mb-12 max-w-[2400px]">
+      <footer id="site-footer" className="relative mx-2 mb-12 max-w-[2400px]">
         <div className="relative p-0 bg-[#292929] sm:bg-transparent" style={{ 
           backgroundImage: "none",
           backgroundSize: "100% 100%", 
@@ -207,22 +207,22 @@ export default function Footer() {
                   </div>
                   <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.help ? 'max-h-40' : 'max-h-0'}`}>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Customer Support
+                      <Link href="/payment-policy" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Payment Policy
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Delivery Details
+                      <Link href="/shipping-policy" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Shipping Policy
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                      <Link href="/terms-conditions" className="text-gray-300 hover:text-white text-xs font-satoshi">
                         Terms & Conditions
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                      <Link href="/privacy-policy" className="text-gray-300 hover:text-white text-xs font-satoshi">
                         Privacy Policy
                       </Link>
                     </li>
@@ -234,22 +234,22 @@ export default function Footer() {
                   <h3 className="text-white text-lg font-medium mb-4 font-satoshi">HELP</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Customer Support
+                      <Link href="/payment-policy" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Payment Policy
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Delivery Details
+                      <Link href="/shipping-policy" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Shipping Policy
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                      <Link href="/terms-conditions" className="text-gray-300 hover:text-white text-sm font-satoshi">
                         Terms & Conditions
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                      <Link href="/privacy-policy" className="text-gray-300 hover:text-white text-sm font-satoshi">
                         Privacy Policy
                       </Link>
                     </li>
@@ -289,7 +289,7 @@ export default function Footer() {
                     </li>
                     <li>
                       <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Payments
+                        Customer Support
                       </Link>
                     </li>
                   </ul>
@@ -316,7 +316,7 @@ export default function Footer() {
                     </li>
                     <li>
                       <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Payments
+                        Customer Support
                       </Link>
                     </li>
                   </ul>

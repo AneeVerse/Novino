@@ -15,6 +15,7 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import NavigationLoading from "@/components/navigation-loading"
 import { Toaster } from "@/components/ui/toaster"
 import Analytics from "@/components/analytics"
+import { useEffect } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -34,6 +35,31 @@ export default function RootLayout({
   const isAdminRoute = pathname?.startsWith('/admin') || isDashboard;
   const isLinkoPage = pathname?.startsWith('/linko.page/');
   const isVCardPage = pathname?.startsWith('/vcard');
+
+  useEffect(() => {
+    const scrollToFooter = () => {
+      if (typeof window === "undefined") return;
+      if (window.location.hash === "#site-footer") {
+        window.setTimeout(() => {
+          const footerEl = document.getElementById("site-footer");
+          if (footerEl) {
+            const footerTop = footerEl.getBoundingClientRect().top + window.scrollY;
+            const bottomPosition = Math.min(
+              footerTop + footerEl.offsetHeight,
+              document.documentElement.scrollHeight
+            );
+            window.scrollTo({ top: bottomPosition, behavior: "smooth" });
+          } else {
+            window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+          }
+        }, 150);
+      }
+    };
+
+    scrollToFooter();
+    window.addEventListener("hashchange", scrollToFooter);
+    return () => window.removeEventListener("hashchange", scrollToFooter);
+  }, [pathname]);
   
   return (
     <html lang="en" suppressHydrationWarning>
