@@ -1,36 +1,28 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getProductUrl } from '@/lib/utils';
 
-interface ProductVariant {
-  id: string;
-  name: string;
-  type: 'frame' | 'color';
-  price?: string;
-  quantity: number;
-  imageUrl?: string;
-}
-
-interface Product {
+interface FeaturedProduct {
   id: string | number;
   name?: string;
-  price?: string;
+  price?: string | number;
   image: string;
   images?: string[];
-  variants?: ProductVariant[];
+  category?: string;
   categoryId?: string;
-  type?: string;
-  featured?: boolean;
-  featuredImageUrl?: string;
-  slug?: string;
+  slug?: string | number;
+  createdAt?: string;
 }
 
-export default function FeaturedProducts() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+interface FeaturedProductsProps {
+  initialProducts: FeaturedProduct[];
+}
+
+export default function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
+  const [products, setProducts] = useState<FeaturedProduct[]>([]);
   const [centeredCard, setCenteredCard] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -64,63 +56,19 @@ export default function FeaturedProducts() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Fetch latest products from API - now from artefact-categories
+  // Initialize products from props
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
-          cache: 'no-store'
-        });
-        if (!res.ok) throw new Error('Failed to fetch products');
-        const categories = await res.json();
-        
-        // Get all products from "Painting" category (case-insensitive)
-        const paintingProducts: any[] = [];
-        categories.forEach((category: any) => {
-          // Check if category name contains "painting" (case-insensitive)
-          if (category.name && category.name.toLowerCase().includes('painting')) {
-            if (category.products && Array.isArray(category.products)) {
-              category.products.forEach((product: any) => {
-                paintingProducts.push({
-                  id: product.id,
-                  name: product.name,
-                  price: product.basePrice,
-                  image: product.images?.[0] || "/images/placeholder.png",
-                  images: product.images || [],
-                  variants: [],
-                  category: category.name,
-                  categoryId: category.id || category._id,
-                  type: 'painting',
-                  featured: true,
-                  slug: product.id
-                });
-              });
-            }
-          }
-        });
-        
-        // Sort by createdAt (most recent first)
-        paintingProducts.sort((a: any, b: any) => {
-          if (a.createdAt && b.createdAt) {
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          }
-          return 0;
-        });
-        
-        // Duplicate products for infinite loop
-        const duplicatedProducts = [...paintingProducts, ...paintingProducts];
-        setProducts(duplicatedProducts);
-      } catch (err) {
-        console.error('Error fetching featured products:', err);
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchProducts();
-  }, []);
+    if (initialProducts && initialProducts.length > 0) {
+      const duplicatedProducts = [...initialProducts, ...initialProducts];
+      setProducts(duplicatedProducts);
+      translateX.current = 0;
+      setCenteredCard(0);
+    } else {
+      setProducts([]);
+      translateX.current = 0;
+      setCenteredCard(null);
+    }
+  }, [initialProducts]);
 
   // Calculate total width of one set of products for infinite loop
   const calculateWidth = useCallback(() => {
@@ -178,16 +126,32 @@ export default function FeaturedProducts() {
   useEffect(() => {
     if (products.length === 0) return;
     
+    const container = scrollContainerRef.current;
+    const containerRect = container?.parentElement?.getBoundingClientRect();
+
+    if (container && containerRect) {
+      const firstCard = cardRefsMap.current.get(0);
+      if (firstCard) {
+        const firstCardRect = firstCard.getBoundingClientRect();
+        const firstCardCenter = firstCardRect.left + firstCardRect.width / 2;
+        const viewportCenter = containerRect.left + containerRect.width / 2;
+        const offset = viewportCenter - firstCardCenter;
+
+        translateX.current = offset;
+        container.style.transform = `translateX(${translateX.current}px)`;
+        if (centeredCard === null) {
+          setCenteredCard(0);
+        }
+      }
+    }
+
     let rafId: number | null = null;
     const updateCenter = () => {
       detectCenteredCard();
       rafId = requestAnimationFrame(updateCenter);
     };
 
-    // Initial detection after layout
-    setTimeout(detectCenteredCard, 100);
-    
-    // Start continuous detection loop
+    detectCenteredCard();
     rafId = requestAnimationFrame(updateCenter);
     window.addEventListener('resize', detectCenteredCard);
 
@@ -195,7 +159,7 @@ export default function FeaturedProducts() {
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener('resize', detectCenteredCard);
     };
-  }, [products, detectCenteredCard]);
+  }, [products]);
 
   // Handle Pointer Events for Drag with Infinite Loop (same logic as CreativeSection)
   const handlePointerDown = (e: React.MouseEvent | React.PointerEvent | React.TouchEvent) => {
@@ -400,16 +364,6 @@ export default function FeaturedProducts() {
     setTimeout(centerFirstCard, 200);
   }, [products]);
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 md:px-0 mb-16">
-        <div className="flex justify-center items-center h-96">
-          <div className="text-white font-['Roboto_Mono']">Loading...</div>
-        </div>
-      </div>
-    );
-  }
-
   if (products.length === 0) {
     return null;
   }
@@ -460,7 +414,7 @@ export default function FeaturedProducts() {
                 }}
               >
                 <Link 
-                  href={`/product/${product.slug || String(product.id)}`}
+                  href={getProductUrl({ id: product.id, slug: product.slug ? String(product.slug) : undefined })}
                   className="block w-full cursor-pointer"
                   style={{ cursor: 'inherit' }}
                   draggable={false}

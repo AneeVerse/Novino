@@ -9,7 +9,7 @@ import Footer from "@/components/footer"
 import ProductTestimonial from "@/components/product-testimonial"
 import MasonryGallery from "@/components/masonry-gallery"
 import FeaturedProducts from "@/components/featured-products"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import "@fontsource/dm-serif-display"
 import "@fontsource/roboto-mono"
 import ProductGrid from "@/components/product-grid"
@@ -129,6 +129,23 @@ export default function Home() {
            product.category === activeCategory || // Direct match (rare)
            product.categoryId === activeCategory; // Match by ID
   });
+
+  // Derive featured painting products for FeaturedProducts component
+  const featuredPaintingProducts = useMemo(() => {
+    const paintingProducts = products.filter((product) =>
+      (product.category || "").toLowerCase().includes("painting")
+    );
+
+    // Sort if createdAt exists, newest first
+    paintingProducts.sort((a: any, b: any) => {
+      if (a.createdAt && b.createdAt) {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+      return 0;
+    });
+
+    return paintingProducts;
+  }, [products]);
 
   // Initial load - delay text appearance
   useEffect(() => {
@@ -294,7 +311,7 @@ export default function Home() {
 
         {/* Featured Products Section */}
         <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
-          <FeaturedProducts />
+        <FeaturedProducts initialProducts={featuredPaintingProducts} />
         </div>
 
         {/* Gallery Grid - with negative margins to make it wider */}
