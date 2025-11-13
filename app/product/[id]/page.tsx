@@ -404,6 +404,11 @@ export default function ProductDetail() {
     fetchProduct()
   }, [productId, router])
 
+  const [currentImageSrc, setCurrentImageSrc] = useState<string | null>(null);
+  const [previousImageSrc, setPreviousImageSrc] = useState<string | null>(null);
+  const [currentImageOpacity, setCurrentImageOpacity] = useState(1);
+  const [previousImageOpacity, setPreviousImageOpacity] = useState(0);
+
   // Auto-scroll through images
   useEffect(() => {
     if (!isAutoScrolling || !product?.images || product.images.length <= 1) return;
@@ -470,14 +475,14 @@ export default function ProductDetail() {
           });
           
           // Filter products: get products from same category, excluding current product
+          const currentProductIdStr = product?.id ? String(product.id) : '';
           const related = allProducts.filter((p: any) => {
-            // Exclude current product
-            if (p.id === product.id) return false;
+            if (String(p.id) === currentProductIdStr) return false;
             
             // If we found the category, match by category ID
             if (currentCategory) {
               const currentCatId = currentCategory.id || currentCategory._id;
-              return p.categoryId === currentCatId;
+              return String(p.categoryId) === String(currentCatId);
             }
             
             // Fallback: match by category name
@@ -535,18 +540,9 @@ export default function ProductDetail() {
     }
   };
 
-  // Show loading while fetching or if product is not yet loaded
-  if (isLoading || !product) {
-    return <Preloader ariaLabel="Loading Product" />
-  }
-
-  // Use either the image array or fallback to a single image
-  const productImage = product.image || (product.images && product.images.length > 0 ? product.images[0] : "/images/painting/2.1.png")
-  // Use either price or basePrice, whichever is available
-  const productPrice = product.price || product.basePrice || "$0"
-  
-  // Handle the product images array
-  const productImages = product.images || [productImage];
+  const resolvedProductImage = product?.image || (product?.images && product.images.length > 0 ? product.images[0] : "/images/painting/2.1.png");
+  const productPrice = product?.price || product?.basePrice || "$0";
+  const productImages = product?.images && product.images.length > 0 ? product.images : [resolvedProductImage];
   const totalImages = productImages.length;
   
   // Treat all products in same category as variants
@@ -558,8 +554,8 @@ export default function ProductDetail() {
   const activeVariant = hoveredVariant || selectedVariant;
   
   // Use variant data if hovering or selected, otherwise use product data
-  const displayedName = activeVariant?.name || product.name;
-  const displayedDescription = activeVariant?.description || product.description;
+  const displayedName = activeVariant?.name || product?.name;
+  const displayedDescription = activeVariant?.description || product?.description;
   const displayedPrice = activeVariant?.basePrice || activeVariant?.price || productPrice;
   const variantImages = activeVariant?.images && activeVariant.images.length > 0 
     ? activeVariant.images 
@@ -567,10 +563,48 @@ export default function ProductDetail() {
   
   const displayedImage = variantImages 
     ? (currentImage < variantImages.length ? variantImages[currentImage] : variantImages[0])
-    : (currentImage < productImages.length ? productImages[currentImage] : productImage);
-  
+    : (currentImage < productImages.length ? productImages[currentImage] : resolvedProductImage);
+
+  useEffect(() => {
+    if (!displayedImage) return;
+
+    if (currentImageSrc === null) {
+      setCurrentImageSrc(displayedImage);
+      setCurrentImageOpacity(1);
+      setPreviousImageSrc(null);
+      setPreviousImageOpacity(0);
+      return;
+    }
+
+    if (displayedImage === currentImageSrc) return;
+
+    setPreviousImageSrc(currentImageSrc);
+    setPreviousImageOpacity(1);
+
+    setCurrentImageSrc(displayedImage);
+    setCurrentImageOpacity(0);
+
+    requestAnimationFrame(() => {
+      setCurrentImageOpacity(1);
+      setPreviousImageOpacity(0);
+    });
+
+    const timeout = setTimeout(() => {
+      setPreviousImageSrc(null);
+    }, 700);
+
+    return () => clearTimeout(timeout);
+  }, [displayedImage, currentImageSrc]);
+
   // Get display images array for thumbnails
   const displayImages = variantImages || productImages;
+
+  // Show loading while fetching or if product is not yet loaded
+  if (isLoading || !product) {
+    return <Preloader ariaLabel="Loading Product" />
+  }
+
+  const productImage = resolvedProductImage;
 
   // Generate breadcrumbs
   const productUrl = product.slug || product.id?.toString() || productId?.toString() || '';
@@ -649,38 +683,27 @@ export default function ProductDetail() {
         <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
           <div className="relative z-10 px-4 md:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-              {/* Left column - About section with category and product info */}
+              {/* Left column - Product and Design section */}
               <div className="lg:col-span-3 flex flex-col justify-start py-8 pr-4 lg:pr-8">
-                {/* About heading */}
-                <h2 className="text-xl uppercase tracking-widest text-white/40 mb-6 font-['Roboto_Mono']">
-                  About
-                </h2>
-                
-                {/* Category Name and Description */}
-                {categoryName && (
-                  <div className="mb-6">
-                    <h3 className="text-lg uppercase tracking-wider text-white/70 mb-2 font-['Roboto_Mono']">
-                      {categoryName}
-                    </h3>
-                    {categoryDescription && (
-                      <p className="text-white/60 leading-relaxed text-sm font-['Roboto_Mono']">
-                        {categoryDescription}
-                      </p>
-                    )}
-                  </div>
-                )}
-                
-                {/* Design divider */}
-                <div className="text-xs uppercase tracking-widest text-white/30 mb-4 font-['Roboto_Mono']">
-                  — Design —
-                </div>
-                
-                {/* Product Name and Description - Changes on variant hover/select */}
-                <h1 className="text-2xl sm:text-3xl lg:text-3xl font-light mb-4 tracking-wide font-['Roboto_Mono'] transition-opacity duration-300" style={{ lineHeight: '1.2' }}>
-                  {displayedName?.toUpperCase()}
+                {/* PRODUCT: CATEGORY NAME - Same size as product name */}
+                <h1 className="text-2xl sm:text-3xl lg:text-2xl font-light mb-4 tracking-wide font-['Roboto_Mono']" style={{ lineHeight: '1.2' }}>
+                  PRODUCT: {categoryName?.toUpperCase() || 'PRODUCT'}
                 </h1>
                 
-                <div className="text-white/70 leading-relaxed text-sm sm:text-base lg:text-base font-['Roboto_Mono'] transition-opacity duration-300">
+                {/* Category Description - Light white/gray */}
+                {categoryDescription && (
+                  <p className="text-white/60 leading-relaxed text-sm sm:text-base lg:text-base mb-6 font-['Roboto_Mono']">
+                    {categoryDescription}
+                  </p>
+                )}
+                
+                {/* DESIGN: PRODUCT NAME - Same size as "PRODUCT" label */}
+                <h2 className="text-xl uppercase tracking-widest text-white mb-4 font-['Roboto_Mono']">
+                  DESIGN: {displayedName?.toUpperCase() || 'DESIGN'}
+                </h2>
+                
+                {/* Product Description - Light white/gray - Changes on variant hover/select */}
+                <div className="text-white/60 leading-relaxed text-sm sm:text-base lg:text-base font-['Roboto_Mono'] transition-opacity duration-300">
                   <p className="whitespace-pre-line">{displayedDescription}</p>
                 </div>
               </div>
@@ -692,23 +715,32 @@ export default function ProductDetail() {
                   className="md:col-span-4 md:col-start-1 flex flex-col gap-4 order-1 md:order-1 md:ml-12" 
                   data-product-image
                 >
-                  {/* Main Product Image */}
                   <div 
                     className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] overflow-hidden select-none bg-black/20 rounded-sm group cursor-pointer"
-                  onMouseEnter={() => setIsAutoScrolling(false)}
-                  onMouseLeave={() => setIsAutoScrolling(true)}
-                >
+                    onMouseEnter={() => setIsAutoScrolling(false)}
+                    onMouseLeave={() => setIsAutoScrolling(true)}
+                  >
+                    {previousImageSrc && (
+                      <Image
+                        src={previousImageSrc}
+                        alt={product.name || "Previous product image"}
+                        fill
+                        style={{ objectFit: 'cover', objectPosition: 'center', opacity: previousImageOpacity }}
+                        priority
+                        className="pointer-events-none transition-all duration-700 ease-out"
+                        draggable={false}
+                      />
+                    )}
                     <Image
-                      src={displayedImage}
+                      src={currentImageSrc ?? displayedImage ?? resolvedProductImage}
                       alt={product.name || "Product Image"}
                       fill
-                      style={{ objectFit: 'cover', objectPosition: 'center' }}
+                      style={{ objectFit: 'cover', objectPosition: 'center', opacity: currentImageOpacity }}
                       priority
                       className="pointer-events-none transition-all duration-700 ease-out group-hover:scale-105"
                       draggable={false}
                     />
                     
-                    {/* Subtle overlay on hover */}
                     <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-500 pointer-events-none" />
                   </div>
 
