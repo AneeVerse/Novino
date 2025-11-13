@@ -1,10 +1,7 @@
 import { MetadataRoute } from 'next';
 import connectToDatabase from '@/lib/db';
+import connectToMongoDB from '@/lib/mongodb-client';
 import Blog from '@/models/Blog';
-import { MongoClient } from 'mongodb';
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const MONGODB_DB = process.env.MONGODB_DB || 'novino';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_VERCEL_URL 
   ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` 
   : 'https://novino.io';
@@ -61,9 +58,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic routes - Products
   let productRoutes: MetadataRoute.Sitemap = [];
   try {
-    const client = new MongoClient(MONGODB_URI);
-    await client.connect();
-    const db = client.db(MONGODB_DB);
+    // Use cached MongoDB connection
+    const { db } = await connectToMongoDB();
     const productsCollection = db.collection('products');
     
     const products = await productsCollection.find({}).toArray();
@@ -77,8 +73,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
       };
     });
-    
-    await client.close();
   } catch (error) {
     console.error('Error fetching products for sitemap:', error);
   }

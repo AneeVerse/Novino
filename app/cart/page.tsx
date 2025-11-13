@@ -6,19 +6,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ChevronDown, ChevronUp, Check, X, Heart, MapPin, Calendar, AlertCircle } from "lucide-react";
+import { Loader2, Check, X, Heart, MapPin, Calendar, AlertCircle } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
 interface SelectedItems {
   [key: string]: boolean;
-}
-
-interface PromoState {
-  coupon: boolean;
-  giftVoucher: boolean;
-  giftWrap: boolean;
-  membership: boolean;
-  points: boolean;
 }
 
 interface SavedAddress {
@@ -42,15 +34,6 @@ export default function CartPage() {
   // State for selected items
   const [selectedItems, setSelectedItems] = useState<SelectedItems>({});
   const [selectAll, setSelectAll] = useState(true);
-  
-  // State for promotional sections
-  const [promoState, setPromoState] = useState<PromoState>({
-    coupon: false,
-    giftVoucher: false,
-    giftWrap: false,
-    membership: false,
-    points: false,
-  });
   
   // State for delivery address
   const [deliveryAddress, setDeliveryAddress] = useState<SavedAddress | null>(null);
@@ -108,8 +91,6 @@ export default function CartPage() {
     fetchAddresses();
   }, []);
   
-  // State for payment method
-  const [paymentMethod, setPaymentMethod] = useState<string>("card");
   
   // Initialize all items as selected only when cart changes (new items added)
   useEffect(() => {
@@ -171,9 +152,8 @@ export default function CartPage() {
       return total + (itemPrice * item.quantity);
     }, 0);
     
-    // Add gift wrap if selected (₹25)
-    const giftWrapAmount = promoState.giftWrap ? 25 : 0;
-    const totalInclusive = subtotalInclusive + giftWrapAmount;
+    // Total is the subtotal (no gift wrap)
+    const totalInclusive = subtotalInclusive;
     
     // Extract base price (excluding GST) - GST is 18% in India
     // If price is GST inclusive: basePrice = totalInclusive / 1.18
@@ -189,12 +169,11 @@ export default function CartPage() {
       subtotal: subtotalInclusive, 
       gst, 
       cartTotal, 
-      total,
-      giftWrapAmount 
+      total
     };
   };
   
-  const { subtotal, gst, cartTotal, total, giftWrapAmount } = calculateTotals();
+  const { subtotal, gst, cartTotal, total } = calculateTotals();
   const selectedCount = getSelectedItems().length;
   const totalItems = cart.length;
   
@@ -268,25 +247,7 @@ export default function CartPage() {
   
   // Handle place order with address validation
   const handlePlaceOrder = () => {
-    // Check if address is added
-    if (!deliveryAddress) {
-      toast({
-        variant: "destructive",
-        title: "Address Required",
-        description: "Please add a delivery address first before placing order",
-      });
-      setShowAddressForm(true);
-      // Scroll to address form
-      setTimeout(() => {
-        const addressSection = document.querySelector('[data-address-section]');
-        if (addressSection) {
-          addressSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-      return;
-    }
-    
-    // Check if at least one item is selected
+    // Check if at least one item is selected first
     if (selectedCount === 0) {
       toast({
         variant: "destructive",
@@ -296,17 +257,20 @@ export default function CartPage() {
       return;
     }
     
-    // Store selected items and extras in localStorage for checkout page
+    // Store selected items in localStorage
     const selectedItemsList = getSelectedItems();
     localStorage.setItem('selectedCartItems', JSON.stringify(selectedItemsList));
-    localStorage.setItem('cartExtras', JSON.stringify({
-      giftWrap: promoState.giftWrap,
-      coupon: promoState.coupon,
-      giftVoucher: promoState.giftVoucher
-    }));
     
-    // Navigate to checkout
-    router.push('/checkout');
+    // Check if address is added
+    if (!deliveryAddress) {
+      // No address - redirect to address page
+      router.push('/cart/address');
+      return;
+    }
+    
+    // Address exists - store it and go directly to payment
+    localStorage.setItem('selectedAddress', JSON.stringify(deliveryAddress));
+    router.push('/payment');
   };
 
   if (isLoading) {
@@ -349,19 +313,47 @@ export default function CartPage() {
               <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-[#AE876D]">MY BAG</span>
             </div>
             <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
-            <div className="flex items-center flex-shrink-0">
+            <button 
+              onClick={() => {
+                if (deliveryAddress) {
+                  router.push('/cart/address');
+                } else {
+                  router.push('/cart/address');
+                }
+              }}
+              className="flex items-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            >
               <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#444444] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 2
               </div>
               <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/60">ADDRESS</span>
-            </div>
+            </button>
             <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
-            <div className="flex items-center flex-shrink-0">
+            <button 
+              onClick={() => {
+                if (deliveryAddress && selectedCount > 0) {
+                  router.push('/payment');
+                } else if (!deliveryAddress) {
+                  toast({
+                    variant: "destructive",
+                    title: "Address Required",
+                    description: "Please add a delivery address first",
+                  });
+                } else if (selectedCount === 0) {
+                  toast({
+                    variant: "destructive",
+                    title: "No Items Selected",
+                    description: "Please select at least one item",
+                  });
+                }
+              }}
+              className="flex items-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            >
               <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#444444] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 3
               </div>
               <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/60">PAYMENT</span>
-            </div>
+            </button>
           </div>
         </div>
         
@@ -964,7 +956,7 @@ export default function CartPage() {
           
           {/* Right Column - Order Summary */}
           <div className="lg:w-1/3">
-            <div className="bg-[#333333] rounded-lg p-4 sm:p-6 sticky top-20 sm:top-24">
+            <div className="bg-[#333333] rounded-lg p-4 sm:p-6 sticky top-24 sm:top-28 self-start">
               {/* Place Order Button */}
               <button
                 onClick={handlePlaceOrder}
@@ -974,113 +966,6 @@ export default function CartPage() {
                 PLACE ORDER
               </button>
               
-              {/* Free Shipping */}
-              <div className="mb-4 sm:mb-6">
-                <p className="text-white/90 text-xs sm:text-sm mb-2">Free shipping on all orders</p>
-                <button className="text-[#AE876D] hover:text-[#8d6c58] text-xs sm:text-sm font-medium">
-                  View all benefits
-                  <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 inline ml-1" />
-                </button>
-              </div>
-              
-              {/* Collapsible Sections */}
-              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                {/* Apply Coupon */}
-                <div className="border border-[#444444] rounded-md">
-                  <button
-                    onClick={() => setPromoState(prev => ({ ...prev, coupon: !prev.coupon }))}
-                    className="w-full flex items-center justify-between p-2 sm:p-3 text-left hover:bg-[#444444] transition-colors"
-                  >
-                    <span className="text-white text-xs sm:text-sm font-medium">Apply Coupon</span>
-                    {promoState.coupon ? (
-                      <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
-                    )}
-                  </button>
-                  {promoState.coupon && (
-                    <div className="p-2 sm:p-3 border-t border-[#444444]">
-                      <input
-                        type="text"
-                        placeholder="Enter coupon code"
-                        className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
-                      />
-                      <button className="mt-2 w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 rounded text-xs sm:text-sm font-medium">
-                        Apply
-                      </button>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Gift Voucher */}
-                <div className="border border-[#444444] rounded-md">
-                  <button
-                    onClick={() => setPromoState(prev => ({ ...prev, giftVoucher: !prev.giftVoucher }))}
-                    className="w-full flex items-center justify-between p-2 sm:p-3 text-left hover:bg-[#444444] transition-colors"
-                  >
-                    <span className="text-white text-xs sm:text-sm font-medium">Gift Voucher</span>
-                    {promoState.giftVoucher ? (
-                      <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
-                    )}
-                  </button>
-                  {promoState.giftVoucher && (
-                    <div className="p-2 sm:p-3 border-t border-[#444444]">
-                      <input
-                        type="text"
-                        placeholder="Enter voucher code"
-                        className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
-                      />
-                      <button className="mt-2 w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 rounded text-xs sm:text-sm font-medium">
-                        Apply
-                      </button>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Gift Wrap */}
-                <div className="border border-[#444444] rounded-md p-2 sm:p-3">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={promoState.giftWrap}
-                      onChange={(e) => setPromoState(prev => ({ ...prev, giftWrap: e.target.checked }))}
-                      className="w-4 h-4 rounded border-[#444444] bg-[#222222] text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
-                    />
-                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm font-medium">Gift Wrap ({formatPrice(25)})</span>
-                  </label>
-                </div>
-                
-                {/* TSS Money / Points */}
-                <div className="border border-[#444444] rounded-md">
-                  <button
-                    onClick={() => setPromoState(prev => ({ ...prev, points: !prev.points }))}
-                    className="w-full flex items-center justify-between p-2 sm:p-3 text-left hover:bg-[#444444] transition-colors"
-                  >
-                    <span className="text-white text-xs sm:text-sm font-medium">TSS Money / TSS Points</span>
-                    {promoState.points ? (
-                      <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 flex-shrink-0" />
-                    )}
-                  </button>
-                  {promoState.points && (
-                    <div className="p-2 sm:p-3 border-t border-[#444444]">
-                      <p className="text-white/70 text-xs sm:text-sm mb-2">Available Points: 0</p>
-                      <input
-                        type="number"
-                        placeholder="Enter points to redeem"
-                        className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-[#AE876D]"
-                      />
-                      <button className="mt-2 w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 rounded text-xs sm:text-sm font-medium">
-                        Apply
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
               {/* Billing Details */}
               <div className="border-t border-[#444444] pt-4 sm:pt-6">
                 <h3 className="text-white font-semibold mb-3 sm:mb-4 uppercase text-xs sm:text-sm">Billing Details</h3>
@@ -1089,12 +974,6 @@ export default function CartPage() {
                     <span className="text-white/70 break-words pr-2">Cart Total (Excl. of all taxes)</span>
                     <span className="text-white flex-shrink-0">{formatPrice(cartTotal)}</span>
                   </div>
-                  {giftWrapAmount > 0 && (
-                    <div className="flex justify-between text-xs sm:text-sm">
-                      <span className="text-white/70">Gift Wrap</span>
-                      <span className="text-white">{formatPrice(giftWrapAmount)}</span>
-                    </div>
-                  )}
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-white/70">GST</span>
                     <span className="text-white">{formatPrice(gst)}</span>
@@ -1106,57 +985,6 @@ export default function CartPage() {
                     <span className="text-white">Total</span>
                     <span className="text-white">{formatPrice(total)}</span>
                   </div>
-                </div>
-              </div>
-              
-              {/* Payment Methods */}
-              <div className="mt-4 sm:mt-6 border-t border-[#444444] pt-4 sm:pt-6">
-                <h3 className="text-white font-semibold mb-3 sm:mb-4 uppercase text-xs sm:text-sm">Payment Method</h3>
-                <div className="space-y-2 sm:space-y-3">
-                  <label className="flex items-center p-2 sm:p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="card"
-                      checked={paymentMethod === "card"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
-                    />
-                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm">Credit/Debit Card</span>
-                  </label>
-                  <label className="flex items-center p-2 sm:p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="upi"
-                      checked={paymentMethod === "upi"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
-                    />
-                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm">UPI</span>
-                  </label>
-                  <label className="flex items-center p-2 sm:p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="cod"
-                      checked={paymentMethod === "cod"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
-                    />
-                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm">Cash on Delivery</span>
-                  </label>
-                  <label className="flex items-center p-2 sm:p-3 border border-[#444444] rounded-md cursor-pointer hover:bg-[#444444] transition-colors">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="wallet"
-                      checked={paymentMethod === "wallet"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-4 h-4 text-[#AE876D] focus:ring-[#AE876D] focus:ring-offset-0 flex-shrink-0"
-                    />
-                    <span className="ml-2 sm:ml-3 text-white text-xs sm:text-sm">Wallet</span>
-                  </label>
                 </div>
               </div>
             </div>

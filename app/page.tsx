@@ -33,10 +33,12 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All Products");
   const [showText, setShowText] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
-  const [heroParallax, setHeroParallax] = useState(0);
   
   // State for filtering in the ProductGrid
   const [gridActiveCategory, setGridActiveCategory] = useState("All Products");
+  
+  // Ref for smooth parallax effect without re-renders
+  const heroImageRef = useRef<HTMLDivElement>(null);
   
   // Debug when grid category changes
   useEffect(() => {
@@ -151,9 +153,11 @@ export default function Home() {
         window.requestAnimationFrame(() => {
           setScrollPosition(position);
           
-          // Parallax effect - image moves down slower than scroll (0.5 speed)
-          const parallaxValue = position * 0.5;
-          setHeroParallax(parallaxValue);
+          // Parallax effect - directly manipulate DOM for butter-smooth scrolling
+          if (heroImageRef.current) {
+            const parallaxValue = position * 0.5;
+            heroImageRef.current.style.transform = `translate3d(0, ${parallaxValue}px, 0)`;
+          }
           
           // Calculate transition percentage (0 to 100)
           // Adjust these values to control when the color change happens
@@ -201,10 +205,11 @@ export default function Home() {
       <div className="relative w-full h-[600px] md:h-[740px] overflow-hidden">
         {/* Hero Image with Parallax Effect */}
         <div 
+          ref={heroImageRef}
           className="absolute inset-0 w-full h-full"
           style={{
-            transform: `translateY(${heroParallax}px)`,
-            willChange: 'transform'
+            willChange: 'transform',
+            transform: 'translate3d(0, 0, 0)'
           }}
         >
           <Image

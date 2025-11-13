@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
+import connectToMongoDB from '@/lib/mongodb-client';
 
-// MongoDB connection URI (would typically be in env variables)
+// MongoDB connection check
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const MONGODB_DB = process.env.MONGODB_DB || 'novino';
 
 type Category = {
   _id?: string;
@@ -31,9 +31,6 @@ export default async function handler(
       error: 'Invalid category ID provided' 
     });
   }
-
-  // Create a MongoDB connection
-  const client = new MongoClient(MONGODB_URI);
 
   console.log('Categories [id] API called with method:', method, 'for ID:', id);
   
@@ -109,8 +106,8 @@ export default async function handler(
   }
 
   try {
-    await client.connect();
-    const db = client.db(MONGODB_DB);
+    // Use cached MongoDB connection
+    const { db } = await connectToMongoDB();
     const collection = db.collection('categories');
 
     // Convert string ID to ObjectId if needed
@@ -189,12 +186,5 @@ export default async function handler(
   } catch (error) {
     console.error('API Error:', error);
     res.status(500).json({ success: false, error: 'Server error' });
-  } finally {
-    try {
-      await client.close();
-      console.log('MongoDB connection closed');
-    } catch (closeError) {
-      console.error('Error closing MongoDB connection:', closeError);
-    }
   }
 } 

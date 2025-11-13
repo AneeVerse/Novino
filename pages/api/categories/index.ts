@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient } from 'mongodb';
+import connectToMongoDB from '@/lib/mongodb-client';
 
-// MongoDB connection URI (would typically be in env variables)
+// MongoDB connection check
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const MONGODB_DB = process.env.MONGODB_DB || 'novino';
 
@@ -19,9 +19,6 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { method } = req;
-
-  // Create a MongoDB connection
-  const client = new MongoClient(MONGODB_URI);
   
   console.log('Categories API called with method:', method);
   console.log('Request body:', req.body);
@@ -69,10 +66,8 @@ export default async function handler(
   
   // Proceed with MongoDB if available
   try {
-    await client.connect();
-    console.log('Connected to MongoDB database');
-    
-    const db = client.db(MONGODB_DB);
+    // Use cached MongoDB connection
+    const { db } = await connectToMongoDB();
     const collection = db.collection('categories');
 
     switch (method) {
@@ -115,12 +110,5 @@ export default async function handler(
       message: error.message,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
-  } finally {
-    try {
-      await client.close();
-      console.log('MongoDB connection closed');
-    } catch (closeError) {
-      console.error('Error closing MongoDB connection:', closeError);
-    }
   }
 } 
