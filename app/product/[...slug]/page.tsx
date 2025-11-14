@@ -119,7 +119,7 @@ export default function ProductDetail() {
   const [currentImage, setCurrentImage] = useState(0)
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [hoveredVariant, setHoveredVariant] = useState<any>(null); // For preview on hover
-  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   // Reset current image when switching products
@@ -725,7 +725,14 @@ export default function ProductDetail() {
                   images: p.images || [],
                   category: category.name,
                   categoryId: category.id || category._id,
-                  categoryName: category.name
+                  categoryName: category.name,
+                  description: p.description || '',
+                  shortDescription: p.shortDescription || '',
+                  summary: p.summary || '',
+                  tagline: p.tagline || '',
+                  specifications: p.specifications,
+                  faqSection: p.faqSection,
+                  variants: p.variants
                 });
               });
             }
@@ -769,37 +776,39 @@ export default function ProductDetail() {
 
   // Add to cart handler
   const handleAddToCart = () => {
-    if (product) {
-      // Ensure product has a valid ID
-      if (!product.id) {
-        console.error('Product missing ID:', product);
-        alert('Error: Product ID is missing. Cannot add to cart.');
-        return;
-      }
-      
-      // Prepare the cart item with all required fields
-      const cartItem = {
-        id: String(product.id).trim(), // Ensure ID is a string and trimmed
-        name: product.name || 'Unnamed Product',
-        price: displayedPrice,
-        image: displayedImage || product.image || '',
-        quantity: quantity || 1,
-        variant: selectedVariant ? selectedVariant.name : undefined
-      };
-      
-      console.log('Adding to cart:', {
-        id: cartItem.id,
-        name: cartItem.name,
-        price: cartItem.price,
-        quantity: cartItem.quantity
-      });
-      
-      // Add to cart (this will automatically open the cart drawer)
-      addToCart(cartItem);
-    } else {
+    const cartSource = selectedVariant || product;
+    
+    if (!cartSource) {
       console.error('Product is undefined');
       alert('Error: Product information is missing.');
+      return;
     }
+
+    const cartSourceId = cartSource.id || product?.id;
+    if (!cartSourceId) {
+      console.error('Product missing ID:', cartSource);
+      alert('Error: Product ID is missing. Cannot add to cart.');
+      return;
+    }
+    
+    // Prepare the cart item with all required fields
+    const cartItem = {
+      id: String(cartSourceId).trim(),
+      name: cartSource.name || product?.name || 'Unnamed Product',
+      price: displayedPrice,
+      image: displayedImage || cartSource.image || product?.image || '',
+      quantity: quantity || 1,
+      variant: selectedVariant ? selectedVariant.name : undefined
+    };
+    
+    console.log('Adding to cart:', {
+      id: cartItem.id,
+      name: cartItem.name,
+      price: cartItem.price,
+      quantity: cartItem.quantity
+    });
+    
+    addToCart(cartItem);
   };
 
   const resolvedProductImage = product?.image || (product?.images && product.images.length > 0 ? product.images[0] : "/images/painting/2.1.png");
@@ -814,10 +823,28 @@ export default function ProductDetail() {
   // Get the current image to display based on hover or selection
   // Priority: hoveredVariant > selectedVariant > original product
   const activeVariant = hoveredVariant || selectedVariant;
+
+  const getPreferredDescription = (item?: any) => {
+    if (!item) return '';
+    const sources = [
+      item.description,
+      item.shortDescription,
+      item.summary,
+      item.tagline
+    ];
+    for (const text of sources) {
+      if (typeof text === 'string' && text.trim().length > 0) {
+        return text.trim();
+      }
+    }
+    return '';
+  };
   
   // Use variant data if hovering or selected, otherwise use product data
   const displayedName = activeVariant?.name || product?.name;
-  const displayedDescription = activeVariant?.description || product?.description;
+  const variantDescription = getPreferredDescription(activeVariant);
+  const productDescription = getPreferredDescription(product);
+  const displayedDescription = variantDescription || productDescription;
   const displayedPrice = activeVariant?.basePrice || activeVariant?.price || productPrice;
   const variantImages = activeVariant?.images && activeVariant.images.length > 0 
     ? activeVariant.images 
@@ -1039,7 +1066,7 @@ export default function ProductDetail() {
                 <div 
                   className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] select-none group cursor-pointer overflow-visible"
                     onMouseEnter={() => setIsAutoScrolling(false)}
-                    onMouseLeave={() => setIsAutoScrolling(true)}
+                    onMouseLeave={() => setIsAutoScrolling(false)}
                 >
                   {/* Circular gradient glow that overflows and blends with background */}
                   <div
@@ -1094,7 +1121,6 @@ export default function ProductDetail() {
                             onClick={() => {
                               setCurrentImage(i);
                               setIsAutoScrolling(false);
-                              setTimeout(() => setIsAutoScrolling(true), 10000);
                             }}
                             className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
                               currentImage === i 
@@ -1122,7 +1148,7 @@ export default function ProductDetail() {
                   {categoryVariants.length > 0 && (
                     <div className="flex flex-col gap-3 mb-8">
                       <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">
-                        Select Product
+                        Select Variant
                       </div>
                       
                       <div className="flex gap-2 flex-wrap">
@@ -1153,26 +1179,29 @@ export default function ProductDetail() {
                         </button>
                         
                         {/* Other Products in Category (treated as variants) - Hover to preview, Click to navigate */}
-                        {categoryVariants.slice(0, 5).map((variant: any) => (
-                          <button
+                        {categoryVariants.slice(0, 5).map((variant: any) => {
+                          const isActiveVariant = selectedVariant?.id === variant.id;
+                          const isHoveredVariant = hoveredVariant?.id === variant.id;
+                          
+                          return (
+                            <button
                             key={variant.id}
                             onMouseEnter={() => setHoveredVariant(variant)}
                             onMouseLeave={() => setHoveredVariant(null)}
                             onClick={() => {
-                              const targetUrl = getProductUrl({
-                                id: variant.id,
-                                slug: variant.slug,
-                                category: variant.category || categoryName,
-                                name: variant.name,
-                                title: variant.name,
-                                type: variant.type || product?.type
-                              })
-                              router.push(targetUrl)
+                              setSelectedVariant((prev) =>
+                                prev?.id === variant.id ? prev : variant
+                              );
+                              setHoveredVariant(null);
+                              setCurrentImage(0);
+                              setIsAutoScrolling(false);
                             }}
                             className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
-                              hoveredVariant?.id === variant.id
-                                ? 'border-white/60 opacity-100'
-                                : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                              isActiveVariant
+                                ? 'border-white shadow-lg shadow-white/20'
+                                : isHoveredVariant
+                                  ? 'border-white/60 opacity-100'
+                                  : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
                             }`}
                             title={variant.name}
                           >
@@ -1188,14 +1217,15 @@ export default function ProductDetail() {
                             <div className="absolute bottom-1 left-1 right-1 text-[8px] text-white/90 truncate uppercase font-['Roboto_Mono'] opacity-0 group-hover:opacity-100 transition-opacity">
                               {variant.name}
                             </div>
-                          </button>
-                        ))}
+                            </button>
+                          );
+                        })}
                       </div>
                       
                       {/* Display hover preview hint */}
                       {hoveredVariant && (
                         <div className="text-xs text-white/40 font-['Roboto_Mono'] italic">
-                          Previewing: {hoveredVariant.name} • Click to view
+                          Previewing: {hoveredVariant.name} • Click to select
                         </div>
                       )}
                     </div>
