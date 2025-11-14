@@ -93,6 +93,8 @@ interface ProductWithDescription {
   specifications?: any;
   faqSection?: any;
   additionalImageUrl?: string;
+  shortDescription?: string;
+  logoUrl?: string;
 }
 
 // Helper type for accordion content
@@ -344,7 +346,9 @@ export default function ProductDetail() {
                 specifications: product?.specifications,
                 faqSection: product?.faqSection,
                 additionalImageUrl: product?.additionalImageUrl,
-                slug: product?.slug ?? productIdCandidate ?? productSlug
+                slug: product?.slug ?? productIdCandidate ?? productSlug,
+                shortDescription: product?.shortDescription ?? product?.summary ?? product?.tagline ?? product?.intro,
+                logoUrl: product?.logoUrl ?? product?.logo ?? product?.brandLogo ?? product?.branding?.logoUrl
               }
 
               return {
@@ -818,6 +822,15 @@ export default function ProductDetail() {
   const variantImages = activeVariant?.images && activeVariant.images.length > 0 
     ? activeVariant.images 
     : null;
+  const heroIntroText =
+    (product?.shortDescription && product.shortDescription.trim()) ||
+    (product?.summary && product.summary.trim()) ||
+    (product?.tagline && product.tagline.trim()) ||
+    (categoryDescription && categoryDescription.trim()) ||
+    (displayedDescription
+      ? displayedDescription.replace(/\s+/g, ' ').trim().slice(0, 220)
+      : '');
+  const productLogoUrl = product?.logoUrl;
   
   const displayedImage = variantImages 
     ? (currentImage < variantImages.length ? variantImages[currentImage] : variantImages[0])
@@ -954,28 +967,40 @@ export default function ProductDetail() {
         <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
           <div className="relative z-10 px-4 md:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-              {/* Left column - Product and Design section */}
-              <div className="lg:col-span-3 flex flex-col justify-start py-8 pr-4 lg:pr-8">
-                {/* PRODUCT: CATEGORY NAME - Same size as product name */}
-                <h1 className="text-2xl sm:text-3xl lg:text-2xl font-light mb-4 tracking-wide font-['Roboto_Mono']" style={{ lineHeight: '1.2' }}>
-                  PRODUCT: {categoryName?.toUpperCase() || 'PRODUCT'}
-                </h1>
-                
-                {/* Category Description - Light white/gray */}
-                {categoryDescription && (
-                  <p className="text-white/60 leading-relaxed text-sm sm:text-base lg:text-base mb-6 font-['Roboto_Mono']">
-                    {categoryDescription}
+              {/* Left column - Product storytelling */}
+              <div className="lg:col-span-3 flex flex-col justify-start py-8 -mr-12 ">
+                {displayedName && (
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80 mb-4 font-['Roboto_Mono']">
+                    {displayedName}
                   </p>
                 )}
+
+                {heroIntroText && (
+                  <p className="text-white/70 leading-relaxed text-base lg:text-lg mb-6 font-['Roboto_Mono']">
+                    {heroIntroText}
+                  </p>
+                )}
+
+                {productLogoUrl && (
+                  <div className="mb-8">
+                    <Image
+                      src={productLogoUrl}
+                      alt={`${displayedName || 'Product'} logo`}
+                      width={240}
+                      height={120}
+                      className="w-auto h-16 sm:h-20 object-contain"
+                    />
+                  </div>
+                )}
                 
-                {/* DESIGN: PRODUCT NAME - Same size as "PRODUCT" label */}
-                <h2 className="text-xl uppercase tracking-widest text-white mb-4 font-['Roboto_Mono']">
-                  DESIGN: {displayedName?.toUpperCase() || 'DESIGN'}
-                </h2>
-                
-                {/* Product Description - Light white/gray - Changes on variant hover/select */}
-                <div className="text-white/60 leading-relaxed text-sm sm:text-base lg:text-base font-['Roboto_Mono'] transition-opacity duration-300">
-                  <p className="whitespace-pre-line">{displayedDescription}</p>
+                <div className="pt-6 border-t border-white/10">
+                  <h2 className="text-xl uppercase tracking-widest text-white mb-4 font-['Roboto_Mono']">
+                    DESIGN: {displayedName?.toUpperCase() || 'DESIGN'}
+                  </h2>
+                  
+                  <div className="text-white/60 leading-relaxed text-sm sm:text-base lg:text-base font-['Roboto_Mono'] transition-opacity duration-300">
+                    <p className="whitespace-pre-line">{displayedDescription}</p>
+                  </div>
                 </div>
               </div>
 
