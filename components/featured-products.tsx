@@ -374,7 +374,7 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
   // Use all featured products
   const displayProducts = products;
 
-  const headingText = title?.toUpperCase() || 'FEATURED PAINTINGS';
+  const headingText = title?.toUpperCase() || 'NATURE THROUGH NEW EYES';
 
   return (
     <div className="container mx-auto px-0 md:px-0 mb-16 md:mb-24">

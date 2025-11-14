@@ -90,11 +90,11 @@ interface ProductGridProps {
 }
 
 export default function ProductGrid({ 
-  title = "Elevate Your Gallery", 
-  subtitle = "All Products", 
+  title = "Bring the Patterns Home", 
+  subtitle = "Choose the design that speaks to you. Each product features one of five nature-inspired patterns \n created through direct observation and imagination.", 
   products: propProducts = products, 
   categories: propCategories = ["All Products"],
-  viewAllText = "Discover the collection",
+  viewAllText = "See All Products",
   showViewAllButton = true,
   activeCategory: propActiveCategory,
   onCategoryChange,
@@ -187,10 +187,12 @@ export default function ProductGrid({
         <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-[#2D2D2D]/95 mix-blend-multiply"></div>
         <div className="absolute inset-x-0 bottom-0 h-44 sm:h-52 bg-gradient-to-b from-transparent via-[#2D2D2D]/70 to-[#2D2D2D]"></div>
         <div className="relative z-10 max-w-[1440px] mx-auto px-6 sm:px-10 py-24 sm:py-32 text-center text-white space-y-6">
-          <span className="block text-sm sm:text-base uppercase tracking-[0.8em] text-white/70">{subtitle}</span>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-light tracking-[0.12em]">
-            Elevate Your Gallery
+          <h2 className="text-4xl sm:text-7xl md:text-[74px] font-light ">
+            {title}
           </h2>
+          <span className=" max-w-[1000px] mx-auto block text-sm sm:text-sm tracking-[0.2em] text-white/80 whitespace-pre-line">
+            {subtitle}
+          </span>
           {!hideCategoryFilters && propCategories.length > 1 && (
             <div className="flex flex-col items-center gap-2 sm:gap-3 pt-6">
               {[

@@ -31,8 +31,8 @@ export default function PaintingsPage() {
       <section className="relative z-10">
           <ProductGrid 
             key="painting-product-grid"
-            title="Masterpiece Collection" 
-            subtitle="Featured Collection" 
+            title="Five Designs, Five Stories" 
+            subtitle="Each painting explores a different aspect of nature and life -- from the unique journey of butterflies to the infinite layers of the sun. These are reflections of what exists around us and within us." 
             products={paintingProducts}
             categories={categories}
             viewAllText="View all paintings"

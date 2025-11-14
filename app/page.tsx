@@ -257,11 +257,11 @@ export default function Home() {
       <section className="relative z-10 mt-12 sm:mt-20">
         <ProductGrid 
           key="home-product-grid"
-          title="Elevate Your Gallery" 
-          subtitle="All Products" 
+          title="Bring the Patterns Home" 
+          subtitle="Choose the design that speaks to you. Each product features one of five nature-inspired patterns created through direct observation and imagination." 
           products={products}
           categories={categories}
-          viewAllText="View all"
+          viewAllText="See All Products"
           showViewAllButton={true}
           activeCategory={gridActiveCategory}
           onCategoryChange={setGridActiveCategory}

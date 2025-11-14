@@ -30,11 +30,11 @@ export default function ArtefactsPage() {
       <section className="relative z-10">
           <ProductGrid 
             key={`artefact-grid-${artefactProducts.length}`}
-            title="Our Collection" 
-            subtitle="Featured Products" 
+            title="Bring the Patterns Home" 
+            subtitle="Choose the design that speaks to you. Each product features one of five nature-inspired patterns created through direct observation and imagination." 
             products={artefactProducts}
             categories={categories}
-            viewAllText="View all products"
+            viewAllText="See All Products"
             showViewAllButton={false}
             showOnePerCategoryInAll={false}
             maxAllProducts={0}
