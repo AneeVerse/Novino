@@ -33,6 +33,7 @@ type Product = {
   id?: string;
   name: string;
   description: string;
+  shortDescription?: string;
   price?: string;
   basePrice?: string;
   quantity?: number;
@@ -46,6 +47,7 @@ type Product = {
   additionalImageUrl?: string;
   featured?: boolean;
   featuredImageUrl?: string;
+  logoUrl?: string;
   metaDescription?: string;
   slug?: string;
   createdAt?: string;
@@ -179,6 +181,8 @@ export default async function handler(
         const updateData: Partial<Product> = {
           name: req.body.name,
           description: req.body.description,
+          shortDescription: req.body.shortDescription || '',
+          logoUrl: req.body.logoUrl || '',
           // Handle both price formats
           price: req.body.price || req.body.basePrice,
           basePrice: req.body.basePrice || req.body.price,

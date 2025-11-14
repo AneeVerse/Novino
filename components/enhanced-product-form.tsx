@@ -63,6 +63,7 @@ interface Product {
   _id?: string;
   name: string;
   description: string;
+  shortDescription?: string;
   basePrice: string;
   quantity: number;
   images: string[]; // Array of image URLs
@@ -74,6 +75,7 @@ interface Product {
   additionalImageUrl?: string;
   featured?: boolean;
   featuredImageUrl?: string;
+  logoUrl?: string;
   metaDescription?: string;
   slug?: string;
   createdAt?: string;
@@ -106,12 +108,14 @@ export default function EnhancedProductForm({
   // Form state
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
   const [basePrice, setBasePrice] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [currentImageUrl, setCurrentImageUrl] = useState("");
   const [isAddingImage, setIsAddingImage] = useState(false);
+  const [logoUrl, setLogoUrl] = useState("");
 
   // Variants state
   const [variants, setVariants] = useState<ProductVariant[]>([]);
@@ -165,6 +169,7 @@ export default function EnhancedProductForm({
       console.log("Initializing form with product:", product);
       setName(product.name || "");
       setDescription(product.description || "");
+      setShortDescription(product.shortDescription || "");
       setBasePrice(product.basePrice || "");
       setQuantity(product.quantity || 1);
       
@@ -196,6 +201,7 @@ export default function EnhancedProductForm({
       }
       
       setImages(product.images || []);
+      setLogoUrl(product.logoUrl || "");
       
       // Set variants
       setVariants(product.variants || []);
@@ -249,10 +255,12 @@ export default function EnhancedProductForm({
           // Populate all form fields
           setName(full.name || '');
           setDescription(full.description || '');
+          setShortDescription(full.shortDescription || '');
           setBasePrice(full.basePrice || full.price || '');
           setQuantity(full.quantity || 1);
           setSelectedCategory(full.category || '');
           setImages(full.images || (full.image ? [full.image] : []));
+          setLogoUrl(full.logoUrl || '');
           setVariants(full.variants || []);
           setSpecificationTitle(full.specifications?.title || '');
           setSpecificationContent(full.specifications?.content || '');
@@ -288,6 +296,8 @@ export default function EnhancedProductForm({
         ...(mode === 'edit' && product?.id ? { id: product.id } : {}),
         name,
         description,
+        shortDescription,
+        logoUrl,
         basePrice,
         quantity,
         images,
@@ -655,6 +665,58 @@ export default function EnhancedProductForm({
                           placeholder="Enter product description"
                           required
                         ></textarea>
+                      </div>
+
+                      <div>
+                        <label htmlFor="short-description" className="block text-white font-medium mb-1.5 text-sm">
+                          Hero Intro / Short Description
+                        </label>
+                        <textarea
+                          id="short-description"
+                          value={shortDescription}
+                          onChange={(e) => setShortDescription(e.target.value)}
+                          maxLength={300}
+                          className="w-full bg-[#222222] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#A47E3B] focus:ring-1 focus:ring-[#A47E3B]/20 focus:outline-none transition-all h-24 resize-none"
+                          placeholder="1-2 sentences used in the hero text (max 300 characters)"
+                        ></textarea>
+                        <div className="text-xs text-white/50 mt-1 text-right">
+                          {shortDescription.length}/300
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="logo-url" className="block text-white font-medium mb-1.5 text-sm">
+                          Brand Logo URL
+                        </label>
+                        <input
+                          type="url"
+                          id="logo-url"
+                          value={logoUrl}
+                          onChange={(e) => setLogoUrl(e.target.value)}
+                          className="w-full bg-[#222222] border border-[#333333] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-[#A47E3B] focus:ring-1 focus:ring-[#A47E3B]/20 focus:outline-none transition-all"
+                          placeholder="https://example.com/path-to-logo.png"
+                        />
+                        <p className="mt-1 text-xs text-white/50">
+                          Optional. Displayed above the design description on the product page. Transparent PNG/SVG recommended.
+                        </p>
+                        {logoUrl && (
+                          <div className="mt-3 relative group max-w-xs">
+                            <div className="bg-[#111111] border border-[#333333] rounded-lg p-4 flex items-center justify-center">
+                              <img
+                                src={getValidImageUrl(logoUrl)}
+                                alt="Logo preview"
+                                className="max-h-20 object-contain"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setLogoUrl("")}
+                              className="absolute -top-2 -right-2 bg-red-600/90 hover:bg-red-600 rounded-full p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                     

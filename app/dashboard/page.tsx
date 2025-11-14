@@ -86,6 +86,8 @@ interface Product {
   specifications?: ProductSpecification;
   faqSection?: FaqSection;
   additionalImageUrl?: string;
+  shortDescription?: string;
+  logoUrl?: string;
   createdAt?: string;
 }
 

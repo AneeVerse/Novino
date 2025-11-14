@@ -970,13 +970,25 @@ export default function ProductDetail() {
               {/* Left column - Product storytelling */}
               <div className="lg:col-span-3 flex flex-col justify-start py-8 -mr-12 ">
                 {displayedName && (
-                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80 mb-4 font-['Roboto_Mono']">
-                    {displayedName}
-                  </p>
+                  <>
+                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80 mb-3 font-['Roboto_Mono']">
+                      {displayedName}
+                    </p>
+                    <div className="mb-6">
+                      <Image
+                        src="/images/NOVINO -WHITE.png"
+                        alt="Novino wordmark"
+                        width={140}
+                        height={32}
+                        className="w-28 sm:w-32 h-auto object-contain opacity-90"
+                        priority={false}
+                      />
+                    </div>
+                  </>
                 )}
 
                 {heroIntroText && (
-                  <p className="text-white/70 leading-relaxed text-base lg:text-lg mb-6 font-['Roboto_Mono']">
+                  <p className="text-white/70 leading-relaxed text-sm sm:text-base mb-5 font-['Roboto_Mono']">
                     {heroIntroText}
                   </p>
                 )}
@@ -998,7 +1010,7 @@ export default function ProductDetail() {
                     DESIGN: {displayedName?.toUpperCase() || 'DESIGN'}
                   </h2>
                   
-                  <div className="text-white/60 leading-relaxed text-sm sm:text-base lg:text-base font-['Roboto_Mono'] transition-opacity duration-300">
+                  <div className="text-white/60 leading-relaxed text-xs sm:text-sm font-['Roboto_Mono'] transition-opacity duration-300">
                     <p className="whitespace-pre-line">{displayedDescription}</p>
                   </div>
                 </div>

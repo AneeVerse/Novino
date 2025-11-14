@@ -29,9 +29,11 @@ export interface Product {
   _id?: string;
   name: string;
   description: string;
+  shortDescription?: string;
   basePrice: string;
   quantity: number;
   images: string[]; // Array of image URLs
+  logoUrl?: string;
   category: string;
   type: 'painting' | 'artefact';
   variants: ProductVariant[];

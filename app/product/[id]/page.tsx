@@ -781,13 +781,23 @@ export default function ProductDetail() {
               {/* Left column - Product and Design section */}
               <div className="lg:col-span-3 flex flex-col justify-start py-8 pr-4 lg:pr-8">
                 {/* PRODUCT: CATEGORY NAME - Same size as product name */}
-                <h1 className="text-2xl sm:text-3xl lg:text-2xl font-light mb-4 tracking-wide font-['Roboto_Mono']" style={{ lineHeight: '1.2' }}>
+                <h1 className="text-2xl sm:text-3xl lg:text-2xl font-light mb-3 tracking-wide font-['Roboto_Mono']" style={{ lineHeight: '1.2' }}>
                   PRODUCT: {categoryName?.toUpperCase() || 'PRODUCT'}
                 </h1>
+                <div className="mb-6">
+                  <Image
+                    src="/images/NOVINO -WHITE.png"
+                    alt="Novino wordmark"
+                    width={140}
+                    height={32}
+                    className="w-28 sm:w-32 h-auto object-contain opacity-90"
+                    priority={false}
+                  />
+                </div>
                 
                 {/* Category Description - Light white/gray */}
                 {categoryDescription && (
-                  <p className="text-white/60 leading-relaxed text-sm sm:text-base lg:text-base mb-6 font-['Roboto_Mono']">
+                  <p className="text-white/60 leading-relaxed text-sm sm:text-base mb-5 font-['Roboto_Mono']">
                     {categoryDescription}
                   </p>
                 )}
@@ -798,7 +808,7 @@ export default function ProductDetail() {
                 </h2>
                 
                 {/* Product Description - Light white/gray - Changes on variant hover/select */}
-                <div className="text-white/60 leading-relaxed text-sm sm:text-base lg:text-base font-['Roboto_Mono'] transition-opacity duration-300">
+                <div className="text-white/60 leading-relaxed text-xs sm:text-sm font-['Roboto_Mono'] transition-opacity duration-300">
                   <p className="whitespace-pre-line">{displayedDescription}</p>
                 </div>
               </div>
