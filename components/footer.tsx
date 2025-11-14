@@ -102,7 +102,7 @@ export default function Footer() {
               mixBlendMode: 'overlay'
             }}></div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 md:gap-8 relative z-10">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-8 relative z-10">
               {/* Brand Column */}
               <div className="col-span-2 sm:col-span-3 md:col-span-1">
                 <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-['Roboto_Mono']">Novino.io</h3>
@@ -323,71 +323,6 @@ export default function Footer() {
                 </div>
               </div>
               
-              {/* Resources Column */}
-              <div>
-                {/* Mobile view with collapsible sections */}
-                <div className="sm:hidden">
-                  <div 
-                    className="flex items-start cursor-pointer relative" 
-                    onClick={() => toggleSection('resources')}
-                  >
-                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">RESOURCES</h3>
-                    <ChevronRight 
-                      size={16} 
-                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.resources ? 'rotate-90' : ''}`} 
-                    />
-                  </div>
-                  <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.resources ? 'max-h-40' : 'max-h-0'}`}>
-                    <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Free eBooks
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Development Tutorial
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        How to - Blog
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        YouTube Playlist
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-                
-                {/* Desktop view with always visible links */}
-                <div className="hidden sm:block">
-                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">RESOURCES</h3>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Free eBooks
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Development Tutorial
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        How to - Blog
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        YouTube Playlist
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
             </div>
 
             {/* Bottom Section */}
