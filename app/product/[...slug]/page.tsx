@@ -822,6 +822,15 @@ export default function ProductDetail() {
   const variantImages = activeVariant?.images && activeVariant.images.length > 0 
     ? activeVariant.images 
     : null;
+  const primaryCategoryLabel = (categoryName || product?.category || '').trim();
+  const heroProductName = (() => {
+    const baseName = (displayedName || '').trim();
+    if (!baseName && !primaryCategoryLabel) return '';
+    if (!baseName) return primaryCategoryLabel;
+    if (!primaryCategoryLabel) return baseName;
+    const alreadyIncludesCategory = baseName.toLowerCase().includes(primaryCategoryLabel.toLowerCase());
+    return alreadyIncludesCategory ? baseName : `${baseName} ${primaryCategoryLabel}`.trim();
+  })();
   const heroIntroText =
     (product?.shortDescription && product.shortDescription.trim()) ||
     (product?.summary && product.summary.trim()) ||
@@ -830,6 +839,10 @@ export default function ProductDetail() {
     (displayedDescription
       ? displayedDescription.replace(/\s+/g, ' ').trim().slice(0, 220)
       : '');
+  const categoryNarrative =
+    (categoryDescription && categoryDescription.trim()) ||
+    heroIntroText ||
+    '';
   const productLogoUrl = product?.logoUrl;
   
   const displayedImage = variantImages 
@@ -969,12 +982,12 @@ export default function ProductDetail() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
               {/* Left column - Product storytelling */}
               <div className="lg:col-span-3 flex flex-col justify-start py-8 -mr-12 ">
-                {displayedName && (
+                {heroProductName && (
                   <>
                     <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80 mb-3 font-['Roboto_Mono']">
-                      {displayedName}
+                      {heroProductName}
                     </p>
-                    <div className="mb-6">
+                    <div className="mb-4">
                       <Image
                         src="/images/NOVINO -WHITE.png"
                         alt="Novino wordmark"
@@ -987,10 +1000,12 @@ export default function ProductDetail() {
                   </>
                 )}
 
-                {heroIntroText && (
-                  <p className="text-white/70 leading-relaxed text-sm sm:text-base mb-5 font-['Roboto_Mono']">
-                    {heroIntroText}
-                  </p>
+                {displayedDescription && (
+                  <div className="mb-5">
+                    <div className="text-white/70 leading-relaxed text-xs font-['Roboto_Mono'] transition-opacity duration-300">
+                      <p className="whitespace-pre-line">{displayedDescription}</p>
+                    </div>
+                  </div>
                 )}
 
                 {productLogoUrl && (
@@ -1005,15 +1020,13 @@ export default function ProductDetail() {
                   </div>
                 )}
                 
-                <div className="pt-6 border-t border-white/10">
-                  <h2 className="text-xl uppercase tracking-widest text-white mb-4 font-['Roboto_Mono']">
-                    DESIGN: {displayedName?.toUpperCase() || 'DESIGN'}
-                  </h2>
-                  
-                  <div className="text-white/60 leading-relaxed text-xs sm:text-sm font-['Roboto_Mono'] transition-opacity duration-300">
-                    <p className="whitespace-pre-line">{displayedDescription}</p>
+                {categoryNarrative && (
+                  <div className="pt-6 border-t border-white/10">
+                    <div className="text-white/60 leading-relaxed text-xs font-['Roboto_Mono'] transition-opacity duration-300">
+                      <p className="whitespace-pre-line">{categoryNarrative}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Right section - Product Image and Purchase Details */}
