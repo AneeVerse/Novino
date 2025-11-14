@@ -88,7 +88,7 @@ export default function AddressPage() {
     localStorage.setItem('selectedAddress', JSON.stringify(selectedAddress));
     
     // Navigate to payment
-    router.push('/checkout');
+    router.push('/payment');
   };
 
   const handleSaveAddress = async () => {
@@ -227,7 +227,7 @@ export default function AddressPage() {
             <button 
               onClick={() => {
                 if (selectedAddress) {
-                  router.push('/checkout');
+                  router.push('/payment');
                 } else {
                   toast({
                     variant: "destructive",

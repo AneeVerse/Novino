@@ -406,25 +406,31 @@ export default function CheckoutPage() {
         {/* Progress Indicator */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center justify-center space-x-1 sm:space-x-4 overflow-x-auto pb-2 px-2">
-            <div className="flex items-center flex-shrink-0">
-              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#444444] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
-                1
+            <button
+              onClick={() => router.push('/cart')}
+              className="flex items-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#22c55e] flex items-center justify-center text-[10px] sm:text-sm font-semibold text-black">
+                ✓
               </div>
-              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/60">MY BAG</span>
-            </div>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/80">MY BAG</span>
+            </button>
+            <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
+            <button
+              onClick={() => router.push('/cart/address')}
+              className="flex items-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#22c55e] flex items-center justify-center text-[10px] sm:text-sm font-semibold text-black">
+                ✓
+              </div>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/80">ADDRESS</span>
+            </button>
             <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
             <div className="flex items-center flex-shrink-0">
               <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#AE876D] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
-                2
-              </div>
-              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-[#AE876D]">ADDRESS</span>
-            </div>
-            <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
-            <div className="flex items-center flex-shrink-0">
-              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#444444] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 3
               </div>
-              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/60">PAYMENT</span>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-[#AE876D]">PAYMENT</span>
             </div>
           </div>
         </div>

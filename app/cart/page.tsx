@@ -270,7 +270,7 @@ export default function CartPage() {
     
     // Address exists - store it and go directly to payment
     localStorage.setItem('selectedAddress', JSON.stringify(deliveryAddress));
-    router.push('/payment');
+    router.push('/checkout');
   };
 
   if (isLoading) {
@@ -332,7 +332,7 @@ export default function CartPage() {
             <button 
               onClick={() => {
                 if (deliveryAddress && selectedCount > 0) {
-                  router.push('/payment');
+                  router.push('/checkout');
                 } else if (!deliveryAddress) {
                   toast({
                     variant: "destructive",
