@@ -21,9 +21,10 @@ interface FeaturedProduct {
 
 interface FeaturedProductsProps {
   initialProducts: FeaturedProduct[];
+  title?: string;
 }
 
-export default function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
+export default function FeaturedProducts({ initialProducts, title }: FeaturedProductsProps) {
   const [products, setProducts] = useState<FeaturedProduct[]>([]);
   const [centeredCard, setCenteredCard] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -373,11 +374,16 @@ export default function FeaturedProducts({ initialProducts }: FeaturedProductsPr
   // Use all featured products
   const displayProducts = products;
 
+  const headingText = title?.toUpperCase() || 'FEATURED PAINTINGS';
+
   return (
     <div className="container mx-auto px-0 md:px-0 mb-16 md:mb-24">
       <div className="max-w-[1440px] mx-auto px-0 md:px-0">
-        <h2 className="text-white text-lg sm:text-[24px] md:text-[28px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em] text-center font-['Roboto_Mono'] mb-8 md:mb-12">
-          FEATURED PRODUCTS
+        <h2
+          className="text-white text-lg sm:text-[24px] md:text-[30px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em] text-center mb-8 md:mb-12"
+          style={{ fontFamily: 'DM Serif Display', letterSpacing: '0.25em' }}
+        >
+          {headingText}
         </h2>
         
         {/* Mobile & Desktop: Transform-based infinite scroll; desktop shows 3 cards */}

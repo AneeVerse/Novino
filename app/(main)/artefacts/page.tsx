@@ -44,18 +44,14 @@ export default function ArtefactsPage() {
       {/* Clear separation from the hero section with negative margin to prevent overlap */}
       <div className="container mx-auto px-4 sm:px-6 md:px-8 mt-4 z-50 relative" style={{ marginTop: '2rem', clear: 'both' }}>
         {/* DISCOVER EXTRAORDINARY ARTIFACTS Section */}
-        <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
-          <div className="max-w-[2400px] mx-auto">
-            <div className="mb-8 sm:mb-16 p-6 rounded" style={{ position: 'relative', zIndex: 30 }}>
-              <h2 className="text-white text-[24px] sm:text-[28px] md:text-[38px] font-medium uppercase leading-[1.171875em] mb-4 sm:mb-8 text-center font-['Roboto_Mono']">DISCOVER EXTRAORDINARY ARTIFACTS WITH HISTORICAL SIGNIFICANCE</h2>
-              <p className="text-white text-sm sm:text-base leading-normal text-center mx-auto max-w-3xl font-['Roboto_Mono']">Explore our curated collection of rare artifacts with cultural and historical importance from civilizations around the world.</p>
-            </div>
-          </div>
-        </div>
+      
 
         {/* Gallery Grid - with negative margins to make it wider */}
         <div className="mb-16 relative">
-          <FeaturedProducts initialProducts={artefactProducts} />
+          <FeaturedProducts 
+            initialProducts={artefactProducts} 
+            title="Featured Products"
+          />
         </div>
       </div>
 

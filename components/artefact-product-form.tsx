@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { X, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Trash2, Image as ImageIcon, ArrowLeft, ArrowRight } from 'lucide-react';
 import { ArtefactProduct } from '@/app/dashboard/models/artefact';
 
 interface ArtefactProductFormProps {
@@ -100,6 +100,24 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
     setFormData({
       ...formData,
       images: formData.images.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleMoveImage = (index: number, direction: 'left' | 'right') => {
+    setFormData((prev) => {
+      const newImages = [...prev.images];
+      const targetIndex = direction === 'left' ? index - 1 : index + 1;
+
+      if (targetIndex < 0 || targetIndex >= newImages.length) {
+        return prev; // Out of bounds, no change
+      }
+
+      [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]];
+
+      return {
+        ...prev,
+        images: newImages,
+      };
     });
   };
 
@@ -234,13 +252,34 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
                         }}
                       />
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
+                    <div className="absolute inset-x-2 top-2 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-all gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveImage(index, 'left')}
+                        className="p-1.5 rounded-lg bg-black/60 text-white hover:bg-black/80 disabled:opacity-40"
+                        disabled={index === 0 || isSubmitting}
+                        aria-label="Move image left"
+                      >
+                        <ArrowLeft className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveImage(index, 'right')}
+                        className="p-1.5 rounded-lg bg-black/60 text-white hover:bg-black/80 disabled:opacity-40"
+                        disabled={index === formData.images.length - 1 || isSubmitting}
+                        aria-label="Move image right"
+                      >
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg"
+                        aria-label="Remove image"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                     {index === 0 && (
                       <div className="absolute bottom-2 left-2 px-2 py-1 bg-emerald-500 text-white text-xs font-medium rounded">
                         Thumbnail

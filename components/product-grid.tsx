@@ -66,10 +66,12 @@ interface Product {
   images?: string[];
   category: string;
   categoryId?: string;
+  slug?: string | number;
   isVariant?: boolean;
   variantId?: string;
   variantName?: string;
   variantType?: string;
+  type?: string;
   parentProductId?: number | string;
 }
 
@@ -190,19 +192,31 @@ export default function ProductGrid({
             Elevate Your Gallery
           </h2>
           {!hideCategoryFilters && propCategories.length > 1 && (
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 pt-6">
-              {propCategories.map((category) => (
-                <button
-                  key={category}
-                  className={`px-5 sm:px-7 py-2.5 rounded-full text-xs sm:text-sm transition-all duration-200 backdrop-blur ${
-                    category === activeCategory
-                      ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
-                      : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
-                  }`}
-                  onClick={() => handleCategoryChange(category)}
-                >
-                  {category}
-                </button>
+            <div className="flex flex-col items-center gap-2 sm:gap-3 pt-6">
+              {[
+                propCategories.slice(0, 5),
+                propCategories.slice(5),
+              ].map((row, rowIndex) => (
+                row.length > 0 && (
+                  <div
+                    key={`category-row-${rowIndex}`}
+                    className="flex flex-wrap justify-center gap-2 sm:gap-3"
+                  >
+                    {row.map((category) => (
+                      <button
+                        key={category}
+                        className={`px-5 sm:px-7 py-2.5 rounded-full text-xs sm:text-sm tracking-[0.25em] transition-all duration-200 backdrop-blur ${
+                          category === activeCategory
+                            ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
+                            : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
+                        }`}
+                        onClick={() => handleCategoryChange(category)}
+                      >
+                        {category?.toUpperCase?.() ? category.toUpperCase() : category}
+                      </button>
+                    ))}
+                  </div>
+                )
               ))}
             </div>
           )}
@@ -222,9 +236,13 @@ export default function ProductGrid({
             const primaryImage = product.image;
             const secondaryImage = product.images && product.images[1];
 
+            const productSlug =
+              typeof product.slug !== 'undefined'
+                ? product.slug.toString()
+                : undefined;
             const baseProductUrl = getProductUrl({
               id: product.isVariant && product.parentProductId ? product.parentProductId : product.id,
-              slug: product.slug,
+              slug: productSlug,
               category: product.category,
               name: product.name || product.title,
               title: product.name || product.title,
@@ -292,9 +310,13 @@ export default function ProductGrid({
             const primaryImage = product.image;
             const secondaryImage = product.images && product.images[1];
             
+            const productSlug =
+              typeof product.slug !== 'undefined'
+                ? product.slug.toString()
+                : undefined;
             const baseProductUrl = getProductUrl({
               id: product.isVariant && product.parentProductId ? product.parentProductId : product.id,
-              slug: product.slug,
+              slug: productSlug,
               category: product.category,
               name: product.name || product.title,
               title: product.name || product.title,

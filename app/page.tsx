@@ -234,21 +234,10 @@ export default function Home() {
 
       </div>
 
-      {/* Clear separation from the hero section with negative margin to prevent overlap */}
       <div className="container mx-auto px-4 md:px-0 mt-4 z-50 relative" style={{ clear: 'both' }}>
-        {/* ELEVATE ORDINARY WALLS Section */}
-        <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
-          <div className="max-w-[2400px] mx-auto px-4 md:pl-8">
-            <div className="mb-8 sm:mb-16 p-6 rounded " style={{ position: 'relative', zIndex: 30 }}>
-              <h2 className="text-white text-lg sm:text-[24px] md:text-[38px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em] mb-4 sm:mb-8 text-center font-['Roboto_Mono']">ELEVATE ORDINARY WALLS WITH EXTRAORDINARY GALLERIES</h2>
-              <p className="text-white text-xs sm:text-sm md:text-base leading-normal text-center mx-auto max-w-3xl font-['Roboto_Mono']">Explore a world of fashion at StyleLoom, where trends meet affordability. Immerse yourself in the latest styles and seize exclusive promotions.</p>
-            </div>
-          </div>
-        </div>
-
         {/* Featured Products Section */}
-        <div className="mb-16 relative" style={{ position: 'relative', zIndex: 30 }}>
-        <FeaturedProducts initialProducts={featuredPaintingProducts} />
+        <div className="mb-16 mt-20 relative" style={{ position: 'relative', zIndex: 30 }}>
+          <FeaturedProducts initialProducts={featuredPaintingProducts} />
         </div>
 
         {/* Gallery Grid - with negative margins to make it wider */}
