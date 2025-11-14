@@ -1,114 +1,24 @@
 "use client"
 
-import Link from "next/link"
-import { ArrowRight } from "lucide-react"
 import VideoSection from "@/components/video-section"
 import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
-import MasonryGallery from "@/components/masonry-gallery"
 import ProductGrid from "@/components/product-grid"
-import { useState, useEffect } from "react"
 import Preloader from "@/components/ui/preloader"
+import { useArtefactCatalog } from "@/hooks/useArtefactCatalog"
 import FeaturedProducts from "@/components/featured-products"
 
 export default function ArtefactsPage() {
   
-  // State for categories and products
-  const [categories, setCategories] = useState<string[]>(["All Products"]);
-  const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
-  
-  // State for dynamic artefact products
-  interface SimpleProduct { 
-    id: string; 
-    name: string; 
-    price: string; 
-    image: string;
-    images?: string[];
-    category: string;
-    categoryId?: string;
-  }
-  const [artefactProducts, setArtefactProducts] = useState<SimpleProduct[]>([]);
-  const [products, setProducts] = useState<SimpleProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch categories from new artefact-categories API
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
-          cache: 'no-store'
-        });
-        if (!res.ok) throw new Error('Failed to fetch categories');
-        const data = await res.json();
-        
-        // Extract category names
-        const categoryNames = data.map((cat: any) => cat.name);
-          
-        // Build category ID to name mapping
-        const catMap: {[key: string]: string} = {};
-        data.forEach((cat: any) => {
-          const id = cat._id || cat.id;
-          if (id) catMap[id] = cat.name;
-        });
-        setCategoryMap(catMap);
-        
-        // Always add "All Products" as the first option
-        setCategories(["All Products", ...categoryNames]);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-        // Fallback to default categories
-        setCategories(["All Products"]);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  // Fetch products from new artefact-categories API
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        setLoading(true);
-        // Add cache busting to always get fresh data
-        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
-          cache: 'no-store'
-        });
-        if (!res.ok) throw new Error('Failed to fetch products');
-        const categories = await res.json();
-        console.log('🔄 Fetched categories from API:', categories.length);
-        
-        // Get all products from all categories
-        const allProducts: SimpleProduct[] = [];
-        categories.forEach((category: any) => {
-          console.log('📂 Category:', category.name, '- Products:', category.products?.length || 0);
-          if (category.products && Array.isArray(category.products)) {
-            category.products.forEach((product: any) => {
-              console.log('  ➕ Adding product:', product.name, 'to category:', category.name);
-              allProducts.push({
-                id: product.id,
-                name: product.name,
-                price: product.basePrice,
-                image: product.images?.[0] || '',
-                images: product.images || [],
-                category: category.name,
-                categoryId: category.id || category._id
-              });
-            });
-          }
-        });
-        
-        console.log('✅ Total products fetched:', allProducts.length);
-        console.log('📋 All products:', allProducts.map(p => ({ name: p.name, category: p.category })));
-        setArtefactProducts(allProducts);
-      } catch (err) {
-        console.error('Error fetching products:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProducts();
-  }, []);
+  const {
+    artefactProducts,
+    artefactCategoryOptions,
+    loading
+  } = useArtefactCatalog()
+  const categories =
+    artefactCategoryOptions.length > 0 ? artefactCategoryOptions : ["All Products"];
   
   if (loading) {
     return <Preloader ariaLabel="Loading Products" />;
@@ -126,7 +36,8 @@ export default function ArtefactsPage() {
             categories={categories}
             viewAllText="View all products"
             showViewAllButton={false}
-            showOnePerCategoryInAll={true}
+            showOnePerCategoryInAll={false}
+            maxAllProducts={0}
           />
       </section>
 
@@ -144,7 +55,7 @@ export default function ArtefactsPage() {
 
         {/* Gallery Grid - with negative margins to make it wider */}
         <div className="mb-16 relative">
-          <FeaturedProducts />
+          <FeaturedProducts initialProducts={artefactProducts} />
         </div>
       </div>
 

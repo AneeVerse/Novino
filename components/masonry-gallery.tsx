@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Masonry from 'react-masonry-css';
 import Link from 'next/link';
 import { Loader } from './blog-section';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getProductUrl } from '@/lib/utils';
 
 // We'll replace the static image configuration with API data
 // const availableImages = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -166,9 +166,17 @@ export default function MasonryGallery() {
         >
           {products.map((product, index) => {
             const sizeConfig = getImageSize(index);
+            const productLink = getProductUrl({
+              id: product.id,
+              slug: (product as any)?.slug,
+              category: product.category,
+              name: product.name,
+              title: product.name,
+              type: product.type
+            });
             return (
               <div key={product.id} className="overflow-hidden gallery-image-container md:mb-3">
-                <Link href={`/product/${product.id}`} className="relative border-0 rounded-sm overflow-hidden block w-full">
+                <Link href={productLink} className="relative border-0 rounded-sm overflow-hidden block w-full">
                   {/* Product name above image */}
                   <div className="gallery-card-heading">
                     <span className="text-white text-xs font-semibold uppercase tracking-wider">
@@ -208,9 +216,17 @@ export default function MasonryGallery() {
         <div className="mobile-scroll-gallery flex overflow-x-auto space-x-4 pb-4 scrollbar-hide pl-1">
           {products.map((product, index) => {
             const aspectRatio = getMobileAspectRatio(index);
+            const productLink = getProductUrl({
+              id: product.id,
+              slug: (product as any)?.slug,
+              category: product.category,
+              name: product.name,
+              title: product.name,
+              type: product.type
+            });
             return (
               <div key={`mobile-${product.id}`} className="overflow-hidden gallery-image-container w-52 sm:w-60 flex-shrink-0">
-                <Link href={`/product/${product.id}`} className="relative border-0 rounded-sm overflow-hidden block w-full">
+                <Link href={productLink} className="relative border-0 rounded-sm overflow-hidden block w-full">
                   {/* Product name above image */}
                   <div className="gallery-card-heading">
                     <span className="text-white text-xs font-semibold uppercase tracking-wider">

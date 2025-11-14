@@ -109,6 +109,7 @@ export default function ProductDetail() {
   const [categoryName, setCategoryName] = useState<string>('')
   const [categoryDescription, setCategoryDescription] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
+  const [hasLoadedProduct, setHasLoadedProduct] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dataSource, setDataSource] = useState<'api' | 'fallback'>('fallback')
   
@@ -163,6 +164,13 @@ export default function ProductDetail() {
   const normalizedProductFromUrl = productSegmentFromUrl
     ? slugifySegment(productSegmentFromUrl, { fallback: '' })
     : null
+  const normalizedCompositeSlugFromUrl =
+    slugSegments.length > 0
+      ? slugSegments
+          .map((segment) => slugifySegment(segment, { fallback: '' }))
+          .filter(Boolean)
+          .join('/')
+      : null
 
   const numericProductId =
     productSegmentFromUrl && /^[0-9]+$/.test(productSegmentFromUrl)
@@ -237,6 +245,121 @@ export default function ProductDetail() {
           `${candidateCategorySlug}/${candidateNameSlug}` === normalizedIdentifier
         )
       })
+    },
+    []
+  )
+
+  useEffect(() => {
+    if (product) {
+      setHasLoadedProduct(true)
+    }
+  }, [product])
+
+  const findProductInCategories = useCallback(
+    async (
+      identifier: string | null,
+      normalizedCategory?: string | null,
+      normalizedCompositeSlug?: string | null
+    ): Promise<
+      | {
+          product: ProductWithDescription
+          categoryName: string
+          categoryDescription?: string
+        }
+      | null
+    > => {
+      if (!identifier) return null
+
+      try {
+        const res = await fetch(`/api/artefact-categories?t=${Date.now()}`, {
+          cache: 'no-store'
+        })
+
+        if (!res.ok) return null
+
+        const categories = await res.json()
+        const normalizedIdentifier = slugifySegment(identifier, { fallback: '' })
+
+        for (const category of categories) {
+          const categoryName = category?.name || 'Product'
+          const categorySlug = slugifySegment(
+            category?.slug ?? category?.name,
+            { fallback: '' }
+          )
+          const categoryDescription = category?.description || ''
+          const hasCategoryContext = Boolean(normalizedCategory)
+
+          if (!Array.isArray(category?.products)) continue
+
+          for (const product of category.products) {
+            const productIdCandidate =
+              typeof product?.id !== 'undefined'
+                ? product.id.toString()
+                : product?._id?.toString()
+            const productSlug = slugifySegment(
+              product?.slug ?? product?.name ?? productIdCandidate,
+              { fallback: '' }
+            )
+            const compositeSlug =
+              categorySlug && productSlug ? `${categorySlug}/${productSlug}` : null
+
+            const matchesId =
+              productIdCandidate && identifier && productIdCandidate === identifier
+            const matchesSlug =
+              !hasCategoryContext && productSlug === normalizedIdentifier
+            const matchesComposite =
+              normalizedCompositeSlug &&
+              compositeSlug &&
+              compositeSlug === normalizedCompositeSlug
+            const matchesCategoryAndSlug =
+              normalizedCategory &&
+              categorySlug === normalizedCategory &&
+              productSlug === normalizedIdentifier
+
+            if (
+              matchesId ||
+              matchesSlug ||
+              matchesComposite ||
+              matchesCategoryAndSlug
+            ) {
+              const formattedProduct: ProductWithDescription = {
+                id: productIdCandidate || productSlug,
+                name: product?.name ?? product?.title,
+                price: product?.price ?? product?.basePrice,
+                basePrice: product?.basePrice ?? product?.price,
+                image:
+                  (Array.isArray(product?.images) && product.images[0]) ||
+                  product?.image ||
+                  '',
+                images:
+                  Array.isArray(product?.images) && product.images.length > 0
+                    ? product.images
+                    : product?.image
+                      ? [product.image]
+                      : [],
+                category: categoryName,
+                description: product?.description,
+                variants: product?.variants,
+                type: product?.type ?? category?.type,
+                specifications: product?.specifications,
+                faqSection: product?.faqSection,
+                additionalImageUrl: product?.additionalImageUrl,
+                slug: product?.slug ?? productIdCandidate ?? productSlug
+              }
+
+              return {
+                product: formattedProduct,
+                categoryName,
+                categoryDescription
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error searching categories for fallback product:', error)
+      }
+
+      return null
     },
     []
   )
@@ -414,8 +537,27 @@ export default function ProductDetail() {
           }
           
           // Attempt to find the product in static data using slug or ID
-          let fallbackProduct = resolveStaticProduct(safeProductId, normalizedCategoryFromUrl)
-          
+          let fallbackProduct = resolveStaticProduct(
+            safeProductId,
+            normalizedCategoryFromUrl
+          )
+          let derivedCategoryName: string | undefined
+          let derivedCategoryDescription: string | undefined
+
+          if (!fallbackProduct) {
+            const categoryMatch = await findProductInCategories(
+              safeProductId,
+              normalizedCategoryFromUrl,
+              normalizedCompositeSlugFromUrl
+            )
+
+            if (categoryMatch) {
+              fallbackProduct = categoryMatch.product
+              derivedCategoryName = categoryMatch.categoryName
+              derivedCategoryDescription = categoryMatch.categoryDescription
+            }
+          }
+
           // If still not found, use default
           if (!fallbackProduct) {
             fallbackProduct = paintingProductData[0] || {
@@ -424,7 +566,8 @@ export default function ProductDetail() {
               price: "$2,327",
               image: "/images/painting/2.1.png",
               category: "Oil",
-              description: "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
+              description:
+                "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
             }
           }
           
@@ -443,7 +586,8 @@ export default function ProductDetail() {
             : [];
           
           setProduct(typedFallback);
-          setCategoryName(typedFallback.category);
+          setCategoryName(derivedCategoryName || typedFallback.category);
+          setCategoryDescription(derivedCategoryDescription || '');
           // Don't reset selectedVariant here - let the URL parameter effect handle it
           setDataSource('fallback');
           setError(`API Error (${response.status}): Could not load product from API, using fallback data`);
@@ -451,17 +595,37 @@ export default function ProductDetail() {
       } catch (err) {
         console.error('Error fetching product:', err);
         
-        // Fallback to local data on error
-        const fallbackProduct =
-          resolveStaticProduct(productId, normalizedCategoryFromUrl) ||
-          paintingProductData[0] || {
+        // Fallback to local data or categories on error
+        let fallbackProduct =
+          resolveStaticProduct(productId, normalizedCategoryFromUrl)
+        let derivedCategoryName: string | undefined
+        let derivedCategoryDescription: string | undefined
+
+        if (!fallbackProduct) {
+          const categoryMatch = await findProductInCategories(
+            productId,
+            normalizedCategoryFromUrl,
+            normalizedCompositeSlugFromUrl
+          )
+
+          if (categoryMatch) {
+            fallbackProduct = categoryMatch.product
+            derivedCategoryName = categoryMatch.categoryName
+            derivedCategoryDescription = categoryMatch.categoryDescription
+          }
+        }
+
+        if (!fallbackProduct) {
+          fallbackProduct = paintingProductData[0] || {
             id: 1,
             name: "ABSTRACT ELEGANCE",
             price: "$2,327",
             image: "/images/painting/2.1.png",
             category: "Oil",
-            description: "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
-          };
+            description:
+              "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
+          }
+        }
         
         console.log('Using fallback data after error:', fallbackProduct);
         const typedFallback = fallbackProduct as unknown as ProductWithDescription;
@@ -477,7 +641,8 @@ export default function ProductDetail() {
           : [];
 
         // Don't reset selectedVariant here - let the URL parameter effect handle it
-        setCategoryName(typedFallback.category);
+        setCategoryName(derivedCategoryName || typedFallback.category);
+        setCategoryDescription(derivedCategoryDescription || '');
         setProduct(typedFallback);
         setDataSource('fallback');
         setError("Could not load product from API, using fallback data");
@@ -487,7 +652,15 @@ export default function ProductDetail() {
     }
     
     fetchProduct()
-  }, [productId, router, resolveStaticProduct, normalizedCategoryFromUrl, searchParams])
+  }, [
+    productId,
+    router,
+    resolveStaticProduct,
+    normalizedCategoryFromUrl,
+    normalizedCompositeSlugFromUrl,
+    findProductInCategories,
+    searchParams
+  ])
 
   const [currentImageSrc, setCurrentImageSrc] = useState<string | null>(null);
   const [previousImageSrc, setPreviousImageSrc] = useState<string | null>(null);
@@ -684,8 +857,8 @@ export default function ProductDetail() {
   // Get display images array for thumbnails
   const displayImages = variantImages || productImages;
 
-  // Show loading while fetching or if product is not yet loaded
-  if (isLoading || !product) {
+  const showInitialLoader = !hasLoadedProduct && (isLoading || !product)
+  if (showInitialLoader) {
     return <Preloader ariaLabel="Loading Product" />
   }
 
@@ -773,6 +946,9 @@ export default function ProductDetail() {
             {dataSource === 'api' ? 'API Data' : 'Fallback Data'}
           </div>
         )}
+                {hasLoadedProduct && isLoading && (
+                  <div className="fixed inset-x-0 top-0 h-1 bg-gradient-to-r from-white/10 via-white/60 to-white/10 animate-pulse z-30 pointer-events-none" />
+                )}
        
         {/* Main product display - Clean layout without borders */}
         <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
@@ -834,7 +1010,7 @@ export default function ProductDetail() {
                         src={previousImageSrc}
                         alt={product.name || "Previous product image"}
                         fill
-                        style={{ objectFit: 'contain', objectPosition: 'center', opacity: previousImageOpacity }}
+                        style={{ objectFit: 'cover', objectPosition: 'center', opacity: previousImageOpacity }}
                         priority
                         className="pointer-events-none transition-all duration-700 ease-out"
                         draggable={false}
@@ -844,7 +1020,7 @@ export default function ProductDetail() {
                       src={currentImageSrc ?? displayedImage ?? resolvedProductImage}
                       alt={product.name || "Product Image"}
                       fill
-                      style={{ objectFit: 'contain', objectPosition: 'center', opacity: currentImageOpacity }}
+                      style={{ objectFit: 'cover', objectPosition: 'center', opacity: currentImageOpacity }}
                       priority
                       className="pointer-events-none transition-all duration-700 ease-out group-hover:scale-[1.02]"
                       draggable={false}
@@ -933,7 +1109,6 @@ export default function ProductDetail() {
                             onMouseEnter={() => setHoveredVariant(variant)}
                             onMouseLeave={() => setHoveredVariant(null)}
                             onClick={() => {
-                              // Navigate to the product when clicked
                               const targetUrl = getProductUrl({
                                 id: variant.id,
                                 slug: variant.slug,
@@ -941,8 +1116,8 @@ export default function ProductDetail() {
                                 name: variant.name,
                                 title: variant.name,
                                 type: variant.type || product?.type
-                              });
-                              window.location.href = targetUrl;
+                              })
+                              router.push(targetUrl)
                             }}
                             className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
                               hoveredVariant?.id === variant.id

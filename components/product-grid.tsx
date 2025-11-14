@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
-import { formatPrice } from "@/lib/utils"
+import { formatPrice, getProductUrl } from "@/lib/utils"
 
 // Product data
 const products = [
@@ -83,6 +83,8 @@ interface ProductGridProps {
   activeCategory?: string;
   onCategoryChange?: (category: string) => void;
   showOnePerCategoryInAll?: boolean; // When true, shows only one product per category in "All Products" view
+  hideCategoryFilters?: boolean;
+  maxAllProducts?: number; // Limit for "All Products" view (0 or undefined = default 9, negative = no limit)
 }
 
 export default function ProductGrid({ 
@@ -94,7 +96,9 @@ export default function ProductGrid({
   showViewAllButton = true,
   activeCategory: propActiveCategory,
   onCategoryChange,
-  showOnePerCategoryInAll = false
+  showOnePerCategoryInAll = false,
+  hideCategoryFilters = false,
+  maxAllProducts
 }: ProductGridProps) {
   // Use internal state only if no external state is provided
   const [internalActiveCategory, setInternalActiveCategory] = useState<string>(propCategories[0]);
@@ -152,17 +156,24 @@ export default function ProductGrid({
     console.log('✅ After deduplication:', filteredProducts.length, 'products');
   }
 
-  // Show up to 9 products for "All Products", unlimited for specific categories
-  const displayProducts = activeCategory === propCategories[0] 
-    ? filteredProducts.slice(0, 9)
-    : filteredProducts; // No limit for specific categories
+  const defaultAllLimit = 9;
+  const resolvedAllLimit =
+    typeof maxAllProducts === 'number'
+      ? maxAllProducts
+      : defaultAllLimit;
+  const shouldLimitAll = resolvedAllLimit > 0;
+
+  const displayProducts =
+    activeCategory === propCategories[0] && shouldLimitAll
+      ? filteredProducts.slice(0, resolvedAllLimit)
+      : filteredProducts; // No limit for specific categories or when limit disabled
   
   console.log('📦 Final displayProducts:', displayProducts.length, 'products');
 
   return (
     <section className="w-full font-['Roboto_Mono']">
       {/* Hero banner with background image */}
-      <div className="relative w-full min-h-[480px] sm:min-h-[560px] lg:min-h-[620px] overflow-hidden ">
+        <div className="relative w-full min-h-[480px] sm:min-h-[560px] lg:min-h-[620px] overflow-hidden ">
         <Image
           src="/images/hero-section/bg03.png"
           alt="Framed artwork gallery wall"
@@ -178,21 +189,23 @@ export default function ProductGrid({
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-light tracking-[0.12em]">
             Elevate Your Gallery
           </h2>
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 pt-6">
-            {propCategories.map((category) => (
-              <button
-                key={category}
-                className={`px-5 sm:px-7 py-2.5 rounded-full text-xs sm:text-sm transition-all duration-200 backdrop-blur ${
-                  category === activeCategory
-                    ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
-                    : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
-                }`}
-                onClick={() => handleCategoryChange(category)}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
+          {!hideCategoryFilters && propCategories.length > 1 && (
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 pt-6">
+              {propCategories.map((category) => (
+                <button
+                  key={category}
+                  className={`px-5 sm:px-7 py-2.5 rounded-full text-xs sm:text-sm transition-all duration-200 backdrop-blur ${
+                    category === activeCategory
+                      ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
+                      : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
+                  }`}
+                  onClick={() => handleCategoryChange(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -209,9 +222,17 @@ export default function ProductGrid({
             const primaryImage = product.image;
             const secondaryImage = product.images && product.images[1];
 
-            const productLink = product.isVariant && product.parentProductId 
-              ? `/product/${product.parentProductId}?variant=${product.variantId}`
-              : `/product/${product.id}`;
+            const baseProductUrl = getProductUrl({
+              id: product.isVariant && product.parentProductId ? product.parentProductId : product.id,
+              slug: product.slug,
+              category: product.category,
+              name: product.name || product.title,
+              title: product.name || product.title,
+              type: product.type
+            });
+            const productLink = product.isVariant && product.parentProductId && product.variantId
+              ? `${baseProductUrl}?variant=${product.variantId}`
+              : baseProductUrl;
             
             return (
               <Link 
@@ -271,9 +292,17 @@ export default function ProductGrid({
             const primaryImage = product.image;
             const secondaryImage = product.images && product.images[1];
             
-            const productLink = product.isVariant && product.parentProductId 
-              ? `/product/${product.parentProductId}?variant=${product.variantId}`
-              : `/product/${product.id}`;
+            const baseProductUrl = getProductUrl({
+              id: product.isVariant && product.parentProductId ? product.parentProductId : product.id,
+              slug: product.slug,
+              category: product.category,
+              name: product.name || product.title,
+              title: product.name || product.title,
+              type: product.type
+            });
+            const productLink = product.isVariant && product.parentProductId && product.variantId
+              ? `${baseProductUrl}?variant=${product.variantId}`
+              : baseProductUrl;
             
             return (
               <Link 

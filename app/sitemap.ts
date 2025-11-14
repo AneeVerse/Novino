@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import connectToDatabase from '@/lib/db';
 import connectToMongoDB from '@/lib/mongodb-client';
 import Blog from '@/models/Blog';
+import { getProductUrl } from '@/lib/utils';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_VERCEL_URL 
   ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` 
   : 'https://novino.io';
@@ -65,9 +66,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const products = await productsCollection.find({}).toArray();
     
     productRoutes = products.map((product) => {
-      const productId = product.slug || product._id?.toString() || product.id?.toString() || '';
+      const productPath = getProductUrl({
+        id: product.id ?? product._id?.toString(),
+        slug: product.slug ?? undefined,
+        category: product.category ?? product.categoryName,
+        name: product.name,
+        title: product.name,
+        type: product.type
+      });
       return {
-        url: `${baseUrl}/product/${productId}`,
+        url: `${baseUrl}${productPath}`,
         lastModified: product.updatedAt ? new Date(product.updatedAt) : product.createdAt ? new Date(product.createdAt) : new Date(),
         changeFrequency: 'weekly' as const,
         priority: 0.7,

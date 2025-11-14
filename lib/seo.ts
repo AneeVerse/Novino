@@ -183,6 +183,8 @@ export function generateLocalBusinessSchema() {
   };
 }
 
+import { getProductUrl } from './utils';
+
 /**
  * Generate Product schema
  */
@@ -199,11 +201,14 @@ export function generateProductSchema(product: {
   availability?: string;
   brand?: string;
 }) {
-  const productUrl = product.slug 
-    ? `${SITE_URL}/product/${product.slug}`
-    : product.id 
-    ? `${SITE_URL}/product/${product.id}`
-    : SITE_URL;
+  const productPath = getProductUrl({
+    id: product.id,
+    slug: product.slug,
+    category: product.category,
+    name: product.name,
+    title: product.name
+  });
+  const productUrl = `${SITE_URL}${productPath}`;
 
   const productImage = product.images?.[0] || product.image || SITE_IMAGE;
   const price = product.basePrice || product.price || '0';

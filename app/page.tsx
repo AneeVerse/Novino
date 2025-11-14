@@ -14,6 +14,7 @@ import "@fontsource/dm-serif-display"
 import "@fontsource/roboto-mono"
 import ProductGrid from "@/components/product-grid"
 import Preloader from "@/components/ui/preloader"
+import { useArtefactCatalog } from "@/hooks/useArtefactCatalog"
 
 // Product data - We'll replace this with API data
 // const products = [
@@ -43,109 +44,45 @@ export default function Home() {
     console.log("Grid category changed to:", gridActiveCategory);
   }, [gridActiveCategory]);
   
-  // Add states for categories and products
-  const [categories, setCategories] = useState<string[]>(["All Products"]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [categoryMap, setCategoryMap] = useState<{[key: string]: string}>({});
-
-  // Fetch categories from new artefact-categories API
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch('/api/artefact-categories');
-        if (!res.ok) throw new Error('Failed to fetch categories');
-        const data = await res.json();
-        
-        // Extract category names
-        const categoryNames = data.map((cat: any) => cat.name);
-        
-        // Build mapping between category IDs and names
-        const catMap: {[key: string]: string} = {};
-        data.forEach((cat: any) => {
-          const id = cat._id || cat.id;
-          if (id) catMap[id] = cat.name;
-        });
-        setCategoryMap(catMap);
-          
-        // Always add "All Products" as the first option
-        setCategories(["All Products", ...categoryNames]);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-        // Fallback to default categories
-        setCategories(["All Products"]);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  // Fetch products from new artefact-categories API
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
-          cache: 'no-store'
-        });
-        if (!res.ok) throw new Error('Failed to fetch products');
-        const categories = await res.json();
-        
-        // Get ALL products from all categories (filtering handled by ProductGrid)
-        const allProducts: any[] = [];
-        categories.forEach((category: any) => {
-          if (category.products && Array.isArray(category.products)) {
-            category.products.forEach((product: any) => {
-              allProducts.push({
-                id: product.id,
-                name: product.name,
-                price: product.basePrice,
-                image: product.images?.[0] || '/images/placeholder.png',
-                images: product.images || [],
-                category: category.name,
-                categoryId: category.id || category._id
-              });
-            });
-          }
-        });
-        
-        setProducts(allProducts);
-      } catch (err) {
-        console.error('Error fetching products:', err);
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
+  const {
+    products,
+    paintingProducts,
+    categoryOptions,
+    categoryMap,
+    loading
+  } = useArtefactCatalog()
+  const categories = categoryOptions;
 
   // Filter products based on active category
-  const filteredProducts = products.filter(product => {
-    if (activeCategory === "All Products") return true;
-    
-    // Match by either category ID or name
-    return categoryMap[product.category] === activeCategory || // Match by mapped name
-           product.category === activeCategory || // Direct match (rare)
-           product.categoryId === activeCategory; // Match by ID
-  });
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      if (activeCategory === "All Products") return true;
 
-  // Derive featured painting products for FeaturedProducts component
+      const mappedName = product.categoryId
+        ? categoryMap[product.categoryId]
+        : product.category;
+
+      return (
+        mappedName === activeCategory ||
+        product.category === activeCategory ||
+        product.categoryId === activeCategory
+      );
+    });
+  }, [products, activeCategory, categoryMap]);
+
+  // Featured products derived from catalog hook
   const featuredPaintingProducts = useMemo(() => {
-    const paintingProducts = products.filter((product) =>
-      (product.category || "").toLowerCase().includes("painting")
-    );
+    if (paintingProducts.length <= 1) {
+      return paintingProducts;
+    }
 
-    // Sort if createdAt exists, newest first
-    paintingProducts.sort((a: any, b: any) => {
+    return [...paintingProducts].sort((a: any, b: any) => {
       if (a.createdAt && b.createdAt) {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
       return 0;
     });
-
-    return paintingProducts;
-  }, [products]);
+  }, [paintingProducts]);
 
   // Initial load - delay text appearance
   useEffect(() => {

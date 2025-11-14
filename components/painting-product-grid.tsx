@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react"
 import React from "react"
 import productData from "@/public/data/painting-products.json"
 import Link from "next/link"
-import { formatPrice } from "@/lib/utils"
+import { formatPrice, getProductUrl } from "@/lib/utils"
 
 interface Product {
   id: string | number;
@@ -137,12 +137,19 @@ export default function ProductGrid({
               // Single wide image
               if (group.type === 'single') {
                 const product = group.products[0];
+                const productLink = getProductUrl({
+                  id: product.id,
+                  slug: (product as any)?.slug,
+                  category: product.category,
+                  name: product.name || product.title,
+                  title: product.title
+                });
                 return (
                   <div 
                     key={`single-${groupIndex}-${product.id}`}
                     className="relative w-full"
                   >
-                    <Link href={`/product/${product.id}`} className="block relative h-[280px] sm:h-[350px] md:h-[450px] lg:h-[520px] overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
+                    <Link href={productLink} className="block relative h-[280px] sm:h-[350px] md:h-[450px] lg:h-[520px] overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
                       <Image
                         src={product.image}
                         alt={(product.name || `Product ${product.id}`) as string}
@@ -168,12 +175,19 @@ export default function ProductGrid({
                     className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8"
                   >
                     {group.products.map((product, productIndex) => {
+                      const productLink = getProductUrl({
+                        id: product.id,
+                        slug: (product as any)?.slug,
+                        category: product.category,
+                        name: product.name || product.title,
+                        title: product.title
+                      });
                       return (
                         <div 
                           key={`product-${product.id}`}
                           className="relative"
                         >
-                          <Link href={`/product/${product.id}`} className="block relative h-[280px] sm:h-[350px] md:h-[450px] lg:h-[520px] overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
+                          <Link href={productLink} className="block relative h-[280px] sm:h-[350px] md:h-[450px] lg:h-[520px] overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
                             <Image
                               src={product.image}
                               alt={(product.name || `Product ${product.id}`) as string}
@@ -210,13 +224,21 @@ export default function ProductGrid({
               scrollSnapType: 'x mandatory',
             }}
           >
-            {filteredProducts.map((product, index) => (
+            {filteredProducts.map((product, index) => {
+              const productLink = getProductUrl({
+                id: product.id,
+                slug: (product as any)?.slug,
+                category: product.category,
+                name: product.name || product.title,
+                title: product.title
+              });
+              return (
               <div 
                 key={`mobile-${product.id}`}
                 className="flex-none w-[85%] mr-4 snap-start relative"
                 style={{ scrollSnapAlign: 'start' }}
               >
-                <Link href={`/product/${product.id}`} className="block relative h-[350px] overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
+                <Link href={productLink} className="block relative h-[350px] overflow-hidden cursor-pointer hover:opacity-95 transition-opacity">
                   <Image
                     src={product.image}
                     alt={(product.name || `Product ${product.id}`) as string}
@@ -232,7 +254,7 @@ export default function ProductGrid({
                   )}
                 </Link>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </div>

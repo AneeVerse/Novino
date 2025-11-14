@@ -3,6 +3,7 @@ import { getValidImageUrl } from "@/lib/imageUtils";
 import dynamic from "next/dynamic";
 import { Plus, X, Upload, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { slugifySegment } from "@/lib/utils";
 
 // Create a placeholder for RichTextEditor
 const RichTextEditor = ({ value, onChange, placeholder }: { 
@@ -10,6 +11,15 @@ const RichTextEditor = ({ value, onChange, placeholder }: {
   onChange: (value: string) => void;
   placeholder?: string;
 }) => {
+  const selectedCategoryName =
+    categories.find((cat) => String(cat.id) === String(selectedCategory))?.name || '';
+  const previewCategorySlug = selectedCategoryName
+    ? slugifySegment(selectedCategoryName, { fallback: 'category' })
+    : '[category]';
+  const previewProductSlug = slug
+    ? slugifySegment(slug, { fallback: 'product' })
+    : '[auto-generated]';
+
   return (
     <textarea
       value={value}
@@ -1254,7 +1264,7 @@ export default function EnhancedProductForm({
                           </div>
                           <div className="mt-2 space-y-1">
                             <p className="text-white/50 text-xs">
-                              Preview URL: <span className="text-white/70">/product/{slug || '[auto-generated]'}</span>
+                              Preview URL: <span className="text-white/70">/product/{previewCategorySlug}/{previewProductSlug}</span>
                             </p>
                             <p className="text-white/50 text-xs">
                               💡 Best practices: Use lowercase, hyphens instead of spaces, no special characters

@@ -8,83 +8,18 @@ import WardrobeSection from "@/components/wardrobe-section"
 import TestimonialCollection from "@/components/testimonial-collection"
 import Footer from "@/components/footer"
 import ProductGrid from "@/components/product-grid"
-import { useState, useEffect } from "react"
 import Preloader from "@/components/ui/preloader"
+import { useArtefactCatalog } from "@/hooks/useArtefactCatalog"
 
 export default function PaintingsPage() {
   
-  // State for categories and painting products
-  const [categories, setCategories] = useState<string[]>([]);
-
-  // State for dynamic painting products
-  interface SimpleProduct {
-    id: string;
-    name: string;
-    price: string;
-    image: string;
-    images?: string[];
-    category: string;
-    categoryId?: string;
-  }
-  const [paintingProducts, setPaintingProducts] = useState<SimpleProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch painting categories and products from new artefact-categories API
-  useEffect(() => {
-    const fetchPaintings = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
-          cache: 'no-store'
-        });
-        if (!res.ok) throw new Error('Failed to fetch categories');
-        const categories = await res.json();
-        
-        console.log('📂 All categories:', categories.map((c: any) => c.name));
-        
-        // Get all products from categories that contain "painting" in the name (case-insensitive)
-        const paintingProducts: SimpleProduct[] = [];
-        const paintingCategoryNames: string[] = [];
-        
-        categories.forEach((category: any) => {
-          // Check if category name contains "painting" (case-insensitive)
-          if (category.name && category.name.toLowerCase().includes('painting')) {
-            console.log('🎨 Found painting category:', category.name, '- Products:', category.products?.length || 0);
-            paintingCategoryNames.push(category.name);
-            
-            if (category.products && Array.isArray(category.products)) {
-              category.products.forEach((product: any) => {
-                console.log('  ➕ Adding product:', product.name);
-                paintingProducts.push({
-                  id: product.id,
-                  name: product.name,
-                  price: product.basePrice,
-                  image: product.images?.[0] || '',
-                  images: product.images || [],
-                  category: category.name,
-                  categoryId: category.id || category._id
-                });
-              });
-            }
-          }
-        });
-        
-        console.log('✅ Total painting products:', paintingProducts.length);
-        
-        // Set categories (for potential future filtering)
-        setCategories(paintingCategoryNames.length > 1 ? ['All Paintings', ...paintingCategoryNames] : []);
-        setPaintingProducts(paintingProducts);
-      } catch (err) {
-        console.error('Error fetching painting products:', err);
-        setCategories([]);
-        setPaintingProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchPaintings();
-  }, []);
+  const {
+    paintingProducts,
+    paintingCategoryOptions,
+    loading
+  } = useArtefactCatalog()
+  const categories =
+    paintingCategoryOptions.length > 0 ? paintingCategoryOptions : ["All Paintings"];
   
   if (loading) {
     return <Preloader ariaLabel="Loading Paintings" />;
@@ -102,6 +37,7 @@ export default function PaintingsPage() {
             categories={categories}
             viewAllText="View all paintings"
             showViewAllButton={false}
+            hideCategoryFilters={true}
           />
       </section>
 

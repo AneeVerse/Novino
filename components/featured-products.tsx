@@ -414,7 +414,13 @@ export default function FeaturedProducts({ initialProducts }: FeaturedProductsPr
                 }}
               >
                 <Link 
-                  href={getProductUrl({ id: product.id, slug: product.slug ? String(product.slug) : undefined })}
+                  href={getProductUrl({
+                    id: product.id,
+                    slug: product.slug ? String(product.slug) : undefined,
+                    category: product.category,
+                    name: product.name || product.title,
+                    type: product.type
+                  })}
                   className="block w-full cursor-pointer"
                   style={{ cursor: 'inherit' }}
                   draggable={false}

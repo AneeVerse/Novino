@@ -36,6 +36,55 @@ export function formatPrice(price: number | string): string {
 /**
  * Get product URL - uses slug if available, otherwise falls back to ID
  */
-export function getProductUrl(product: { id: string | number; slug?: string }): string {
-  return `/product/${product.slug || product.id}`;
+export function slugifySegment(
+  value: string | number | undefined | null,
+  options: { fallback?: string } = {}
+): string {
+  const fallback = options.fallback ?? '';
+  if (value === undefined || value === null) {
+    return fallback;
+  }
+
+  const normalized = value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+type ProductUrlInput = {
+  id?: string | number
+  slug?: string
+  category?: string
+  name?: string
+  title?: string
+  type?: string
+}
+
+export function getProductUrl(product: ProductUrlInput): string {
+  const {
+    slug,
+    category,
+    name,
+    title,
+    type,
+    id
+  } = product;
+
+  const rawSlug = slug ?? name ?? title ?? (typeof id !== 'undefined' ? id.toString() : '');
+  const hasCompositeSlug = typeof slug === 'string' && slug.includes('/');
+
+  const productSlugSegment = slugifySegment(rawSlug, { fallback: 'product' });
+  const categorySlugSegment = slugifySegment(category ?? type ?? 'product', { fallback: 'product' });
+
+  const combinedSlug = hasCompositeSlug
+    ? slug!.replace(/^\/+|\/+$/g, '')
+    : `${categorySlugSegment}/${productSlugSegment}`;
+
+  return `/product/${combinedSlug}`;
 }
