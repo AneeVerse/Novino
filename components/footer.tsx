@@ -133,7 +133,7 @@ export default function Footer() {
                     className="flex items-start cursor-pointer relative" 
                     onClick={() => toggleSection('company')}
                   >
-                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">COMPANY</h3>
+                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">QUICK LINKS</h3>
                     <ChevronRight 
                       size={16} 
                       className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.company ? 'rotate-90' : ''}`} 
@@ -141,23 +141,23 @@ export default function Footer() {
                   </div>
                   <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.company ? 'max-h-40' : 'max-h-0'}`}>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        About
+                      <Link href="/paintings" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Paintings
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Features
+                      <Link href="/artefacts" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Artefacts
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Works
+                      <Link href="/journey" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Journey
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Career
+                      <Link href="/contact" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Contact Us
                       </Link>
                     </li>
                   </ul>
@@ -165,26 +165,26 @@ export default function Footer() {
                 
                 {/* Desktop view with always visible links */}
                 <div className="hidden sm:block">
-                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">COMPANY</h3>
+                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">QUICK LINKS</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        About
+                      <Link href="/paintings" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Paintings
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Features
+                      <Link href="/artefacts" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Artefacts
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Works
+                      <Link href="/journey" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Journey
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Career
+                      <Link href="/contact" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Contact Us
                       </Link>
                     </li>
                   </ul>
@@ -199,7 +199,7 @@ export default function Footer() {
                     className="flex items-start cursor-pointer relative" 
                     onClick={() => toggleSection('help')}
                   >
-                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">HELP</h3>
+                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">POLICY</h3>
                     <ChevronRight 
                       size={16} 
                       className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.help ? 'rotate-90' : ''}`} 
@@ -231,7 +231,7 @@ export default function Footer() {
                 
                 {/* Desktop view with always visible links */}
                 <div className="hidden sm:block">
-                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">HELP</h3>
+                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">POLICY</h3>
                   <ul className="space-y-2">
                     <li>
                       <Link href="/payment-policy" className="text-gray-300 hover:text-white text-sm font-satoshi">
@@ -393,7 +393,7 @@ export default function Footer() {
             {/* Bottom Section */}
             <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 flex flex-col relative z-10">
               <div className="flex justify-between items-center">
-                <div className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Novino.io © 2000-2023, All Rights Reserved</div>
+                <div className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Copyright © 2025 Novino.io.All Rights Reserved</div>
                 <div className="hidden sm:flex items-center justify-center mx-4">
                   <img src="/images/Frame 53.png" alt="Payment Methods" className="h-6 sm:h-8" />
                 </div>
