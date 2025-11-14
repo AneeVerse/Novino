@@ -89,6 +89,21 @@ interface Product {
   createdAt?: string;
 }
 
+const sortCategoriesByOrder = (categories: ArtefactCategory[]) => {
+  return [...categories].sort((a, b) => {
+    const orderA = typeof a.order === 'number' ? a.order : Number.MAX_SAFE_INTEGER;
+    const orderB = typeof b.order === 'number' ? b.order : Number.MAX_SAFE_INTEGER;
+
+    if (orderA === orderB) {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateA - dateB;
+    }
+
+    return orderA - orderB;
+  });
+};
+
 function DashboardContent() {
   const router = useRouter();
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -108,6 +123,7 @@ function DashboardContent() {
   const [showCategoryDetail, setShowCategoryDetail] = useState(false);
   const [showArtefactProductForm, setShowArtefactProductForm] = useState(false);
   const [currentArtefactProduct, setCurrentArtefactProduct] = useState<ArtefactProduct | undefined>(undefined);
+  const [isReorderingCategories, setIsReorderingCategories] = useState(false);
   
   // Get tab from URL parameter
   const searchParams = useSearchParams();
@@ -248,10 +264,39 @@ function DashboardContent() {
       const response = await fetch('/api/artefact-categories');
       if (response.ok) {
         const data = await response.json();
-        setArtefactCategories(data);
+        setArtefactCategories(sortCategoriesByOrder(data));
       }
     } catch (error) {
       console.error('Error fetching artefact categories:', error);
+    }
+  };
+
+  const handleReorderCategories = async (orderedList: { id: string; order: number }[]) => {
+    if (isReorderingCategories) return;
+
+    setIsReorderingCategories(true);
+    try {
+      const response = await fetch('/api/artefact-categories/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: orderedList }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reorder categories');
+      }
+
+      const data = await response.json();
+      if (Array.isArray(data.categories)) {
+        setArtefactCategories(sortCategoriesByOrder(data.categories));
+      } else {
+        await fetchArtefactCategories();
+      }
+    } catch (error) {
+      console.error('Error reordering categories:', error);
+      throw error;
+    } finally {
+      setIsReorderingCategories(false);
     }
   };
   
@@ -1160,6 +1205,7 @@ function DashboardContent() {
               }}
               onDeleteCategory={handleDeleteCategory}
               onEditCategory={handleEditCategory}
+              onReorderCategories={handleReorderCategories}
             />
           )}
         </div>

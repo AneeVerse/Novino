@@ -8,6 +8,7 @@ import { formatPrice, getProductUrl } from '@/lib/utils';
 interface FeaturedProduct {
   id: string | number;
   name?: string;
+  title?: string;
   price?: string | number;
   image: string;
   images?: string[];
@@ -15,6 +16,7 @@ interface FeaturedProduct {
   categoryId?: string;
   slug?: string | number;
   createdAt?: string;
+  type?: string;
 }
 
 interface FeaturedProductsProps {
@@ -181,7 +183,7 @@ export default function FeaturedProducts({ initialProducts }: FeaturedProductsPr
     e.preventDefault(); // Prevent default touch/pointer behaviors
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const x = clientX;
-    const walk = (x - startX.current) * 0.8; // Reduced sensitivity from 2 to 0.8 for smoother scroll
+    const walk = (x - startX.current) * 2.6; // Slightly reduced sensitivity for easier control
     translateX.current = scrollLeft.current + walk;
     
     // Infinite loop logic - exact same as CreativeSection
@@ -282,10 +284,10 @@ export default function FeaturedProducts({ initialProducts }: FeaturedProductsPr
     e.stopPropagation();
     
     // Use deltaX for horizontal scroll
-    const delta = e.deltaX;
+    const delta = e.deltaX || e.deltaY;
     
     // Apply scroll with reduced sensitivity (0.6x) for smoother control
-    translateX.current -= delta * 0.6;
+    translateX.current -= delta * 0.16; // Slightly more resistance for precise scrolling
     
     // Infinite loop logic - same as drag
     if (totalWidth.current > 0) {

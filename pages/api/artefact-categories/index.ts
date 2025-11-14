@@ -9,6 +9,7 @@ export interface ArtefactCategory {
   id?: string;
   name: string;
   description?: string;
+  order?: number;
   products: ArtefactProduct[];
   createdAt: string;
   updatedAt?: string;
@@ -39,37 +40,75 @@ export default async function handler(
     const db = client.db(MONGODB_DB);
     const collection = db.collection('productCategories');
 
+    const serializeCategory = (category: any) => ({
+      ...category,
+      _id: category._id.toString(),
+      id: category._id.toString(),
+    });
+
+    const sortCategoriesByOrder = (categoryList: any[]) => {
+      return [...categoryList].sort((a, b) => {
+        const orderA = typeof a.order === 'number' ? a.order : Number.MAX_SAFE_INTEGER;
+        const orderB = typeof b.order === 'number' ? b.order : Number.MAX_SAFE_INTEGER;
+
+        if (orderA === orderB) {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : Infinity;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : Infinity;
+          return dateA - dateB;
+        }
+
+        return orderA - orderB;
+      });
+    };
+
+    const getNextOrderValue = async () => {
+      const lastCategory = await collection
+        .find({})
+        .sort({ order: -1 })
+        .limit(1)
+        .toArray();
+
+      if (lastCategory.length === 0) {
+        return 0;
+      }
+
+      const currentOrder =
+        typeof lastCategory[0].order === 'number' ? lastCategory[0].order : -1;
+      return currentOrder + 1;
+    };
+
     switch (method) {
       case 'GET':
         // Get all artefact categories
-        const categories = await collection.find({}).sort({ createdAt: -1 }).toArray();
+        const categories = await collection
+          .find({})
+          .sort({ order: 1, createdAt: 1 })
+          .toArray();
+        const orderedCategories = sortCategoriesByOrder(categories);
         
         // Serialize the categories
-        const serializedCategories = categories.map(cat => ({
-          ...cat,
-          _id: cat._id.toString(),
-          id: cat._id.toString(),
-        }));
+        const serializedCategories = orderedCategories.map(serializeCategory);
         
         res.status(200).json(serializedCategories);
         break;
 
       case 'POST':
         // Create a new artefact category
+        const nextOrder = await getNextOrderValue();
         const newCategory: ArtefactCategory = {
           name: req.body.name,
           description: req.body.description || '',
           products: [],
+          order: nextOrder,
           createdAt: new Date().toISOString(),
         };
 
         const result = await collection.insertOne(newCategory);
 
-        const createdCategory = {
+        const createdCategory = serializeCategory({
           ...newCategory,
-          _id: result.insertedId.toString(),
-          id: result.insertedId.toString(),
-        };
+          _id: result.insertedId,
+        });
 
         res.status(201).json(createdCategory);
         break;

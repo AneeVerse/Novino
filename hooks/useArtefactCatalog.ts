@@ -22,9 +22,12 @@ type CatalogCategory = {
   id?: string
   name: string
   description?: string
+  order?: number
   products?: CatalogProduct[]
   type?: string
   slug?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 const CACHE_TTL = 1000 * 60 * 5 // 5 minutes
@@ -32,6 +35,23 @@ const CACHE_TTL = 1000 * 60 * 5 // 5 minutes
 let cachedCatalog: CatalogCategory[] | null = null
 let cachedAt = 0
 let inflightPromise: Promise<CatalogCategory[]> | null = null
+
+function sortCatalogCategories(categories: CatalogCategory[]) {
+  return [...categories].sort((a, b) => {
+    const orderA =
+      typeof a.order === "number" ? a.order : Number.MAX_SAFE_INTEGER
+    const orderB =
+      typeof b.order === "number" ? b.order : Number.MAX_SAFE_INTEGER
+
+    if (orderA === orderB) {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : Infinity
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : Infinity
+      return dateA - dateB
+    }
+
+    return orderA - orderB
+  })
+}
 
 async function fetchCatalog(): Promise<CatalogCategory[]> {
   const response = await fetch("/api/artefact-categories", {
@@ -43,7 +63,7 @@ async function fetchCatalog(): Promise<CatalogCategory[]> {
   }
 
   const data = await response.json()
-  return Array.isArray(data) ? data : []
+  return Array.isArray(data) ? sortCatalogCategories(data) : []
 }
 
 function mapProducts(categories: CatalogCategory[]) {

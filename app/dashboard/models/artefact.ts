@@ -19,6 +19,7 @@ export interface ArtefactCategory {
   id?: string;
   name: string;
   description?: string;
+  order?: number;
   products: ArtefactProduct[];
   createdAt: string;
   updatedAt?: string;
