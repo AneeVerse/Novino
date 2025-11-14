@@ -180,10 +180,10 @@ export default function TestimonialCollection() {
           />
         </div>
            {/* Header section - desktop only */}
-            <div className="w-full p-4 sm:p-8 hidden sm:block">
+        <div className="w-full p-4 sm:p-8 hidden sm:block">
           <div className="max-w-2xl mb-6 sm:mb-12 relative z-10">
-            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4 font-['Roboto_Mono']">THE STYLELOOM TESTIMONIAL COLLECTION.</h1>
-            <p className="text-gray-300 text-sm sm:text-base font-['Roboto_Mono']">At StyleLoom, our customers are the heartbeat of our brand.</p>
+            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4 font-['Roboto_Mono']">What People Say</h1>
+            <p className="text-gray-300 text-sm sm:text-base font-['Roboto_Mono']">Stories from those who connect with the art</p>
           </div>
         </div>
         {/* Mobile abstract logo in top-right corner (mobile only) */}
@@ -201,11 +201,9 @@ export default function TestimonialCollection() {
         <div className="w-full sm:hidden px-2 mt-0">
           <div className="max-w-full px-2 py-2">
             <h1 className="text-white text-xl font-bold font-['Roboto_Mono'] leading-tight">
-              <span className="block">THE STYLELOOM</span>
-              <span className="block">TESTIMONIAL</span>
-              <span className="block">COLLECTION.</span>
+              <span className="block">What People Say</span>
             </h1>
-            <p className="text-gray-300 text-xs font-['Roboto_Mono'] mt-1">At StyleLoom, our customers are the heartbeat of our brand.</p>
+            <p className="text-gray-300 text-xs font-['Roboto_Mono'] mt-1">Stories from those who connect with the art</p>
           </div>
         </div>
         {/* Testimonials grid with dashed borders */}

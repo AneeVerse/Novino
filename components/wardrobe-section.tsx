@@ -22,19 +22,19 @@ export default function WardrobeSection() {
         <div className="absolute inset-0 flex flex-col md:flex-row items-center justify-center md:justify-start p-6 sm:p-8 md:p-12 pb-8 sm:pb-10 md:pb-12">
           {/* Left content section */}
           <div className="md:w-3/5 z-10 w-full">
-            <h2 className="text-black text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">ELEVATE YOUR WARDROBE</h2>
+            <h2 className="text-black text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Art Born From Nature</h2>
             <p className="text-black text-sm sm:text-base md:text-lg max-w-2xl mb-4 sm:mb-6 md:mb-0">
-              Don't miss out – experience the epitome of fashion by clicking 'Buy Now' and embrace a world of chic elegance delivered to your doorstep. Your style journey begins here.
+              Every piece starts with observation. A butterfly's wing. The sun's layers. Flowers that exist only in imagination. This work reflects the patterns, cycles, and uniqueness found in the natural world.
             </p>
           </div>
 
           {/* Button section - aligned with circle */}
           <div className="md:absolute md:right-32 md:top-1/2 md:-translate-y-1/2 mt-2 md:mt-0 z-10 w-full md:w-auto">
             <Link
-              href="/shop"
-              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-black transition-colors flex items-center justify-center md:justify-start gap-2 text-sm sm:text-base"
+              href="/artefacts"
+              className="bg-black text-white px-6 py-3 -mr-24 rounded-lg hover:bg-black transition-colors flex items-center justify-center md:justify-start gap-2 text-sm sm:text-base"
             >
-              Shop Now
+              Explore the Journey
               <span className="inline-block transform rotate-45">↗</span>
             </Link>
           </div>
