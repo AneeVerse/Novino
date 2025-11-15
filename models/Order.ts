@@ -9,6 +9,12 @@ export interface IOrderItem {
   variant?: string;
 }
 
+interface IStatusEvent {
+  status: string;
+  note?: string;
+  at: Date;
+}
+
 export interface IOrder extends Document {
   userId: string;
   orderNumber: string;
@@ -29,8 +35,10 @@ export interface IOrder extends Document {
   };
   
   // Payment Info
-  paymentMethod: 'cod' | 'card' | 'upi' | 'wallet' | 'netbanking';
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  paymentMethod: 'cod' | 'card' | 'upi' | 'wallet' | 'netbanking' | 'razorpay';
+  paymentStatus: 'requires_payment' | 'pending' | 'paid' | 'failed' | 'refunded';
+  razorpayOrderId?: string;
+  paymentId?: Schema.Types.ObjectId;
   
   // Order Status
   orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
@@ -38,12 +46,13 @@ export interface IOrder extends Document {
   // Extras
   giftWrap: boolean;
   
-  // Timestamps
+  // Timestamps & status
   orderedAt: Date;
   estimatedDelivery?: Date;
   deliveredAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  statusTimeline?: IStatusEvent[];
 }
 
 const OrderSchema: Schema = new Schema({
@@ -112,13 +121,21 @@ const OrderSchema: Schema = new Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['cod', 'card', 'upi', 'wallet', 'netbanking'],
+    enum: ['cod', 'card', 'upi', 'wallet', 'netbanking', 'razorpay'],
     required: true
   },
   paymentStatus: {
     type: String,
-    enum: ['pending', 'paid', 'failed', 'refunded'],
+    enum: ['requires_payment', 'pending', 'paid', 'failed', 'refunded'],
     default: 'pending'
+  },
+  razorpayOrderId: {
+    type: String,
+    index: true
+  },
+  paymentId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Payment'
   },
   orderStatus: {
     type: String,
@@ -142,7 +159,14 @@ const OrderSchema: Schema = new Schema({
   updatedAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  statusTimeline: [
+    {
+      status: { type: String, required: true },
+      note: { type: String },
+      at: { type: Date, default: Date.now }
+    }
+  ]
 }, {
   timestamps: true
 });

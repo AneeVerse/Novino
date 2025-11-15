@@ -16,6 +16,7 @@ interface SelectedItems {
 interface SavedAddress {
   id: string;
   name: string;
+  phone: string;
   pincode: string;
   address: string;
   line1: string;
@@ -43,13 +44,22 @@ export default function CartPage() {
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [addressForm, setAddressForm] = useState({
     name: "",
+    phone: "",
     line1: "",
     line2: "",
     city: "",
     pincode: "",
     state: ""
   });
+  const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [pincodeMessage, setPincodeMessage] = useState("");
   
+  const resetAddressForm = () => {
+    setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", pincode: "", state: "" });
+    setPincodeStatus('idle');
+    setPincodeMessage('');
+  };
+
   // Load saved addresses from API for authenticated user
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -60,6 +70,7 @@ export default function CartPage() {
           const formattedAddresses = data.addresses.map((addr: any) => ({
             id: addr._id,
             name: addr.name,
+            phone: addr.phone,
             pincode: addr.pincode,
             address: `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}`,
             line1: addr.line1,
@@ -90,6 +101,62 @@ export default function CartPage() {
 
     fetchAddresses();
   }, []);
+
+  useEffect(() => {
+    const pin = addressForm.pincode.trim();
+    if (!pin) {
+      setPincodeStatus('idle');
+      setPincodeMessage('');
+      return;
+    }
+
+    if (pin.length < 6) {
+      setPincodeStatus('idle');
+      setPincodeMessage('Enter 6-digit pincode to auto-fill city & state');
+      return;
+    }
+
+    if (!/^\d{6}$/.test(pin)) {
+      setPincodeStatus('error');
+      setPincodeMessage('Pincode must be 6 digits');
+      return;
+    }
+
+    let cancelled = false;
+    const fetchPincodeDetails = async () => {
+      try {
+        setPincodeStatus('loading');
+        setPincodeMessage('Fetching city & state...');
+        const response = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+        const result = await response.json();
+        if (cancelled) return;
+
+        if (Array.isArray(result) && result[0]?.Status === 'Success') {
+          const office = result[0]?.PostOffice?.[0];
+          setAddressForm(prev => ({
+            ...prev,
+            city: office?.District || prev.city,
+            state: office?.State || prev.state,
+          }));
+          setPincodeStatus('success');
+          setPincodeMessage(`${office?.District || ''}, ${office?.State || ''}`.trim());
+        } else {
+          setPincodeStatus('error');
+          setPincodeMessage('Service unavailable for this pincode. Please verify.');
+        }
+      } catch (error) {
+        if (cancelled) return;
+        setPincodeStatus('error');
+        setPincodeMessage('Could not fetch details. Please try again.');
+      }
+    };
+
+    fetchPincodeDetails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [addressForm.pincode]);
   
   
   // Initialize all items as selected only when cart changes (new items added)
@@ -534,7 +601,7 @@ export default function CartPage() {
                       setShowAddressForm(true);
                       setShowAddressList(false);
                       setEditingAddressId(null);
-                      setAddressForm({ name: "", line1: "", line2: "", city: "", pincode: "", state: "" });
+                      setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", pincode: "", state: "" });
                     }}
                     className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 rounded-md font-medium transition-colors mt-4"
                   >
@@ -555,6 +622,24 @@ export default function CartPage() {
                           className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm sm:text-base text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
                           placeholder="Enter full name"
                           autoFocus
+                          style={{ pointerEvents: 'auto', zIndex: 10 }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-white/70 mb-1">
+                          Mobile Number
+                        </label>
+                        <input
+                          type="tel"
+                          value={addressForm.phone}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                            setAddressForm(prev => ({ ...prev, phone: value }));
+                          }}
+                          className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm sm:text-base text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D]"
+                          placeholder="10-digit mobile number"
+                          maxLength={10}
+                          inputMode="numeric"
                           style={{ pointerEvents: 'auto', zIndex: 10 }}
                         />
                       </div>
@@ -608,12 +693,28 @@ export default function CartPage() {
                           <input
                             type="text"
                             value={addressForm.pincode}
-                            onChange={(e) => setAddressForm(prev => ({ ...prev, pincode: e.target.value }))}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+                              setAddressForm(prev => ({ ...prev, pincode: value }));
+                            }}
                             onFocus={(e) => e.target.select()}
                             className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-sm sm:text-base text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] cursor-text"
                             placeholder="Pincode"
                             style={{ pointerEvents: 'auto', zIndex: 10 }}
                           />
+                          {pincodeMessage && (
+                            <p
+                              className={`text-xs mt-1 ${
+                                pincodeStatus === 'success'
+                                  ? 'text-[#22c55e]'
+                                  : pincodeStatus === 'error'
+                                  ? 'text-red-400'
+                                  : 'text-white/60'
+                              }`}
+                            >
+                              {pincodeStatus === 'loading' ? 'Checking...' : pincodeMessage}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div>
@@ -633,10 +734,52 @@ export default function CartPage() {
                       <div className="flex gap-3">
                         <button
                           onClick={async () => {
-                            if (addressForm.name && addressForm.line1 && addressForm.city && addressForm.pincode && addressForm.state) {
+                            const trimmedName = addressForm.name.trim();
+                            const trimmedLine1 = addressForm.line1.trim();
+                            const isValidPhone = /^\d{10}$/.test(addressForm.phone);
+                            const isValidPincode = /^\d{6}$/.test(addressForm.pincode);
+
+                            if (trimmedName.length < 3) {
+                              toast({
+                                variant: "destructive",
+                                title: "Name Required",
+                                description: "Please enter the full name for this address.",
+                              });
+                              return;
+                            }
+
+                            if (!isValidPhone) {
+                              toast({
+                                variant: "destructive",
+                                title: "Invalid Phone Number",
+                                description: "Please enter a 10 digit mobile number.",
+                              });
+                              return;
+                            }
+
+                            if (!isValidPincode) {
+                              toast({
+                                variant: "destructive",
+                                title: "Invalid Pincode",
+                                description: "Please enter a valid 6 digit pincode.",
+                              });
+                              return;
+                            }
+
+                            if (trimmedLine1.length < 5 || !addressForm.city || !addressForm.state) {
+                              toast({
+                                variant: "destructive",
+                                title: "Missing Information",
+                                description: "Please fill all required address fields.",
+                              });
+                              return;
+                            }
+
+                            if (trimmedLine1 && addressForm.city && addressForm.state) {
                               const addressPayload = {
-                                name: addressForm.name,
-                                line1: addressForm.line1,
+                                name: trimmedName,
+                                phone: addressForm.phone,
+                                line1: trimmedLine1,
                                 line2: addressForm.line2,
                                 city: addressForm.city,
                                 state: addressForm.state,
@@ -658,6 +801,7 @@ export default function CartPage() {
                                     const formattedAddress = {
                                       id: address._id,
                                       name: address.name,
+                                      phone: address.phone,
                                       pincode: address.pincode,
                                       address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
                                       line1: address.line1,
@@ -699,6 +843,7 @@ export default function CartPage() {
                                     const formattedAddress = {
                                       id: address._id,
                                       name: address.name,
+                                      phone: address.phone,
                                       pincode: address.pincode,
                                       address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
                                       line1: address.line1,
@@ -729,7 +874,7 @@ export default function CartPage() {
                                 
                                 setShowAddressForm(false);
                                 setEditingAddressId(null);
-                                setAddressForm({ name: "", line1: "", line2: "", city: "", pincode: "", state: "" });
+                                setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", pincode: "", state: "" });
                               } catch (error) {
                                 console.error('Error saving address:', error);
                                 toast({
@@ -754,7 +899,7 @@ export default function CartPage() {
                           onClick={() => {
                             setShowAddressForm(false);
                             setEditingAddressId(null);
-                            setAddressForm({ name: "", line1: "", line2: "", city: "", pincode: "", state: "" });
+                            setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", pincode: "", state: "" });
                             if (savedAddresses.length > 0) {
                               setShowAddressList(true);
                             }
@@ -793,7 +938,7 @@ export default function CartPage() {
                         setShowAddressForm(true);
                         setShowAddressList(false);
                         setEditingAddressId(null);
-                        setAddressForm({ name: "", line1: "", line2: "", city: "", pincode: "", state: "" });
+                        setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", pincode: "", state: "" });
                       }}
                       className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white py-3 rounded-md font-medium transition-colors"
                     >

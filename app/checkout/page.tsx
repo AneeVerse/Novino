@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Calendar, ChevronDown, ChevronUp, Wallet, CreditCard, Building2, AlertCircle } from "lucide-react";
+import { MapPin, ChevronDown, ChevronUp, CreditCard, AlertCircle } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
 interface PaymentMethod {
@@ -18,6 +18,21 @@ interface PaymentMethod {
   message?: string;
   collapsible?: boolean;
 }
+
+const loadExternalScript = (src: string) => {
+  return new Promise<void>((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script ${src}`));
+    document.body.appendChild(script);
+  });
+};
 
 export default function CheckoutPage() {
   const { cart } = useCart();
@@ -40,13 +55,19 @@ export default function CheckoutPage() {
     pincode: string;
     address: string;
     estimatedDelivery: string;
+    line1?: string;
+    line2?: string;
+    city?: string;
+    state?: string;
+    phone?: string;
   } | null>(null);
   
   const [showAddressForm, setShowAddressForm] = useState(false);
   
   // State for payment methods
-  const [selectedPayment, setSelectedPayment] = useState<string>("");
+  const [selectedPayment, setSelectedPayment] = useState<string>("razorpay");
   const [expandedPayments, setExpandedPayments] = useState<{ [key: string]: boolean }>({});
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   
   // State for card details
   const [cardDetails, setCardDetails] = useState({
@@ -150,41 +171,17 @@ export default function CheckoutPage() {
   // Payment methods
   const paymentMethods: PaymentMethod[] = [
     {
-      id: "tss-money",
-      name: "TSS Money",
-      icon: <Wallet className="w-5 h-5" />,
-      balance: formatPrice(0)
-    },
-    {
-      id: "upi",
-      name: "Pay with any UPI App"
-    },
-    {
-      id: "wallets",
-      name: "Wallets",
-      collapsible: true
-    },
-    {
-      id: "cards",
-      name: "Credit & Debit Cards",
-      collapsible: true
-    },
-    {
-      id: "netbanking",
-      name: "Netbanking",
-      collapsible: true
-    },
-    {
-      id: "cred",
-      name: "CRED pay",
-      disabled: true,
-      message: "You're not eligible for this payment option."
+      id: "razorpay",
+      name: "Pay securely via Razorpay",
+      icon: <CreditCard className="w-5 h-5" />,
+      message: "Supports UPI, cards, wallets & netbanking",
     },
     {
       id: "cod",
-      name: "COD",
-      message: "We recommend making prepaid payments to ensure your deliveries are contactless."
-    }
+      name: "Cash on Delivery",
+      disabled: true,
+      message: "Coming soon. Please use Razorpay for prepaid orders.",
+    },
   ];
   
   // Wallet options
@@ -230,7 +227,7 @@ export default function CheckoutPage() {
   };
   
   // Handle confirm order
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
     if (!deliveryAddress) {
       toast({
         variant: "destructive",
@@ -258,122 +255,150 @@ export default function CheckoutPage() {
       });
       return;
     }
-    
-    // Validate payment method specific fields
-    if (selectedPayment === "cards") {
-      if (!cardDetails.cardNumber || !cardDetails.expiry || !cardDetails.cvv) {
-        toast({
-          variant: "destructive",
-          title: "Card Details Required",
-          description: "Please fill in all card details",
-        });
-        return;
-      }
+    if (selectedPayment !== "razorpay") {
+      toast({
+        variant: "destructive",
+        title: "Only Razorpay available",
+        description: "Please choose Razorpay to complete your payment.",
+      });
+      return;
     }
     
-    if (selectedPayment === "upi") {
-      if (!upiId) {
-        toast({
-          variant: "destructive",
-          title: "UPI ID Required",
-          description: "Please enter your UPI ID",
-        });
-        return;
-      }
-    }
-    
-    if (selectedPayment === "wallets") {
-      if (!selectedWallet) {
-        toast({
-          variant: "destructive",
-          title: "Wallet Selection Required",
-          description: "Please select a wallet",
-        });
-        return;
-      }
-    }
-    
-    if (selectedPayment === "netbanking") {
-      if (!selectedBank) {
-        toast({
-          variant: "destructive",
-          title: "Bank Selection Required",
-          description: "Please select a bank",
-        });
-        return;
-      }
-    }
-    
-    // Place order via API
-    const placeOrder = async () => {
-      try {
-        const orderData = {
-          items: selectedCartItems.map((item: any) => ({
-            productId: String(item.id),
-            name: item.name,
-            price: typeof item.price === 'string' ? parseFloat(item.price.replace(/[^0-9.]/g, '')) : item.price,
-            quantity: item.quantity,
-            image: item.image,
-            variant: item.variant
-          })),
-          subtotal: cartTotal,
-          gst,
-          shippingCost: 0, // Free shipping
-          total,
-          deliveryAddress: {
-            name: deliveryAddress.name,
-            line1: deliveryAddress.line1 || deliveryAddress.address?.split(',')[0] || deliveryAddress.address,
-            line2: deliveryAddress.line2 || '',
-            city: deliveryAddress.city || '',
-            state: deliveryAddress.state || '',
-            pincode: deliveryAddress.pincode
-          },
-          paymentMethod: selectedPayment,
-          giftWrap: cartExtras.giftWrap
-        };
-
-        const response = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderData)
-        });
-
-        if (response.ok) {
-          const { order } = await response.json();
-          
-          toast({
-            title: "Order Placed Successfully!",
-            description: `Order #${order.orderNumber} has been confirmed. ${selectedPayment === 'cod' ? 'Payment will be collected on delivery.' : ''}`,
-          });
-          
-          // Clear selected items from localStorage
-          localStorage.removeItem('selectedCartItems');
-          localStorage.removeItem('cartExtras');
-          localStorage.removeItem('selectedAddress');
-          
-          // Navigate to profile orders page
-          setTimeout(() => {
-            router.push('/profile?tab=orders');
-          }, 2000);
-        } else {
-          const error = await response.json();
-          toast({
-            variant: "destructive",
-            title: "Order Failed",
-            description: error.message || "Failed to place order. Please try again.",
-          });
-        }
-      } catch (error) {
-        console.error('Order placement error:', error);
-        toast({
-          variant: "destructive",
-          title: "Order Failed",
-          description: "An error occurred while placing your order. Please try again.",
-        });
-      }
+    const orderData = {
+      items: selectedCartItems.map((item: any) => ({
+        productId: String(item.id),
+        name: item.name,
+        price: typeof item.price === 'string' ? parseFloat(item.price.replace(/[^0-9.]/g, '')) : item.price,
+        quantity: item.quantity,
+        image: item.image,
+        variant: item.variant
+      })),
+      subtotal: cartTotal,
+      gst,
+      shippingCost: 0,
+      total,
+      deliveryAddress: {
+        name: deliveryAddress.name,
+        line1: deliveryAddress.line1 || deliveryAddress.address?.split(',')[0] || deliveryAddress.address,
+        line2: deliveryAddress.line2 || '',
+        city: deliveryAddress.city || '',
+        state: deliveryAddress.state || '',
+        pincode: deliveryAddress.pincode,
+        phone: deliveryAddress.phone || ''
+      },
+      paymentMethod: 'razorpay',
+      giftWrap: cartExtras.giftWrap
     };
 
-    placeOrder();
+    try {
+      setIsPlacingOrder(true);
+
+      const orderResponse = await fetch('/api/payments/razorpay-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!orderResponse.ok) {
+        const error = await orderResponse.json();
+        throw new Error(error.message || 'Failed to initiate Razorpay order');
+      }
+
+      const gateway = await orderResponse.json();
+
+      if (!(window as any).Razorpay) {
+        await loadExternalScript('https://checkout.razorpay.com/v1/checkout.js');
+      }
+
+      const sanitizedContact = (gateway.customer?.contact || deliveryAddress.phone || "")
+        .toString()
+        .replace(/[^0-9]/g, "")
+        .slice(-10);
+
+      const rzp = new (window as any).Razorpay({
+        key: gateway.key,
+        amount: gateway.amount,
+        currency: gateway.currency,
+        order_id: gateway.razorpayOrderId,
+        name: 'Novino',
+        description: `Order #${gateway.orderId}`,
+        prefill: {
+          name: gateway.customer?.name,
+          email: gateway.customer?.email,
+          contact: sanitizedContact,
+        },
+        remember_user: false,
+        theme: { color: '#AE876D' },
+        handler: async (response: any) => {
+          try {
+            const verifyRes = await fetch('/api/payments/razorpay-verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId: gateway.orderId,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+                paymentMethod: selectedPayment,
+              }),
+            });
+
+            if (!verifyRes.ok) {
+              const verifyError = await verifyRes.json();
+              throw new Error(verifyError.message || 'Payment verification failed');
+            }
+
+            toast({
+              title: "Payment Successful!",
+              description: `Order confirmed. We'll keep you posted on the status.`,
+            });
+
+            localStorage.removeItem('selectedCartItems');
+            localStorage.removeItem('cartExtras');
+            localStorage.removeItem('selectedAddress');
+
+            router.push('/profile?tab=orders');
+          } catch (error: any) {
+            toast({
+              variant: "destructive",
+              title: "Verification Failed",
+              description: error.message || "We couldn't confirm your payment. Please contact support.",
+            });
+          } finally {
+            setIsPlacingOrder(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsPlacingOrder(false);
+            toast({
+              variant: "destructive",
+              title: "Payment Cancelled",
+              description: "You closed the Razorpay checkout before completing payment.",
+            });
+          },
+        },
+      });
+
+      rzp.on('payment.failed', (response: any) => {
+        setIsPlacingOrder(false);
+        toast({
+          variant: "destructive",
+          title: "Payment Failed",
+          description: response.error?.description || "Payment could not be completed. Please try again.",
+        });
+      });
+
+      rzp.open();
+    } catch (error: any) {
+      console.error('Razorpay order error:', error);
+      setIsPlacingOrder(false);
+      toast({
+        variant: "destructive",
+        title: "Unable to start payment",
+        description: error.message || "Something went wrong while connecting to Razorpay.",
+      });
+    }
   };
   
   if (selectedCartItems.length === 0) {
@@ -709,10 +734,10 @@ export default function CheckoutPage() {
               
               <button
                 onClick={handleConfirmOrder}
-                disabled={!deliveryAddress || !selectedPayment}
+                disabled={!deliveryAddress || !selectedPayment || isPlacingOrder}
                 className="w-full bg-[#22c55e] hover:bg-[#16a34a] disabled:bg-[#444444] disabled:cursor-not-allowed text-white py-3 sm:py-4 rounded-md font-semibold text-base sm:text-lg mb-3 sm:mb-4 transition-colors"
               >
-                CONFIRM ORDER
+                {isPlacingOrder ? "Processing..." : "CONFIRM ORDER"}
               </button>
               
               <div className="mt-4 sm:mt-6 text-center text-[10px] sm:text-xs text-white/60">

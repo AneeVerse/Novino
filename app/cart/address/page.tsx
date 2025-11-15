@@ -8,6 +8,7 @@ import { MapPin, Loader2, Check } from "lucide-react";
 interface SavedAddress {
   id: string;
   name: string;
+  phone: string;
   pincode: string;
   address: string;
   line1: string;
@@ -29,12 +30,16 @@ export default function AddressPage() {
   const [loading, setLoading] = useState(true);
   const [addressForm, setAddressForm] = useState({
     name: "",
+    phone: "",
     line1: "",
     line2: "",
     city: "",
     pincode: "",
     state: ""
   });
+  const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [pincodeMessage, setPincodeMessage] = useState("");
+  const [isPincodeVerified, setIsPincodeVerified] = useState(false);
 
   // Load saved addresses
   useEffect(() => {
@@ -46,6 +51,7 @@ export default function AddressPage() {
           const formattedAddresses = data.addresses.map((addr: any) => ({
             id: addr._id,
             name: addr.name,
+            phone: addr.phone,
             pincode: addr.pincode,
             address: `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}`,
             line1: addr.line1,
@@ -74,6 +80,47 @@ export default function AddressPage() {
     fetchAddresses();
   }, []);
 
+  const verifyPincode = async () => {
+    const pin = addressForm.pincode.trim();
+    if (!/^\d{6}$/.test(pin)) {
+      setPincodeStatus('error');
+      setPincodeMessage('Enter a valid 6-digit pincode');
+      setIsPincodeVerified(false);
+      return;
+    }
+
+    try {
+      setPincodeStatus('loading');
+      setPincodeMessage('Checking availability...');
+      const response = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+      const data = await response.json();
+
+      if (Array.isArray(data) && data[0]?.Status === 'Success') {
+        const office = data[0]?.PostOffice?.[0];
+        const city = office?.District || '';
+        const state = office?.State || '';
+
+        setAddressForm(prev => ({
+          ...prev,
+          city,
+          state,
+        }));
+        setPincodeStatus('success');
+        setPincodeMessage(`${city}, ${state}`);
+        setIsPincodeVerified(true);
+      } else {
+        setPincodeStatus('error');
+        setPincodeMessage('Service unavailable for this pincode');
+        setIsPincodeVerified(false);
+      }
+    } catch (error) {
+      console.error('Pincode lookup failed', error);
+      setPincodeStatus('error');
+      setPincodeMessage('Unable to fetch pincode details. Try again.');
+      setIsPincodeVerified(false);
+    }
+  };
+
   const handleContinueToPayment = () => {
     if (!selectedAddress) {
       toast({
@@ -91,11 +138,60 @@ export default function AddressPage() {
     router.push('/checkout');
   };
 
+  const resetForm = () => {
+    setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", pincode: "", state: "" });
+    setPincodeStatus('idle');
+    setPincodeMessage('');
+    setIsPincodeVerified(false);
+  };
+
   const handleSaveAddress = async () => {
-    if (addressForm.name && addressForm.line1 && addressForm.city && addressForm.pincode && addressForm.state) {
+    const trimmedName = addressForm.name.trim();
+    const trimmedLine1 = addressForm.line1.trim();
+    const isValidPincode = isPincodeVerified && /^\d{6}$/.test(addressForm.pincode);
+    const isValidPhone = /^\d{10}$/.test(addressForm.phone);
+
+    if (trimmedName.length < 3) {
+      toast({
+        variant: "destructive",
+        title: "Name Required",
+        description: "Please enter the full name for this address.",
+      });
+      return;
+    }
+
+    if (!isValidPincode) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Pincode",
+        description: "Please enter a valid 6 digit Indian pincode.",
+      });
+      return;
+    }
+
+    if (!isValidPhone) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Phone Number",
+        description: "Please enter a 10 digit mobile number.",
+      });
+      return;
+    }
+
+    if (trimmedLine1.length < 5) {
+      toast({
+        variant: "destructive",
+        title: "Address Too Short",
+        description: "Address line 1 should be at least 5 characters long.",
+      });
+      return;
+    }
+
+    if (trimmedLine1 && addressForm.city && addressForm.state && isPincodeVerified) {
       const addressPayload = {
-        name: addressForm.name,
-        line1: addressForm.line1,
+        name: trimmedName,
+        phone: addressForm.phone,
+        line1: trimmedLine1,
         line2: addressForm.line2,
         city: addressForm.city,
         state: addressForm.state,
@@ -117,6 +213,7 @@ export default function AddressPage() {
             const formattedAddress = {
               id: address._id,
               name: address.name,
+              phone: address.phone,
               pincode: address.pincode,
               address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
               line1: address.line1,
@@ -151,6 +248,7 @@ export default function AddressPage() {
             const formattedAddress = {
               id: address._id,
               name: address.name,
+              phone: address.phone,
               pincode: address.pincode,
               address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
               line1: address.line1,
@@ -174,7 +272,7 @@ export default function AddressPage() {
         
         setShowAddressForm(false);
         setEditingAddressId(null);
-        setAddressForm({ name: "", line1: "", line2: "", city: "", pincode: "", state: "" });
+        resetForm();
       } catch (error) {
         console.error('Error saving address:', error);
         toast({
@@ -273,12 +371,121 @@ export default function AddressPage() {
 
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1">
+                  Mobile Number *
+                </label>
+                <input
+                  type="tel"
+                  value={addressForm.phone}
+                  onChange={(e) => {
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+    setAddressForm(prev => ({ ...prev, phone: value }));
+                  }}
+                  className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D]"
+                  placeholder="10-digit mobile number"
+                  maxLength={10}
+                  inputMode="numeric"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1">
+                  Delivery Pincode *
+                </label>
+                <div className="flex gap-3">
+                  <input
+                    type="tel"
+                    value={addressForm.pincode}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+                      setAddressForm(prev => ({
+                        ...prev,
+                        pincode: value,
+                        city: "",
+                        state: ""
+                      }));
+                      setIsPincodeVerified(false);
+                      setPincodeStatus('idle');
+                      setPincodeMessage('');
+                    }}
+                    className={`flex-1 bg-[#222222] border ${pincodeStatus === 'error' ? 'border-red-500' : 'border-[#444444]'} rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D] ${isPincodeVerified ? 'bg-[#1c1c1c]/80' : ''}`}
+                    placeholder="Enter 6-digit pincode"
+                    maxLength={6}
+                    inputMode="numeric"
+                    disabled={pincodeStatus === 'loading'}
+                  />
+                  {isPincodeVerified ? (
+                    <button
+                      onClick={() => {
+                        setIsPincodeVerified(false);
+                        setPincodeStatus('idle');
+                        setPincodeMessage('Enter a new pincode to change location');
+                      }}
+                      className="px-4 py-2 bg-[#444444] hover:bg-[#555555] rounded-md text-sm font-medium transition-colors"
+                    >
+                      Change
+                    </button>
+                  ) : (
+                    <button
+                      onClick={verifyPincode}
+                      className="px-4 py-2 bg-[#AE876D] hover:bg-[#8d6c58] rounded-md text-sm font-medium transition-colors"
+                    >
+                      {pincodeStatus === 'loading' ? 'Checking...' : 'Check'}
+                    </button>
+                  )}
+                </div>
+                {pincodeMessage && (
+                  <p
+                    className={`text-xs mt-1 ${
+                      pincodeStatus === 'success'
+                        ? 'text-[#22c55e]'
+                        : pincodeStatus === 'error'
+                        ? 'text-red-400'
+                        : 'text-white/60'
+                    }`}
+                  >
+                    {pincodeMessage}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-1">
+                    City *
+                  </label>
+                  <input
+                    type="text"
+                    value={addressForm.city}
+                    onChange={(e) => setAddressForm(prev => ({ ...prev, city: e.target.value }))}
+                    disabled={!isPincodeVerified}
+                    className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D]"
+                    placeholder="City"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-1">
+                    State *
+                  </label>
+                  <input
+                    type="text"
+                    value={addressForm.state}
+                    onChange={(e) => setAddressForm(prev => ({ ...prev, state: e.target.value }))}
+                    disabled={!isPincodeVerified}
+                    className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D]"
+                    placeholder="State"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1">
                   Address Line 1 *
                 </label>
                 <input
                   type="text"
                   value={addressForm.line1}
                   onChange={(e) => setAddressForm(prev => ({ ...prev, line1: e.target.value }))}
+                  disabled={!isPincodeVerified}
                   className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D]"
                   placeholder="Street address"
                 />
@@ -292,48 +499,9 @@ export default function AddressPage() {
                   type="text"
                   value={addressForm.line2}
                   onChange={(e) => setAddressForm(prev => ({ ...prev, line2: e.target.value }))}
+                  disabled={!isPincodeVerified}
                   className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D]"
                   placeholder="Apartment, suite, etc."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">
-                    City *
-                  </label>
-                  <input
-                    type="text"
-                    value={addressForm.city}
-                    onChange={(e) => setAddressForm(prev => ({ ...prev, city: e.target.value }))}
-                    className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D]"
-                    placeholder="City"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">
-                    Pincode *
-                  </label>
-                  <input
-                    type="text"
-                    value={addressForm.pincode}
-                    onChange={(e) => setAddressForm(prev => ({ ...prev, pincode: e.target.value }))}
-                    className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D]"
-                    placeholder="Pincode"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-white/70 mb-1">
-                  State *
-                </label>
-                <input
-                  type="text"
-                  value={addressForm.state}
-                  onChange={(e) => setAddressForm(prev => ({ ...prev, state: e.target.value }))}
-                  className="w-full bg-[#222222] border border-[#444444] rounded px-3 py-2 text-white focus:outline-none focus:border-[#AE876D] focus:ring-1 focus:ring-[#AE876D]"
-                  placeholder="State"
                 />
               </div>
 
@@ -348,7 +516,7 @@ export default function AddressPage() {
                   onClick={() => {
                     setShowAddressForm(false);
                     setEditingAddressId(null);
-                    setAddressForm({ name: "", line1: "", line2: "", city: "", pincode: "", state: "" });
+                    resetForm();
                   }}
                   className="flex-1 bg-[#444444] hover:bg-[#555555] text-white py-3 rounded-md font-medium transition-colors"
                 >
@@ -380,6 +548,7 @@ export default function AddressPage() {
                           <p className="text-white font-semibold mb-1">
                             {address.name}, {address.pincode}
                           </p>
+                          <p className="text-white/60 text-sm mb-1">+91 {address.phone}</p>
                           <p className="text-white/70 text-sm">{address.address}</p>
                           <p className="text-white/60 text-sm mt-1">{address.city}, {address.state}</p>
                         </div>
@@ -396,12 +565,16 @@ export default function AddressPage() {
                             setEditingAddressId(address.id);
                             setAddressForm({
                               name: address.name,
+                              phone: address.phone,
                               line1: address.line1,
                               line2: address.line2,
                               city: address.city,
                               pincode: address.pincode,
                               state: address.state
                             });
+                            setIsPincodeVerified(true);
+                            setPincodeStatus('success');
+                            setPincodeMessage(`${address.city}, ${address.state}`);
                             setShowAddressForm(true);
                           }}
                           className="text-xs text-[#AE876D] hover:text-[#8d6c58] uppercase"
@@ -447,7 +620,7 @@ export default function AddressPage() {
                 onClick={() => {
                   setShowAddressForm(true);
                   setEditingAddressId(null);
-                  setAddressForm({ name: "", line1: "", line2: "", city: "", pincode: "", state: "" });
+                  resetForm();
                 }}
                 className="w-full bg-[#444444] hover:bg-[#555555] text-white py-3 rounded-md font-medium transition-colors"
               >

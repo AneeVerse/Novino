@@ -8,6 +8,7 @@ export interface IAddress extends Document {
   city: string;
   state: string;
   pincode: string;
+  phone: string;
   isDefault: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -47,6 +48,11 @@ const AddressSchema: Schema = new Schema({
   pincode: {
     type: String,
     required: [true, 'Pincode is required'],
+    trim: true
+  },
+  phone: {
+    type: String,
+    required: [true, 'Phone number is required'],
     trim: true
   },
   isDefault: {

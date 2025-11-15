@@ -35,10 +35,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       case 'POST':
         // Create new address for the authenticated user
-        const { name, line1, line2, city, state, pincode, isDefault } = req.body;
+        const { name, line1, line2, city, state, pincode, phone, isDefault } = req.body;
 
         // Validate required fields
-        if (!name || !line1 || !city || !state || !pincode) {
+        if (!name || !line1 || !city || !state || !pincode || !phone) {
           return res.status(400).json({ message: 'Missing required fields' });
         }
 
@@ -51,6 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           city,
           state,
           pincode,
+          phone,
           isDefault: isDefault || false
         });
 

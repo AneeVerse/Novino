@@ -46,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     switch (req.method) {
       case 'PUT':
         // Update address
-        const { name, line1, line2, city, state, pincode, isDefault } = req.body;
+        const { name, line1, line2, city, state, pincode, phone, isDefault } = req.body;
 
         // Update fields
         if (name) address.name = name;
@@ -55,6 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (city) address.city = city;
         if (state) address.state = state;
         if (pincode) address.pincode = pincode;
+        if (phone) address.phone = phone;
         if (isDefault !== undefined) address.isDefault = isDefault;
 
         await address.save();

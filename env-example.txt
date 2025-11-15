@@ -27,3 +27,8 @@ RATE_LIMIT_WINDOW_MS=900000
 # Security
 BCRYPT_ROUNDS=12
 
+# Razorpay (Payments)
+RAZORPAY_KEY_ID=rzp_test_xxxxx
+RAZORPAY_KEY_SECRET=xxxxxx
+RAZORPAY_WEBHOOK_SECRET=your-webhook-secret
+
