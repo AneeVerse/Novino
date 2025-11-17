@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { NextApiRequest } from 'next'
-import cookie from 'cookie'
+import { parse as parseCookie } from 'cookie'
 
 // Function to decode Base64 safely in both browser and Node.js environments
 function safeAtob(base64: string): string {
@@ -37,7 +37,7 @@ export function getTokenFromReq(req: NextApiRequest): string | null {
     
     // Manual parsing as a fallback in case the cookie module fails
     try {
-      const cookies = cookie.parse(req.headers.cookie);
+      const cookies = parseCookie(req.headers.cookie);
       return typeof cookies.token === 'string' ? cookies.token : null;
     } catch (cookieError) {
       // Manual basic parsing as last resort

@@ -32,6 +32,8 @@ export interface IOrder extends Document {
     city: string;
     state: string;
     pincode: string;
+    phone?: string;
+    email?: string;
   };
   
   // Payment Info
@@ -39,6 +41,7 @@ export interface IOrder extends Document {
   paymentStatus: 'requires_payment' | 'pending' | 'paid' | 'failed' | 'refunded';
   razorpayOrderId?: string;
   paymentId?: Schema.Types.ObjectId;
+  shipmentId?: Schema.Types.ObjectId;
   
   // Order Status
   orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
@@ -117,7 +120,9 @@ const OrderSchema: Schema = new Schema({
     line2: String,
     city: { type: String, required: true },
     state: { type: String, required: true },
-    pincode: { type: String, required: true }
+    pincode: { type: String, required: true },
+    phone: String,
+    email: String
   },
   paymentMethod: {
     type: String,
@@ -136,6 +141,10 @@ const OrderSchema: Schema = new Schema({
   paymentId: {
     type: Schema.Types.ObjectId,
     ref: 'Payment'
+  },
+  shipmentId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Shipment'
   },
   orderStatus: {
     type: String,

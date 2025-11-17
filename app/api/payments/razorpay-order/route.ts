@@ -6,7 +6,7 @@ import { verifyToken } from '@/lib/auth';
 import { createRazorpayOrder, getRazorpayPublicKey } from '@/lib/services/razorpay';
 
 export async function POST(req: NextRequest) {
-  const token = cookies().get('token')?.value;
+  const token = (await cookies()).get('token')?.value;
   if (!token) {
     return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
   }
@@ -34,7 +34,11 @@ export async function POST(req: NextRequest) {
     gst,
     shippingCost,
     total,
-    deliveryAddress,
+    deliveryAddress: {
+      ...deliveryAddress,
+      phone: deliveryAddress.phone ?? '',
+      email: user.email,
+    },
     paymentMethod: 'razorpay',
     paymentStatus: 'requires_payment',
     orderStatus: 'pending',

@@ -32,3 +32,9 @@ RAZORPAY_KEY_ID=rzp_test_xxxxx
 RAZORPAY_KEY_SECRET=xxxxxx
 RAZORPAY_WEBHOOK_SECRET=your-webhook-secret
 
+# Shiprocket (Fulfillment)
+SHIPROCKET_EMAIL=your-shiprocket-login-email
+SHIPROCKET_PASSWORD=your-shiprocket-password
+SHIPROCKET_CHANNEL_ID=123456
+SHIPROCKET_WEBHOOK_SECRET=your-shiprocket-webhook-secret
+

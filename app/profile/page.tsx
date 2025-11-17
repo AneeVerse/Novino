@@ -11,8 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   Loader2, User, ShoppingBag, MapPin, Shield, LogOut, 
   Package, Truck, CheckCircle2, Clock, XCircle, AlertCircle,
-  Edit, Trash2, Plus, Eye
+  Edit, Trash2, Plus, Eye, RefreshCw, X
 } from "lucide-react";
+import TrackingTimeline from "@/components/orders/tracking-timeline";
 
 // Define types
 interface OrderItem {
@@ -43,8 +44,27 @@ interface Order {
     city: string;
     state: string;
     pincode: string;
+    phone?: string;
+    email?: string;
   };
   giftWrap: boolean;
+}
+
+interface ShipmentEvent {
+  status: string;
+  location?: string;
+  remarks?: string;
+  recordedAt: string;
+}
+
+interface Shipment {
+  _id: string;
+  status: string;
+  courierName?: string;
+  awbCode?: string;
+  trackingUrl?: string;
+  pickupScheduledFor?: string;
+  trackingEvents: ShipmentEvent[];
 }
 
 interface Address {
@@ -74,6 +94,9 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [shipments, setShipments] = useState<Record<string, Shipment>>({});
+  const [shipmentLoading, setShipmentLoading] = useState(false);
+  const [shipmentError, setShipmentError] = useState<string | null>(null);
   
   // Tab state
   const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'profile');
@@ -147,6 +170,30 @@ export default function ProfilePage() {
       console.error('Error fetching addresses:', error);
     }
   };
+
+  const hydrateShipment = async (orderId: string, refresh = false) => {
+    if (shipments[orderId] && !refresh) {
+      setShipmentError(null);
+      return;
+    }
+
+    setShipmentLoading(true);
+    setShipmentError(null);
+    try {
+      const res = await fetch(`/api/shipments/${orderId}${refresh ? '?refresh=true' : ''}`);
+      if (!res.ok) {
+        throw new Error('Shipment details are not ready yet.');
+      }
+      const data = await res.json();
+      setShipments((prev) => ({ ...prev, [orderId]: data.shipment }));
+    } catch (error: any) {
+      setShipmentError(error.message || 'Unable to load shipment details right now.');
+    } finally {
+      setShipmentLoading(false);
+    }
+  };
+  const selectedShipment = selectedOrder ? shipments[selectedOrder._id] : null;
+
   
   const handleLogout = async () => {
     try {
@@ -552,7 +599,10 @@ export default function ProfilePage() {
                           variant="outline"
                           size="sm"
                           className="border-[#AE876D] text-[#AE876D] hover:bg-[#AE876D]/10"
-                          onClick={() => setSelectedOrder(order)}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            hydrateShipment(order._id);
+                          }}
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           View Details
@@ -572,6 +622,86 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {selectedOrder && (
+              <div className="bg-gradient-to-br from-[#333333] to-[#2a2a2a] rounded-xl border border-[#444444] p-6 shadow-lg space-y-4">
+                <div className="flex flex-col md:flex-row justify-between gap-4">
+                  <div>
+                    <p className="text-white font-semibold text-lg">
+                      Order #{selectedOrder.orderNumber}
+                    </p>
+                    <p className="text-white/60 text-sm">
+                      Current status: {selectedShipment?.status ?? selectedOrder.orderStatus}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-[#444444] text-white/70 hover:bg-[#444444]"
+                      onClick={() => hydrateShipment(selectedOrder._id, true)}
+                      disabled={shipmentLoading}
+                    >
+                      <RefreshCw className={`w-4 h-4 mr-2 ${shipmentLoading ? 'animate-spin' : ''}`} />
+                      Refresh tracking
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      onClick={() => {
+                        setSelectedOrder(null);
+                        setShipmentError(null);
+                      }}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Close
+                    </Button>
+                  </div>
+                </div>
+
+                {shipmentError && <p className="text-sm text-red-400">{shipmentError}</p>}
+
+                {selectedShipment ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-white">
+                      <div>
+                        <p className="text-white/60">Courier</p>
+                        <p className="font-medium">{selectedShipment.courierName || 'Assigning'}</p>
+                      </div>
+                      <div>
+                        <p className="text-white/60">AWB</p>
+                        <p className="font-medium">{selectedShipment.awbCode || 'Pending'}</p>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-white/60">Tracking URL</p>
+                          <p className="font-medium">
+                            {selectedShipment.trackingUrl ? 'Available' : 'Not ready'}
+                          </p>
+                        </div>
+                        {selectedShipment.trackingUrl && (
+                          <Link
+                            href={selectedShipment.trackingUrl}
+                            target="_blank"
+                            className="text-[#AE876D] text-sm"
+                          >
+                            Open tracking
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                    <TrackingTimeline events={selectedShipment.trackingEvents || []} />
+                  </>
+                ) : shipmentLoading ? (
+                  <p className="text-white/70 text-sm">Loading shipment details...</p>
+                ) : (
+                  <p className="text-white/60 text-sm">
+                    Shipment details will appear here once generated.
+                  </p>
+                )}
               </div>
             )}
           </TabsContent>
