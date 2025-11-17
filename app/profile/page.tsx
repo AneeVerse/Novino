@@ -8,10 +8,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   Loader2, User, ShoppingBag, MapPin, Shield, LogOut, 
   Package, Truck, CheckCircle2, Clock, XCircle, AlertCircle,
-  Edit, Trash2, Plus, Eye, RefreshCw, X
+  Edit, Trash2, Plus, Eye, RefreshCw, X, CreditCard, Calendar
 } from "lucide-react";
 import TrackingTimeline from "@/components/orders/tracking-timeline";
 
@@ -32,6 +38,7 @@ interface Order {
   total: number;
   subtotal: number;
   gst: number;
+  shippingCost?: number;
   paymentMethod: string;
   paymentStatus: string;
   orderStatus: string;
@@ -336,6 +343,10 @@ export default function ProfilePage() {
     }
   };
   
+  const formatCurrency = (amount: number = 0) => {
+    return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+  
   // Status badge component
   const getOrderStatusBadge = (status: string) => {
     const statusConfig = {
@@ -375,6 +386,22 @@ export default function ProfilePage() {
       </span>
     );
   };
+  
+  const selectedOrderTotals = selectedOrder
+    ? (() => {
+        const subtotal =
+          typeof selectedOrder.subtotal === 'number'
+            ? selectedOrder.subtotal
+            : selectedOrder.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const shipping =
+          typeof selectedOrder.shippingCost === 'number' ? selectedOrder.shippingCost : 0;
+        const gstAmount =
+          typeof selectedOrder.gst === 'number'
+            ? selectedOrder.gst
+            : Math.max(selectedOrder.total - subtotal - shipping, 0);
+        return { subtotal, shipping, gstAmount };
+      })()
+    : null;
   
   if (loading) {
     return (
@@ -625,85 +652,279 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {selectedOrder && (
-              <div className="bg-gradient-to-br from-[#333333] to-[#2a2a2a] rounded-xl border border-[#444444] p-6 shadow-lg space-y-4">
-                <div className="flex flex-col md:flex-row justify-between gap-4">
-                  <div>
-                    <p className="text-white font-semibold text-lg">
-                      Order #{selectedOrder.orderNumber}
-                    </p>
-                    <p className="text-white/60 text-sm">
-                      Current status: {selectedShipment?.status ?? selectedOrder.orderStatus}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-[#444444] text-white/70 hover:bg-[#444444]"
-                      onClick={() => hydrateShipment(selectedOrder._id, true)}
-                      disabled={shipmentLoading}
-                    >
-                      <RefreshCw className={`w-4 h-4 mr-2 ${shipmentLoading ? 'animate-spin' : ''}`} />
-                      Refresh tracking
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                      onClick={() => {
-                        setSelectedOrder(null);
-                        setShipmentError(null);
-                      }}
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      Close
-                    </Button>
-                  </div>
-                </div>
-
-                {shipmentError && <p className="text-sm text-red-400">{shipmentError}</p>}
-
-                {selectedShipment ? (
+            {/* Order Details Modal */}
+            <Dialog open={!!selectedOrder} onOpenChange={(open) => {
+              if (!open) {
+                setSelectedOrder(null);
+                setShipmentError(null);
+              }
+            }}>
+              <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-[#222222] border-[#333333] text-white z-[9999]">
+                {selectedOrder && (
                   <>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-white">
-                      <div>
-                        <p className="text-white/60">Courier</p>
-                        <p className="font-medium">{selectedShipment.courierName || 'Assigning'}</p>
-                      </div>
-                      <div>
-                        <p className="text-white/60">AWB</p>
-                        <p className="font-medium">{selectedShipment.awbCode || 'Pending'}</p>
-                      </div>
-                      <div className="flex items-center justify-between gap-2">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold text-white flex items-center justify-between">
+                        <span>Order Details - {selectedOrder.orderNumber}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-white/70 hover:text-white hover:bg-[#333333]"
+                          onClick={() => hydrateShipment(selectedOrder._id, true)}
+                          disabled={shipmentLoading}
+                        >
+                          <RefreshCw className={`w-4 h-4 mr-2 ${shipmentLoading ? 'animate-spin' : ''}`} />
+                          Refresh
+                        </Button>
+                      </DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="space-y-6 mt-4">
+                      {/* Order Status & Info */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[#1A1A1A] rounded-lg border border-[#333333]">
                         <div>
-                          <p className="text-white/60">Tracking URL</p>
-                          <p className="font-medium">
-                            {selectedShipment.trackingUrl ? 'Available' : 'Not ready'}
+                          <div className="flex items-center gap-2 mb-2">
+                            <Calendar className="w-4 h-4 text-white/60" />
+                            <span className="text-sm text-white/60">Order Date</span>
+                          </div>
+                          <p className="text-white font-medium">
+                            {new Date(selectedOrder.orderedAt).toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </p>
                         </div>
-                        {selectedShipment.trackingUrl && (
-                          <Link
-                            href={selectedShipment.trackingUrl}
-                            target="_blank"
-                            className="text-[#AE876D] text-sm"
-                          >
-                            Open tracking
-                          </Link>
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <Package className="w-4 h-4 text-white/60" />
+                            <span className="text-sm text-white/60">Order Status</span>
+                          </div>
+                          {getOrderStatusBadge(selectedOrder.orderStatus)}
+                        </div>
+                      </div>
+
+                      {shipmentError && <p className="text-sm text-red-400">{shipmentError}</p>}
+
+                      {/* Products */}
+                      <div className="p-4 bg-[#1A1A1A] rounded-lg border border-[#333333]">
+                        <h3 className="text-lg font-semibold mb-4 text-white">Products</h3>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                          <div className="lg:col-span-2 space-y-3">
+                            {selectedOrder.items.map((item, idx) => (
+                              <div
+                                key={`${item.productId}-${idx}`}
+                                className="flex gap-4 p-4 rounded-lg border border-[#444444] bg-[#2a2a2a]"
+                              >
+                                <div className="relative w-24 h-24 rounded-md overflow-hidden bg-[#333333] flex-shrink-0 border border-[#333333]">
+                                  {item.image ? (
+                                    <Image
+                                      src={item.image}
+                                      alt={item.name}
+                                      fill
+                                      className="object-cover"
+                                      sizes="96px"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/placeholder-product.png';
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-xs text-white/50">
+                                      No Image
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-white font-semibold text-lg mb-2">{item.name}</h4>
+                                  <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div>
+                                      <span className="text-white/60">SKU:</span>
+                                      <span className="text-white ml-2">{item.productId}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-white/60">Quantity:</span>
+                                      <span className="text-white ml-2">{item.quantity}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-white/60">Price:</span>
+                                      <span className="text-white ml-2">₹{item.price.toFixed(2)}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-white/60">Subtotal:</span>
+                                      <span className="text-white ml-2 font-semibold">₹{(item.price * item.quantity).toFixed(2)}</span>
+                                    </div>
+                                  </div>
+                                  {item.variant && (
+                                    <p className="text-white/50 text-xs mt-2">Variant: {item.variant}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Payment & Delivery Info */}
+                          <div className="space-y-4">
+                    <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] space-y-3">
+                      <p className="text-white font-semibold text-base">Payment Summary</p>
+                      <div className="space-y-2 text-sm text-white">
+                        <div className="flex justify-between">
+                          <span className="text-white/60">Items Total</span>
+                          <span className="font-medium">
+                            {formatCurrency(selectedOrderTotals?.subtotal || 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/60">GST</span>
+                          <span className="font-medium">
+                            {formatCurrency(selectedOrderTotals?.gstAmount || 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/60">Shipping</span>
+                          <span className="font-medium">
+                            {formatCurrency(selectedOrderTotals?.shipping || 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-base font-semibold border-t border-[#444444] pt-3">
+                          <span className="text-white">Grand Total</span>
+                          <span className="text-[#AE876D]">{formatCurrency(selectedOrder.total)}</span>
+                        </div>
+                      </div>
+                      <div className="text-sm text-white/70 space-y-1">
+                        <div className="flex justify-between">
+                          <span>Payment Method</span>
+                          <span className="font-medium text-white capitalize">
+                            {selectedOrder.paymentMethod === 'cod'
+                              ? 'Cash on Delivery'
+                              : selectedOrder.paymentMethod}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Payment Status</span>
+                          <span className="font-medium text-white capitalize">
+                            {selectedOrder.paymentStatus}
+                          </span>
+                        </div>
+                        {selectedOrder.giftWrap && (
+                          <div className="flex justify-between">
+                            <span>Gift Wrap</span>
+                            <span className="font-medium text-white">Included</span>
+                          </div>
                         )}
                       </div>
                     </div>
-                    <TrackingTimeline events={selectedShipment.trackingEvents || []} />
+                    <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] space-y-2 text-sm">
+                      <p className="text-white font-semibold text-base flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-[#AE876D]" />
+                        Delivery Information
+                      </p>
+                      <p className="text-white font-medium">{selectedOrder.deliveryAddress.name}</p>
+                      <p className="text-white/70">
+                        {selectedOrder.deliveryAddress.line1}
+                        {selectedOrder.deliveryAddress.line2 && (
+                          <>
+                            <br />
+                            {selectedOrder.deliveryAddress.line2}
+                          </>
+                        )}
+                        <br />
+                        {selectedOrder.deliveryAddress.city}, {selectedOrder.deliveryAddress.state} -{' '}
+                        {selectedOrder.deliveryAddress.pincode}
+                      </p>
+                      {selectedOrder.deliveryAddress.phone && (
+                        <p className="text-white/60">Phone: {selectedOrder.deliveryAddress.phone}</p>
+                      )}
+                      {selectedOrder.deliveryAddress.email && (
+                        <p className="text-white/60">Email: {selectedOrder.deliveryAddress.email}</p>
+                      )}
+                    </div>
+                    <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] text-sm space-y-2">
+                      <p className="text-white font-semibold text-base">Order Insights</p>
+                      <div className="flex justify-between text-white/70">
+                        <span>Order ID</span>
+                        <span className="text-white font-medium">{selectedOrder.orderNumber}</span>
+                      </div>
+                      <div className="flex justify-between text-white/70">
+                        <span>Placed On</span>
+                        <span className="text-white font-medium">
+                          {new Date(selectedOrder.orderedAt).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-white/70">
+                        <span>Estimated Delivery</span>
+                        <span className="text-white font-medium">
+                          {selectedOrder.estimatedDelivery
+                            ? new Date(selectedOrder.estimatedDelivery).toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })
+                            : 'To be updated'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-white/70">
+                        <span>Gift Wrap</span>
+                        <span className="text-white font-medium">
+                          {selectedOrder.giftWrap ? 'Yes' : 'No'}
+                        </span>
+                      </div>
+                    </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Shipping Information */}
+                      <div className="p-4 bg-[#1A1A1A] rounded-lg border border-[#333333]">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Truck className="w-5 h-5 text-[#A47E3B]" />
+                          <h3 className="text-lg font-semibold text-white">Shipping Information</h3>
+                        </div>
+                        {selectedShipment ? (
+                          <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-white/60">Courier:</span>
+                                <p className="text-white font-medium mt-1">{selectedShipment.courierName || 'Assigning'}</p>
+                              </div>
+                              <div>
+                                <span className="text-white/60">AWB Code:</span>
+                                <p className="text-white font-medium mt-1">{selectedShipment.awbCode || 'Pending'}</p>
+                              </div>
+                              {selectedShipment.trackingUrl && (
+                                <div className="md:col-span-2 mt-2">
+                                  <a
+                                    href={selectedShipment.trackingUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block px-4 py-2 bg-[#A47E3B] hover:bg-[#8d6c58] text-white rounded-md transition-colors text-sm font-medium"
+                                  >
+                                    Track Shipment
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                            <div className="mt-4">
+                              <TrackingTimeline events={selectedShipment.trackingEvents || []} />
+                            </div>
+                          </>
+                        ) : shipmentLoading ? (
+                          <p className="text-white/70 text-sm">Loading shipment details...</p>
+                        ) : (
+                          <p className="text-white/60 text-sm">
+                            Shipment details will appear here once generated.
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </>
-                ) : shipmentLoading ? (
-                  <p className="text-white/70 text-sm">Loading shipment details...</p>
-                ) : (
-                  <p className="text-white/60 text-sm">
-                    Shipment details will appear here once generated.
-                  </p>
                 )}
-              </div>
-            )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
           
           {/* Addresses Tab */}
