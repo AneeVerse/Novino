@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Order from '@/models/Order';
 import User from '@/models/User';
+import Shipment from '@/models/Shipment';
 import connectToDatabase from '@/lib/db';
 import { getTokenFromReq, verifyToken } from '@/lib/auth';
 
@@ -77,10 +78,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ])
           );
 
-          // Combine orders with user details
+          // Get shipment IDs
+          const shipmentIds = orders
+            .filter(o => o.shipmentId)
+            .map(o => o.shipmentId);
+
+          // Fetch shipments
+          const shipments = shipmentIds.length > 0 
+            ? await Shipment.find({ _id: { $in: shipmentIds } })
+            : [];
+
+          // Create a map of orderId to shipment
+          const shipmentMap = new Map(
+            shipments.map(shipment => [
+              shipment.orderId.toString(),
+              {
+                shiprocketOrderId: shipment.shiprocketOrderId,
+                shiprocketShipmentId: shipment.shiprocketShipmentId,
+                courierName: shipment.courierName,
+                awbCode: shipment.awbCode,
+                status: shipment.status,
+                trackingUrl: shipment.trackingUrl,
+              }
+            ])
+          );
+
+          // Combine orders with user details and shipment info
           const ordersWithUsers = orders.map(order => ({
             ...order.toObject(),
-            user: userMap.get(order.userId) || null
+            user: userMap.get(order.userId) || null,
+            shipment: shipmentMap.get(order._id.toString()) || null
           }));
 
           // Get order statistics

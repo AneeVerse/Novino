@@ -194,6 +194,16 @@ function DashboardNavbarContent() {
               Products
             </Link>
             <Link 
+              href="/dashboard/orders" 
+              className={`px-4 py-3 text-sm font-medium ${
+                pathname === '/dashboard/orders'
+                  ? 'text-white border-b-2 border-[#A47E3B]' 
+                  : 'text-white/70 hover:text-white hover:bg-[#222222]'
+              } transition-colors`}
+            >
+              Orders
+            </Link>
+            <Link 
               href="/dashboard/users" 
               className={`px-4 py-3 text-sm font-medium ${
                 pathname === '/dashboard/users'
@@ -258,6 +268,18 @@ function DashboardNavbarContent() {
                   } transition-colors`}
                 >
                   Products
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/dashboard/orders" 
+                  className={`block px-4 py-2 text-sm ${
+                    pathname === '/dashboard/orders'
+                      ? 'text-white bg-[#2A2A2A] font-medium rounded'
+                      : 'text-white/70 hover:text-white hover:bg-[#2A2A2A] rounded'
+                  } transition-colors`}
+                >
+                  Orders
                 </Link>
               </li>
               <li>
