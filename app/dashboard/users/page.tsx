@@ -275,6 +275,36 @@ export default function UsersPage() {
         return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
   };
+
+  const userStatCards = [
+    {
+      title: 'Active Users',
+      value: chartData[0]?.value ?? 0,
+      description: 'Currently active',
+      icon: UserCheck,
+      iconBg: 'bg-emerald-500/15 border border-emerald-500/30',
+      iconColor: 'text-emerald-300',
+      descriptionClass: 'text-emerald-300',
+    },
+    {
+      title: 'Blocked Users',
+      value: chartData[1]?.value ?? 0,
+      description: 'Account suspended',
+      icon: UserX,
+      iconBg: 'bg-rose-500/15 border border-rose-500/30',
+      iconColor: 'text-rose-300',
+      descriptionClass: 'text-rose-300',
+    },
+    {
+      title: 'Total Users',
+      value: pagination.total,
+      description: 'All registered',
+      icon: UsersIcon,
+      iconBg: 'bg-sky-500/15 border border-sky-500/30',
+      iconColor: 'text-sky-300',
+      descriptionClass: 'text-sky-300',
+    },
+  ];
   
   return (
     <div className="space-y-6">
@@ -302,54 +332,34 @@ export default function UsersPage() {
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-white/70">Active Users</CardTitle>
-              <div className="p-2 bg-emerald-500/20 rounded-lg">
-                <UserCheck className="w-4 h-4 text-emerald-400" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">{chartData[0].value}</div>
-            <p className="text-sm text-emerald-400 mt-1">Currently active</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-red-500/10 to-red-600/5 border-red-500/20">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-white/70">Blocked Users</CardTitle>
-              <div className="p-2 bg-red-500/20 rounded-lg">
-                <UserX className="w-4 h-4 text-red-400" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">{chartData[1].value}</div>
-            <p className="text-sm text-red-400 mt-1">Account suspended</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-white/70">Total Users</CardTitle>
-              <div className="p-2 bg-blue-500/20 rounded-lg">
-                <UsersIcon className="w-4 h-4 text-blue-400" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">{pagination.total}</div>
-            <p className="text-sm text-blue-400 mt-1">All registered</p>
-          </CardContent>
-        </Card>
+        {userStatCards.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card
+              key={stat.title}
+              className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 transition-all duration-300"
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+                    {stat.title}
+                  </CardTitle>
+                  <div className={`p-2.5 rounded-xl ${stat.iconBg}`}>
+                    <Icon className={`w-4 h-4 ${stat.iconColor}`} />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-semibold text-white tracking-tight">{stat.value}</div>
+                <p className={`text-sm mt-2 ${stat.descriptionClass}`}>{stat.description}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* User Statistics Chart */}
-      <Card className="bg-[#1A1A1A] border-[#333333]">
+      <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40">
         <CardHeader>
           <CardTitle className="text-white">User Statistics</CardTitle>
           <CardDescription className="text-white/60">Distribution of user statuses</CardDescription>
@@ -361,14 +371,14 @@ export default function UsersPage() {
                 data={chartData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="name" tick={{ fill: '#888' }} />
-                <YAxis tick={{ fill: '#888' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1f1f1f" />
+                <XAxis dataKey="name" tick={{ fill: '#A0A0A0' }} axisLine={{ stroke: '#2a2a2a' }} tickLine={false} />
+                <YAxis tick={{ fill: '#A0A0A0' }} axisLine={{ stroke: '#2a2a2a' }} tickLine={false} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#222', 
-                    border: '1px solid #333', 
-                    borderRadius: '8px',
+                    backgroundColor: '#1C1C1C', 
+                    border: '1px solid rgba(255,255,255,0.08)', 
+                    borderRadius: '12px',
                     color: '#fff'
                   }} 
                 />
@@ -384,7 +394,7 @@ export default function UsersPage() {
       </Card>
       
       {/* Users List */}
-      <Card className="bg-[#1A1A1A] border-[#333333]">
+      <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40">
         <CardHeader>
           <CardTitle className="text-white">All Users</CardTitle>
           <CardDescription className="text-white/60">
@@ -404,7 +414,7 @@ export default function UsersPage() {
           ) : (
             <div className="space-y-3">
               {users.map((user) => (
-                <Card key={user._id} className="bg-[#222222] border-[#333333] hover:border-white/10 transition-all duration-200">
+                <Card key={user._id} className="bg-[#141414] border border-white/5 hover:border-white/20 transition-all duration-200">
                   <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       {/* User Info */}
@@ -447,17 +457,17 @@ export default function UsersPage() {
                         </Badge>
                         <button
                           onClick={() => handleViewDetails(user)}
-                          className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-500/20 hover:bg-blue-500 text-blue-300 hover:text-white flex items-center gap-2"
+                          className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 border border-white/15 bg-white/5 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/40 flex items-center gap-2"
                         >
                           <Eye className="w-4 h-4" />
                           View Details
                         </button>
                         <button
                           onClick={() => toggleUserStatus(user._id)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 border ${
                             user.isBlocked 
-                              ? 'bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-white' 
-                              : 'bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white'
+                              ? 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/20 hover:text-white' 
+                              : 'border-rose-500/40 text-rose-300 hover:bg-rose-500/20 hover:text-white'
                           }`}
                         >
                           {user.isBlocked ? 'Unblock' : 'Block'}
@@ -472,7 +482,7 @@ export default function UsersPage() {
           
           {/* Pagination */}
           {pagination.pages > 1 && (
-            <div className="mt-6 pt-6 border-t border-[#333333] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="mt-6 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-sm text-white/60">
                 Showing <span className="text-white font-medium">{(pagination.page - 1) * pagination.limit + 1}</span>-
                 <span className="text-white font-medium">{Math.min(pagination.page * pagination.limit, pagination.total)}</span> of{' '}
@@ -482,10 +492,10 @@ export default function UsersPage() {
                 <button
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page === 1}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 border ${
                     pagination.page === 1
-                      ? 'bg-[#222222] text-white/30 cursor-not-allowed'
-                      : 'bg-[#222222] text-white hover:bg-[#2A2A2A]'
+                      ? 'bg-white/5 text-white/30 border-white/5 cursor-not-allowed'
+                      : 'bg-white/5 text-white border-white/15 hover:bg-white/10 hover:border-white/40'
                   }`}
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -494,10 +504,10 @@ export default function UsersPage() {
                 <button
                   onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page === pagination.pages}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 border ${
                     pagination.page === pagination.pages
-                      ? 'bg-[#222222] text-white/30 cursor-not-allowed'
-                      : 'bg-[#222222] text-white hover:bg-[#2A2A2A]'
+                      ? 'bg-white/5 text-white/30 border-white/5 cursor-not-allowed'
+                      : 'bg-white/5 text-white border-white/15 hover:bg-white/10 hover:border-white/40'
                   }`}
                 >
                   Next
@@ -512,9 +522,9 @@ export default function UsersPage() {
       {/* User Details Modal */}
       {selectedUser && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1A1A1A] border border-[#333333] rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#0F0F0F] border border-white/5 rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
             {/* Modal Header */}
-            <div className="sticky top-0 bg-[#1A1A1A] border-b border-[#333333] p-6 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-[#0F0F0F] border-b border-white/5 p-6 flex items-center justify-between z-10">
               <div>
                 <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
@@ -546,7 +556,7 @@ export default function UsersPage() {
                   </div>
                   
                   {!userDetails?.orders || userDetails.orders.length === 0 ? (
-                    <Card className="bg-[#222222] border-[#333333]">
+                  <Card className="bg-[#141414] border border-white/5">
                       <CardContent className="py-12 text-center">
                         <PackageIcon className="w-16 h-16 mx-auto mb-4 text-white/20" />
                         <p className="text-white/50">No orders yet</p>
@@ -555,7 +565,7 @@ export default function UsersPage() {
                   ) : (
                     <div className="space-y-3">
                       {userDetails.orders.map((order) => (
-                        <Card key={order._id} className="bg-[#222222] border-[#333333] hover:border-white/10 transition-all">
+                        <Card key={order._id} className="bg-[#141414] border border-white/5 hover:border-white/15 transition-all">
                           <CardContent className="p-4">
                             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                               <div className="flex-1">
@@ -611,7 +621,7 @@ export default function UsersPage() {
                   </div>
                   
                   {!userDetails?.cart.items || userDetails.cart.items.length === 0 ? (
-                    <Card className="bg-[#222222] border-[#333333]">
+                    <Card className="bg-[#141414] border border-white/5">
                       <CardContent className="py-12 text-center">
                         <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-white/20" />
                         <p className="text-white/50">Cart is empty</p>
@@ -620,7 +630,7 @@ export default function UsersPage() {
                   ) : (
                     <div className="space-y-3">
                       {userDetails.cart.items.map((item, index) => (
-                        <Card key={index} className="bg-[#222222] border-[#333333] hover:border-white/10 transition-all">
+                        <Card key={index} className="bg-[#141414] border border-white/5 hover:border-white/15 transition-all">
                           <CardContent className="p-4">
                             <div className="flex items-center gap-4">
                               <img

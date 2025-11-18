@@ -4,11 +4,9 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   Home,
-  Inbox,
   Users,
   Settings,
   MessageSquare,
-  HelpCircle,
   ChevronRight,
   FileText,
   Package,
@@ -97,21 +95,11 @@ export default function DashboardSidebar({
     },
   ];
 
-  const defaultFooterItems: DashboardSidebarNavItem[] = [
-    {
-      name: "Feedback",
-      href: "https://github.com/nuxt-ui-templates/dashboard",
-      icon: MessageSquare,
-    },
-    {
-      name: "Help & Support",
-      href: "https://github.com/nuxt-ui-templates/dashboard",
-      icon: HelpCircle,
-    },
-  ];
+  const defaultFooterItems: DashboardSidebarNavItem[] = [];
 
   const resolvedNavItems = navItems ?? defaultNavItems;
   const resolvedFooterItems = footerItems ?? defaultFooterItems;
+  const hasFooterItems = resolvedFooterItems.length > 0;
   const resolvedLogoHref = logoHref ?? "/dashboard-v2";
   const resolvedLogoLabel = logoLabel ?? "Novino";
 
@@ -271,24 +259,26 @@ export default function DashboardSidebar({
           </ul>
 
           {/* Footer items */}
-          <ul className="mt-auto pt-4 space-y-1 border-t border-[#333333]">
-            {resolvedFooterItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.name}>
-                  <a
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-white/70 hover:bg-[#222222] hover:text-white rounded-lg transition-colors"
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span>{item.name}</span>
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
+          {hasFooterItems && (
+            <ul className="mt-auto pt-4 space-y-1 border-t border-[#333333]">
+              {resolvedFooterItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <li key={item.name}>
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-white/70 hover:bg-[#222222] hover:text-white rounded-lg transition-colors"
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span>{item.name}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </nav>
 
         {/* User section at bottom */}

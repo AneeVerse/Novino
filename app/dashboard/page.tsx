@@ -17,6 +17,7 @@ import ArtefactCategoryGrid from '@/components/artefact-category-grid';
 import ArtefactCategoryDetail from '@/components/artefact-category-detail';
 import ArtefactProductForm from '@/components/artefact-product-form';
 import { ArtefactCategory, ArtefactProduct } from '@/app/dashboard/models/artefact';
+import type { ShiprocketOrder } from '@/lib/services/shiprocket';
 
 // Define types for our data
 interface Blog {
@@ -101,6 +102,13 @@ interface ShiprocketOverviewMetrics {
   fetchedAt: string;
 }
 
+interface ShiprocketSalesPoint {
+  date: string;
+  label: string;
+  totalRevenue: number;
+  orderCount: number;
+}
+
 const sortCategoriesByOrder = (categories: ArtefactCategory[]) => {
   return [...categories].sort((a, b) => {
     const orderA = typeof a.order === 'number' ? a.order : Number.MAX_SAFE_INTEGER;
@@ -114,6 +122,67 @@ const sortCategoriesByOrder = (categories: ArtefactCategory[]) => {
 
     return orderA - orderB;
   });
+};
+
+const buildShiprocketSalesSeries = (
+  orders: ShiprocketOrder[] = [],
+  range: { from: string; to: string }
+): ShiprocketSalesPoint[] => {
+  if (!range.from || !range.to) return [];
+
+  const accumulator = orders.reduce<Record<string, ShiprocketSalesPoint>>((acc, order) => {
+    const rawDate =
+      (typeof order.created_at === 'string' && order.created_at) ||
+      (typeof order.order_date === 'string' && order.order_date);
+    if (!rawDate) {
+      return acc;
+    }
+    const dayKey = rawDate.slice(0, 10);
+    if (!dayKey) {
+      return acc;
+    }
+    const totalValue = Number(order.total ?? order.sub_total ?? 0);
+    const safeValue = Number.isFinite(totalValue) ? totalValue : 0;
+
+    if (!acc[dayKey]) {
+      acc[dayKey] = {
+        date: dayKey,
+        label: new Date(`${dayKey}T00:00:00`).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
+        totalRevenue: 0,
+        orderCount: 0,
+      };
+    }
+
+    acc[dayKey].totalRevenue = Number((acc[dayKey].totalRevenue + safeValue).toFixed(2));
+    acc[dayKey].orderCount += 1;
+    return acc;
+  }, {});
+
+  const series: ShiprocketSalesPoint[] = [];
+  const start = new Date(`${range.from}T00:00:00`);
+  const end = new Date(`${range.to}T00:00:00`);
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return Object.values(accumulator).sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+    const key = cursor.toISOString().slice(0, 10);
+    const entry = accumulator[key];
+    series.push(
+      entry ?? {
+        date: key,
+        label: cursor.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        totalRevenue: 0,
+        orderCount: 0,
+      }
+    );
+  }
+
+  return series;
 };
 
 function DashboardContent() {
@@ -192,6 +261,9 @@ function DashboardContent() {
   const [shiprocketMetrics, setShiprocketMetrics] = useState<ShiprocketOverviewMetrics | null>(null);
   const [shiprocketMetricsLoading, setShiprocketMetricsLoading] = useState(true);
   const [shiprocketMetricsError, setShiprocketMetricsError] = useState<string | null>(null);
+  const [shiprocketSalesSeries, setShiprocketSalesSeries] = useState<ShiprocketSalesPoint[]>([]);
+  const [shiprocketSalesLoading, setShiprocketSalesLoading] = useState(true);
+  const [shiprocketSalesError, setShiprocketSalesError] = useState<string | null>(null);
 
   // Function to fetch data from API
   const fetchData = async () => {
@@ -334,7 +406,41 @@ function DashboardContent() {
       }
     };
 
+    const fetchShiprocketSales = async () => {
+      setShiprocketSalesLoading(true);
+      setShiprocketSalesError(null);
+      try {
+        const params = new URLSearchParams({
+          from: shiprocketRange.from,
+          to: shiprocketRange.to,
+          perPage: '200',
+        });
+
+        const response = await fetch(`/api/shiprocket/orders?${params.toString()}`, {
+          cache: 'no-store',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load Shiprocket sales data');
+        }
+
+        const payload = await response.json();
+        if (!isMounted) return;
+        setShiprocketSalesSeries(buildShiprocketSalesSeries(payload.data ?? [], shiprocketRange));
+      } catch (err) {
+        if (!isMounted) return;
+        setShiprocketSalesError(
+          err instanceof Error ? err.message : 'Unable to load Shiprocket sales data'
+        );
+        setShiprocketSalesSeries([]);
+      } finally {
+        if (!isMounted) return;
+        setShiprocketSalesLoading(false);
+      }
+    };
+
     fetchShiprocketMetrics();
+    fetchShiprocketSales();
 
     return () => {
       isMounted = false;
@@ -711,6 +817,7 @@ function DashboardContent() {
     { name: 'Categories', value: artefactCategories.length, color: '#059669' },
     { name: 'Blogs', value: blogs.length, color: '#8B6F3E' },
   ];
+  const shiprocketSalesTotal = shiprocketSalesSeries.reduce((sum, point) => sum + point.totalRevenue, 0);
 
   return (
     <div className="space-y-6">
@@ -728,6 +835,106 @@ function DashboardContent() {
               <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
             </div>
           </div>
+
+          {/* Shiprocket Sales Performance */}
+          <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-[0px_10px_30px_rgba(0,0,0,0.45)]">
+            <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <CardTitle className="text-white text-2xl">Sales performance</CardTitle>
+                <CardDescription className="text-white/60">
+                  Shiprocket revenue • {shiprocketRange.from} → {shiprocketRange.to}
+                </CardDescription>
+              </div>
+              <div className="text-sm text-white/60">
+                <span className="font-medium text-white">Last sync:</span>{' '}
+                {shiprocketMetrics?.fetchedAt
+                  ? new Date(shiprocketMetrics.fetchedAt).toLocaleString()
+                  : '—'}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[
+                  {
+                    label: 'Total revenue',
+                    value:
+                      shiprocketMetrics && !shiprocketSalesLoading
+                        ? formatCurrency(shiprocketMetrics.totalRevenue)
+                        : shiprocketSalesLoading
+                          ? 'Loading…'
+                          : formatCurrency(shiprocketSalesTotal),
+                    helper: 'Gross sales for the selected range',
+                  },
+                  {
+                    label: 'Average order value',
+                    value: shiprocketMetrics ? formatCurrency(shiprocketMetrics.averageOrderValue) : '—',
+                    helper: 'Across Shiprocket orders',
+                  },
+                  {
+                    label: 'Orders counted',
+                    value: shiprocketSalesLoading
+                      ? '—'
+                      : shiprocketSalesSeries.reduce((sum, point) => sum + point.orderCount, 0).toLocaleString(),
+                    helper: 'Orders contributing to sales',
+                  },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3"
+                  >
+                    <p className="text-xs uppercase tracking-wide text-white/50">{stat.label}</p>
+                    <p className="text-3xl font-semibold text-white mt-2">{stat.value}</p>
+                    <p className="text-xs text-white/40 mt-1">{stat.helper}</p>
+                  </div>
+                ))}
+              </div>
+              {shiprocketSalesError ? (
+                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  {shiprocketSalesError}
+                </div>
+              ) : shiprocketSalesLoading && shiprocketSalesSeries.length === 0 ? (
+                <div className="h-[280px] flex items-center justify-center text-white/40 text-sm">
+                  Loading Shiprocket sales…
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={320}>
+                  <AreaChart data={shiprocketSalesSeries}>
+                    <defs>
+                      <linearGradient id="shiprocketSales" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#A47E3B" stopOpacity={0.35} />
+                        <stop offset="95%" stopColor="#A47E3B" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1f1f1f" opacity={0.6} />
+                    <XAxis dataKey="label" stroke="#8D8D8D" tickLine={false} />
+                    <YAxis
+                      stroke="#8D8D8D"
+                      tickFormatter={(value) => formatCurrency(value as number).replace('₹', '₹ ')}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1C1C1C',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '12px',
+                        color: '#fff',
+                      }}
+                      labelStyle={{ color: '#A47E3B' }}
+                      formatter={(value: number) => formatCurrency(value)}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="totalRevenue"
+                      stroke="#F6C76A"
+                      strokeWidth={2.4}
+                      fillOpacity={1}
+                      fill="url(#shiprocketSales)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Shiprocket Overview */}
           <div className="space-y-4">
@@ -907,26 +1114,28 @@ function DashboardContent() {
           {/* Stats Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Blogs Card */}
-            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
+            <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 transition-all duration-300">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-white/70">Total Blogs</CardTitle>
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <FileText className="w-4 h-4 text-blue-400" />
+                  <CardTitle className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+                    Total Blogs
+                  </CardTitle>
+                  <div className="p-2 bg-blue-500/15 border border-blue-500/20 rounded-xl">
+                    <FileText className="w-4 h-4 text-blue-300" />
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline justify-between">
                   <div className="text-3xl font-bold text-white">{blogs.length}</div>
-                  <Badge className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border-0">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    +12%
+                  <Badge className="bg-white/5 text-white/70 border border-white/10">
+                    <TrendingUp className="w-3 h-3 mr-1 text-emerald-300" />
+                    Live
                   </Badge>
                 </div>
                 <button 
                   onClick={() => navigateToTab('blogs')}
-                  className="mt-4 w-full px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
+                  className="mt-4 w-full px-3 py-2 border border-white/10 hover:border-white/30 text-white/80 hover:text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   Manage Blogs
                   <ExternalLink className="w-3 h-3" />
@@ -935,26 +1144,28 @@ function DashboardContent() {
             </Card>
 
             {/* Testimonials Card */}
-            <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
+            <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 transition-all duration-300">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-white/70">Testimonials</CardTitle>
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <MessageSquare className="w-4 h-4 text-purple-400" />
+                  <CardTitle className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+                    Testimonials
+                  </CardTitle>
+                  <div className="p-2 bg-purple-500/15 border border-purple-500/20 rounded-xl">
+                    <MessageSquare className="w-4 h-4 text-purple-300" />
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline justify-between">
                   <div className="text-3xl font-bold text-white">{testimonials.length}</div>
-                  <Badge className="bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border-0">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    +8%
+                  <Badge className="bg-white/5 text-white/70 border border-white/10">
+                    <TrendingUp className="w-3 h-3 mr-1 text-emerald-300" />
+                    Live
                   </Badge>
                 </div>
                 <button 
                   onClick={() => navigateToTab('testimonials')}
-                  className="mt-4 w-full px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
+                  className="mt-4 w-full px-3 py-2 border border-white/10 hover:border-white/30 text-white/80 hover:text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   Manage Testimonials
                   <ExternalLink className="w-3 h-3" />
@@ -963,26 +1174,28 @@ function DashboardContent() {
             </Card>
 
             {/* Products Card */}
-            <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
+            <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 transition-all duration-300">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-white/70">Products</CardTitle>
-                  <div className="p-2 bg-emerald-500/20 rounded-lg">
-                    <Package className="w-4 h-4 text-emerald-400" />
+                  <CardTitle className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+                    Products
+                  </CardTitle>
+                  <div className="p-2 bg-emerald-500/15 border border-emerald-500/20 rounded-xl">
+                    <Package className="w-4 h-4 text-emerald-300" />
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline justify-between">
                   <div className="text-3xl font-bold text-white">{artefactCategories.reduce((sum, cat) => sum + (cat.products?.length || 0), 0)}</div>
-                  <Badge className="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border-0">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    +20%
+                  <Badge className="bg-white/5 text-white/70 border border-white/10">
+                    <TrendingUp className="w-3 h-3 mr-1 text-emerald-300" />
+                    Live
                   </Badge>
                 </div>
                 <button 
                   onClick={() => navigateToTab('products')}
-                  className="mt-4 w-full px-3 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
+                  className="mt-4 w-full px-3 py-2 border border-white/10 hover:border-white/30 text-white/80 hover:text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   View Products
                   <ExternalLink className="w-3 h-3" />
@@ -994,7 +1207,7 @@ function DashboardContent() {
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Activity Chart */}
-            <Card className="lg:col-span-2 bg-[#1A1A1A] border-[#333333]">
+            <Card className="lg:col-span-2 bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-[#A47E3B]" />
@@ -1036,7 +1249,7 @@ function DashboardContent() {
             </Card>
 
             {/* Content Distribution */}
-            <Card className="bg-[#1A1A1A] border-[#333333]">
+            <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40">
               <CardHeader>
                 <CardTitle className="text-white">Content Distribution</CardTitle>
                 <CardDescription className="text-white/60">Total items by category</CardDescription>
@@ -1067,146 +1280,6 @@ function DashboardContent() {
             </Card>
           </div>
 
-          {/* Recent Activity & Quick Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Recent Blog Posts */}
-            <Card className="lg:col-span-2 bg-[#1A1A1A] border-[#333333]">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-white">Recent Blog Posts</CardTitle>
-                    <CardDescription className="text-white/60">Latest published content</CardDescription>
-                  </div>
-                  <button 
-                    onClick={() => navigateToTab('blogs')}
-                    className="text-[#A47E3B] hover:text-[#C4A962] text-sm font-medium transition-colors"
-                  >
-                    View All →
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {blogs.length === 0 ? (
-                  <div className="text-center py-12 text-white/50">
-                    <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No blogs found. Create your first blog post!</p>
-                  </div>
-                ) : (
-                  blogs.slice(0, 4).map((blog) => (
-                    <div key={blog.id} className="flex items-center gap-4 p-3 rounded-lg bg-[#222222] hover:bg-[#2A2A2A] transition-all duration-200 group">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-[#333333]">
-                        <img 
-                          src={getValidImageUrl(blog.image)} 
-                          alt={blog.title} 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200" 
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-white truncate group-hover:text-[#A47E3B] transition-colors">
-                          {blog.title}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="flex items-center text-xs text-white/50">
-                            <Calendar className="w-3 h-3 mr-1" />
-                            {new Date(blog.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </div>
-                          <Badge variant="outline" className="text-xs border-[#333333] text-white/70">
-                            Published
-                          </Badge>
-                        </div>
-                      </div>
-                      <Link 
-                        href={`/blogs/${blog.slug || blog.id}`}
-                        className="px-3 py-2 bg-[#333333] hover:bg-[#A47E3B] text-white text-sm rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100 flex items-center gap-1"
-                      >
-                        <Eye className="w-3 h-3" />
-                        View
-                      </Link>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card className="bg-gradient-to-br from-[#A47E3B]/10 to-[#8B6F3E]/5 border-[#A47E3B]/20">
-              <CardHeader>
-                <CardTitle className="text-white">Quick Actions</CardTitle>
-                <CardDescription className="text-white/60">Common tasks</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <button
-                  onClick={() => {
-                    setCurrentBlog(undefined);
-                    setBlogFormMode('add');
-                    setShowBlogForm(true);
-                  }}
-                  className="w-full flex items-center gap-3 p-3 bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-lg transition-all duration-200 group border border-[#333333] hover:border-[#A47E3B]"
-                >
-                  <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
-                    <Plus className="w-4 h-4 text-blue-400" />
-                  </div>
-                  <span className="text-sm font-medium">Create New Blog</span>
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setCurrentTestimonial(undefined);
-                    setTestimonialFormMode('add');
-                    setShowTestimonialForm(true);
-                  }}
-                  className="w-full flex items-center gap-3 p-3 bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-lg transition-all duration-200 group border border-[#333333] hover:border-[#A47E3B]"
-                >
-                  <div className="p-2 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
-                    <Plus className="w-4 h-4 text-purple-400" />
-                  </div>
-                  <span className="text-sm font-medium">Add Testimonial</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setCurrentProduct(undefined);
-                    setProductType('painting');
-                    setProductFormMode('add');
-                    setShowProductForm(true);
-                  }}
-                  className="w-full flex items-center gap-3 p-3 bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-lg transition-all duration-200 group border border-[#333333] hover:border-[#A47E3B]"
-                >
-                  <div className="p-2 bg-amber-500/20 rounded-lg group-hover:bg-amber-500/30 transition-colors">
-                    <Plus className="w-4 h-4 text-amber-400" />
-                  </div>
-                  <span className="text-sm font-medium">Add Painting</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setCurrentProduct(undefined);
-                    setProductType('artefact');
-                    setProductFormMode('add');
-                    setShowProductForm(true);
-                  }}
-                  className="w-full flex items-center gap-3 p-3 bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-lg transition-all duration-200 group border border-[#333333] hover:border-[#A47E3B]"
-                >
-                  <div className="p-2 bg-emerald-500/20 rounded-lg group-hover:bg-emerald-500/30 transition-colors">
-                    <Plus className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <span className="text-sm font-medium">Add Artefact</span>
-                </button>
-
-                <div className="pt-3 border-t border-[#333333]">
-                  <Link
-                    href="/"
-                    className="w-full flex items-center gap-3 p-3 bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-lg transition-all duration-200 group border border-[#333333] hover:border-[#A47E3B]"
-                  >
-                    <div className="p-2 bg-white/10 rounded-lg group-hover:bg-white/20 transition-colors">
-                      <ExternalLink className="w-4 h-4 text-white/70" />
-                    </div>
-                    <span className="text-sm font-medium">View Live Site</span>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       )}
 
