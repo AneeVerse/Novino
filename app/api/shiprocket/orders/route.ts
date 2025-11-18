@@ -90,7 +90,17 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
 
     const shipments = shipmentIds.length
       ? await Shipment.find({ _id: { $in: shipmentIds } })
-          .select(["orderId", "shiprocketOrderId", "shiprocketShipmentId", "courierName", "awbCode", "trackingUrl", "status"])
+          .select([
+            "orderId",
+            "shiprocketOrderId",
+            "shiprocketShipmentId",
+            "courierName",
+            "awbCode",
+            "trackingUrl",
+            "status",
+            "pickupScheduledFor",
+            "trackingEvents",
+          ])
           .lean()
       : [];
 
@@ -166,6 +176,10 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
           });
         }
 
+        if (local?._id) {
+          (order as any).localOrderId = local._id.toString();
+        }
+
         if (shipment) {
           if (!order.shipments || order.shipments.length === 0) {
             order.shipments = [
@@ -188,6 +202,11 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
           if (!order.status && shipment.status) {
             order.status = shipment.status;
           }
+
+          (order as any).trackingEvents = shipment.trackingEvents || [];
+          (order as any).trackingUrl = shipment.trackingUrl || (order as any).trackingUrl;
+          (order as any).pickupScheduledFor = shipment.pickupScheduledFor || (order as any).pickupScheduledFor;
+          (order as any).shiprocketShipmentId = shipment.shiprocketShipmentId || (order as any).shiprocketShipmentId;
         }
 
         return order;

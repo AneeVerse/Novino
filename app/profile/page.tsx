@@ -17,9 +17,10 @@ import {
 import { 
   Loader2, User, ShoppingBag, MapPin, Shield, LogOut, 
   Package, Truck, CheckCircle2, Clock, XCircle, AlertCircle,
-  Edit, Trash2, Plus, Eye, RefreshCw, X, CreditCard, Calendar
+  Edit, Trash2, Plus, Eye, RefreshCw, X, CreditCard, Calendar,
+  Navigation
 } from "lucide-react";
-import TrackingTimeline from "@/components/orders/tracking-timeline";
+import TrackingJourneyCard from "@/components/orders/tracking-journey-card";
 
 // Define types
 interface OrderItem {
@@ -884,36 +885,74 @@ export default function ProfilePage() {
                           <Truck className="w-5 h-5 text-[#A47E3B]" />
                           <h3 className="text-lg font-semibold text-white">Shipping Information</h3>
                         </div>
-                        {selectedShipment ? (
-                          <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="text-white/60">Courier:</span>
-                                <p className="text-white font-medium mt-1">{selectedShipment.courierName || 'Assigning'}</p>
-                              </div>
-                              <div>
-                                <span className="text-white/60">AWB Code:</span>
-                                <p className="text-white font-medium mt-1">{selectedShipment.awbCode || 'Pending'}</p>
-                              </div>
-                              {selectedShipment.trackingUrl && (
-                                <div className="md:col-span-2 mt-2">
+                        {shipmentLoading ? (
+                          <p className="text-white/70 text-sm">Loading shipment details...</p>
+                        ) : selectedShipment ? (
+                          <div className="mt-4">
+                            <TrackingJourneyCard
+                              accentColor="#AE876D"
+                              trackingNumber={selectedShipment.awbCode || selectedOrder.orderNumber}
+                              courierName={selectedShipment.courierName || 'Courier partner'}
+                              statusText={selectedShipment.status || selectedOrder.orderStatus}
+                              summaryLabel={selectedShipment.status || 'Your parcel is on the way'}
+                              meta={{
+                                deliveryType:
+                                  selectedOrder.orderStatus === 'shipped' || selectedOrder.orderStatus === 'delivered'
+                                    ? 'Express'
+                                    : 'Standard',
+                                estimate: selectedOrder.estimatedDelivery
+                                  ? new Date(selectedOrder.estimatedDelivery).toLocaleDateString('en-IN', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                    })
+                                  : selectedShipment.trackingEvents?.length
+                                  ? 'Live updates'
+                                  : 'Updating soon',
+                                weight: 'Pending',
+                              }}
+                              stops={[
+                                {
+                                  label: selectedShipment.courierName || 'Pickup scheduled',
+                                  detail: selectedShipment.pickupScheduledFor
+                                    ? new Date(selectedShipment.pickupScheduledFor).toLocaleString('en-IN', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })
+                                    : 'Awaiting pickup confirmation',
+                                },
+                                {
+                                  label: selectedOrder.deliveryAddress.city,
+                                  detail: `${selectedOrder.deliveryAddress.state} · ${selectedOrder.deliveryAddress.pincode}`,
+                                },
+                              ]}
+                              shipper={{
+                                name: selectedShipment.courierName || 'Courier partner',
+                                role: selectedShipment.status || 'Logistics partner',
+                                rating: 4.8,
+                                phone: selectedOrder.deliveryAddress.phone,
+                                whatsappUrl: selectedOrder.deliveryAddress.phone
+                                  ? `https://wa.me/91${selectedOrder.deliveryAddress.phone.replace(/\D/g, '')}`
+                                  : undefined,
+                                supportUrl: selectedShipment.trackingUrl,
+                              }}
+                              events={selectedShipment.trackingEvents || []}
+                              actionSlot={
+                                selectedShipment.trackingUrl ? (
                                   <a
                                     href={selectedShipment.trackingUrl}
                                     target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-block px-4 py-2 bg-[#A47E3B] hover:bg-[#8d6c58] text-white rounded-md transition-colors text-sm font-medium"
+                                    rel="noreferrer"
+                                    className="h-10 w-10 rounded-2xl border border-white/10 flex items-center justify-center text-white/80 hover:text-white hover:border-white/30 transition"
+                                    aria-label="Open tracking portal"
                                   >
-                                    Track Shipment
+                                    <Navigation className="h-4 w-4" />
                                   </a>
-                                </div>
-                              )}
-                            </div>
-                            <div className="mt-4">
-                              <TrackingTimeline events={selectedShipment.trackingEvents || []} />
-                            </div>
-                          </>
-                        ) : shipmentLoading ? (
-                          <p className="text-white/70 text-sm">Loading shipment details...</p>
+                                ) : undefined
+                              }
+                            />
+                          </div>
                         ) : (
                           <p className="text-white/60 text-sm">
                             Shipment details will appear here once generated.
