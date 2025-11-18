@@ -91,6 +91,16 @@ interface Product {
   createdAt?: string;
 }
 
+interface ShiprocketOverviewMetrics {
+  totalOrders: number;
+  codOrders: number;
+  prepaidOrders: number;
+  todaysOrders: number;
+  totalRevenue: number;
+  averageOrderValue: number;
+  fetchedAt: string;
+}
+
 const sortCategoriesByOrder = (categories: ArtefactCategory[]) => {
   return [...categories].sort((a, b) => {
     const orderA = typeof a.order === 'number' ? a.order : Number.MAX_SAFE_INTEGER;
@@ -138,6 +148,20 @@ function DashboardContent() {
       setActiveTab(searchParams.get('tab') || 'overview');
     }
   }, [searchParams]);
+
+  const shiprocketRangePresets = [
+    { label: '7d', days: 7 },
+    { label: '14d', days: 14 },
+    { label: '30d', days: 30 },
+  ];
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(value || 0);
+
   
   // State for forms
   const [showBlogForm, setShowBlogForm] = useState(false);
@@ -152,6 +176,22 @@ function DashboardContent() {
   const [testimonialFormMode, setTestimonialFormMode] = useState<'add' | 'edit'>('add');
   const [productFormMode, setProductFormMode] = useState<'add' | 'edit'>('add');
   const [productType, setProductType] = useState<'painting' | 'artefact'>('painting');
+
+  const makeRange = (days: number) => {
+    const to = new Date();
+    const from = new Date();
+    from.setDate(from.getDate() - days);
+    return {
+      from: from.toISOString().slice(0, 10),
+      to: to.toISOString().slice(0, 10),
+      label: `Last ${days} days`,
+    };
+  };
+
+  const [shiprocketRange, setShiprocketRange] = useState(() => makeRange(14));
+  const [shiprocketMetrics, setShiprocketMetrics] = useState<ShiprocketOverviewMetrics | null>(null);
+  const [shiprocketMetricsLoading, setShiprocketMetricsLoading] = useState(true);
+  const [shiprocketMetricsError, setShiprocketMetricsError] = useState<string | null>(null);
 
   // Function to fetch data from API
   const fetchData = async () => {
@@ -260,6 +300,52 @@ function DashboardContent() {
     fetchArtefactCategories();
   }, []);
   
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchShiprocketMetrics = async () => {
+      setShiprocketMetricsLoading(true);
+      setShiprocketMetricsError(null);
+      try {
+        const params = new URLSearchParams({
+          from: shiprocketRange.from,
+          to: shiprocketRange.to,
+        });
+
+        const response = await fetch(`/api/shiprocket/overview?${params.toString()}`, {
+          cache: 'no-store',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load Shiprocket overview');
+        }
+
+        const payload = await response.json();
+        if (!isMounted) return;
+        setShiprocketMetrics(payload.data);
+      } catch (err) {
+        if (!isMounted) return;
+        setShiprocketMetricsError(
+          err instanceof Error ? err.message : 'Unable to load Shiprocket overview'
+        );
+      } finally {
+        if (!isMounted) return;
+        setShiprocketMetricsLoading(false);
+      }
+    };
+
+    fetchShiprocketMetrics();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [shiprocketRange.from, shiprocketRange.to]);
+
+  const handleShiprocketRangeChange = (days: number) => {
+    const next = makeRange(days);
+    setShiprocketRange(next);
+  };
+
   // Fetch artefact categories
   const fetchArtefactCategories = async () => {
     try {
@@ -641,6 +727,181 @@ function DashboardContent() {
               <Calendar className="w-4 h-4" />
               <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
             </div>
+          </div>
+
+          {/* Shiprocket Overview */}
+          <div className="space-y-4">
+          <div className="bg-gradient-to-br from-[#1E1E1E] via-[#171717] to-[#121212] border border-white/5 rounded-2xl p-6 shadow-[0px_10px_40px_rgba(0,0,0,0.5)] overflow-hidden">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+              <div className="flex-1 space-y-2">
+                <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.35em] text-white/40 uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#A47E3B] animate-pulse" />
+                  Shiprocket
+                </div>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-3xl font-semibold text-white">Fulfilment overview</h2>
+                  <span className="px-2 py-0.5 text-xs rounded-full bg-white/5 border border-white/10 text-white/60">
+                    Live
+                  </span>
+                </div>
+                <p className="text-sm text-white/60">
+                  Data synced{' '}
+                  {shiprocketMetrics?.fetchedAt
+                    ? new Date(shiprocketMetrics.fetchedAt).toLocaleString()
+                    : 'just now'}
+                </p>
+              </div>
+              <div className="flex flex-col items-start gap-3">
+                <span className="text-xs tracking-wide text-white/40 uppercase">Range</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {shiprocketRangePresets.map((preset) => {
+                    const isActive = shiprocketRange.label === `Last ${preset.days} days`;
+                    return (
+                      <button
+                        key={preset.label}
+                        onClick={() => handleShiprocketRangeChange(preset.days)}
+                        className={`px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
+                          isActive
+                            ? 'bg-white text-black shadow-lg shadow-white/30'
+                            : 'bg-white/10 text-white/70 border border-white/10 hover:text-white hover:bg-white/15'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {shiprocketMetricsError && (
+              <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-200 text-sm rounded-xl px-4 py-3">
+                {shiprocketMetricsError}
+              </div>
+            )}
+
+            <div className="mt-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                {[
+                  {
+                    title: "Today's Orders",
+                    value: shiprocketMetrics?.todaysOrders ?? 0,
+                    description: 'Orders created today',
+                  },
+                  {
+                    title: 'Total Orders',
+                    value: shiprocketMetrics?.totalOrders ?? 0,
+                    description: `Period ${shiprocketRange.from} → ${shiprocketRange.to}`,
+                  },
+                  {
+                    title: 'COD Orders',
+                    value: shiprocketMetrics?.codOrders ?? 0,
+                    description: 'Cash on Delivery share',
+                  },
+                  {
+                    title: 'Avg. Order Value',
+                    value: shiprocketMetrics ? formatCurrency(shiprocketMetrics.averageOrderValue) : 0,
+                    description: 'Across current range',
+                    isCurrency: true,
+                  },
+                ].map((stat) => (
+                  <Card
+                    key={stat.title}
+                    className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60 hover:border-white/10 transition-all duration-300"
+                  >
+                    <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                      <CardTitle className="text-sm font-medium text-white/70">{stat.title}</CardTitle>
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-4xl font-semibold text-white tracking-tight">
+                        {shiprocketMetricsLoading && !shiprocketMetrics ? (
+                          <span className="animate-pulse text-white/30">•••</span>
+                        ) : stat.isCurrency ? (
+                          stat.value
+                        ) : (
+                          Number(stat.value || 0).toLocaleString()
+                        )}
+                      </div>
+                      <p className="text-xs text-white/40 mt-3">{stat.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60">
+                  <CardHeader>
+                    <CardTitle className="text-white text-lg">Shipment details</CardTitle>
+                    <CardDescription className="text-white/60">
+                      Quick snapshot of fulfilment split
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-white">
+                    {[
+                      {
+                        label: 'Total shipments',
+                        value: shiprocketMetrics?.totalOrders ?? 0,
+                      },
+                      {
+                        label: 'COD share',
+                        value: shiprocketMetrics?.codOrders ?? 0,
+                      },
+                      {
+                        label: 'Prepaid share',
+                        value: shiprocketMetrics?.prepaidOrders ?? 0,
+                      },
+                      {
+                        label: "Today's orders",
+                        value: shiprocketMetrics?.todaysOrders ?? 0,
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.label}
+                        className="bg-white/5 rounded-2xl p-4 border border-white/5 backdrop-blur"
+                      >
+                        <p className="text-xs uppercase tracking-wide text-white/40">{item.label}</p>
+                        <p className="text-3xl font-semibold mt-2">
+                          {shiprocketMetricsLoading && !shiprocketMetrics ? (
+                            <span className="animate-pulse text-white/40">•••</span>
+                          ) : (
+                            Number(item.value || 0).toLocaleString()
+                          )}
+                        </p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60">
+                  <CardHeader>
+                    <CardTitle className="text-white text-lg">Revenue summary</CardTitle>
+                    <CardDescription className="text-white/60">
+                      Gross value across the selected range
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-4">
+                    <div className="bg-gradient-to-r from-[#A47E3B]/30 to-transparent rounded-2xl p-5 border border-[#A47E3B]/40">
+                      <p className="text-xs uppercase tracking-wide text-white/70">Total revenue</p>
+                      <p className="text-4xl font-semibold text-white mt-2">
+                        {shiprocketMetricsLoading && !shiprocketMetrics ? (
+                          <span className="animate-pulse text-white/40">•••</span>
+                        ) : shiprocketMetrics ? (
+                          formatCurrency(shiprocketMetrics.totalRevenue)
+                        ) : (
+                          '--'
+                        )}
+                      </p>
+                      <p className="text-xs text-white/60 mt-2">
+                        Avg order value{' '}
+                        {shiprocketMetrics ? formatCurrency(shiprocketMetrics.averageOrderValue) : '—'}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
           </div>
 
           {/* Stats Cards Grid */}

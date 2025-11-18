@@ -233,6 +233,244 @@ async function shiprocketFetch<T>(path: string, init: RequestInit = {}, force = 
   return res.json();
 }
 
+export interface ShiprocketOrderItem {
+  name?: string;
+  sku?: string;
+  units?: number;
+  selling_price?: number | string;
+  discount?: number | string;
+  [key: string]: unknown;
+}
+
+export interface ShiprocketOrderShipment {
+  awb_code?: string;
+  courier_company_id?: number;
+  courier_company_name?: string;
+  status?: string;
+  status_code?: number;
+  pickup_date?: string;
+  delivered_date?: string;
+  shipment_type?: string;
+  shipment_mode?: string;
+  weight?: number | string;
+  length?: number | string;
+  breadth?: number | string;
+  height?: number | string;
+  volumetric_weight?: number | string;
+  [key: string]: unknown;
+}
+
+export interface ShiprocketOrder {
+  id?: number;
+  order_id?: string;
+  channel_order_id?: string;
+  channel?: string;
+  channel_name?: string;
+  status?: string;
+  status_code?: number;
+  created_at?: string;
+  order_date?: string;
+  payment_method?: string;
+  payment_status?: string;
+  sub_total?: number | string;
+  total?: number | string;
+  order_items?: ShiprocketOrderItem[];
+  shipments?: ShiprocketOrderShipment[];
+  pickup_location?: string;
+  billing_customer_name?: string;
+  billing_last_name?: string;
+  billing_email?: string;
+  billing_phone?: string;
+  billing_address?: string;
+  billing_address_2?: string;
+  billing_city?: string;
+  billing_state?: string;
+  billing_pincode?: string;
+  shipping_zone?: string;
+  shipping_zone_code?: string;
+  courier_company_name?: string;
+  weight?: number | string;
+  length?: number | string;
+  breadth?: number | string;
+  height?: number | string;
+  customer?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    address?: string;
+  };
+  [key: string]: unknown;
+}
+
+export interface ShiprocketProduct {
+  id?: number;
+  sku?: string;
+  name?: string;
+  price?: number;
+  selling_price?: number;
+  cost_price?: number;
+  mrp?: number;
+  image?: string;
+  images?: string[];
+  length?: number;
+  breadth?: number;
+  height?: number;
+  weight?: number;
+  status?: string;
+  [key: string]: unknown;
+}
+
+export interface ShiprocketProductListResponse {
+  data?: ShiprocketProduct[];
+  meta?: {
+    pagination?: {
+      total?: number;
+      count?: number;
+      per_page?: number;
+      current_page?: number;
+      total_pages?: number;
+    };
+  };
+}
+
+export interface ShiprocketProductFilters {
+  page?: number;
+  perPage?: number;
+  search?: string;
+  sku?: string;
+}
+
+export interface ShiprocketOrderListResponse {
+  data?: ShiprocketOrder[];
+  meta?: {
+    pagination?: {
+      total?: number;
+      count?: number;
+      per_page?: number;
+      current_page?: number;
+      total_pages?: number;
+    };
+  };
+}
+
+export interface ShiprocketOrderFilters {
+  from?: string;
+  to?: string;
+  page?: number;
+  perPage?: number;
+  status?: string;
+  channelId?: string;
+  search?: string;
+  sort?: "ASC" | "DESC";
+}
+
+export async function fetchShiprocketOrdersList(filters: ShiprocketOrderFilters = {}) {
+  const query = new URLSearchParams();
+
+  if (filters.from) query.set("from", filters.from);
+  if (filters.to) query.set("to", filters.to);
+  if (filters.page) query.set("page", String(filters.page));
+  if (filters.perPage) query.set("per_page", String(filters.perPage));
+  if (filters.status) query.set("status", filters.status);
+  if (filters.channelId) query.set("channel_id", filters.channelId);
+  if (filters.search) query.set("search", filters.search);
+  if (filters.sort) query.set("sort", filters.sort);
+
+  const path = `/orders${query.toString() ? `?${query.toString()}` : ""}`;
+  return shiprocketFetch<ShiprocketOrderListResponse>(path);
+}
+
+export async function fetchShiprocketProductsList(filters: ShiprocketProductFilters = {}) {
+  const query = new URLSearchParams();
+
+  if (filters.page) query.set("page", String(filters.page));
+  if (filters.perPage) query.set("per_page", String(filters.perPage));
+  if (filters.search) query.set("search", filters.search);
+  if (filters.sku) query.set("sku", filters.sku);
+
+  const path = `/products${query.toString() ? `?${query.toString()}` : ""}`;
+  return shiprocketFetch<ShiprocketProductListResponse>(path);
+}
+
+export interface ShiprocketOverviewMetrics {
+  totalOrders: number;
+  codOrders: number;
+  prepaidOrders: number;
+  todaysOrders: number;
+  totalRevenue: number;
+  averageOrderValue: number;
+  period: { from: string; to: string };
+  sampleSize: number;
+  fetchedAt: string;
+}
+
+function toNumber(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") return Number(value) || 0;
+  return 0;
+}
+
+export async function getShiprocketOverviewMetrics(range: { from: string; to: string }) {
+  const response = await fetchShiprocketOrdersList({
+    from: range.from,
+    to: range.to,
+    perPage: 200,
+    sort: "DESC",
+  });
+
+  const orders = response.data ?? [];
+  const todayISO = new Date().toISOString().slice(0, 10);
+
+  type RevenueTotals = {
+    totalRevenue: number;
+    codOrders: number;
+    prepaidOrders: number;
+    todaysOrders: number;
+  };
+
+  const totals = orders.reduce<RevenueTotals>(
+    (acc, order) => {
+      const total = toNumber(order.total) || toNumber(order.sub_total);
+      acc.totalRevenue += total;
+      if (order.payment_method?.toUpperCase() === "COD") {
+        acc.codOrders += 1;
+      } else {
+        acc.prepaidOrders += 1;
+      }
+      if (order.created_at?.startsWith(todayISO)) {
+        acc.todaysOrders += 1;
+      }
+      return acc;
+    },
+    {
+      totalRevenue: 0,
+      codOrders: 0,
+      prepaidOrders: 0,
+      todaysOrders: 0,
+    }
+  );
+
+  const totalOrders = orders.length;
+  const averageOrderValue = totalOrders ? totals.totalRevenue / totalOrders : 0;
+
+  const metrics: ShiprocketOverviewMetrics = {
+    totalOrders,
+    codOrders: totals.codOrders,
+    prepaidOrders: totals.prepaidOrders,
+    todaysOrders: totals.todaysOrders,
+    totalRevenue: Number(totals.totalRevenue.toFixed(2)),
+    averageOrderValue: Number(averageOrderValue.toFixed(2)),
+    period: range,
+    sampleSize: response.meta?.pagination?.count ?? totalOrders,
+    fetchedAt: new Date().toISOString(),
+  };
+
+  return metrics;
+}
+
 export async function createShiprocketShipment(payload: ShiprocketOrderPayload) {
   if (!channelId) {
     throw new Error('SHIPROCKET_CHANNEL_ID must be configured.');

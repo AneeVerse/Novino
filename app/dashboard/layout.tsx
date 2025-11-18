@@ -1,17 +1,60 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import DashboardNavbar from "@/components/ui/dashboard-navbar";
+import DashboardSidebar, { DashboardSidebarNavItem } from "@/components/dashboard-v2/DashboardSidebar";
+import DashboardHeader from "@/components/dashboard-v2/DashboardHeader";
+import { Home, FileText, MessageSquare, Package, ShoppingCart, Users } from "lucide-react";
+
+const legacyNavItems: DashboardSidebarNavItem[] = [
+  {
+    name: "Overview",
+    href: "/dashboard",
+    icon: Home,
+    activeMatcher: ({ pathname, searchParams }) =>
+      pathname === "/dashboard" && !searchParams?.get("tab"),
+  },
+  {
+    name: "Blogs",
+    href: "/dashboard?tab=blogs",
+    icon: FileText,
+    activeMatcher: ({ pathname, searchParams }) =>
+      pathname === "/dashboard" && searchParams?.get("tab") === "blogs",
+  },
+  {
+    name: "Testimonials",
+    href: "/dashboard?tab=testimonials",
+    icon: MessageSquare,
+    activeMatcher: ({ pathname, searchParams }) =>
+      pathname === "/dashboard" && searchParams?.get("tab") === "testimonials",
+  },
+  {
+    name: "Products",
+    href: "/dashboard?tab=products",
+    icon: Package,
+    activeMatcher: ({ pathname, searchParams }) =>
+      pathname === "/dashboard" && searchParams?.get("tab") === "products",
+  },
+  {
+    name: "Orders",
+    href: "/dashboard/orders",
+    icon: ShoppingCart,
+  },
+  {
+    name: "Users",
+    href: "/dashboard/users",
+    icon: Users,
+  },
+];
 
 function DashboardContent({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname() || '';
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Only redirect if we're not already on the login page and auth has finished loading
     if (!isLoading && !isAuthenticated && !pathname.includes('/admin/login')) {
       router.push('/admin/login');
     }
@@ -28,14 +71,23 @@ function DashboardContent({ children }: { children: ReactNode }) {
   }
 
   if (!isAuthenticated && !pathname.includes('/admin/login')) {
-    return null; // Will redirect in the useEffect
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      
-      <div className="container mx-auto px-4 py-8">
-        {children}
+    <div className="min-h-screen bg-[#1A1A1A]">
+      <DashboardSidebar
+        open={sidebarOpen}
+        onOpenChange={setSidebarOpen}
+        navItems={legacyNavItems}
+        logoHref="/dashboard"
+        logoLabel="Novino"
+      />
+      <div className="lg:pl-64">
+        <DashboardHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <main className="p-6">
+          {children}
+        </main>
       </div>
     </div>
   );

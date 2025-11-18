@@ -4,7 +4,6 @@ import "./globals.css"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import Navbar from "@/components/ui/navbar"
-import DashboardNavbar from "@/components/ui/dashboard-navbar"
 import { usePathname } from "next/navigation"
 import "@fontsource/dm-serif-display"
 import { CartProvider } from "@/contexts/CartContext"
@@ -31,7 +30,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname();
-  const isDashboard = pathname?.startsWith('/dashboard');
+  const isDashboardV2 = pathname?.startsWith('/dashboard-v2');
+  const isLegacyDashboard = pathname?.startsWith('/dashboard') && !isDashboardV2;
+  const isDashboard = isLegacyDashboard || isDashboardV2;
   const isAdminRoute = pathname?.startsWith('/admin') || isDashboard;
   const isLinkoPage = pathname?.startsWith('/linko.page/');
   const isVCardPage = pathname?.startsWith('/vcard');
@@ -168,11 +169,7 @@ export default function RootLayout({
           >
             <AuthProvider>
               <CartProvider>
-                {isDashboard ? (
-                  <div className="w-full">
-                    <DashboardNavbar />
-                  </div>
-                ) : !isLinkoPage && !isVCardPage ? (
+                {!isLinkoPage && !isVCardPage && !isDashboard ? (
                   <Navbar />
                 ) : null}
                 <NavigationLoading />
