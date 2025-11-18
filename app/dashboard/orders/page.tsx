@@ -6,6 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import TrackingJourneyCard, {
+  type TrackingJourneyEvent,
+  type TrackingJourneyCardProps,
+} from "@/components/orders/tracking-journey-card";
+import { getTrackingPreviewData } from "@/components/orders/mock-tracking-data";
 import {
   Search,
   Calendar,
@@ -85,6 +90,11 @@ interface ShiprocketOrderLite {
     pincode?: string;
     address?: string;
   };
+  trackingEvents?: TrackingJourneyEvent[];
+  trackingUrl?: string;
+  pickupScheduledFor?: string;
+  shiprocketShipmentId?: number;
+  localOrderId?: string;
 }
 
 interface ShiprocketOrdersSummary {
@@ -143,6 +153,9 @@ const ORDER_TABS = [
 ] as const;
 
 type OrderTabValue = (typeof ORDER_TABS)[number]["value"];
+
+const TRACKING_PREVIEW_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_TRACKING_PREVIEW !== "false";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -206,6 +219,68 @@ const formatDimensions = (dimensions: { length?: number | string; breadth?: numb
   return `${length || 0} × ${breadth || 0} × ${height || 0} cm`;
 };
 
+const buildTrackingCardData = (order: ShiprocketOrderLite): TrackingJourneyCardProps | null => {
+  const shipment = order.shipments?.[0];
+  const events = order.trackingEvents ?? [];
+  const courierName = shipment?.courier_company_name || order.courier_company_name || "Courier partner";
+  const statusText = shipment?.status || order.status || "In transit";
+  const destinationCity = order.customer?.city || order.billing_city || order.customer_city || "Destination city";
+  const destinationState = order.customer?.state || order.billing_state || order.customer_state || "";
+  const pickupLabel =
+    order.pickup_location ||
+    order.billing_address ||
+    order.customer?.address ||
+    (order.customer_name ? `${order.customer_name} pickup` : "Pickup scheduled");
+  const trackingNumber = shipment?.awb_code || order.order_id || order.channel_order_id || "—";
+
+  const dialPhone = order.billing_phone || order.customer?.phone || order.customer_phone;
+  const numericPhone = dialPhone?.replace(/\D/g, "");
+
+  const payloadOverrides: Partial<TrackingJourneyCardProps> = {
+    trackingNumber,
+    courierName,
+    statusText,
+    summaryLabel: statusText,
+    meta: {
+      deliveryType: shipment?.shipment_mode || shipment?.shipment_type || "Standard",
+      estimate: order.order_date ? formatDate(order.order_date) : "ETA updating",
+      weight: formatWeight(shipment?.weight || order.weight),
+    },
+    stops: [
+      {
+        label: pickupLabel,
+        detail: formatDate(order.created_at),
+      },
+      {
+        label: destinationState ? `${destinationCity}, ${destinationState}` : destinationCity,
+        detail: order.billing_pincode || order.customer?.pincode || order.customer_pincode,
+      },
+    ],
+    shipper: {
+      name: courierName,
+      role: statusText,
+      rating: 4.9,
+      phone: dialPhone,
+      whatsappUrl: numericPhone ? `https://wa.me/91${numericPhone}` : undefined,
+      supportUrl: order.trackingUrl,
+    },
+  };
+
+  if (events.length) {
+    return {
+      ...payloadOverrides,
+      events,
+      accentColor: "#0bd88f",
+    } as TrackingJourneyCardProps;
+  }
+
+  if (!TRACKING_PREVIEW_ENABLED) {
+    return null;
+  }
+
+  return getTrackingPreviewData(payloadOverrides);
+};
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<ShiprocketOrderLite[]>([]);
   const [summary, setSummary] = useState<ShiprocketOrdersSummary | null>(null);
@@ -227,6 +302,8 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
   const [selectedOrder, setSelectedOrder] = useState<ShiprocketOrderLite | null>(null);
+  const trackingCardData = selectedOrder ? buildTrackingCardData(selectedOrder) : null;
+  const hasLiveTracking = Boolean(selectedOrder?.trackingEvents?.length);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -871,7 +948,7 @@ export default function OrdersPage() {
         </div>
 
         <Dialog open={Boolean(selectedOrder)} onOpenChange={() => setSelectedOrder(null)}>
-          <DialogContent className="max-w-4xl bg-[#1a1a1a] border border-white/10 text-white backdrop-blur-xl">
+          <DialogContent className="max-w-6xl bg-[#1a1a1a] border border-white/10 text-white backdrop-blur-xl">
             <DialogHeader>
               <DialogTitle className="text-2xl font-semibold">
                 Order {selectedOrder?.order_id || selectedOrder?.channel_order_id}
@@ -1008,6 +1085,19 @@ export default function OrdersPage() {
                     )}
                   </div>
                 </div>
+
+                {trackingCardData && (
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-lg">Tracking journey</h3>
+                    <TrackingJourneyCard {...trackingCardData} />
+                    {!hasLiveTracking && (
+                      <p className="text-xs text-white/60">
+                        Preview only · set <span className="font-semibold">NEXT_PUBLIC_ENABLE_TRACKING_PREVIEW</span> to{" "}
+                        <span className="font-semibold">false</span> to disable.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </DialogContent>

@@ -21,6 +21,7 @@ import {
   Navigation
 } from "lucide-react";
 import TrackingJourneyCard from "@/components/orders/tracking-journey-card";
+import { getTrackingPreviewData } from "@/components/orders/mock-tracking-data";
 
 // Define types
 interface OrderItem {
@@ -85,6 +86,9 @@ interface Address {
   pincode: string;
   isDefault: boolean;
 }
+
+const TRACKING_PREVIEW_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_TRACKING_PREVIEW !== "false";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -660,7 +664,7 @@ export default function ProfilePage() {
                 setShipmentError(null);
               }
             }}>
-              <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-[#222222] border-[#333333] text-white z-[9999]">
+              <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-[#222222] border-[#333333] text-white z-[9999]">
                 {selectedOrder && (
                   <>
                     <DialogHeader>
@@ -708,11 +712,12 @@ export default function ProfilePage() {
 
                       {shipmentError && <p className="text-sm text-red-400">{shipmentError}</p>}
 
-                      {/* Products */}
-                      <div className="p-4 bg-[#1A1A1A] rounded-lg border border-[#333333]">
-                        <h3 className="text-lg font-semibold mb-4 text-white">Products</h3>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                          <div className="lg:col-span-2 space-y-3">
+                      {/* Products & Payment Summary Row */}
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        {/* Products - Left Side */}
+                        <div className="lg:col-span-2 p-4 bg-[#1A1A1A] rounded-lg border border-[#333333]">
+                          <h3 className="text-lg font-semibold mb-4 text-white">Products</h3>
+                          <div className="space-y-3">
                             {selectedOrder.items.map((item, idx) => (
                               <div
                                 key={`${item.productId}-${idx}`}
@@ -763,132 +768,139 @@ export default function ProfilePage() {
                               </div>
                             ))}
                           </div>
-                          
-                          {/* Payment & Delivery Info */}
-                          <div className="space-y-4">
-                    <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] space-y-3">
-                      <p className="text-white font-semibold text-base">Payment Summary</p>
-                      <div className="space-y-2 text-sm text-white">
-                        <div className="flex justify-between">
-                          <span className="text-white/60">Items Total</span>
-                          <span className="font-medium">
-                            {formatCurrency(selectedOrderTotals?.subtotal || 0)}
-                          </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/60">GST</span>
-                          <span className="font-medium">
-                            {formatCurrency(selectedOrderTotals?.gstAmount || 0)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-white/60">Shipping</span>
-                          <span className="font-medium">
-                            {formatCurrency(selectedOrderTotals?.shipping || 0)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-base font-semibold border-t border-[#444444] pt-3">
-                          <span className="text-white">Grand Total</span>
-                          <span className="text-[#AE876D]">{formatCurrency(selectedOrder.total)}</span>
-                        </div>
-                      </div>
-                      <div className="text-sm text-white/70 space-y-1">
-                        <div className="flex justify-between">
-                          <span>Payment Method</span>
-                          <span className="font-medium text-white capitalize">
-                            {selectedOrder.paymentMethod === 'cod'
-                              ? 'Cash on Delivery'
-                              : selectedOrder.paymentMethod}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Payment Status</span>
-                          <span className="font-medium text-white capitalize">
-                            {selectedOrder.paymentStatus}
-                          </span>
-                        </div>
-                        {selectedOrder.giftWrap && (
-                          <div className="flex justify-between">
-                            <span>Gift Wrap</span>
-                            <span className="font-medium text-white">Included</span>
+                        
+                        {/* Payment Summary - Right Side */}
+                        <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] space-y-3 h-fit">
+                          <p className="text-white font-semibold text-base">Payment Summary</p>
+                          <div className="space-y-2 text-sm text-white">
+                            <div className="flex justify-between">
+                              <span className="text-white/60">Items Total</span>
+                              <span className="font-medium">
+                                {formatCurrency(selectedOrderTotals?.subtotal || 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-white/60">GST</span>
+                              <span className="font-medium">
+                                {formatCurrency(selectedOrderTotals?.gstAmount || 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-white/60">Shipping</span>
+                              <span className="font-medium">
+                                {formatCurrency(selectedOrderTotals?.shipping || 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-base font-semibold border-t border-[#444444] pt-3">
+                              <span className="text-white">Grand Total</span>
+                              <span className="text-[#AE876D]">{formatCurrency(selectedOrder.total)}</span>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] space-y-2 text-sm">
-                      <p className="text-white font-semibold text-base flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-[#AE876D]" />
-                        Delivery Information
-                      </p>
-                      <p className="text-white font-medium">{selectedOrder.deliveryAddress.name}</p>
-                      <p className="text-white/70">
-                        {selectedOrder.deliveryAddress.line1}
-                        {selectedOrder.deliveryAddress.line2 && (
-                          <>
-                            <br />
-                            {selectedOrder.deliveryAddress.line2}
-                          </>
-                        )}
-                        <br />
-                        {selectedOrder.deliveryAddress.city}, {selectedOrder.deliveryAddress.state} -{' '}
-                        {selectedOrder.deliveryAddress.pincode}
-                      </p>
-                      {selectedOrder.deliveryAddress.phone && (
-                        <p className="text-white/60">Phone: {selectedOrder.deliveryAddress.phone}</p>
-                      )}
-                      {selectedOrder.deliveryAddress.email && (
-                        <p className="text-white/60">Email: {selectedOrder.deliveryAddress.email}</p>
-                      )}
-                    </div>
-                    <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] text-sm space-y-2">
-                      <p className="text-white font-semibold text-base">Order Insights</p>
-                      <div className="flex justify-between text-white/70">
-                        <span>Order ID</span>
-                        <span className="text-white font-medium">{selectedOrder.orderNumber}</span>
-                      </div>
-                      <div className="flex justify-between text-white/70">
-                        <span>Placed On</span>
-                        <span className="text-white font-medium">
-                          {new Date(selectedOrder.orderedAt).toLocaleDateString('en-IN', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                          })}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-white/70">
-                        <span>Estimated Delivery</span>
-                        <span className="text-white font-medium">
-                          {selectedOrder.estimatedDelivery
-                            ? new Date(selectedOrder.estimatedDelivery).toLocaleDateString('en-IN', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric'
-                              })
-                            : 'To be updated'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-white/70">
-                        <span>Gift Wrap</span>
-                        <span className="text-white font-medium">
-                          {selectedOrder.giftWrap ? 'Yes' : 'No'}
-                        </span>
-                      </div>
-                    </div>
+                          <div className="text-sm text-white/70 space-y-1 pt-2 border-t border-[#444444]">
+                            <div className="flex justify-between">
+                              <span>Payment Method</span>
+                              <span className="font-medium text-white capitalize">
+                                {selectedOrder.paymentMethod === 'cod'
+                                  ? 'Cash on Delivery'
+                                  : selectedOrder.paymentMethod}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Payment Status</span>
+                              <span className="font-medium text-white capitalize">
+                                {selectedOrder.paymentStatus}
+                              </span>
+                            </div>
+                            {selectedOrder.giftWrap && (
+                              <div className="flex justify-between">
+                                <span>Gift Wrap</span>
+                                <span className="font-medium text-white">Included</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Shipping Information */}
-                      <div className="p-4 bg-[#1A1A1A] rounded-lg border border-[#333333]">
-                        <div className="flex items-center gap-2 mb-4">
+                      {/* Delivery Information & Order Insights - Side by Side */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] space-y-2 text-sm">
+                          <p className="text-white font-semibold text-base flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-[#AE876D]" />
+                            Delivery Information
+                          </p>
+                          <p className="text-white font-medium">{selectedOrder.deliveryAddress.name}</p>
+                          <p className="text-white/70">
+                            {selectedOrder.deliveryAddress.line1}
+                            {selectedOrder.deliveryAddress.line2 && (
+                              <>
+                                <br />
+                                {selectedOrder.deliveryAddress.line2}
+                              </>
+                            )}
+                            <br />
+                            {selectedOrder.deliveryAddress.city}, {selectedOrder.deliveryAddress.state} -{' '}
+                            {selectedOrder.deliveryAddress.pincode}
+                          </p>
+                          {selectedOrder.deliveryAddress.phone && (
+                            <p className="text-white/60">Phone: {selectedOrder.deliveryAddress.phone}</p>
+                          )}
+                          {selectedOrder.deliveryAddress.email && (
+                            <p className="text-white/60">Email: {selectedOrder.deliveryAddress.email}</p>
+                          )}
+                        </div>
+                        <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] text-sm space-y-2">
+                          <p className="text-white font-semibold text-base">Order Insights</p>
+                          <div className="flex justify-between text-white/70">
+                            <span>Order ID</span>
+                            <span className="text-white font-medium">{selectedOrder.orderNumber}</span>
+                          </div>
+                          <div className="flex justify-between text-white/70">
+                            <span>Placed On</span>
+                            <span className="text-white font-medium">
+                              {new Date(selectedOrder.orderedAt).toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-white/70">
+                            <span>Estimated Delivery</span>
+                            <span className="text-white font-medium">
+                              {selectedOrder.estimatedDelivery
+                                ? new Date(selectedOrder.estimatedDelivery).toLocaleDateString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  })
+                                : 'To be updated'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-white/70">
+                            <span>Gift Wrap</span>
+                            <span className="text-white font-medium">
+                              {selectedOrder.giftWrap ? 'Yes' : 'No'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Shipping Information - Full Width Section */}
+                      <div className="p-6 bg-[#1A1A1A] rounded-lg border border-[#333333]">
+                        <div className="flex items-center gap-2 mb-6">
                           <Truck className="w-5 h-5 text-[#A47E3B]" />
                           <h3 className="text-lg font-semibold text-white">Shipping Information</h3>
                         </div>
                         {shipmentLoading ? (
-                          <p className="text-white/70 text-sm">Loading shipment details...</p>
+                          <div className="flex items-center justify-center py-12">
+                            <div className="text-center space-y-3">
+                              <Loader2 className="h-8 w-8 animate-spin text-[#AE876D] mx-auto" />
+                              <p className="text-white/70 text-sm">Loading shipment details...</p>
+                            </div>
+                          </div>
                         ) : selectedShipment ? (
-                          <div className="mt-4">
+                          <div className="w-full">
                             <TrackingJourneyCard
                               accentColor="#AE876D"
                               trackingNumber={selectedShipment.awbCode || selectedOrder.orderNumber}
@@ -953,10 +965,73 @@ export default function ProfilePage() {
                               }
                             />
                           </div>
+                        ) : TRACKING_PREVIEW_ENABLED && selectedOrder ? (
+                          <div className="w-full space-y-3">
+                            <TrackingJourneyCard
+                              {...getTrackingPreviewData({
+                                trackingNumber: selectedOrder.orderNumber,
+                                courierName: selectedOrder.orderStatus === 'shipped' ? 'Express Partner' : 'Nimbus Express',
+                                statusText: selectedOrder.orderStatus || 'Processing',
+                                summaryLabel: 'Preview · shipment card',
+                                meta: {
+                                  deliveryType:
+                                    selectedOrder.orderStatus === 'shipped' || selectedOrder.orderStatus === 'delivered'
+                                      ? 'Express'
+                                      : 'Standard',
+                                  estimate: selectedOrder.estimatedDelivery
+                                    ? new Date(selectedOrder.estimatedDelivery).toLocaleDateString('en-IN', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                      })
+                                    : 'ETA coming soon',
+                                  weight: '—',
+                                },
+                                stops: [
+                                  {
+                                    label: selectedOrder.deliveryAddress.line1,
+                                    detail: selectedOrder.deliveryAddress.city,
+                                  },
+                                  {
+                                    label: `${selectedOrder.deliveryAddress.city}, ${selectedOrder.deliveryAddress.state}`,
+                                    detail: selectedOrder.deliveryAddress.pincode,
+                                  },
+                                ],
+                                shipper: {
+                                  name: selectedOrder.deliveryAddress.name,
+                                  role: 'Preview courier',
+                                  rating: 4.9,
+                                  phone: selectedOrder.deliveryAddress.phone,
+                                  whatsappUrl: selectedOrder.deliveryAddress.phone
+                                    ? `https://wa.me/91${selectedOrder.deliveryAddress.phone.replace(/\D/g, '')}`
+                                    : undefined,
+                                },
+                              })}
+                            />
+                            <p className="text-xs text-white/60 text-center">
+                              Preview only: set <span className="font-semibold">NEXT_PUBLIC_ENABLE_TRACKING_PREVIEW</span> to{' '}
+                              <span className="font-semibold">false</span> to hide this card.
+                            </p>
+                          </div>
                         ) : (
-                          <p className="text-white/60 text-sm">
-                            Shipment details will appear here once generated.
-                          </p>
+                          <div className="flex flex-col items-center justify-center py-16 px-4 space-y-4">
+                            <div className="w-20 h-20 rounded-full bg-[#AE876D]/10 flex items-center justify-center">
+                              <Truck className="w-10 h-10 text-[#AE876D]" />
+                            </div>
+                            <div className="text-center space-y-2">
+                              <h4 className="text-lg font-semibold text-white">Tracking information coming soon</h4>
+                              <p className="text-white/60 text-sm max-w-md">
+                                Shipment details will appear here once your order is processed and handed over to our logistics partner.
+                              </p>
+                            </div>
+                            <div className="mt-4 p-4 rounded-lg bg-[#2a2a2a] border border-[#444444] text-sm text-white/70 space-y-2 max-w-md w-full">
+                              <p className="font-medium text-white">What happens next?</p>
+                              <ul className="list-disc list-inside space-y-1 text-xs">
+                                <li>Your order is being prepared for shipment</li>
+                                <li>You'll receive tracking details once it's dispatched</li>
+                                <li>Real-time updates will appear here automatically</li>
+                              </ul>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>

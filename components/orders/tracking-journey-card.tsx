@@ -42,7 +42,7 @@ type ShipperDetails = {
   supportUrl?: string;
 };
 
-interface TrackingJourneyCardProps {
+export interface TrackingJourneyCardProps {
   trackingNumber?: string;
   statusText?: string;
   courierName?: string;

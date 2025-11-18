@@ -38,3 +38,8 @@ SHIPROCKET_PASSWORD=your-shiprocket-password
 SHIPROCKET_CHANNEL_ID=123456
 SHIPROCKET_WEBHOOK_SECRET=your-shiprocket-webhook-secret
 
+# Tracking Preview (UI Development)
+# Set to "false" to disable mock tracking preview and work with API data only
+# Default: enabled (any value other than "false" will show preview)
+NEXT_PUBLIC_ENABLE_TRACKING_PREVIEW=true
+
