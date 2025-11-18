@@ -209,9 +209,31 @@ export default function ProfilePage() {
   
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/auth/logout", { method: "POST" });
+      const res = await fetch("/api/auth/logout", { 
+        method: "POST",
+        credentials: 'include' // Ensure cookies are sent
+      });
+      
       if (res.ok) {
-        router.push("/login");
+        // Clear any client-side storage
+        if (typeof window !== 'undefined') {
+          // Clear localStorage
+          localStorage.clear();
+          // Clear sessionStorage
+          sessionStorage.clear();
+        }
+        
+        // Show success message
+        toast({
+          title: "Logged out",
+          description: "You have been successfully logged out"
+        });
+        
+        // Force a hard redirect to login page
+        // Using window.location ensures a full page reload and clears any cached state
+        window.location.href = "/login";
+      } else {
+        throw new Error('Logout failed');
       }
     } catch (err) {
       console.error(err);
