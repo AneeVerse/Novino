@@ -103,52 +103,158 @@ interface AccordionItem {
   content: React.ReactNode;
 }
 
-// Price Reveal Component
+// Price Reveal Component with Premium Flip Animation
 function PriceReveal({ price }: { price: string }) {
   const [isRevealed, setIsRevealed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div className="relative mb-6 overflow-visible">
-      <div className="relative inline-block">
-        {/* The actual price - always rendered but potentially hidden */}
+    <div className="relative mb-8 w-fit">
+      {/* Container with perspective for 3D effect */}
+      <div
+        className="relative h-24 w-64"
+        style={{ perspective: '1000px' }}
+      >
+        {/* Card wrapper with 3D flip */}
         <div
-          className={`text-3xl font-light font-['Roboto_Mono'] transition-all duration-700 ${isRevealed
-              ? 'opacity-100 blur-0'
-              : 'opacity-0 blur-md'
-            }`}
+          className={`relative w-full h-full transition-all duration-1000 ease-out`}
+          style={{
+            transformStyle: 'preserve-3d',
+            transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)'
+          }}
         >
-          {price}
-        </div>
-
-        {/* Reveal overlay */}
-        <div
-          className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ${isRevealed
-              ? 'opacity-0 pointer-events-none translate-x-full scale-95'
-              : 'opacity-100 translate-x-0 scale-100'
-            }`}
-        >
-          <button
-            onClick={() => setIsRevealed(true)}
-            className="group relative px-8 py-3 rounded-lg overflow-hidden"
+          {/* Front Face - Reveal Button */}
+          <div
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden'
+            }}
           >
-            {/* Gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-white/10 backdrop-blur-xl border border-white/20 rounded-lg" />
+            <button
+              onClick={() => setIsRevealed(true)}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              className="relative w-full h-full group overflow-hidden"
+            >
+              {/* Animated gradient border */}
+              <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-white/20 via-white/40 to-white/20 p-[2px] transition-all duration-500 ${isHovered ? 'from-white/40 via-white/60 to-white/40 shadow-[0_0_30px_rgba(255,255,255,0.3)]' : ''
+                }`}>
+                <div className="absolute inset-[2px] rounded-2xl bg-gradient-to-br from-[#2D2D2D] via-[#1F1F1F] to-[#2D2D2D]" />
+              </div>
 
-            {/* Shimmer effect */}
-            <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000`} />
+              {/* Glow effect */}
+              <div className={`absolute inset-0 rounded-2xl transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'
+                }`}>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent blur-xl" />
+              </div>
 
-            {/* Button text */}
-            <span className="relative z-10 text-sm font-['Roboto_Mono'] uppercase tracking-[0.25em] text-white/80 group-hover:text-white transition-colors">
-              Reveal Price
-            </span>
-          </button>
+              {/* Shimmer animation */}
+              <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-1000 ${isHovered ? 'translate-x-full' : ''
+                  }`} style={{ width: '200%' }} />
+              </div>
+
+              {/* Content */}
+              <div className="relative z-10 flex flex-col items-center justify-center h-full gap-2">
+                <svg
+                  className={`w-6 h-6 transition-all duration-300 ${isHovered ? 'scale-110 rotate-12' : 'scale-100'}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+
+                <span className={`font-['Roboto_Mono'] uppercase tracking-[0.25em] text-xs transition-all duration-300 ${isHovered ? 'text-white' : 'text-white/70'
+                  }`}>
+                  Reveal Price
+                </span>
+
+                <div className={`flex gap-1 transition-all duration-300 ${isHovered ? 'gap-2' : 'gap-1'}`}>
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className={`w-1.5 h-1.5 rounded-full bg-white/40 transition-all duration-300 ${isHovered ? 'bg-white/80 scale-125' : ''
+                        }`}
+                      style={{
+                        animationDelay: `${i * 150}ms`,
+                        animation: isHovered ? 'pulse 1.5s ease-in-out infinite' : 'none'
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </button>
+          </div>
+
+          {/* Back Face - Price Display */}
+          <div
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)'
+            }}
+          >
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* Glowing border */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/30 via-white/50 to-white/30 p-[2px] shadow-[0_0_40px_rgba(255,255,255,0.4)]">
+                <div className="absolute inset-[2px] rounded-2xl bg-gradient-to-br from-[#2D2D2D] via-[#1F1F1F] to-[#2D2D2D]" />
+              </div>
+
+              {/* Radial glow background */}
+              <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_70%)]" />
+              </div>
+
+              {/* Price text with glow */}
+              <div className="relative z-10 text-center">
+                <div className="text-3xl font-light font-['Roboto_Mono'] text-white tracking-wider drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">
+                  {price}
+                </div>
+                <div className="mt-1 text-[10px] uppercase tracking-[0.3em] text-white/50 font-['Roboto_Mono']">
+                  Exclusive Price
+                </div>
+              </div>
+
+              {/* Corner accents */}
+              <div className="absolute top-3 left-3 w-4 h-4 border-l-2 border-t-2 border-white/30 rounded-tl-lg" />
+              <div className="absolute top-3 right-3 w-4 h-4 border-r-2 border-t-2 border-white/30 rounded-tr-lg" />
+              <div className="absolute bottom-3 left-3 w-4 h-4 border-l-2 border-b-2 border-white/30 rounded-bl-lg" />
+              <div className="absolute bottom-3 right-3 w-4 h-4 border-r-2 border-b-2 border-white/30 rounded-br-lg" />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Decorative elements */}
+      {/* Floating particles when not revealed */}
       {!isRevealed && (
-        <div className="absolute -right-2 -top-2 w-2 h-2 bg-white/40 rounded-full animate-pulse" />
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-white/30 rounded-full animate-float"
+              style={{
+                left: `${20 + i * 30}%`,
+                top: `${10 + i * 20}%`,
+                animationDelay: `${i * 0.7}s`,
+                animationDuration: `${3 + i}s`
+              }}
+            />
+          ))}
+        </div>
       )}
+
+      {/* Floating animation keyframes */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
+          50% { transform: translateY(-20px) translateX(10px); opacity: 0.7; }
+        }
+      `}</style>
     </div>
   );
 }
