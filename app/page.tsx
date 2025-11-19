@@ -201,7 +201,7 @@ export default function Home() {
   return (
     <main className="relative min-h-screen bg-[#2D2D2D]">
       {/* Hero Section - Full width that extends to the top */}
-      <div className="relative w-full h-[600px] md:h-[740px] overflow-hidden">
+      <div className="relative w-full h-[600px] md:h-[728px] overflow-hidden">
         {/* Hero Image with Parallax Effect */}
         <div
           ref={heroImageRef}
@@ -243,7 +243,7 @@ export default function Home() {
           ></div>
           {/* Updated NOVINO text with custom class for scroll animation */}
           <h1
-            className={`novino-hero-text text-7xl sm:text-[160px] md:text-[230px] lg:text-[300px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            className={`novino-hero-text text-7xl sm:text-[160px] md:text-[230px] lg:text-[295px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
           >
             NOVINO
           </h1>

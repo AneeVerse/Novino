@@ -479,15 +479,6 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
                           </h3>
                         </div>
                       )}
-
-                      {/* Price - Only show on centered card, bottom right */}
-                      {isCentered && product.price && (
-                        <div className="absolute bottom-0 right-0 p-4 z-20">
-                          <div className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] text-right">
-                            {formatPrice(product.price)}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </Link>
                 </div>

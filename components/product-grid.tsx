@@ -291,11 +291,6 @@ export default function ProductGrid({
                         <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)]">
                           {product.name || product.title || "Untitled"}
                         </h3>
-                        {(product.price || product.date || product.role) && (
-                          <p className="text-sm text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-10 transition-all duration-400">
-                            {product.price ? formatPrice(product.price) : (product.date || product.role)}
-                          </p>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -365,11 +360,6 @@ export default function ProductGrid({
                         <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
                           {product.name || product.title || "Untitled"}
                         </h3>
-                        {(product.price || product.date || product.role) && (
-                          <p className="text-sm text-white drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-10 transition-all duration-400">
-                            {product.price ? formatPrice(product.price) : (product.date || product.role)}
-                          </p>
-                        )}
                       </div>
                     </div>
                   </div>

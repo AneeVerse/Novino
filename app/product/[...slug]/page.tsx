@@ -103,6 +103,56 @@ interface AccordionItem {
   content: React.ReactNode;
 }
 
+// Price Reveal Component
+function PriceReveal({ price }: { price: string }) {
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  return (
+    <div className="relative mb-6 overflow-visible">
+      <div className="relative inline-block">
+        {/* The actual price - always rendered but potentially hidden */}
+        <div
+          className={`text-3xl font-light font-['Roboto_Mono'] transition-all duration-700 ${isRevealed
+              ? 'opacity-100 blur-0'
+              : 'opacity-0 blur-md'
+            }`}
+        >
+          {price}
+        </div>
+
+        {/* Reveal overlay */}
+        <div
+          className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ${isRevealed
+              ? 'opacity-0 pointer-events-none translate-x-full scale-95'
+              : 'opacity-100 translate-x-0 scale-100'
+            }`}
+        >
+          <button
+            onClick={() => setIsRevealed(true)}
+            className="group relative px-8 py-3 rounded-lg overflow-hidden"
+          >
+            {/* Gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-white/10 backdrop-blur-xl border border-white/20 rounded-lg" />
+
+            {/* Shimmer effect */}
+            <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000`} />
+
+            {/* Button text */}
+            <span className="relative z-10 text-sm font-['Roboto_Mono'] uppercase tracking-[0.25em] text-white/80 group-hover:text-white transition-colors">
+              Reveal Price
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Decorative elements */}
+      {!isRevealed && (
+        <div className="absolute -right-2 -top-2 w-2 h-2 bg-white/40 rounded-full animate-pulse" />
+      )}
+    </div>
+  );
+}
+
 export default function ProductDetail() {
   const router = useRouter()
   const params = useParams()
@@ -1234,8 +1284,8 @@ export default function ProductDetail() {
                     </div>
                   )}
 
-                  {/* Price */}
-                  <div className="text-3xl font-light mb-6 font-['Roboto_Mono']">{formatPrice(displayedPrice)}</div>
+                  {/* Price - Reveal Animation */}
+                  <PriceReveal price={formatPrice(displayedPrice)} />
 
                   {/* Quantity and Add to Cart */}
                   <div className="flex items-center gap-3 mb-8">
