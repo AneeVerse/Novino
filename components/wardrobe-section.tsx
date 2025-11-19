@@ -29,10 +29,10 @@ export default function WardrobeSection() {
           </div>
 
           {/* Button section - aligned with circle */}
-          <div className="md:absolute md:right-32 md:top-1/2 md:-translate-y-1/2 mt-2 md:mt-0 z-10 w-full md:w-auto">
+          <div className="md:absolute md:right-32 md:top-1/2 md:-translate-y-1/2 mt-4 md:mt-0 z-10 w-full md:w-auto flex justify-center md:justify-start">
             <Link
               href="/artefacts"
-              className="bg-black text-white px-6 py-3 -mr-24 rounded-lg hover:bg-black transition-colors flex items-center justify-center md:justify-start gap-2 text-sm sm:text-base"
+              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-black transition-colors flex items-center justify-center gap-2 text-base w-full max-w-[320px] md:max-w-none md:w-auto md:justify-start md:-mr-24"
             >
               Explore the Journey
               <span className="inline-block transform rotate-45">↗</span>
