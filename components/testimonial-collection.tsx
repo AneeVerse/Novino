@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image"
-import "@fontsource/roboto-mono"
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import "@fontsource/roboto-mono";
 import { Loader } from './blog-section';
+import useEmblaCarousel from 'embla-carousel-react';
+import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 
 interface Testimonial {
   id: string;
@@ -44,12 +46,47 @@ const sampleTestimonials = [
     rating: 5,
     comment: "Adorable and comfortable! My daughter loves her new outfit. Thank you, StyleLoom, for dressing our little fashionista.",
     socialIcon: "/images/Capa 2.png"
+  },
+  {
+    id: '4',
+    name: "Michael Chen",
+    location: "Singapore",
+    avatar: "/images/testimonals/sarah-thompson.png", // Fallback avatar
+    rating: 5,
+    comment: "The attention to detail is incredible. Every stitch feels intentional. Will definitely be a returning customer.",
+    socialIcon: "/images/Capa 2.png"
+  },
+  {
+    id: '5',
+    name: "Sofia Rodriguez",
+    location: "Madrid, Spain",
+    avatar: "/images/testimonals/emily-walker.png", // Fallback avatar
+    rating: 4,
+    comment: "Beautiful aesthetics and great customer service. The packaging itself was a work of art.",
+    socialIcon: "/images/Capa 2.png"
   }
 ];
 
 export default function TestimonialCollection() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: 'start',
+    slidesToScroll: 1,
+    breakpoints: {
+      '(min-width: 768px)': { slidesToScroll: 1 },
+      '(min-width: 1024px)': { slidesToScroll: 1 }
+    }
+  });
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -58,17 +95,17 @@ export default function TestimonialCollection() {
         if (!response.ok) {
           throw new Error('Failed to fetch testimonials');
         }
-        
+
         const data = await response.json();
-        
+
         // Process testimonials to ensure they have id
         const processedTestimonials = data.map((testimonial: any) => ({
           ...testimonial,
           id: testimonial._id || testimonial.id,
           socialIcon: testimonial.socialIcon || '/images/Capa 2.png'
         }));
-        
-        setTestimonials(processedTestimonials);
+
+        setTestimonials(processedTestimonials.length > 0 ? processedTestimonials : sampleTestimonials);
       } catch (err) {
         console.error('Error fetching testimonials:', err);
         // Fallback to sample data
@@ -77,184 +114,175 @@ export default function TestimonialCollection() {
         setIsLoading(false);
       }
     };
-    
+
     fetchTestimonials();
   }, []);
 
   // Display loading state
   if (isLoading) {
     return (
-      <Loader />
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader />
+      </div>
     );
   }
 
-  // Limit to 3 testimonials for display
-  const displayTestimonials = testimonials.slice(0, 3);
-
   return (
-    <div className="mx-2 mb-16 relative overflow-hidden">
-      {/* Desktop abstract logo (top right, outside card content) */}
+    <div className="mx-2 mb-12 relative overflow-hidden">
       {/* Main container with dashed border - matched to Figma */}
-      <div className="relative flex flex-col items-start w-full overflow-hidden" style={{ 
+      <div className="relative flex flex-col w-full overflow-hidden bg-zinc-900/30 backdrop-blur-sm" style={{
         boxSizing: 'border-box',
-        border: '2px dashed #FFFFFF',
+        border: '2px dashed rgba(255, 255, 255, 0.2)',
         borderRadius: '20px',
       }}>
-        {/* Gradient overlays - White */}
-        {/* Main center glow */}
-        <div className="absolute pointer-events-none" style={{
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100%',
-          height: '100%',
-          zIndex: 5,
-          background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.12) 30%, rgba(255, 255, 255, 0.06) 50%, transparent 70%)',
-          filter: 'blur(60px)',
-          mixBlendMode: 'overlay'
-        }}></div>
-        
-        {/* Bottom glow */}
-        <div className="absolute pointer-events-none" style={{
-          bottom: '-30%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '80%',
-          height: '60%',
-          zIndex: 5,
-          background: 'radial-gradient(ellipse at top, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.1) 35%, transparent 65%)',
-          filter: 'blur(50px)',
-          mixBlendMode: 'overlay'
-        }}></div>
-        
-        {/* Top right accent */}
-        <div className="absolute pointer-events-none" style={{
-          top: '-10%',
-          right: '10%',
-          width: '40%',
-          height: '50%',
-          zIndex: 5,
-          background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 30%, transparent 60%)',
-          filter: 'blur(40px)',
-          mixBlendMode: 'overlay'
-        }}></div>
 
-        {/* Corner accents using the provided images */}
-        <div className="absolute bottom-0 left-0 w-8 sm:w-12 h-8 sm:h-12 hidden sm:block">
-          <Image 
-            src="/images/Abstract Design (1).png" 
-            alt="Corner design" 
-            width={40} 
-            height={40} 
+        {/* Background Gradients */}
+        <div className="absolute pointer-events-none inset-0 z-0">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/5 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4" />
+        </div>
+
+        {/* Corner accents */}
+        <div className="absolute bottom-0 left-0 w-8 sm:w-12 h-8 sm:h-12 hidden sm:block z-10 opacity-50">
+          <Image
+            src="/images/Abstract Design (1).png"
+            alt="Corner design"
+            width={40}
+            height={40}
             className="object-contain"
           />
         </div>
-        <div className="absolute bottom-0 right-0 w-8 sm:w-12 h-8 sm:h-12 hidden sm:block">
-          <Image 
-            src="/images/Abstract Design.png" 
-            alt="Corner design" 
-            width={40} 
-            height={40} 
+        <div className="absolute bottom-0 right-0 w-8 sm:w-12 h-8 sm:h-12 hidden sm:block z-10 opacity-50">
+          <Image
+            src="/images/Abstract Design.png"
+            alt="Corner design"
+            width={40}
+            height={40}
             className="object-contain"
           />
         </div>
 
-        {/* Abstract design in top right - controllable positioning */}
-        <div className="absolute top-[-2px] -right-12 w-0 h-0 sm:w-24 md:w-64 sm:h-24 md:h-64 overflow-visible" style={{
-          // You can adjust these values to move the container
-          transform: 'translate(var(--container-x, 0px), var(--container-y, 0px))'
-        }}>
-          <Image 
-            src="/images/testimonals/abstract.png" 
-            alt="Abstract design" 
-            width={330} 
-            height={330} 
-            className="hidden sm:block object-contain max-w-none sm:scale-50 md:scale-100" 
-            style={{ 
-              position: 'absolute',
-              // You can adjust these values to move the image within the container
-              right: '50px',  // Positive moves left, negative moves right
-              top: '0px',    // Positive moves down, negative moves up
-              transform: 'translate(var(--image-x, 0px), var(--image-y, 0px))'
-            }}
+        {/* Abstract design top right */}
+        <div className="absolute top-[-30px] right-[-20px] w-32 h-32 md:w-64 md:h-64 z-0 opacity-20 md:opacity-40 pointer-events-none">
+          <Image
+            src="/images/testimonals/abstract.png"
+            alt="Abstract design"
+            fill
+            className="object-contain"
           />
         </div>
-           {/* Header section - desktop only */}
-        <div className="w-full p-4 sm:p-8 hidden sm:block">
-          <div className="max-w-2xl mb-6 sm:mb-12 relative z-10">
-            <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4 font-['Roboto_Mono']">What People Say</h1>
-            <p className="text-gray-300 text-sm sm:text-base font-['Roboto_Mono']">Stories from those who connect with the art</p>
-          </div>
-        </div>
-        {/* Mobile abstract logo in top-right corner (mobile only) */}
-        <div className="absolute right-0 top-1 w-16 h-16 sm:hidden z-10">
-          <Image 
-            src="/images/testimonals/abstract.png" 
-            alt="Abstract design mobile" 
-            width={60} 
-            height={60} 
-            className="object-contain" 
-            priority
-          />
-        </div>
-        {/* Mobile header arrangement (mobile only) */}
-        <div className="w-full sm:hidden px-2 mt-0">
-          <div className="max-w-full px-2 py-2">
-            <h1 className="text-white text-xl font-bold font-['Roboto_Mono'] leading-tight">
-              <span className="block">What People Say</span>
-            </h1>
-            <p className="text-gray-300 text-xs font-['Roboto_Mono'] mt-1">Stories from those who connect with the art</p>
-          </div>
-        </div>
-        {/* Testimonials grid with dashed borders */}
-        <div className="grid grid-cols-1 md:grid-cols-3 w-full">
-          {displayTestimonials.map((testimonial, index) => (
-            <div 
-              key={testimonial.id}
-              className={`p-4 sm:p-8 border-t-2 border-dashed border-white ${
-                index === 0 ? "md:border-r-2 md:border-r-dashed md:border-r-white" : 
-                index === 1 ? "md:border-r-2 md:border-r-dashed md:border-r-white" : 
-                ""
-              }`}
-              style={{ minHeight: '100%' }}
-            >
-              <div className="flex items-center mb-4">
-                <div className="mr-3">
-                  <Image src={testimonial.avatar} alt={testimonial.name} width={50} height={50} className="rounded-full w-10 h-10 sm:w-[50px] sm:h-[50px]" />
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold text-sm sm:text-base font-['Roboto_Mono']">{testimonial.name}</h3>
-                  <p className="text-gray-300 text-xs sm:text-sm font-['Roboto_Mono']">{testimonial.location}</p>
-                </div>
-                <div className="ml-auto">
-                  <Image src={testimonial.socialIcon || "/images/Capa 2.png"} alt="Social icon" width={16} height={16} className="object-contain w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-              </div>
-              <div className="flex mb-3 sm:mb-4" style={{ color: '#E8B08A' }}>
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <svg
-                    key={i}
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="w-4 h-4 sm:w-5 sm:h-5"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-white text-sm sm:text-base break-words whitespace-normal font-['Roboto_Mono']">
-                {testimonial.comment}
+
+        {/* Content Container */}
+        <div className="relative z-10 p-4 md:p-8">
+
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-6">
+            <div className="max-w-2xl">
+              <h1 className="text-white text-2xl md:text-4xl font-bold mb-3 font-['Roboto_Mono'] tracking-tight">
+                What People Say
+              </h1>
+              <p className="text-gray-400 text-sm md:text-base font-['Roboto_Mono'] max-w-lg">
+                Stories from those who connect with the art. Real experiences from our valued community.
               </p>
             </div>
-          ))}
+
+            {/* Navigation Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={scrollPrev}
+                className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all duration-300 group"
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+              <button
+                onClick={scrollNext}
+                className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all duration-300 group"
+                aria-label="Next testimonial"
+              >
+                <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </div>
+          </div>
+
+          {/* Carousel */}
+          <div className="overflow-hidden -mx-4 px-4 py-4" ref={emblaRef}>
+            <div className="flex touch-pan-y gap-6">
+              {testimonials.map((testimonial) => (
+                <div
+                  key={testimonial.id}
+                  className="flex-[0_0_100%] md:flex-[0_0_50%] lg:flex-[0_0_33.333%] min-w-0"
+                >
+                  <div className="h-full p-4 md:p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.06] transition-all duration-300 group flex flex-col relative">
+
+                    {/* Quote Icon */}
+                    <div className="absolute top-6 right-6 text-white/10 group-hover:text-white/20 transition-colors">
+                      <Quote size={32} />
+                    </div>
+
+                    {/* User Info */}
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="relative w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border border-white/10">
+                        <Image
+                          src={testimonial.avatar}
+                          alt={testimonial.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-bold font-['Roboto_Mono'] text-sm md:text-base leading-tight">
+                          {testimonial.name}
+                        </h3>
+                        <p className="text-gray-400 text-xs md:text-sm font-['Roboto_Mono'] mt-1">
+                          {testimonial.location}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Rating */}
+                    <div className="flex mb-2 text-[#E8B08A]">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill={i < testimonial.rating ? "currentColor" : "none"}
+                          stroke="currentColor"
+                          strokeWidth={i < testimonial.rating ? "0" : "1.5"}
+                          className="w-4 h-4 md:w-5 md:h-5"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ))}
+                    </div>
+
+                    {/* Comment */}
+                    <p className="text-gray-300 text-sm md:text-base font-['Roboto_Mono'] leading-relaxed flex-grow">
+                      "{testimonial.comment}"
+                    </p>
+
+                    {/* Social Icon */}
+                    <div className="mt-3 pt-3 border-t border-white/5 flex justify-end">
+                      <Image
+                        src={testimonial.socialIcon || "/images/Capa 2.png"}
+                        alt="Social platform"
+                        width={18}
+                        height={18}
+                        className="opacity-50 group-hover:opacity-100 transition-opacity"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-

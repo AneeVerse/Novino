@@ -32,18 +32,18 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All Products");
   const [showText, setShowText] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
-  
+
   // State for filtering in the ProductGrid
   const [gridActiveCategory, setGridActiveCategory] = useState("All Products");
-  
+
   // Ref for smooth parallax effect without re-renders
   const heroImageRef = useRef<HTMLDivElement>(null);
-  
+
   // Debug when grid category changes
   useEffect(() => {
     console.log("Grid category changed to:", gridActiveCategory);
   }, [gridActiveCategory]);
-  
+
   const {
     products,
     paintingProducts,
@@ -90,7 +90,7 @@ export default function Home() {
     const timer = setTimeout(() => {
       setShowText(true);
     }, 300);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -124,56 +124,62 @@ export default function Home() {
     return () => window.removeEventListener("hashchange", scrollToFooter);
   }, [loading]);
 
-  // Add scroll event listener for parallax effect and text color transition
+  // Add scroll event listener for smooth parallax effect and text color transition
   useEffect(() => {
-    let ticking = false;
-    
+    let requestAnimationFrameId: number;
+    let scrollY = window.scrollY;
+    let currentScroll = scrollY;
+
     const handleScroll = () => {
-      const position = window.scrollY;
-      
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          setScrollPosition(position);
-          
-          // Parallax effect - directly manipulate DOM for butter-smooth scrolling
-          if (heroImageRef.current) {
-            const parallaxValue = position * 0.5;
-            heroImageRef.current.style.transform = `translate3d(0, ${parallaxValue}px, 0)`;
-          }
-          
-          // Calculate transition percentage (0 to 100)
-          // Adjust these values to control when the color change happens
-          const startChange = 0;   // Start from first scroll
-          const endChange = 300;   // End point for full color change (reduced for faster transition)
-          const scrollRange = endChange - startChange;
-          const currentScroll = Math.max(0, position - startChange);
-          const percentage = Math.min(100, (currentScroll / scrollRange) * 100);
-          
-          // Apply the background position to control the color transition
-          const heroText = document.querySelector('.novino-hero-text') as HTMLElement;
-          if (heroText) {
-            // This controls the gradient position - changing from 0% (white) to 100% (#312F30)
-            heroText.style.backgroundPosition = `0% ${percentage}%`;
-          }
-          
-          ticking = false;
-        });
-        
-        ticking = true;
-      }
+      scrollY = window.scrollY;
     };
-    
+
+    const update = () => {
+      // Lerp formula: current = current + (target - current) * factor
+      // Factor 0.02 gives an extremely smooth, heavy feel
+      const diff = scrollY - currentScroll;
+
+      // Only update if there's a noticeable difference or if we're near the top (active area)
+      if (Math.abs(diff) > 0.01 || scrollY < 1000) {
+        currentScroll += diff * 0.02;
+
+        // Parallax effect - directly manipulate DOM for butter-smooth scrolling
+        // Only apply if within view range to save resources
+        if (heroImageRef.current && currentScroll < 1200) {
+          const parallaxValue = currentScroll * 0.5;
+          heroImageRef.current.style.transform = `translate3d(0, ${parallaxValue}px, 0)`;
+        }
+
+        // Text Color Transition
+        // Calculate transition percentage (0 to 100)
+        const startChange = 0;   // Start from first scroll
+        const endChange = 300;   // End point for full color change
+        const scrollRange = endChange - startChange;
+        const scrollForText = Math.max(0, currentScroll - startChange);
+        const percentage = Math.min(100, (scrollForText / scrollRange) * 100);
+
+        // Apply the background position to control the color transition
+        const heroText = document.querySelector('.novino-hero-text') as HTMLElement;
+        if (heroText) {
+          // This controls the gradient position - changing from 0% (white) to 100% (#312F30)
+          heroText.style.backgroundPosition = `0% ${percentage}%`;
+        }
+      }
+
+      requestAnimationFrameId = requestAnimationFrame(update);
+    };
+
     // Only add the scroll listener after the initial animation completes
     const timer = setTimeout(() => {
       window.addEventListener('scroll', handleScroll, { passive: true });
-      // Initial call to set correct position
-      handleScroll();
+      update(); // Start loop
     }, 1500); // Match this with the rise-up animation duration
-    
+
     // Cleanup
     return () => {
       clearTimeout(timer);
       window.removeEventListener('scroll', handleScroll);
+      cancelAnimationFrame(requestAnimationFrameId);
     };
   }, []);
 
@@ -186,7 +192,7 @@ export default function Home() {
       {/* Hero Section - Full width that extends to the top */}
       <div className="relative w-full h-[600px] md:h-[740px] overflow-hidden">
         {/* Hero Image with Parallax Effect */}
-        <div 
+        <div
           ref={heroImageRef}
           className="absolute inset-0 w-full h-full"
           style={{
@@ -209,11 +215,11 @@ export default function Home() {
         {/* NOVINO text overlay - IMPORTANT: limit its position to stay above the hero section only */}
         <div className="absolute inset-0 z-20 overflow-hidden" style={{ height: '100%', maxHeight: '100%' }}>
           {/* Semi-transparent light effect behind text */}
-          <div 
-            className="absolute w-full text-center" 
-            style={{ 
-              top: '50%', 
-              left: '50%', 
+          <div
+            className="absolute w-full text-center"
+            style={{
+              top: '50%',
+              left: '50%',
               transform: 'translate(-50%, 44%)',
               height: '270px',
               background: '#E8B08A',
@@ -225,7 +231,7 @@ export default function Home() {
             }}
           ></div>
           {/* Updated NOVINO text with custom class for scroll animation */}
-          <h1 
+          <h1
             className={`novino-hero-text text-7xl sm:text-[160px] md:text-[230px] lg:text-[300px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
           >
             NOVINO
@@ -255,10 +261,10 @@ export default function Home() {
 
       {/* Product Grid Section */}
       <section className="relative z-10 mt-12 sm:mt-20">
-        <ProductGrid 
+        <ProductGrid
           key="home-product-grid"
-          title="Bring the Patterns Home" 
-          subtitle="Choose the design that speaks to you. Each product features one of five nature-inspired patterns created through direct observation and imagination." 
+          title="Bring the Patterns Home"
+          subtitle="Choose the design that speaks to you. Each product features one of five nature-inspired patterns created through direct observation and imagination."
           products={products}
           categories={categories}
           viewAllText="See All Products"

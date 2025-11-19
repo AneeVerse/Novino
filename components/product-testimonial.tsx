@@ -1,44 +1,81 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import "@fontsource/roboto-mono"
 import "@fontsource/dm-serif-display"
 
-// Testimonial data
-const testimonials = [
+type TestimonialItem = {
+  image: string
+  altText: string
+  quote: string
+  author: string
+  link?: string
+  category?: string
+  productName?: string
+}
+
+type CategoryLink = {
+  label: string
+  href: string
+}
+
+type ProductTestimonialProps = {
+  items?: TestimonialItem[]
+  categoryLinks?: CategoryLink[]
+  title?: string
+  subtitle?: string
+}
+
+// Default testimonial data
+const defaultTestimonials: TestimonialItem[] = [
   {
     image: "/images/notebook-white.png",
     altText: "Artistic notebook with abstract patterns",
     quote: "I've been feeling pretty stressed with my skin lately, so I picked up a set of HOLOCENA skincare. Oh my goodness!. It was AMAZING. My skin felt so soft and moisturized",
-    author: "Customer Review"
+    author: "Customer Review",
+    productName: "Holocena Skincare"
   },
   {
     image: "/images/notebook-black.png",
     altText: "Black artistic notebook with abstract patterns",
     quote: "The HOLOCENA notebook has completely transformed my journaling experience. The design is stunning and the quality is exceptional!",
-    author: "Happy Customer"
+    author: "Happy Customer",
+    productName: "Holocena Notebook"
   },
   {
     image: "/images/cupwhite.png",
     altText: "White mug with bicycle design",
     quote: "This mug isn't just beautiful, it's become my daily companion. The design sparks conversations and it keeps my coffee hot for hours!",
-    author: "Coffee Enthusiast"
+    author: "Coffee Enthusiast",
+    productName: "Cyclist Mug"
   },
   {
     image: "/images/cupblack.png",
     altText: "Black mug with bicycle design",
     quote: "I've collected many mugs over the years, but this one stands out. The black finish with the artistic design makes my morning ritual special.",
-    author: "Design Lover"
+    author: "Design Lover",
+    productName: "Nightfall Mug"
   }
 ]
 
-export default function ProductTestimonial() {
+export default function ProductTestimonial({
+  items,
+  categoryLinks = [],
+  title = "Product Testimonials",
+  subtitle = "Design"
+}: ProductTestimonialProps) {
+  const testimonials = items && items.length > 0 ? items : defaultTestimonials
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [items?.length]);
   
   // Handle touch events for swiping on mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -144,7 +181,7 @@ export default function ProductTestimonial() {
     return () => {
       if (autoplayRef.current) clearTimeout(autoplayRef.current);
     };
-  }, [currentIndex, isTransitioning]);
+  }, [currentIndex, isTransitioning, testimonials.length]);
 
   const current = testimonials[currentIndex];
 
@@ -180,21 +217,23 @@ export default function ProductTestimonial() {
                 borderRadius: '30%',
               }}
             ></div>
-            <div className="relative w-[95%] h-[95%] z-10 py-4 overflow-hidden">
+            <div className="relative w-full h-full z-10 flex items-center justify-center py-4">
+              <div className="relative w-[80%] pb-[115%] overflow-hidden rounded-[36px] shadow-[0_20px_45px_-30px_rgba(0,0,0,0.6)]">
               <div 
-                className={`absolute inset-0 transition-all duration-400 ease-in-out ${
-                  isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0 duration-200'
-                }`}
-              >
-                <Image
-                  src={current.image}
-                  alt={current.altText}
-                  fill
-                  className="object-contain transform transition-transform duration-400 ease-in-out"
-                  priority
-                  sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
-                  style={{ transform: 'translateZ(0)' }}
-                />
+                  className={`absolute inset-0 transition-all duration-400 ease-in-out ${
+                    isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0 duration-200'
+                  }`}
+                >
+                  <Image
+                    src={current.image}
+                    alt={current.altText}
+                    fill
+                    className="object-cover transform transition-transform duration-400 ease-in-out"
+                    priority
+                    sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
+                    style={{ transform: 'translateZ(0)' }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -219,16 +258,29 @@ export default function ProductTestimonial() {
                 }}
               ></div>
             
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-wide relative z-10" style={{ fontFamily: '"Roboto Mono", monospace' }}>Product Testimonials</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-wide relative z-10" style={{ fontFamily: '"Roboto Mono", monospace' }}>
+                {title}
+              </h2>
 
-              {/* Star Rating */}
-              <div className="flex space-x-3 sm:space-x-4 relative z-10">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} width="24" height="24" viewBox="0 0 24 24" fill="white" className="w-5 h-5 sm:w-6 sm:h-6" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                  </svg>
-                ))}
-              </div>
+              {categoryLinks.length > 0 && (
+                <div className="relative z-10 flex flex-wrap gap-2 sm:gap-3 pt-2">
+                  {categoryLinks.map((link) => (
+                    <Link
+                      key={`${link.label}-${link.href}`}
+                      href={link.href}
+                      className="px-3 py-1 border border-white/20 rounded-full text-[10px] sm:text-xs uppercase tracking-[0.4em] text-white/80 hover:text-black hover:bg-white transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {current.productName && (
+                <p className="text-sm sm:text-base md:text-lg font-semibold tracking-[0.2em] text-white/80 uppercase relative z-10">
+                  {current.productName}
+                </p>
+              )}
 
               {/* Testimonial Quote */}
               <div className="relative min-h-[180px] sm:min-h-[200px] md:min-h-[220px] z-10 overflow-hidden">
@@ -241,6 +293,15 @@ export default function ProductTestimonial() {
                     "{current.quote}"
                   </blockquote>
                   <p className="text-sm sm:text-base md:text-lg text-white/80 mt-2 sm:mt-3 italic" style={{ fontFamily: '"Roboto Mono", monospace', fontStyle: 'italic' }}>- {current.author}</p>
+                  {current.link && (
+                    <Link
+                      href={current.link}
+                      className="inline-flex items-center gap-2 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-white/80 hover:text-white mt-4 transition-colors"
+                    >
+                      View Design
+                      <span className="text-base leading-none">↗</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

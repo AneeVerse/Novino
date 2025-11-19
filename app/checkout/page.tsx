@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -35,9 +35,32 @@ const loadExternalScript = (src: string) => {
 };
 
 export default function CheckoutPage() {
-  const { cart } = useCart();
+  const { cart, isLoggedIn, isAuthReady } = useCart();
   const router = useRouter();
   const { toast } = useToast();
+  const [isRedirectingToLogin, setIsRedirectingToLogin] = useState(false);
+  const loginPromptShown = useRef(false);
+  useEffect(() => {
+    if (!isAuthReady) return;
+    if (isLoggedIn) {
+      setIsRedirectingToLogin(false);
+      loginPromptShown.current = false;
+      return;
+    }
+    
+    setIsRedirectingToLogin(true);
+    if (!loginPromptShown.current) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please log in before placing an order.",
+      });
+      loginPromptShown.current = true;
+    }
+    
+    const redirectUrl = `/login?redirect=${encodeURIComponent('/checkout')}`;
+    router.replace(redirectUrl);
+  }, [isAuthReady, isLoggedIn, router, toast]);
   
   // State for selected items from cart (only items user selected)
   const [selectedCartItems, setSelectedCartItems] = useState<any[]>([]);
@@ -121,6 +144,20 @@ export default function CheckoutPage() {
       setDeliveryAddress(JSON.parse(savedAddress));
     }
   }, [cart]);
+
+  if (!isAuthReady || isRedirectingToLogin) {
+    return (
+      <div className="min-h-screen bg-[#2D2D2D] text-white flex flex-col items-center justify-center px-6 text-center">
+        <p className="text-lg font-light mb-4">Please log in to continue to checkout.</p>
+        <button
+          onClick={() => router.replace(`/login?redirect=${encodeURIComponent('/checkout')}`)}
+          className="px-6 py-3 bg-white text-black rounded-full uppercase tracking-[0.3em] text-xs hover:bg-white/90 transition"
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
   
   
   // Parse price from string or number

@@ -3,39 +3,47 @@ import Link from "next/link"
 
 export default function WardrobeSection() {
   return (
-    <div className="relative mx-2 mb-16 overflow-hidden rounded-3xl max-w-[2400px]">
+    <div className="relative mx-2 mb-16 overflow-hidden rounded-3xl max-w-[2400px] border border-white/10">
       {/* Full background image */}
       <div className="relative w-full h-[420px] sm:h-[380px] md:h-[300px]">
-        <Image 
-          src="/images/wardrobe/b1 (1).png" 
-          alt="Wardrobe background" 
-          fill 
+        <Image
+          src="/images/wardrobe/b1 (1).png"
+          alt="Wardrobe background"
+          fill
           className="object-cover"
           style={{
-            objectPosition: '-200px center', // Adjusted from -400px to -200px to show more of the right side
-            transform: 'scale(1)', // Zoom out (< 1) or in (> 1)
+            objectPosition: '-200px center',
+            transform: 'scale(1)',
           }}
           priority
         />
-        
+
+        {/* Refined dark gradient overlay - smoother transition */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/50 via-40% to-transparent z-0 pointer-events-none" />
+
         {/* Content overlay */}
-        <div className="absolute inset-0 flex flex-col md:flex-row items-center justify-center md:justify-start p-6 sm:p-8 md:p-12 pb-8 sm:pb-10 md:pb-12">
-          {/* Left content section */}
-          <div className="md:w-3/5 z-10 w-full">
-            <h2 className="text-black text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Art Born From Nature</h2>
-            <p className="text-black text-sm sm:text-base md:text-lg max-w-2xl mb-4 sm:mb-6 md:mb-0">
-              Every piece starts with observation. A butterfly's wing. The sun's layers. Flowers that exist only in imagination. This work reflects the patterns, cycles, and uniqueness found in the natural world.
-            </p>
+        <div className="absolute inset-0 flex flex-col md:flex-row items-center justify-between p-8 sm:p-10 md:p-16 z-10">
+          <div className="max-w-xl flex flex-col items-start gap-6 md:gap-8">
+
+            {/* Text Content */}
+            <div className="space-y-4">
+              <h2 className="text-white text-3xl sm:text-4xl md:text-5xl font-medium leading-tight drop-shadow-lg font-dm-serif-display">
+                Art Born From Nature
+              </h2>
+              <p className="text-zinc-200 text-sm sm:text-base md:text-lg leading-relaxed drop-shadow-md font-light tracking-wide">
+                Every piece starts with observation. A butterfly's wing. The sun's layers. Flowers that exist only in imagination. This work reflects the patterns, cycles, and uniqueness found in the natural world.
+              </p>
+            </div>
           </div>
 
-          {/* Button section - aligned with circle */}
-          <div className="md:absolute md:right-32 md:top-1/2 md:-translate-y-1/2 mt-4 md:mt-0 z-10 w-full md:w-auto flex justify-center md:justify-start">
+          {/* Button - Positioned absolutely to center on the design circle */}
+          <div className="mt-8 md:mt-0 flex-shrink-0 md:absolute md:right-[2%] md:top-[58%] md:-translate-y-1/2">
             <Link
               href="/artefacts"
-              className="bg-black text-white px-6 py-3 rounded-lg hover:bg-black transition-colors flex items-center justify-center gap-2 text-base w-full max-w-[320px] md:max-w-none md:w-auto md:justify-start md:-mr-24"
+              className="group bg-black/95 text-white px-6 py-3.5 rounded-full hover:bg-zinc-800 transition-all duration-300 flex items-center justify-center gap-3 text-sm md:text-sm font-medium tracking-wide shadow-lg hover:shadow-xl hover:scale-105 border border-white/10"
             >
               Explore the Journey
-              <span className="inline-block transform rotate-45">↗</span>
+              <span className="inline-block transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300">↗</span>
             </Link>
           </div>
         </div>
@@ -43,4 +51,3 @@ export default function WardrobeSection() {
     </div>
   )
 }
-

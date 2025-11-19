@@ -26,6 +26,8 @@ interface CartContextType {
   openCart: () => void;
   closeCart: () => void;
   isLoading: boolean;
+  isLoggedIn: boolean;
+  isAuthReady: boolean;
 }
 
 // Create the context with default values
@@ -41,6 +43,8 @@ const CartContext = createContext<CartContextType>({
   openCart: () => {},
   closeCart: () => {},
   isLoading: false,
+  isLoggedIn: false,
+  isAuthReady: false,
 });
 
 // Custom hook to use the cart context
@@ -55,6 +59,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   
   // Replace NextAuth session with custom token-based auth check
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAuthReady, setIsAuthReady] = useState(false);
   
   // Check authentication on mount and when cookies change
   useEffect(() => {
@@ -100,6 +105,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           const hasToken = document.cookie.includes('token=');
           console.log('Fallback auth check - Token present:', hasToken);
           setIsLoggedIn(hasToken);
+        } finally {
+          setIsAuthReady(true);
         }
       }
     };
@@ -110,6 +117,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     // Set up a listener for storage events to detect login/logout from other tabs
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'logout' || event.key === 'login') {
+        setIsAuthReady(false);
         checkAuth();
       }
     };
@@ -468,6 +476,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     openCart,
     closeCart,
     isLoading,
+    isLoggedIn,
+    isAuthReady,
   };
 
   return (

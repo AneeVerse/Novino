@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronUp, ChevronDown, ArrowLeft, Plus, Minus } from "lucide-react"
@@ -11,12 +11,12 @@ import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import Footer from "@/components/footer"
 import { useRouter, useParams, useSearchParams } from "next/navigation"
-import { useCallback } from "react"
 import { useCart } from '@/contexts/CartContext'
 import { formatPrice, getProductUrl, slugifySegment } from '@/lib/utils'
 import Preloader from "@/components/ui/preloader"
 import { SITE_URL, generateProductSchema, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/seo"
 import SchemaInjector from "@/components/seo/SchemaInjector"
+import ProductTestimonial from "@/components/product-testimonial"
 
 // Artefact products data
 const artefactProducts = [
@@ -697,6 +697,58 @@ export default function ProductDetail() {
 
   // State for dynamic related products
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+
+  const testimonialItems = useMemo(() => {
+    if (!relatedProducts || relatedProducts.length === 0) return [];
+
+    return relatedProducts.slice(0, 4).map((relatedProduct) => {
+      const productLink = getProductUrl({
+        id: relatedProduct.id,
+        slug: relatedProduct.slug,
+        category: relatedProduct.categoryName || relatedProduct.category,
+        name: relatedProduct.name,
+        title: relatedProduct.name,
+        type: relatedProduct.type
+      });
+
+      return {
+        image: relatedProduct.images?.[0] || relatedProduct.image || "/images/placeholder.png",
+        altText: relatedProduct.name || "Novino design",
+        quote: `${relatedProduct.name || "This piece"} from the ${
+          relatedProduct.categoryName || relatedProduct.category || "Novino"
+        } collection is crafted with layers of narrative and material.`,
+        author: relatedProduct.categoryName || relatedProduct.category || "Novino Design",
+        link: productLink,
+        category: relatedProduct.categoryName || relatedProduct.category || "Design",
+        productName: relatedProduct.name || "Novino Design"
+      };
+    });
+  }, [relatedProducts]);
+
+  const testimonialCategoryLinks = useMemo(() => {
+    if (!relatedProducts || relatedProducts.length === 0) return [];
+
+    const categoryMap = new Map<string, { label: string; href: string }>();
+
+    relatedProducts.forEach((relatedProduct) => {
+      const label = (relatedProduct.categoryName || relatedProduct.category || "Design").toUpperCase();
+
+      if (categoryMap.has(label)) return;
+
+      const href = getProductUrl({
+        id: relatedProduct.id,
+        slug: relatedProduct.slug,
+        category: relatedProduct.categoryName || relatedProduct.category,
+        name: relatedProduct.name,
+        title: relatedProduct.name,
+        type: relatedProduct.type
+      });
+
+      categoryMap.set(label, { label, href });
+    });
+
+    return Array.from(categoryMap.values());
+  }, [relatedProducts]);
   
   // Fetch related products from the same category using new artefact-categories API
   useEffect(() => {
@@ -1007,135 +1059,86 @@ export default function ProductDetail() {
         <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
           <div className="relative z-10 px-4 md:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-              {/* Left column - Product storytelling */}
-              <div className="lg:col-span-3 flex flex-col justify-start py-8 -mr-12 ">
-                {heroProductName && (
-                  <>
-                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80 mb-3 font-['Roboto_Mono']">
-                      {heroProductName}
-                    </p>
-                    <div className="mb-4">
-                      <Image
-                        src="/images/NOVINO -WHITE.png"
-                        alt="Novino wordmark"
-                        width={140}
-                        height={32}
-                        className="w-28 sm:w-32 h-auto object-contain opacity-90"
-                        priority={false}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {displayedDescription && (
-                  <div className="mb-5">
-                    <div className="text-white/70 leading-relaxed text-xs font-['Roboto_Mono'] transition-opacity duration-300">
-                      <p className="whitespace-pre-line">{displayedDescription}</p>
-                    </div>
-                  </div>
-                )}
-
-                {productLogoUrl && (
-                  <div className="mb-8">
-                    <Image
-                      src={productLogoUrl}
-                      alt={`${displayedName || 'Product'} logo`}
-                      width={240}
-                      height={120}
-                      className="w-auto h-16 sm:h-20 object-contain"
-                    />
-                  </div>
-                )}
-                
-                {categoryNarrative && (
-                  <div className="pt-6 border-t border-white/10">
-                    <div className="text-white/60 leading-relaxed text-xs font-['Roboto_Mono'] transition-opacity duration-300">
-                      <p className="whitespace-pre-line">{categoryNarrative}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Right section - Product Image and Purchase Details */}
-              <div className="lg:col-span-9 grid grid-cols-1 md:grid-cols-7 gap-6 lg:gap-8">
+              {/* Product media + purchase column */}
+              <div className="order-1 lg:order-2 lg:col-span-9 grid grid-cols-1 md:grid-cols-7 gap-6 lg:gap-8">
                 {/* Product Image Gallery - Main image with thumbnails */}
                 <div 
-                  className="md:col-span-4 md:col-start-1 flex flex-col gap-4 order-1 md:order-1 md:ml-12" 
+                  className="md:col-span-4 md:col-start-1 flex flex-col gap-4 order-1 md:order-1 lg:ml-12" 
                   data-product-image
                 >
-                <div 
-                  className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] select-none group cursor-pointer overflow-visible"
+                  <div 
+                    className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] select-none group cursor-pointer overflow-visible"
                     onMouseEnter={() => setIsAutoScrolling(false)}
                     onMouseLeave={() => setIsAutoScrolling(false)}
-                >
-                  {/* Circular gradient glow that overflows and blends with background */}
-                  <div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none"
-                    style={{
-                      width: '140%',
-                      height: '140%',
-                      background: 'radial-gradient(circle, rgba(245,233,215,0.85) 0%, rgba(232,204,173,0.6) 35%, rgba(196,181,170,0.35) 60%, rgba(120,100,85,0.15) 80%, rgba(45,45,45,0) 100%)',
-                      borderRadius: '50%',
-                      filter: 'blur(40px)',
-                    }}
-                  />
-                  
-                  {/* Image container with light background */}
-                  <div className="relative w-full h-full bg-[#f7f3ee] rounded-[28px] overflow-hidden shadow-[0_12px_24px_-18px_rgba(0,0,0,0.45)] z-10">
-                    {previousImageSrc && (
+                  >
+                    {/* Circular gradient glow that overflows and blends with background */}
+                    <div
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none"
+                      style={{
+                        width: '140%',
+                        height: '140%',
+                        background: 'radial-gradient(circle, rgba(245,233,215,0.85) 0%, rgba(232,204,173,0.6) 35%, rgba(196,181,170,0.35) 60%, rgba(120,100,85,0.15) 80%, rgba(45,45,45,0) 100%)',
+                        borderRadius: '50%',
+                        filter: 'blur(40px)',
+                      }}
+                    />
+                    
+                    {/* Image container with light background */}
+                    <div className="relative w-full h-full bg-[#f7f3ee] rounded-[28px] overflow-hidden shadow-[0_12px_24px_-18px_rgba(0,0,0,0.45)] z-10">
+                      {previousImageSrc && (
+                        <Image
+                          src={previousImageSrc}
+                          alt={product.name || "Previous product image"}
+                          fill
+                          style={{ objectFit: 'cover', objectPosition: 'center', opacity: previousImageOpacity }}
+                          priority
+                          className="pointer-events-none transition-all duration-700 ease-out"
+                          draggable={false}
+                        />
+                      )}
                       <Image
-                        src={previousImageSrc}
-                        alt={product.name || "Previous product image"}
+                        src={currentImageSrc ?? displayedImage ?? resolvedProductImage}
+                        alt={product.name || "Product Image"}
                         fill
-                        style={{ objectFit: 'cover', objectPosition: 'center', opacity: previousImageOpacity }}
+                        style={{ objectFit: 'cover', objectPosition: 'center', opacity: currentImageOpacity }}
                         priority
-                        className="pointer-events-none transition-all duration-700 ease-out"
+                        className="pointer-events-none transition-all duration-700 ease-out group-hover:scale-[1.02]"
                         draggable={false}
                       />
-                    )}
-                    <Image
-                      src={currentImageSrc ?? displayedImage ?? resolvedProductImage}
-                      alt={product.name || "Product Image"}
-                      fill
-                      style={{ objectFit: 'cover', objectPosition: 'center', opacity: currentImageOpacity }}
-                      priority
-                      className="pointer-events-none transition-all duration-700 ease-out group-hover:scale-[1.02]"
-                      draggable={false}
-                    />
+                    </div>
+                    
+                    {/* Subtle hover overlay */}
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-500 pointer-events-none z-20 rounded-[28px]" />
                   </div>
-                  
-                  {/* Subtle hover overlay */}
-                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-500 pointer-events-none z-20 rounded-[28px]" />
-                </div>
 
                   {/* Thumbnail Gallery - Changes based on variant hover/select */}
                   {displayImages.length > 1 && (
                     <div className="flex gap-2 justify-center flex-wrap">
                       {displayImages.map((imageUrl, i) => (
-                          <button
-                            key={i}
-                            onMouseEnter={() => {
-                              setCurrentImage(i);
-                              setIsAutoScrolling(false);
-                            }}
-                            onClick={() => {
-                              setCurrentImage(i);
-                              setIsAutoScrolling(false);
-                            }}
-                            className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
-                              currentImage === i 
-                                ? 'border-white shadow-lg shadow-white/20' 
-                                : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                            }`}
-                          >
-                            <Image
-                              src={imageUrl}
-                              alt={`${product.name} view ${i + 1}`}
-                              fill
-                              style={{ objectFit: 'cover' }}
-                              className="pointer-events-none"
-                              draggable={false}
-                            />
+                        <button
+                          key={i}
+                          onMouseEnter={() => {
+                            setCurrentImage(i);
+                            setIsAutoScrolling(false);
+                          }}
+                          onClick={() => {
+                            setCurrentImage(i);
+                            setIsAutoScrolling(false);
+                          }}
+                          className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
+                            currentImage === i 
+                              ? 'border-white shadow-lg shadow-white/20' 
+                              : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                          }`}
+                        >
+                          <Image
+                            src={imageUrl}
+                            alt={`${product.name} view ${i + 1}`}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            className="pointer-events-none"
+                            draggable={false}
+                          />
                         </button>
                       ))}
                     </div>
@@ -1178,45 +1181,45 @@ export default function ProductDetail() {
                           </div>
                         </button>
                         
-                        {/* Other Products in Category (treated as variants) - Hover to preview, Click to navigate */}
+                        {/* Other Products in Category (treated as variants) - Hover to preview, Click to select */}
                         {categoryVariants.slice(0, 5).map((variant: any) => {
                           const isActiveVariant = selectedVariant?.id === variant.id;
                           const isHoveredVariant = hoveredVariant?.id === variant.id;
                           
                           return (
                             <button
-                            key={variant.id}
-                            onMouseEnter={() => setHoveredVariant(variant)}
-                            onMouseLeave={() => setHoveredVariant(null)}
-                            onClick={() => {
-                              setSelectedVariant((prev) =>
-                                prev?.id === variant.id ? prev : variant
-                              );
-                              setHoveredVariant(null);
-                              setCurrentImage(0);
-                              setIsAutoScrolling(false);
-                            }}
-                            className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
-                              isActiveVariant
-                                ? 'border-white shadow-lg shadow-white/20'
-                                : isHoveredVariant
-                                  ? 'border-white/60 opacity-100'
-                                  : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                            }`}
-                            title={variant.name}
-                          >
-                            <Image
-                              src={variant.images?.[0] || variant.image || '/images/placeholder.png'}
-                              alt={variant.name}
-                              fill
-                              style={{ objectFit: 'cover' }}
-                              className="pointer-events-none"
-                              draggable={false}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                            <div className="absolute bottom-1 left-1 right-1 text-[8px] text-white/90 truncate uppercase font-['Roboto_Mono'] opacity-0 group-hover:opacity-100 transition-opacity">
-                              {variant.name}
-                            </div>
+                              key={variant.id}
+                              onMouseEnter={() => setHoveredVariant(variant)}
+                              onMouseLeave={() => setHoveredVariant(null)}
+                              onClick={() => {
+                                setSelectedVariant((prev) =>
+                                  prev?.id === variant.id ? prev : variant
+                                );
+                                setHoveredVariant(null);
+                                setCurrentImage(0);
+                                setIsAutoScrolling(false);
+                              }}
+                              className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
+                                isActiveVariant
+                                  ? 'border-white shadow-lg shadow-white/20'
+                                  : isHoveredVariant
+                                    ? 'border-white/60 opacity-100'
+                                    : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                              }`}
+                              title={variant.name}
+                            >
+                              <Image
+                                src={variant.images?.[0] || variant.image || '/images/placeholder.png'}
+                                alt={variant.name}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                className="pointer-events-none"
+                                draggable={false}
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                              <div className="absolute bottom-1 left-1 right-1 text-[8px] text-white/90 truncate uppercase font-['Roboto_Mono'] opacity-0 group-hover:opacity-100 transition-opacity">
+                                {variant.name}
+                              </div>
                             </button>
                           );
                         })}
@@ -1274,6 +1277,55 @@ export default function ProductDetail() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Storytelling column (shown last on mobile) */}
+              <div className="order-2 lg:order-1 lg:col-span-3 flex flex-col justify-start py-8 lg:-mr-12 text-center lg:text-left items-center lg:items-start">
+                {heroProductName && (
+                  <>
+                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80 mb-3 font-['Roboto_Mono']">
+                      {heroProductName}
+                    </p>
+                    <div className="mb-4">
+                      <Image
+                        src="/images/NOVINO -WHITE.png"
+                        alt="Novino wordmark"
+                        width={140}
+                        height={32}
+                        className="w-28 sm:w-32 h-auto object-contain opacity-90"
+                        priority={false}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {displayedDescription && (
+                  <div className="mb-5">
+                    <div className="text-white/70 leading-relaxed text-xs font-['Roboto_Mono'] transition-opacity duration-300">
+                      <p className="whitespace-pre-line">{displayedDescription}</p>
+                    </div>
+                  </div>
+                )}
+
+                {productLogoUrl && (
+                  <div className="mb-8">
+                    <Image
+                      src={productLogoUrl}
+                      alt={`${displayedName || 'Product'} logo`}
+                      width={240}
+                      height={120}
+                      className="w-auto h-16 sm:h-20 object-contain"
+                    />
+                  </div>
+                )}
+                
+                {categoryNarrative && (
+                  <div className="pt-6 border-t border-white/10">
+                    <div className="text-white/60 leading-relaxed text-xs font-['Roboto_Mono'] transition-opacity duration-300">
+                      <p className="whitespace-pre-line">{categoryNarrative}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1383,7 +1435,7 @@ export default function ProductDetail() {
             <div className="px-4 md:px-6">
               <h2 className="text-2xl sm:text-3xl font-light mb-8 text-center font-['Roboto_Mono'] tracking-wider">Related Products</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {relatedProducts.map((relatedProduct) => {
+                {relatedProducts.slice(0, 3).map((relatedProduct) => {
                   const productImage = relatedProduct.images?.[0] || relatedProduct.image || '/images/placeholder.png';
                   const productPrice = relatedProduct.basePrice || relatedProduct.price || 'Price on request';
                   const productName = relatedProduct.name || 'Untitled';
@@ -1432,6 +1484,17 @@ export default function ProductDetail() {
             </div>
           </div>
         )}
+
+        <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
+          <div className="px-4 md:px-6">
+            <ProductTestimonial
+              items={testimonialItems}
+              categoryLinks={testimonialCategoryLinks}
+              title="Design Stories"
+              subtitle="Design"
+            />
+          </div>
+        </div>
 
         {/* Testimonial Collection */}
         <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
