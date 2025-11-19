@@ -89,10 +89,10 @@ interface ProductGridProps {
   maxAllProducts?: number; // Limit for "All Products" view (0 or undefined = default 9, negative = no limit)
 }
 
-export default function ProductGrid({ 
-  title = "Bring the Patterns Home", 
-  subtitle = "Choose the design that speaks to you. Each product features one of five nature-inspired patterns \n created through direct observation and imagination.", 
-  products: propProducts = products, 
+export default function ProductGrid({
+  title = "Bring the Patterns Home",
+  subtitle = "Choose the design that speaks to you. Each product features one of five nature-inspired patterns \n created through direct observation and imagination.",
+  products: propProducts = products,
   categories: propCategories = ["All Products"],
   viewAllText = "See All Products",
   showViewAllButton = true,
@@ -104,17 +104,17 @@ export default function ProductGrid({
 }: ProductGridProps) {
   // Use internal state only if no external state is provided
   const [internalActiveCategory, setInternalActiveCategory] = useState<string>(propCategories[0]);
-  
+
   // Use external category state if provided, otherwise use internal
   const activeCategory = propActiveCategory !== undefined ? propActiveCategory : internalActiveCategory;
-  
+
   // Re-sync when categories change
   useEffect(() => {
     // Reset to the first category when categories change
     setInternalActiveCategory(propCategories[0]);
     console.log("Categories changed, resetting to:", propCategories[0]);
   }, [propCategories]);
-  
+
   // Handle category change, update parent if callback is provided
   const handleCategoryChange = (category: string) => {
     console.log("Category clicked:", category);
@@ -124,11 +124,11 @@ export default function ProductGrid({
       setInternalActiveCategory(category);
     }
   };
-  
+
   // Filter products based on active category with improved category matching
   let filteredProducts = propProducts.filter(product => {
     // Skip filtering if "All Products" or similar is selected
-    if (activeCategory === propCategories[0]) return true; 
+    if (activeCategory === propCategories[0]) return true;
     // Only match products where category or categoryId matches exactly
     return product.category === activeCategory || product.categoryId === activeCategory;
   });
@@ -169,13 +169,13 @@ export default function ProductGrid({
     activeCategory === propCategories[0] && shouldLimitAll
       ? filteredProducts.slice(0, resolvedAllLimit)
       : filteredProducts; // No limit for specific categories or when limit disabled
-  
+
   console.log('📦 Final displayProducts:', displayProducts.length, 'products');
 
   return (
     <section className="w-full font-['Roboto_Mono']">
       {/* Hero banner with background image */}
-        <div className="relative w-full min-h-[480px] sm:min-h-[560px] lg:min-h-[620px] overflow-hidden ">
+      <div className="relative w-full min-h-[480px] sm:min-h-[560px] lg:min-h-[620px] overflow-hidden ">
         <Image
           src="/images/hero-section/bg03.png"
           alt="Framed artwork gallery wall"
@@ -207,11 +207,10 @@ export default function ProductGrid({
                     {row.map((category) => (
                       <button
                         key={category}
-                        className={`px-5 sm:px-7 py-2.5 rounded-full text-xs sm:text-sm tracking-[0.25em] transition-all duration-200 backdrop-blur ${
-                          category === activeCategory
-                            ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
-                            : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
-                        }`}
+                        className={`px-5 sm:px-7 py-2.5 rounded-full text-xs sm:text-sm tracking-[0.25em] transition-all duration-200 backdrop-blur ${category === activeCategory
+                          ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
+                          : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
+                          }`}
                         onClick={() => handleCategoryChange(category)}
                       >
                         {category?.toUpperCase?.() ? category.toUpperCase() : category}
@@ -253,12 +252,13 @@ export default function ProductGrid({
             const productLink = product.isVariant && product.parentProductId && product.variantId
               ? `${baseProductUrl}?variant=${product.variantId}`
               : baseProductUrl;
-            
+
             return (
-              <Link 
-                href={productLink} 
-                key={product.id} 
+              <Link
+                href={productLink}
+                key={product.id}
                 className="group flex-none w-[280px] snap-center"
+                prefetch={true}
               >
                 <div className="h-[380px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-500 hover:border-white/30 hover:shadow-[0_35px_70px_-30px_rgba(0,0,0,0.85)]">
                   <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
@@ -266,9 +266,8 @@ export default function ProductGrid({
                       src={primaryImage}
                       alt={(product.name || product.title || "Product") as string}
                       fill
-                      className={`object-cover transition duration-700 ease-out group-hover:scale-105 ${
-                        secondaryImage ? "group-hover:opacity-0" : ""
-                      }`}
+                      className={`object-cover transition duration-700 ease-out group-hover:scale-105 ${secondaryImage ? "group-hover:opacity-0" : ""
+                        }`}
                       sizes="280px"
                     />
                     {secondaryImage && (
@@ -282,7 +281,7 @@ export default function ProductGrid({
                     )}
                     {/* Bottom shadow gradient for text visibility */}
                     <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/95 via-black/65 to-transparent pointer-events-none"></div>
-                    
+
                     {/* Text overlay at bottom - animates on hover */}
                     <div className="absolute inset-x-0 bottom-0 p-5 z-10 transition-all duration-400 group-hover:-translate-y-2">
                       <div className="space-y-2">
@@ -311,7 +310,7 @@ export default function ProductGrid({
           {displayProducts.map((product) => {
             const primaryImage = product.image;
             const secondaryImage = product.images && product.images[1];
-            
+
             const productSlug =
               typeof product.slug !== 'undefined'
                 ? product.slug.toString()
@@ -327,12 +326,13 @@ export default function ProductGrid({
             const productLink = product.isVariant && product.parentProductId && product.variantId
               ? `${baseProductUrl}?variant=${product.variantId}`
               : baseProductUrl;
-            
+
             return (
-              <Link 
-                href={productLink} 
-                key={product.id} 
+              <Link
+                href={productLink}
+                key={product.id}
                 className="group"
+                prefetch={true}
               >
                 <div className="h-[480px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-white/30 hover:shadow-[0_45px_90px_-35px_rgba(0,0,0,0.85)]">
                   <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
@@ -340,9 +340,8 @@ export default function ProductGrid({
                       src={primaryImage}
                       alt={(product.name || product.title || "Product") as string}
                       fill
-                      className={`object-cover transition duration-700 ease-out group-hover:scale-105 ${
-                        secondaryImage ? "group-hover:opacity-0" : ""
-                      }`}
+                      className={`object-cover transition duration-700 ease-out group-hover:scale-105 ${secondaryImage ? "group-hover:opacity-0" : ""
+                        }`}
                       sizes="(min-width: 1024px) 420px, (min-width: 640px) 50vw, 100vw"
                     />
                     {secondaryImage && (
@@ -356,7 +355,7 @@ export default function ProductGrid({
                     )}
                     {/* Bottom shadow gradient for text visibility */}
                     <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/95 via-black/65 to-transparent pointer-events-none"></div>
-                    
+
                     {/* Text overlay at bottom - animates on hover */}
                     <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-10 transition-all duration-400 group-hover:-translate-y-3">
                       <div className="space-y-2">

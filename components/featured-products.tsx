@@ -30,7 +30,7 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
   const [isMobile, setIsMobile] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
-  
+
   // Transform-based infinite scroll refs
   const translateX = useRef(0);
   const isDragging = useRef(false);
@@ -38,7 +38,7 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
   const scrollLeft = useRef(0);
   const totalWidth = useRef(0);
   const wasDraggingRef = useRef(false);
-  
+
   const setCardRef = (index: number, element: HTMLDivElement | null) => {
     if (element) {
       cardRefsMap.current.set(index, element);
@@ -46,16 +46,16 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
       cardRefsMap.current.delete(index);
     }
   };
-  
+
   // Check if mobile on mount and resize
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -128,7 +128,7 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
   // Continuous centered card detection with requestAnimationFrame
   useEffect(() => {
     if (products.length === 0) return;
-    
+
     const container = scrollContainerRef.current;
     const containerRect = container?.parentElement?.getBoundingClientRect();
 
@@ -172,7 +172,7 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     startX.current = clientX;
     scrollLeft.current = translateX.current;
-    
+
     if (scrollContainerRef.current) {
       scrollContainerRef.current.style.cursor = 'grabbing';
     }
@@ -180,13 +180,13 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
 
   const handlePointerMove = (e: React.MouseEvent | React.PointerEvent | React.TouchEvent) => {
     if (!isDragging.current) return;
-    
+
     e.preventDefault(); // Prevent default touch/pointer behaviors
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const x = clientX;
     const walk = (x - startX.current) * 2.6; // Slightly reduced sensitivity for easier control
     translateX.current = scrollLeft.current + walk;
-    
+
     // Infinite loop logic - exact same as CreativeSection
     if (totalWidth.current > 0) {
       // Moving right (negative translateX, showing later cards)
@@ -202,11 +202,11 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
         startX.current = x;
       }
     }
-    
+
     if (scrollContainerRef.current) {
       scrollContainerRef.current.style.transform = `translateX(${translateX.current}px)`;
     }
-    
+
     // Mark as dragging if moved significantly
     if (Math.abs(walk) > 5) {
       wasDraggingRef.current = true;
@@ -215,31 +215,31 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
 
   const handlePointerUp = () => {
     isDragging.current = false;
-    
+
     if (scrollContainerRef.current) {
       scrollContainerRef.current.style.cursor = 'grab';
-      
+
       // Smooth snap to nearest centered card
       const container = scrollContainerRef.current;
       const containerRect = container.parentElement?.getBoundingClientRect();
       if (containerRect) {
         const viewportCenter = containerRect.left + containerRect.width / 2;
-        
+
         let closestCardIndex: number | null = null;
         let closestDistance = Infinity;
-        
+
         // Find the closest card to center
         cardRefsMap.current.forEach((card, index) => {
           const cardRect = card.getBoundingClientRect();
           const cardCenter = cardRect.left + cardRect.width / 2;
           const distance = Math.abs(viewportCenter - cardCenter);
-          
+
           if (distance < closestDistance) {
             closestDistance = distance;
             closestCardIndex = index;
           }
         });
-        
+
         // Snap to the closest card with smooth animation
         if (closestCardIndex !== null) {
           const closestCard = cardRefsMap.current.get(closestCardIndex);
@@ -247,12 +247,12 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
             const cardRect = closestCard.getBoundingClientRect();
             const cardCenter = cardRect.left + cardRect.width / 2;
             const offset = viewportCenter - cardCenter;
-            
+
             // Apply smooth snap with transition
             translateX.current += offset;
             container.style.transition = 'transform 0.3s ease-out';
             container.style.transform = `translateX(${translateX.current}px)`;
-            
+
             // Remove transition after animation
             setTimeout(() => {
               if (container) {
@@ -263,7 +263,7 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
         }
       }
     }
-    
+
     // Reset drag flag after a short delay
     setTimeout(() => {
       wasDraggingRef.current = false;
@@ -274,22 +274,22 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
   const handleWheel = (e: React.WheelEvent) => {
     // Only handle horizontal scroll, let vertical scroll pass through to page
     const isHorizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
-    
+
     // If it's a vertical scroll (scrolling page up/down), don't interfere
     if (!isHorizontalScroll) {
       return; // Let the page scroll naturally
     }
-    
+
     // Prevent default browser behavior for horizontal scroll only
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Use deltaX for horizontal scroll
     const delta = e.deltaX || e.deltaY;
-    
+
     // Apply scroll with reduced sensitivity (0.6x) for smoother control
     translateX.current -= delta * 0.16; // Slightly more resistance for precise scrolling
-    
+
     // Infinite loop logic - same as drag
     if (totalWidth.current > 0) {
       // Moving right (negative translateX, showing later cards)
@@ -301,7 +301,7 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
         translateX.current = -totalWidth.current + translateX.current;
       }
     }
-    
+
     if (scrollContainerRef.current) {
       scrollContainerRef.current.style.transform = `translateX(${translateX.current}px)`;
     }
@@ -315,7 +315,7 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
     const wheelHandler = (e: WheelEvent) => {
       // Only prevent default for horizontal scroll, let vertical scroll work
       const isHorizontalScroll = Math.abs(e.deltaX) > Math.abs(e.deltaY);
-      
+
       if (isHorizontalScroll) {
         e.preventDefault();
         e.stopPropagation();
@@ -343,11 +343,11 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
   // Center the first card on initial load
   useEffect(() => {
     if (products.length === 0 || !scrollContainerRef.current) return;
-    
+
     const centerFirstCard = () => {
       const container = scrollContainerRef.current;
       const containerRect = container?.parentElement?.getBoundingClientRect();
-      
+
       if (container && containerRect) {
         const firstCard = cardRefsMap.current.get(0);
         if (firstCard) {
@@ -355,14 +355,14 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
           const firstCardCenter = firstCardRect.left + firstCardRect.width / 2;
           const viewportCenter = containerRect.left + containerRect.width / 2;
           const offset = viewportCenter - firstCardCenter;
-          
+
           // Set initial position to center the first card
           translateX.current = offset;
           container.style.transform = `translateX(${translateX.current}px)`;
         }
       }
     };
-    
+
     // Wait for layout to complete
     setTimeout(centerFirstCard, 200);
   }, [products]);
@@ -385,11 +385,11 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
         >
           {headingText}
         </h2>
-        
+
         {/* Mobile & Desktop: Transform-based infinite scroll; desktop shows 3 cards */}
-        <div 
+        <div
           className="overflow-hidden relative pb-12 md:pb-16"
-          style={{ 
+          style={{
             paddingTop: '4rem',
             paddingBottom: '2rem'
           }}
@@ -409,89 +409,90 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
               transform: `translateX(${translateX.current}px)`,
             }}
           >
-          {displayProducts.map((product, index) => {
-            const isCentered = centeredCard === index;
-            
-            return (
-              <div
-                key={`${product.id}-${index}`}
-                ref={(el) => setCardRef(index, el)}
-                className={`flex flex-col relative w-[75%] min-w-[75%] md:w-[calc((1440px-96px)/3)] md:min-w-[calc((1440px-96px)/3)] flex-none ${isCentered ? 'z-10' : 'z-0'}`}
-                style={{ 
-                  willChange: 'transform'
-                }}
-              >
-                <Link 
-                  href={getProductUrl({
-                    id: product.id,
-                    slug: product.slug ? String(product.slug) : undefined,
-                    category: product.category,
-                    name: product.name || product.title,
-                    type: product.type
-                  })}
-                  className="block w-full cursor-pointer"
-                  style={{ cursor: 'inherit' }}
-                  draggable={false}
-                  onClick={(e) => {
-                    // Prevent navigation if user was dragging
-                    if (wasDraggingRef.current) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }
+            {displayProducts.map((product, index) => {
+              const isCentered = centeredCard === index;
+
+              return (
+                <div
+                  key={`${product.id}-${index}`}
+                  ref={(el) => setCardRef(index, el)}
+                  className={`flex flex-col relative w-[75%] min-w-[75%] md:w-[calc((1440px-96px)/3)] md:min-w-[calc((1440px-96px)/3)] flex-none ${isCentered ? 'z-10' : 'z-0'}`}
+                  style={{
+                    willChange: 'transform'
                   }}
                 >
-                  <div 
-                    className="relative w-full bg-[#2D2D2D] overflow-hidden rounded-sm"
-                    style={{
-                      aspectRatio: '1 / 1',
-                      transition: 'transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.7s cubic-bezier(0.4, 0, 0.2, 1), filter 0.7s ease',
-                      transform: isCentered ? 'scale(1.18) translateY(-16px)' : 'scale(0.96)',
-                      boxShadow: isCentered 
-                        ? isMobile 
-                          ? '0 15px 30px -10px rgba(0, 0, 0, 0.4), 0 8px 16px -8px rgba(0, 0, 0, 0.3)' 
-                          : '0 20px 40px -12px rgba(0, 0, 0, 0.5), 0 12px 24px -8px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06)'
-                        : isMobile
-                          ? '0 4px 8px -2px rgba(0, 0, 0, 0.2)'
-                          : '0 6px 12px -3px rgba(0, 0, 0, 0.3), 0 3px 6px -2px rgba(0, 0, 0, 0.2)',
-                      filter: isCentered ? 'brightness(1.08) contrast(1.02)' : 'brightness(0.88) contrast(0.95)'
+                  <Link
+                    href={getProductUrl({
+                      id: product.id,
+                      slug: product.slug ? String(product.slug) : undefined,
+                      category: product.category,
+                      name: product.name || product.title,
+                      type: product.type
+                    })}
+                    className="block w-full cursor-pointer"
+                    style={{ cursor: 'inherit' }}
+                    draggable={false}
+                    prefetch={true}
+                    onClick={(e) => {
+                      // Prevent navigation if user was dragging
+                      if (wasDraggingRef.current) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }
                     }}
                   >
-                    {/* Image wrapper - NO hover effects */}
-                    <div 
-                      className="relative w-full h-full transform-gpu origin-center"
+                    <div
+                      className="relative w-full bg-[#2D2D2D] overflow-hidden rounded-sm"
+                      style={{
+                        aspectRatio: '1 / 1',
+                        transition: 'transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.7s cubic-bezier(0.4, 0, 0.2, 1), filter 0.7s ease',
+                        transform: isCentered ? 'scale(1.18) translateY(-16px)' : 'scale(0.96)',
+                        boxShadow: isCentered
+                          ? isMobile
+                            ? '0 15px 30px -10px rgba(0, 0, 0, 0.4), 0 8px 16px -8px rgba(0, 0, 0, 0.3)'
+                            : '0 20px 40px -12px rgba(0, 0, 0, 0.5), 0 12px 24px -8px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06)'
+                          : isMobile
+                            ? '0 4px 8px -2px rgba(0, 0, 0, 0.2)'
+                            : '0 6px 12px -3px rgba(0, 0, 0, 0.3), 0 3px 6px -2px rgba(0, 0, 0, 0.2)',
+                        filter: isCentered ? 'brightness(1.08) contrast(1.02)' : 'brightness(0.88) contrast(0.95)'
+                      }}
                     >
-                      {/* Main Image - Always show first image, no hover change */}
-                      <Image
-                        src={product.image || "/images/placeholder.png"}
-                        alt={product.name || "Featured product"}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        sizes="(max-width: 768px) 100vw, calc((1440px - 96px) / 3)"
-                      />
-                    </div>
-
-                    {/* Product Name - Bottom Left */}
-                    {product.name && (
-                      <div className="absolute bottom-0 left-0 p-4 z-20">
-                        <h3 className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] uppercase leading-tight">
-                          {product.name}
-                        </h3>
+                      {/* Image wrapper - NO hover effects */}
+                      <div
+                        className="relative w-full h-full transform-gpu origin-center"
+                      >
+                        {/* Main Image - Always show first image, no hover change */}
+                        <Image
+                          src={product.image || "/images/placeholder.png"}
+                          alt={product.name || "Featured product"}
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          sizes="(max-width: 768px) 100vw, calc((1440px - 96px) / 3)"
+                        />
                       </div>
-                    )}
 
-                    {/* Price - Only show on centered card, bottom right */}
-                    {isCentered && product.price && (
-                      <div className="absolute bottom-0 right-0 p-4 z-20">
-                        <div className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] text-right">
-                          {formatPrice(product.price)}
+                      {/* Product Name - Bottom Left */}
+                      {product.name && (
+                        <div className="absolute bottom-0 left-0 p-4 z-20">
+                          <h3 className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] uppercase leading-tight">
+                            {product.name}
+                          </h3>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              </div>
-            );
-          })}
+                      )}
+
+                      {/* Price - Only show on centered card, bottom right */}
+                      {isCentered && product.price && (
+                        <div className="absolute bottom-0 right-0 p-4 z-20">
+                          <div className="text-white text-xs sm:text-sm md:text-base font-['Roboto_Mono'] text-right">
+                            {formatPrice(product.price)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -55,7 +55,8 @@ function sortCatalogCategories(categories: CatalogCategory[]) {
 
 async function fetchCatalog(): Promise<CatalogCategory[]> {
   const response = await fetch("/api/artefact-categories", {
-    cache: "no-store"
+    cache: "force-cache",
+    next: { revalidate: 60 } // Revalidate every 60 seconds
   })
 
   if (!response.ok) {

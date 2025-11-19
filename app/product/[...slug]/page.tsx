@@ -114,14 +114,14 @@ export default function ProductDetail() {
   const [hasLoadedProduct, setHasLoadedProduct] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dataSource, setDataSource] = useState<'api' | 'fallback'>('fallback')
-  
+
   const [quantity, setQuantity] = useState(1)
   const [currentImage, setCurrentImage] = useState(0)
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [hoveredVariant, setHoveredVariant] = useState<any>(null); // For preview on hover
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
+
   // Reset current image when switching products
   useEffect(() => {
     setCurrentImage(0);
@@ -169,9 +169,9 @@ export default function ProductDetail() {
   const normalizedCompositeSlugFromUrl =
     slugSegments.length > 0
       ? slugSegments
-          .map((segment) => slugifySegment(segment, { fallback: '' }))
-          .filter(Boolean)
-          .join('/')
+        .map((segment) => slugifySegment(segment, { fallback: '' }))
+        .filter(Boolean)
+        .join('/')
       : null
 
   const numericProductId =
@@ -264,10 +264,10 @@ export default function ProductDetail() {
       normalizedCompositeSlug?: string | null
     ): Promise<
       | {
-          product: ProductWithDescription
-          categoryName: string
-          categoryDescription?: string
-        }
+        product: ProductWithDescription
+        categoryName: string
+        categoryDescription?: string
+      }
       | null
     > => {
       if (!identifier) return null
@@ -386,12 +386,16 @@ export default function ProductDetail() {
 
   useEffect(() => {
     async function fetchProduct() {
-      setIsLoading(true)
-      
+      // Don't show loading state for subsequent fetches
+      const firstLoad = !hasLoadedProduct;
+      if (firstLoad) {
+        setIsLoading(true);
+      }
+
       if (!isValidId) {
         // If ID is invalid, show a featured product instead
         setIsInvalidRoute(true)
-        
+
         // Get the first product from the static data as featured
         const featuredProduct = paintingProductData[0] || {
           id: 1,
@@ -401,39 +405,40 @@ export default function ProductDetail() {
           category: "Oil",
           description: "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
         }
-        
+
         setProduct(featuredProduct)
         setIsLoading(false)
         return
       }
-      
+
       try {
         // Use string ID for the API call
         const safeProductId = productId as string
         console.log(`Fetching product with ID: ${safeProductId} from API...`);
-        
+
         // Use absolute URL to avoid any path resolution issues
         const apiUrl = `/api/products/${safeProductId}`;
         console.log(`API URL: ${apiUrl}`);
-        
+
         const startTime = Date.now();
-        const response = await fetch(apiUrl, { 
+        const response = await fetch(apiUrl, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
           },
-          // Adding cache: 'no-store' to ensure fresh data always
-          cache: 'no-store'
+          // Use cache to enable instant loading
+          cache: 'force-cache',
+          next: { revalidate: 60 } // Revalidate every 60 seconds
         });
         const endTime = Date.now();
-        
+
         console.log(`API response status: ${response.status} (took ${endTime - startTime}ms)`);
-        
+
         if (response.ok) {
           const data = await response.json();
           console.log('API data received:', data);
-          
+
           if (data && (data.id || data._id || data.slug)) {
             const desiredProductUrl = getProductUrl({
               id: data.id ?? data._id,
@@ -443,7 +448,7 @@ export default function ProductDetail() {
               type: data.type
             });
             const variantParam = searchParams.get('variant');
-            const redirectUrl = variantParam 
+            const redirectUrl = variantParam
               ? `${desiredProductUrl}?variant=${variantParam}`
               : desiredProductUrl;
             const currentPathname = typeof window !== 'undefined' ? window.location.pathname : null;
@@ -453,7 +458,7 @@ export default function ProductDetail() {
               router.replace(redirectUrl);
               return;
             }
-            
+
             // Parse ID correctly depending on type
             let productId: number;
             if (data.id && typeof data.id === 'number') {
@@ -462,13 +467,13 @@ export default function ProductDetail() {
               productId = parseInt(data.id) || safeProductId;
             } else if (data._id) {
               // MongoDB ObjectId case - convert to numeric ID if possible, else use safe ID
-              productId = typeof data._id === 'string' ? 
-                (data._id.match(/^[0-9]+$/) ? parseInt(data._id) : safeProductId) : 
+              productId = typeof data._id === 'string' ?
+                (data._id.match(/^[0-9]+$/) ? parseInt(data._id) : safeProductId) :
                 safeProductId;
             } else {
               productId = safeProductId;
             }
-            
+
             // Format API data to match our component needs
             const formattedProduct = {
               id: productId,
@@ -476,8 +481,8 @@ export default function ProductDetail() {
               price: data.price || data.basePrice,
               basePrice: data.basePrice || data.price,
               image: data.image,
-              images: Array.isArray(data.images) 
-                ? data.images 
+              images: Array.isArray(data.images)
+                ? data.images
                 : (data.image ? [data.image] : []),
               category: data.category || 'Unknown',
               description: data.description,
@@ -488,7 +493,7 @@ export default function ProductDetail() {
               additionalImageUrl: data.additionalImageUrl,
               slug: data.slug
             };
-            
+
             console.log('Using API data for product display:', formattedProduct);
             console.log('Product images:', formattedProduct.images);
             setProduct(formattedProduct);
@@ -530,7 +535,7 @@ export default function ProductDetail() {
         } else {
           // If API fails, fallback to local data
           console.warn(`API request failed with status ${response.status}, using fallback data`);
-          
+
           // Try to get response text for debugging
           let responseText = '';
           try {
@@ -539,7 +544,7 @@ export default function ProductDetail() {
           } catch (e) {
             console.error('Could not read API error response');
           }
-          
+
           // Attempt to find the product in static data using slug or ID
           let fallbackProduct = resolveStaticProduct(
             safeProductId,
@@ -574,21 +579,21 @@ export default function ProductDetail() {
                 "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
             }
           }
-          
+
           console.log('Using fallback data for product display:', fallbackProduct);
           // Cast to full ProductWithDescription for type safety
           const typedFallback = fallbackProduct as unknown as ProductWithDescription;
-          
+
           // Ensure the fallback product has images array
           if (!typedFallback.images && typedFallback.image) {
             typedFallback.images = [typedFallback.image];
           }
-          
+
           // Initialize fallback selected variant if any
           const frameVars = Array.isArray(typedFallback.variants)
             ? typedFallback.variants.filter((v: any) => v.type === 'frame')
             : [];
-          
+
           setProduct(typedFallback);
           setCategoryName(derivedCategoryName || typedFallback.category);
           setCategoryDescription(derivedCategoryDescription || '');
@@ -598,7 +603,7 @@ export default function ProductDetail() {
         }
       } catch (err) {
         console.error('Error fetching product:', err);
-        
+
         // Fallback to local data or categories on error
         let fallbackProduct =
           resolveStaticProduct(productId, normalizedCategoryFromUrl)
@@ -630,15 +635,15 @@ export default function ProductDetail() {
               "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
           }
         }
-        
+
         console.log('Using fallback data after error:', fallbackProduct);
         const typedFallback = fallbackProduct as unknown as ProductWithDescription;
-        
+
         // Ensure the fallback product has images array
         if (!typedFallback.images && typedFallback.image) {
           typedFallback.images = [typedFallback.image];
         }
-        
+
         // Initialize fallback selected variant if any
         const frameVars = Array.isArray(typedFallback.variants)
           ? typedFallback.variants.filter((v: any) => v.type === 'frame')
@@ -654,7 +659,7 @@ export default function ProductDetail() {
         setIsLoading(false)
       }
     }
-    
+
     fetchProduct()
   }, [
     productId,
@@ -674,14 +679,14 @@ export default function ProductDetail() {
   // Auto-scroll through images
   useEffect(() => {
     if (!isAutoScrolling || !product?.images || product.images.length <= 1) return;
-    
+
     const interval = setInterval(() => {
       setCurrentImage((prev) => {
         const nextIndex = (prev + 1) % (product.images?.length || 1);
         return nextIndex;
       });
     }, 4000); // Change image every 4 seconds
-    
+
     return () => clearInterval(interval);
   }, [isAutoScrolling, product?.images]);
 
@@ -714,9 +719,8 @@ export default function ProductDetail() {
       return {
         image: relatedProduct.images?.[0] || relatedProduct.image || "/images/placeholder.png",
         altText: relatedProduct.name || "Novino design",
-        quote: `${relatedProduct.name || "This piece"} from the ${
-          relatedProduct.categoryName || relatedProduct.category || "Novino"
-        } collection is crafted with layers of narrative and material.`,
+        quote: `${relatedProduct.name || "This piece"} from the ${relatedProduct.categoryName || relatedProduct.category || "Novino"
+          } collection is crafted with layers of narrative and material.`,
         author: relatedProduct.categoryName || relatedProduct.category || "Novino Design",
         link: productLink,
         category: relatedProduct.categoryName || relatedProduct.category || "Design",
@@ -749,20 +753,20 @@ export default function ProductDetail() {
 
     return Array.from(categoryMap.values());
   }, [relatedProducts]);
-  
+
   // Fetch related products from the same category using new artefact-categories API
   useEffect(() => {
     async function fetchRelatedProducts() {
       if (!product) return;
-      
+
       try {
         const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
           cache: 'no-store'
         });
-        
+
         if (res.ok) {
           const categories = await res.json();
-          
+
           // Get all products from all categories
           const allProducts: any[] = [];
           categories.forEach((category: any) => {
@@ -789,27 +793,27 @@ export default function ProductDetail() {
               });
             }
           });
-          
+
           // Find the current product's category
           const currentCategory = categories.find((cat: any) => {
             return cat.products?.some((p: any) => p.id === product.id);
           });
-          
+
           // Filter products: get products from same category, excluding current product
           const currentProductIdStr = product?.id ? String(product.id) : '';
           const related = allProducts.filter((p: any) => {
             if (String(p.id) === currentProductIdStr) return false;
-            
+
             // If we found the category, match by category ID
             if (currentCategory) {
               const currentCatId = currentCategory.id || currentCategory._id;
               return String(p.categoryId) === String(currentCatId);
             }
-            
+
             // Fallback: match by category name
             return p.categoryName === categoryName;
           });
-          
+
           console.log('✅ Related products found:', related.length, 'from category:', categoryName);
           setRelatedProducts(related);
         } else {
@@ -821,7 +825,7 @@ export default function ProductDetail() {
         setRelatedProducts([]);
       }
     }
-    
+
     fetchRelatedProducts();
   }, [product, categoryName])
 
@@ -829,7 +833,7 @@ export default function ProductDetail() {
   // Add to cart handler
   const handleAddToCart = () => {
     const cartSource = selectedVariant || product;
-    
+
     if (!cartSource) {
       console.error('Product is undefined');
       alert('Error: Product information is missing.');
@@ -842,7 +846,7 @@ export default function ProductDetail() {
       alert('Error: Product ID is missing. Cannot add to cart.');
       return;
     }
-    
+
     // Prepare the cart item with all required fields
     const cartItem = {
       id: String(cartSourceId).trim(),
@@ -852,14 +856,14 @@ export default function ProductDetail() {
       quantity: quantity || 1,
       variant: selectedVariant ? selectedVariant.name : undefined
     };
-    
+
     console.log('Adding to cart:', {
       id: cartItem.id,
       name: cartItem.name,
       price: cartItem.price,
       quantity: cartItem.quantity
     });
-    
+
     addToCart(cartItem);
   };
 
@@ -867,11 +871,11 @@ export default function ProductDetail() {
   const productPrice = product?.price || product?.basePrice || "$0";
   const productImages = product?.images && product.images.length > 0 ? product.images : [resolvedProductImage];
   const totalImages = productImages.length;
-  
+
   // Treat all products in same category as variants
   // Get all related products from the same category (excluding current product)
   const categoryVariants = relatedProducts; // These are already filtered by category
-  
+
   // Get the current image to display based on hover or selection
   // Priority: hoveredVariant > selectedVariant > original product
   const activeVariant = hoveredVariant || selectedVariant;
@@ -891,15 +895,15 @@ export default function ProductDetail() {
     }
     return '';
   };
-  
+
   // Use variant data if hovering or selected, otherwise use product data
   const displayedName = activeVariant?.name || product?.name;
   const variantDescription = getPreferredDescription(activeVariant);
   const productDescription = getPreferredDescription(product);
   const displayedDescription = variantDescription || productDescription;
   const displayedPrice = activeVariant?.basePrice || activeVariant?.price || productPrice;
-  const variantImages = activeVariant?.images && activeVariant.images.length > 0 
-    ? activeVariant.images 
+  const variantImages = activeVariant?.images && activeVariant.images.length > 0
+    ? activeVariant.images
     : null;
   const primaryCategoryLabel = (categoryName || product?.category || '').trim();
   const heroProductName = (() => {
@@ -923,8 +927,8 @@ export default function ProductDetail() {
     heroIntroText ||
     '';
   const productLogoUrl = product?.logoUrl;
-  
-  const displayedImage = variantImages 
+
+  const displayedImage = variantImages
     ? (currentImage < variantImages.length ? variantImages[currentImage] : variantImages[0])
     : (currentImage < productImages.length ? productImages[currentImage] : resolvedProductImage);
 
@@ -1030,9 +1034,9 @@ export default function ProductDetail() {
     <div className="bg-[#2D2D2D] text-white min-h-screen">
       {/* SEO Schema - Injected into head for Google crawler */}
       {schemas.length > 0 && <SchemaInjector schemas={schemas} />}
-      
+
       <div className="w-full px-4 md:px-0 pt-24 pb-0">
-       
+
         {isInvalidRoute && (
           <div className="bg-[#3D3D3D] text-white p-4 mb-6 rounded-md mx-auto" style={{ maxWidth: "1440px" }}>
             <p className="text-center font-light">
@@ -1043,18 +1047,17 @@ export default function ProductDetail() {
             </p>
           </div>
         )}
-        
+
         {process.env.NODE_ENV === 'development' && (
-          <div className={`text-xs py-1 px-3 rounded-full absolute top-24 right-4 z-20 ${
-            dataSource === 'api' ? 'bg-green-600/70' : 'bg-orange-600/70'
-          }`}>
+          <div className={`text-xs py-1 px-3 rounded-full absolute top-24 right-4 z-20 ${dataSource === 'api' ? 'bg-green-600/70' : 'bg-orange-600/70'
+            }`}>
             {dataSource === 'api' ? 'API Data' : 'Fallback Data'}
           </div>
         )}
-                {hasLoadedProduct && isLoading && (
-                  <div className="fixed inset-x-0 top-0 h-1 bg-gradient-to-r from-white/10 via-white/60 to-white/10 animate-pulse z-30 pointer-events-none" />
-                )}
-       
+        {hasLoadedProduct && isLoading && (
+          <div className="fixed inset-x-0 top-0 h-1 bg-gradient-to-r from-white/10 via-white/60 to-white/10 animate-pulse z-30 pointer-events-none" />
+        )}
+
         {/* Main product display - Clean layout without borders */}
         <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
           <div className="relative z-10 px-4 md:px-6 lg:px-8">
@@ -1062,11 +1065,11 @@ export default function ProductDetail() {
               {/* Product media + purchase column */}
               <div className="order-1 lg:order-2 lg:col-span-9 grid grid-cols-1 md:grid-cols-7 gap-6 lg:gap-8">
                 {/* Product Image Gallery - Main image with thumbnails */}
-                <div 
-                  className="md:col-span-4 md:col-start-1 flex flex-col gap-4 order-1 md:order-1 lg:ml-12" 
+                <div
+                  className="md:col-span-4 md:col-start-1 flex flex-col gap-4 order-1 md:order-1 lg:ml-12"
                   data-product-image
                 >
-                  <div 
+                  <div
                     className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] select-none group cursor-pointer overflow-visible"
                     onMouseEnter={() => setIsAutoScrolling(false)}
                     onMouseLeave={() => setIsAutoScrolling(false)}
@@ -1082,7 +1085,7 @@ export default function ProductDetail() {
                         filter: 'blur(40px)',
                       }}
                     />
-                    
+
                     {/* Image container with light background */}
                     <div className="relative w-full h-full bg-[#f7f3ee] rounded-[28px] overflow-hidden shadow-[0_12px_24px_-18px_rgba(0,0,0,0.45)] z-10">
                       {previousImageSrc && (
@@ -1106,7 +1109,7 @@ export default function ProductDetail() {
                         draggable={false}
                       />
                     </div>
-                    
+
                     {/* Subtle hover overlay */}
                     <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-500 pointer-events-none z-20 rounded-[28px]" />
                   </div>
@@ -1125,11 +1128,10 @@ export default function ProductDetail() {
                             setCurrentImage(i);
                             setIsAutoScrolling(false);
                           }}
-                          className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${
-                            currentImage === i 
-                              ? 'border-white shadow-lg shadow-white/20' 
-                              : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                          }`}
+                          className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all duration-300 rounded-sm ${currentImage === i
+                            ? 'border-white shadow-lg shadow-white/20'
+                            : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                            }`}
                         >
                           <Image
                             src={imageUrl}
@@ -1153,18 +1155,17 @@ export default function ProductDetail() {
                       <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">
                         Select Variant
                       </div>
-                      
+
                       <div className="flex gap-2 flex-wrap">
                         {/* Current Product */}
                         <button
                           onClick={() => setSelectedVariant(null)}
                           onMouseEnter={() => setHoveredVariant(null)}
                           onMouseLeave={() => setHoveredVariant(null)}
-                          className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
-                            !selectedVariant
-                              ? 'border-white shadow-lg shadow-white/20' 
-                              : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                          }`}
+                          className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${!selectedVariant
+                            ? 'border-white shadow-lg shadow-white/20'
+                            : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                            }`}
                           title={product.name}
                         >
                           <Image
@@ -1180,12 +1181,12 @@ export default function ProductDetail() {
                             {product.name}
                           </div>
                         </button>
-                        
+
                         {/* Other Products in Category (treated as variants) - Hover to preview, Click to select */}
                         {categoryVariants.slice(0, 5).map((variant: any) => {
                           const isActiveVariant = selectedVariant?.id === variant.id;
                           const isHoveredVariant = hoveredVariant?.id === variant.id;
-                          
+
                           return (
                             <button
                               key={variant.id}
@@ -1199,13 +1200,12 @@ export default function ProductDetail() {
                                 setCurrentImage(0);
                                 setIsAutoScrolling(false);
                               }}
-                              className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
-                                isActiveVariant
-                                  ? 'border-white shadow-lg shadow-white/20'
-                                  : isHoveredVariant
-                                    ? 'border-white/60 opacity-100'
-                                    : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                              }`}
+                              className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${isActiveVariant
+                                ? 'border-white shadow-lg shadow-white/20'
+                                : isHoveredVariant
+                                  ? 'border-white/60 opacity-100'
+                                  : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                                }`}
                               title={variant.name}
                             >
                               <Image
@@ -1224,7 +1224,7 @@ export default function ProductDetail() {
                           );
                         })}
                       </div>
-                      
+
                       {/* Display hover preview hint */}
                       {hoveredVariant && (
                         <div className="text-xs text-white/40 font-['Roboto_Mono'] italic">
@@ -1236,11 +1236,11 @@ export default function ProductDetail() {
 
                   {/* Price */}
                   <div className="text-3xl font-light mb-6 font-['Roboto_Mono']">{formatPrice(displayedPrice)}</div>
-                  
+
                   {/* Quantity and Add to Cart */}
                   <div className="flex items-center gap-3 mb-8">
                     <div className="flex items-center border border-white/20 rounded-sm overflow-hidden backdrop-blur-sm">
-                      <button 
+                      <button
                         onClick={decreaseQuantity}
                         className="w-10 h-12 flex items-center justify-center hover:bg-white/10 transition-all duration-300 text-lg font-light"
                         aria-label="Decrease quantity"
@@ -1248,7 +1248,7 @@ export default function ProductDetail() {
                         -
                       </button>
                       <span className="w-12 text-center font-['Roboto_Mono'] text-sm border-x border-white/10">{quantity}</span>
-                      <button 
+                      <button
                         onClick={increaseQuantity}
                         className="w-10 h-12 flex items-center justify-center hover:bg-white/10 transition-all duration-300 text-lg font-light"
                         aria-label="Increase quantity"
@@ -1256,15 +1256,15 @@ export default function ProductDetail() {
                         +
                       </button>
                     </div>
-                    
-                    <button 
+
+                    <button
                       onClick={handleAddToCart}
                       className="flex-1 h-12 bg-white text-black hover:bg-white/90 hover:shadow-lg hover:shadow-white/20 px-6 uppercase tracking-widest text-xs font-medium transition-all duration-300 rounded-sm transform hover:scale-[1.02] active:scale-[0.98] font-['Roboto_Mono'] flex items-center justify-center"
                     >
                       Add to Cart
                     </button>
                   </div>
-                  
+
                   {/* Trade Portal Link - Only show if user is NOT logged in */}
                   {!isLoggedIn && (
                     <div className="pt-6 border-t border-white/10">
@@ -1318,7 +1318,7 @@ export default function ProductDetail() {
                     />
                   </div>
                 )}
-                
+
                 {categoryNarrative && (
                   <div className="pt-6 border-t border-white/10">
                     <div className="text-white/60 leading-relaxed text-xs font-['Roboto_Mono'] transition-opacity duration-300">
@@ -1350,7 +1350,7 @@ export default function ProductDetail() {
                   </div>
                 </div>
               )}
-              
+
               {/* Specifications on the right */}
               {(product.specifications.title || product.specifications.content) && (
                 <div className={`${product.specifications.imageUrl ? 'md:w-5/12' : 'w-full'} flex flex-col justify-center`}>
@@ -1447,10 +1447,10 @@ export default function ProductDetail() {
                     title: relatedProduct.name,
                     type: relatedProduct.type
                   });
-                  
+
                   return (
-                    <Link 
-                      href={productLink} 
+                    <Link
+                      href={productLink}
                       key={relatedProduct.id}
                       className="group"
                     >
@@ -1516,12 +1516,12 @@ export default function ProductDetail() {
         </div>
       </div>
       <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
-          <div className="px-4 md:px-6">
-            <Footer />
-          </div>
+        <div className="px-4 md:px-6">
+          <Footer />
         </div>
-      
-        
+      </div>
+
+
     </div>
   )
 } 

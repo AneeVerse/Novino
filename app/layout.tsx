@@ -61,7 +61,7 @@ export default function RootLayout({
     window.addEventListener("hashchange", scrollToFooter);
     return () => window.removeEventListener("hashchange", scrollToFooter);
   }, [pathname]);
-  
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -76,7 +76,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#2D2D2D" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
-        
+
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"} />
@@ -85,25 +85,40 @@ export default function RootLayout({
         <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}/images/og-image.png`} />
         <meta property="og:site_name" content="Novino.io" />
         <meta property="og:locale" content="en_US" />
-        
+
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content={process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"} />
         <meta name="twitter:title" content="Novino.io - Art Gallery" />
         <meta name="twitter:description" content="Elevate ordinary walls with extraordinary galleries" />
         <meta name="twitter:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}/images/og-image.png`} />
-        
+
+        {/* Performance: Resource Hints */}
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Preload critical fonts */}
+        <link
+          rel="preload"
+          href="/_next/static/media/dm-serif-display-latin-400-normal.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+
         {/* Additional SEO Meta Tags */}
         <link rel="canonical" href={process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"} />
         <link rel="alternate" type="application/rss+xml" title="Novino.io RSS Feed" href={`${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}/feed.xml`} />
-        
+
         {process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && (
           <meta
             name="google-site-verification"
             content={process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION}
           />
         )}
-        
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -163,7 +178,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <SessionProvider 
+          <SessionProvider
             refetchInterval={isAdminRoute ? 0 : undefined}
             refetchOnWindowFocus={!isAdminRoute}
           >

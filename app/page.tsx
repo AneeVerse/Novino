@@ -1,20 +1,21 @@
 "use client"
 
 import Image from "next/image"
-import VideoSection from "@/components/video-section"
-import BlogSection from "@/components/blog-section"
-import WardrobeSection from "@/components/wardrobe-section"
-import TestimonialCollection from "@/components/testimonial-collection"
-import Footer from "@/components/footer"
-import ProductTestimonial from "@/components/product-testimonial"
-import MasonryGallery from "@/components/masonry-gallery"
-import FeaturedProducts from "@/components/featured-products"
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react"
 import "@fontsource/dm-serif-display"
 import "@fontsource/roboto-mono"
-import ProductGrid from "@/components/product-grid"
 import Preloader from "@/components/ui/preloader"
 import { useArtefactCatalog } from "@/hooks/useArtefactCatalog"
+
+// Eager imports for above-fold content
+import FeaturedProducts from "@/components/featured-products"
+import ProductGrid from "@/components/product-grid"
+
+// Lazy load below-fold components
+const VideoSection = lazy(() => import("@/components/video-section"))
+const TestimonialCollection = lazy(() => import("@/components/testimonial-collection"))
+const WardrobeSection = lazy(() => import("@/components/wardrobe-section"))
+const Footer = lazy(() => import("@/components/footer"))
 
 // Product data - We'll replace this with API data
 // const products = [
@@ -129,12 +130,22 @@ export default function Home() {
     let requestAnimationFrameId: number;
     let scrollY = window.scrollY;
     let currentScroll = scrollY;
+    let isScrolling = false;
 
     const handleScroll = () => {
       scrollY = window.scrollY;
+      isScrolling = true;
     };
 
     const update = () => {
+      // Skip updates if not scrolling and hero is out of view
+      if (!isScrolling && currentScroll > 1200) {
+        requestAnimationFrameId = requestAnimationFrame(update);
+        return;
+      }
+
+      isScrolling = false;
+
       // Lerp formula: current = current + (target - current) * factor
       // Factor 0.02 gives an extremely smooth, heavy feel
       const diff = scrollY - currentScroll;
@@ -160,7 +171,7 @@ export default function Home() {
 
         // Apply the background position to control the color transition
         const heroText = document.querySelector('.novino-hero-text') as HTMLElement;
-        if (heroText) {
+        if (heroText && currentScroll < 800) {
           // This controls the gradient position - changing from 0% (white) to 100% (#312F30)
           heroText.style.backgroundPosition = `0% ${percentage}%`;
         }
@@ -277,14 +288,18 @@ export default function Home() {
 
       {/* Video Section - Full width */}
       <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[730px] bg-[#2D2D2D] mb-16 sm:mb-24 md:mb-32">
-        <VideoSection />
+        <Suspense fallback={<div className="w-full h-full bg-[#2D2D2D]" />}>
+          <VideoSection />
+        </Suspense>
       </div>
 
       {/* New container for remaining sections */}
       <div className="container mx-auto px-4 sm:px-6 md:px-8 z-10 relative">
         {/* Testimonial Collection */}
         <div className="mb-16">
-          <TestimonialCollection />
+          <Suspense fallback={<div className="min-h-[400px]" />}>
+            <TestimonialCollection />
+          </Suspense>
         </div>
 
         {/* Blog Section */}
@@ -294,11 +309,15 @@ export default function Home() {
 
         {/* Wardrobe Section */}
         <div className="mb-16">
-          <WardrobeSection />
+          <Suspense fallback={<div className="min-h-[200px]" />}>
+            <WardrobeSection />
+          </Suspense>
         </div>
 
         {/* Footer Section */}
-        <Footer />
+        <Suspense fallback={<div className="min-h-[300px]" />}>
+          <Footer />
+        </Suspense>
       </div>
 
       {/* Add custom animation styles */}
