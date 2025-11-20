@@ -429,8 +429,8 @@ export default function ProductDetail() {
       if (!identifier) return null
 
       try {
-        const res = await fetch(`/api/artefact-categories?t=${Date.now()}`, {
-          cache: 'no-store'
+        const res = await fetch(`/api/artefact-categories`, {
+          next: { revalidate: 60 }
         })
 
         if (!res.ok) return null
@@ -916,8 +916,8 @@ export default function ProductDetail() {
       if (!product) return;
 
       try {
-        const res = await fetch('/api/artefact-categories?t=' + Date.now(), {
-          cache: 'no-store'
+        const res = await fetch('/api/artefact-categories', {
+          next: { revalidate: 60 } // Cache for 60 seconds
         });
 
         if (res.ok) {
