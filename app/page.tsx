@@ -147,17 +147,25 @@ export default function Home() {
       isScrolling = false;
 
       // Lerp formula: current = current + (target - current) * factor
-      // Factor 0.02 gives an extremely smooth, heavy feel
       const diff = scrollY - currentScroll;
+
+      // Adaptive factor: faster when scrolling up to prevent gaps
+      const factor = diff < 0 ? 0.15 : 0.02;
 
       // Only update if there's a noticeable difference or if we're near the top (active area)
       if (Math.abs(diff) > 0.01 || scrollY < 1000) {
-        currentScroll += diff * 0.02;
+        // If at the very top, snap immediately to avoid any gap
+        if (scrollY < 5) {
+          currentScroll = 0;
+        } else {
+          currentScroll += diff * factor;
+        }
 
         // Parallax effect - directly manipulate DOM for butter-smooth scrolling
         // Only apply if within view range to save resources
         if (heroImageRef.current && currentScroll < 1200) {
-          const parallaxValue = currentScroll * 0.5;
+          // Clamp the parallax value to scrollY to prevent gaps at the top when scrolling up quickly
+          const parallaxValue = Math.min(currentScroll * 0.5, scrollY);
           heroImageRef.current.style.transform = `translate3d(0, ${parallaxValue}px, 0)`;
         }
 
