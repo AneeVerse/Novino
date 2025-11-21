@@ -882,23 +882,23 @@ export default function ProfilePage() {
                             return (
                               <>
                                 <p className="text-white font-medium">{addr.name}</p>
-                                <p className="text-white/70">
+                          <p className="text-white/70">
                                   {addr.line1}
                                   {addr.line2 && (
-                                    <>
-                                      <br />
+                              <>
+                                <br />
                                       {addr.line2}
-                                    </>
-                                  )}
-                                  <br />
+                              </>
+                            )}
+                            <br />
                                   {addr.city}, {addr.state} - {addr.pincode}
-                                </p>
+                          </p>
                                 {addr.phone && (
                                   <p className="text-white/60">Phone: {addr.phone}</p>
-                                )}
+                          )}
                                 {addr.email && (
                                   <p className="text-white/60">Email: {addr.email}</p>
-                                )}
+                          )}
                               </>
                             );
                           })()}

@@ -20,6 +20,9 @@ const serializeCategory = (category: any) => {
     id: category.id,
     name: name,
     description: typeof category.description === 'string' ? category.description : (category.description || ''),
+    careGuide: category.care_guide || category.careGuide || '',
+    measurement: category.measurement || '',
+    gsm: category.gsm || '',
     order: typeof category.order_index === 'number' ? category.order_index : category.order,
     createdAt: category.created_at ?? category.createdAt,
     updatedAt: category.updated_at ?? category.updatedAt,
@@ -70,10 +73,13 @@ export default async function handler(
           ...rest 
         } = req.body || {};
 
-        // Only allow fields that exist in Supabase schema
+        // Only allow fields that exist in Supabase schema (use snake_case for database)
         const updatePayload: Record<string, any> = {
           name: rest.name,
           description: rest.description,
+          care_guide: rest.careGuide || rest.care_guide || '',
+          measurement: rest.measurement || '',
+          gsm: rest.gsm || '',
           products: Array.isArray(rest.products) ? rest.products : rest.products || [],
           updated_at: now,
         };

@@ -6,10 +6,13 @@ import { X } from 'lucide-react';
 interface ArtefactCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (name: string, description: string) => void;
+  onSubmit: (name: string, description: string, careGuide?: string, measurement?: string, gsm?: string) => void;
   mode?: 'create' | 'edit';
   initialName?: string;
   initialDescription?: string;
+  initialCareGuide?: string;
+  initialMeasurement?: string;
+  initialGsm?: string;
 }
 
 export default function ArtefactCategoryModal({ 
@@ -18,17 +21,26 @@ export default function ArtefactCategoryModal({
   onSubmit, 
   mode = 'create',
   initialName = '',
-  initialDescription = ''
+  initialDescription = '',
+  initialCareGuide = '',
+  initialMeasurement = '',
+  initialGsm = ''
 }: ArtefactCategoryModalProps) {
   const [categoryName, setCategoryName] = useState(initialName);
   const [categoryDescription, setCategoryDescription] = useState(initialDescription);
+  const [careGuide, setCareGuide] = useState(initialCareGuide);
+  const [measurement, setMeasurement] = useState(initialMeasurement);
+  const [gsm, setGsm] = useState(initialGsm);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Update form when initial values change
   React.useEffect(() => {
     setCategoryName(initialName);
     setCategoryDescription(initialDescription);
-  }, [initialName, initialDescription]);
+    setCareGuide(initialCareGuide);
+    setMeasurement(initialMeasurement);
+    setGsm(initialGsm);
+  }, [initialName, initialDescription, initialCareGuide, initialMeasurement, initialGsm]);
 
   if (!isOpen) return null;
 
@@ -41,9 +53,12 @@ export default function ArtefactCategoryModal({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(categoryName, categoryDescription);
+      await onSubmit(categoryName, categoryDescription, careGuide, measurement, gsm);
       setCategoryName('');
       setCategoryDescription('');
+      setCareGuide('');
+      setMeasurement('');
+      setGsm('');
       onClose();
     } catch (error) {
       console.error('Error creating category:', error);
@@ -106,6 +121,56 @@ export default function ArtefactCategoryModal({
               className="w-full px-4 py-3 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all resize-none"
               disabled={isSubmitting}
             />
+          </div>
+
+          {/* Care Guide Fields */}
+          <div className="mb-6 space-y-4 border-t border-white/10 pt-4">
+            <h3 className="text-sm font-medium text-white/80 mb-3">Description Details (shown in product Description + section)</h3>
+            
+            <div>
+              <label htmlFor="careGuide" className="block text-sm font-medium text-white/80 mb-2">
+                Care Guide
+              </label>
+              <input
+                type="text"
+                id="careGuide"
+                value={careGuide}
+                onChange={(e) => setCareGuide(e.target.value)}
+                placeholder="e.g., Handle with care"
+                className="w-full px-4 py-3 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="measurement" className="block text-sm font-medium text-white/80 mb-2">
+                Measurement
+              </label>
+              <input
+                type="text"
+                id="measurement"
+                value={measurement}
+                onChange={(e) => setMeasurement(e.target.value)}
+                placeholder="e.g., 9 inch"
+                className="w-full px-4 py-3 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="gsm" className="block text-sm font-medium text-white/80 mb-2">
+                GSM
+              </label>
+              <input
+                type="text"
+                id="gsm"
+                value={gsm}
+                onChange={(e) => setGsm(e.target.value)}
+                placeholder="e.g., No GSM"
+                className="w-full px-4 py-3 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                disabled={isSubmitting}
+              />
+            </div>
           </div>
 
           {/* Actions */}

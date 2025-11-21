@@ -495,7 +495,7 @@ function DashboardContent() {
   };
   
   // Create or update artefact category
-  const handleSaveCategory = async (name: string, description: string) => {
+  const handleSaveCategory = async (name: string, description: string, careGuide?: string, measurement?: string, gsm?: string) => {
     try {
       if (categoryModalMode === 'edit' && editingCategory) {
         // Update existing category
@@ -506,6 +506,9 @@ function DashboardContent() {
             ...editingCategory,
             name, 
             description,
+            careGuide: careGuide || '',
+            measurement: measurement || '',
+            gsm: gsm || '',
             updatedAt: new Date().toISOString()
           }),
         });
@@ -519,7 +522,13 @@ function DashboardContent() {
         const response = await fetch('/api/artefact-categories', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, description }),
+          body: JSON.stringify({ 
+            name, 
+            description,
+            careGuide: careGuide || '',
+            measurement: measurement || '',
+            gsm: gsm || ''
+          }),
         });
         
         if (response.ok) {
@@ -1616,6 +1625,9 @@ function DashboardContent() {
         mode={categoryModalMode}
         initialName={editingCategory?.name || ''}
         initialDescription={editingCategory?.description || ''}
+        initialCareGuide={(editingCategory as any)?.careGuide || ''}
+        initialMeasurement={(editingCategory as any)?.measurement || ''}
+        initialGsm={(editingCategory as any)?.gsm || ''}
       />
       
       {/* Artefact Product Form */}

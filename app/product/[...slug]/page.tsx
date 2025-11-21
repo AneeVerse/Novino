@@ -267,6 +267,9 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<ProductWithDescription | undefined>(undefined)
   const [categoryName, setCategoryName] = useState<string>('')
   const [categoryDescription, setCategoryDescription] = useState<string>('')
+  const [categoryCareGuide, setCategoryCareGuide] = useState<string>('')
+  const [categoryMeasurement, setCategoryMeasurement] = useState<string>('')
+  const [categoryGsm, setCategoryGsm] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [hasLoadedProduct, setHasLoadedProduct] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -329,6 +332,105 @@ export default function ProductDetail() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
+
+  // Care Guide accordion state
+  const [isCareGuideOpen, setIsCareGuideOpen] = useState(false);
+  const toggleCareGuide = () => {
+    setIsCareGuideOpen(!isCareGuideOpen);
+  };
+
+  // Function to fetch category data (reusable - same logic for category name, description, and care guide)
+  const fetchCategoryData = async (product: ProductWithDescription) => {
+    try {
+      const catsRes = await fetch('/api/artefact-categories');
+      if (catsRes.ok) {
+        const cats = await catsRes.json();
+        
+        // Get category name from URL if available
+        // URL has: "mouse-pads", Category has: "Mouse Pads"
+        // Convert hyphenated URL to space-separated for matching
+        const urlCategoryName = normalizedCategoryFromUrl || categorySegmentFromUrl;
+        const urlCategoryNameWithSpaces = urlCategoryName?.toLowerCase().replace(/-/g, ' ') || '';
+        const urlCategorySlug = urlCategoryName?.toLowerCase() || '';
+        
+        // Find the category that contains this product
+        // Try multiple matching strategies:
+        // 1. Match by URL category name (most reliable) - convert hyphens to spaces and match
+        // 2. Match by category ID
+        // 3. Match by category name (case-insensitive)
+        // 4. Check if product exists in category's products array
+        let catItem = cats.find((cat: any) => {
+          const catName = cat.name?.toLowerCase() || '';
+          const catNameSlug = catName.replace(/\s+/g, '-');
+          
+          // Match strategies:
+          // 1. URL "mouse-pads" → "mouse pads" matches category "mouse pads"
+          // 2. URL "mouse-pads" matches category slugified "mouse-pads"
+          // 3. Direct name match
+          const matchesByName = catName === urlCategoryNameWithSpaces;
+          const matchesBySlug = catNameSlug === urlCategorySlug || catName === urlCategorySlug;
+          
+          return matchesByName || matchesBySlug;
+        });
+        
+        // If not found by URL, try other methods
+        if (!catItem) {
+          catItem = cats.find((cat: any) => {
+            const catId = (cat._id || cat.id)?.toString();
+            const productCatId = product.category?.toString();
+            const catName = cat.name?.toLowerCase() || '';
+            const productCatName = product.category?.toLowerCase() || '';
+            
+            // Also check if this product exists in the category's products array
+            const hasProduct = cat.products?.some((p: any) => {
+              const pId = p.id?.toString();
+              const prodId = product.id?.toString();
+              return pId === prodId;
+            });
+            
+            return catId === productCatId || 
+                   catName === productCatName || 
+                   hasProduct ||
+                   (catName && productCatName && catName.includes(productCatName)) ||
+                   (catName && productCatName && productCatName.includes(catName));
+          });
+        }
+        
+        // Set all category data (name, description, care guide) - same logic
+        if (catItem) {
+          setCategoryName(catItem?.name || product.category);
+          setCategoryDescription(catItem?.description || '');
+          // Trim values to remove trailing spaces
+          const careGuide = (catItem?.careGuide || catItem?.care_guide || '').trim();
+          const measurement = (catItem?.measurement || '').trim();
+          const gsm = (catItem?.gsm || '').trim();
+          
+          setCategoryCareGuide(careGuide);
+          setCategoryMeasurement(measurement);
+          setCategoryGsm(gsm);
+        } else {
+          setCategoryName(product.category);
+          setCategoryDescription('');
+          setCategoryCareGuide('');
+          setCategoryMeasurement('');
+          setCategoryGsm('');
+        }
+      } else {
+        setCategoryName(product.category);
+        setCategoryDescription('');
+        setCategoryCareGuide('');
+        setCategoryMeasurement('');
+        setCategoryGsm('');
+      }
+    } catch (e) {
+      console.error('Error fetching categories:', e);
+      setCategoryName(product.category);
+      setCategoryDescription('');
+      setCategoryCareGuide('');
+      setCategoryMeasurement('');
+      setCategoryGsm('');
+    }
   };
 
   // Add the cart context
@@ -636,31 +738,8 @@ export default function ProductDetail() {
             console.log('Using API data for product display:', formattedProduct);
             console.log('Product images:', formattedProduct.images);
             setProduct(formattedProduct);
-            // Lookup category name and description from artefact-categories
-            try {
-              const catsRes = await fetch('/api/artefact-categories');
-              if (catsRes.ok) {
-                const cats = await catsRes.json();
-                // Find the category that contains this product
-                const catItem = cats.find((cat: any) => {
-                  const catId = (cat._id || cat.id)?.toString();
-                  const productCatId = formattedProduct.category?.toString();
-                  // Also check if this product exists in the category's products array
-                  const hasProduct = cat.products?.some((p: any) => p.id === formattedProduct.id);
-                  return catId === productCatId || hasProduct;
-                });
-                setCategoryName(catItem?.name || formattedProduct.category);
-                setCategoryDescription(catItem?.description || '');
-                console.log('Category found:', catItem?.name, 'Description:', catItem?.description);
-              } else {
-                setCategoryName(formattedProduct.category);
-                setCategoryDescription('');
-              }
-            } catch (e) {
-              console.error('Error fetching categories:', e);
-              setCategoryName(formattedProduct.category);
-              setCategoryDescription('');
-            }
+            // Fetch category data (name, description, care guide) - same logic for all
+            await fetchCategoryData(formattedProduct);
             // Initialize selected frame variant
             const frameVariants = Array.isArray(formattedProduct.variants)
               ? formattedProduct.variants.filter((v: any) => v.type === 'frame')
@@ -736,6 +815,8 @@ export default function ProductDetail() {
           setProduct(typedFallback);
           setCategoryName(derivedCategoryName || typedFallback.category);
           setCategoryDescription(derivedCategoryDescription || '');
+          // Fetch category data including care guide fields (same logic as main case)
+          await fetchCategoryData(typedFallback);
           // Don't reset selectedVariant here - let the URL parameter effect handle it
           setDataSource('fallback');
           setError(`API Error (${response.status}): Could not load product from API, using fallback data`);
@@ -792,6 +873,8 @@ export default function ProductDetail() {
         setCategoryName(derivedCategoryName || typedFallback.category);
         setCategoryDescription(derivedCategoryDescription || '');
         setProduct(typedFallback);
+        // Fetch category data including care guide fields (same logic as main case)
+        await fetchCategoryData(typedFallback);
         setDataSource('fallback');
         setError("Could not load product from API, using fallback data");
       } finally {
@@ -1208,6 +1291,15 @@ export default function ProductDetail() {
                   className="md:col-span-4 md:col-start-1 flex flex-col gap-4 order-1 md:order-1 lg:ml-12"
                   data-product-image
                 >
+                  {/* Design Name - Mobile only (above image) */}
+                  {heroProductName && (
+                    <div className="lg:hidden mb-2">
+                      <p className="text-sm font-semibold uppercase tracking-[0.35em] text-white/80 text-center font-['Roboto_Mono']">
+                        {heroProductName}
+                      </p>
+                    </div>
+                  )}
+                  
                   <div
                     className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] select-none group cursor-pointer overflow-visible"
                     onMouseEnter={() => setIsAutoScrolling(false)}
@@ -1404,17 +1496,74 @@ export default function ProductDetail() {
                     </button>
                   </div>
 
-                  {/* Trade Portal Link - Only show if user is NOT logged in */}
-                  {!isLoggedIn && (
-                    <div className="pt-6 border-t border-white/10">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-white/40 font-['Roboto_Mono']">Are you a specifier?</span>
-                        <Link href="/login" className="uppercase tracking-wider text-white/70 hover:text-white transition font-['Roboto_Mono']">
-                          Login to Trade Portal
-                        </Link>
-                      </div>
+                  {/* Trade Portal Link */}
+                  <div className="pt-6 border-t border-white/10">
+                    <div className="flex items-center justify-between text-xs">
+                      {!isLoggedIn ? (
+                        <>
+                          <Link href="/signup" className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider">
+                            Are you new? Register
+                          </Link>
+                          <Link href="/login" className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider">
+                            Already registered? Login
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-white/40 font-['Roboto_Mono'] uppercase tracking-wider">Welcome back</span>
+                          <Link href="/dashboard" className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider">
+                            Go to Dashboard
+                          </Link>
+                        </>
+                      )}
                     </div>
-                  )}
+                  </div>
+
+                  {/* Care Guide - Collapsible Description Section - Always show */}
+                  <div className="mt-6 border-t border-white/10 pt-6">
+                    <button
+                      type="button"
+                      onClick={toggleCareGuide}
+                      className="w-full flex justify-between items-center text-white text-sm font-medium text-left hover:text-white/80 transition-all duration-300 group"
+                    >
+                      <span className="uppercase tracking-wider font-['Roboto_Mono'] text-xs">Description</span>
+                      <div className="flex items-center justify-center w-6 h-6 rounded-sm border border-white/20 group-hover:border-white/40 transition-all duration-300">
+                        {isCareGuideOpen ? (
+                          <Minus size={14} className="text-white/80 group-hover:text-white transition-colors" />
+                        ) : (
+                          <Plus size={14} className="text-white/80 group-hover:text-white transition-colors" />
+                        )}
+                      </div>
+                    </button>
+                    {isCareGuideOpen && (
+                      <div className="mt-4 space-y-4 pt-4 border-t border-white/5 animate-in slide-in-from-top-2 duration-300">
+                        {categoryCareGuide && (
+                          <div className="flex items-start gap-4 pb-3 border-b border-white/5 last:border-b-0 last:pb-0">
+                            <span className="text-white/50 text-xs font-medium min-w-[110px] uppercase tracking-wider font-['Roboto_Mono']">CARE GUIDE</span>
+                            <span className="text-white/80 text-xs leading-relaxed">{categoryCareGuide}</span>
+                          </div>
+                        )}
+                        {categoryMeasurement && (
+                          <div className="flex items-start gap-4 pb-3 border-b border-white/5 last:border-b-0 last:pb-0">
+                            <span className="text-white/50 text-xs font-medium min-w-[110px] uppercase tracking-wider font-['Roboto_Mono']">MEASUREMENT</span>
+                            <span className="text-white/80 text-xs leading-relaxed">{categoryMeasurement}</span>
+                          </div>
+                        )}
+                        {categoryGsm && (
+                          <div className="flex items-start gap-4 pb-3 border-b border-white/5 last:border-b-0 last:pb-0">
+                            <span className="text-white/50 text-xs font-medium min-w-[110px] uppercase tracking-wider font-['Roboto_Mono']">GSM</span>
+                            <span className="text-white/80 text-xs leading-relaxed">{categoryGsm}</span>
+                          </div>
+                        )}
+                        {/* Show empty state if no data */}
+                        {!categoryCareGuide && !categoryMeasurement && !categoryGsm && (
+                          <div className="text-white/40 text-xs italic">
+                            No details available
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1422,7 +1571,7 @@ export default function ProductDetail() {
               <div className="order-2 lg:order-1 lg:col-span-3 flex flex-col justify-start py-8 lg:-mr-12 text-center lg:text-left items-center lg:items-start">
                 {heroProductName && (
                   <>
-                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80 mb-3 font-['Roboto_Mono']">
+                    <p className="text-sm font-semibold uppercase tracking-[0.35em] text-white/80 mb-3 font-['Roboto_Mono']">
                       {heroProductName}
                     </p>
                     <div className="mb-4">
@@ -1440,7 +1589,7 @@ export default function ProductDetail() {
 
                 {displayedDescription && (
                   <div className="mb-5">
-                    <div className="text-white/70 leading-relaxed text-xs font-['Roboto_Mono'] transition-opacity duration-300">
+                    <div className="text-white/70 leading-relaxed text-sm font-['Roboto_Mono'] transition-opacity duration-300">
                       <p className="whitespace-pre-line">{displayedDescription}</p>
                     </div>
                   </div>
@@ -1460,7 +1609,7 @@ export default function ProductDetail() {
 
                 {categoryNarrative && (
                   <div className="pt-6 border-t border-white/10">
-                    <div className="text-white/60 leading-relaxed text-xs font-['Roboto_Mono'] transition-opacity duration-300">
+                    <div className="text-white/60 leading-relaxed text-sm font-['Roboto_Mono'] transition-opacity duration-300">
                       <p className="whitespace-pre-line">{categoryNarrative}</p>
                     </div>
                   </div>
