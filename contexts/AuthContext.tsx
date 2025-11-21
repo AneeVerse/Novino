@@ -1,27 +1,16 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-
-// Function to encode to Base64 safely in both browser and Node.js environments
-function safeBtoa(str: string): string {
-  try {
-    // For browser
-    if (typeof window !== 'undefined' && window.btoa) {
-      return window.btoa(str);
-    }
-    // For Node.js
-    return Buffer.from(str).toString('base64');
-  } catch (error) {
-    console.error('Error encoding to base64:', error);
-    throw error;
-  }
-}
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useSession, useUser, useSupabaseClient, type Session, type User } from '@supabase/auth-helpers-react';
 
 type AuthContextType = {
   isAuthenticated: boolean;
+  user: User | null;
+  session: Session | null;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
   isAdminAuth: boolean;
   getAuthToken: () => string | null;
@@ -29,8 +18,10 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
+  user: null,
+  session: null,
   login: async () => false,
-  logout: () => {},
+  logout: async () => { },
   isLoading: true,
   isAdminAuth: false,
   getAuthToken: () => null,
@@ -39,178 +30,131 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [sseConnection, setSseConnection] = useState<EventSource | null>(null);
+  const session = useSession();
+  const user = useUser();
+  const supabase = useSupabaseClient();
   const router = useRouter();
   const pathname = usePathname() || '';
-  
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasAdminToken, setHasAdminToken] = useState(false);
+
   // Flag to indicate if this is admin authentication
   const isAdminAuth = pathname.includes('/admin') || pathname.includes('/dashboard');
 
-  // Check if user is authenticated on initial load
+  // Check for admin token in localStorage
   useEffect(() => {
-    const checkAuth = () => {
-      try {
-        // Only check localStorage if this is an admin route
-        if (isAdminAuth) {
-          const token = localStorage.getItem('adminAuthToken');
-          setIsAuthenticated(!!token);
-        }
-      } catch (error) {
-        console.error('Error checking auth:', error);
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [isAdminAuth]);
-
-  // Set up SSE connection for real-time status updates
-  useEffect(() => {
-    // Skip if not authenticated, still loading, or this is an admin auth
-    if (!isAuthenticated || isLoading || isAdminAuth) {
-      // Cleanup any existing connection when conditions change
-      if (sseConnection) {
-        sseConnection.close();
-        setSseConnection(null);
-      }
-      return;
+    if (typeof window !== 'undefined') {
+      const adminToken = localStorage.getItem('adminAuthToken');
+      setHasAdminToken(!!adminToken);
     }
+  }, []);
 
-    // Create EventSource connection
-    const eventSource = new EventSource('/api/events/user-status');
-    setSseConnection(eventSource);
-
-    // Set up event listeners
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        // Handle blocked event
-        if (data.event === 'blocked') {
-          logout();
-          alert('Your account has been blocked. Please contact support.');
-        }
-      } catch (error) {
-        console.error('Error parsing SSE event:', error);
-      }
-    };
-
-    eventSource.onerror = (error) => {
-      console.error('SSE connection error:', error);
-      eventSource.close();
-      setSseConnection(null);
-    };
-
-    // Clean up on unmount
-    return () => {
-      eventSource.close();
-      setSseConnection(null);
-    };
-  }, [isAuthenticated, isLoading, isAdminAuth]);
-
-  // Periodically check if user is still allowed to be logged in (not blocked)
+  // Check initial auth state
   useEffect(() => {
-    // Skip if not authenticated or still loading
-    if (!isAuthenticated || isLoading) return;
+    // Wait for session to be loaded
+    if (session !== undefined) {
+      setIsLoading(false);
+    }
+  }, [session]);
 
-    // For admin users (using adminAuthToken), we don't need to check
-    // as admins can't be blocked, so only check for regular users with cookie auth
-    if (isAdminAuth) return;
+  // User is authenticated if they have either:
+  // 1. A valid Supabase session
+  // 2. An admin token in localStorage (for hardcoded admin)
+  const isAuthenticated = (!!session && !!user) || hasAdminToken;
 
-    // Function to check user status
-    const checkUserStatus = async () => {
-      try {
-        const res = await fetch('/api/auth/check-status');
-        
-        if (res.status === 403) {
-          // User is blocked, force logout
-          const data = await res.json();
-          logout();
-          // Show message to user
-          alert(data.message || 'Your account has been blocked. Please contact support.');
-        }
-      } catch (error) {
-        console.error('Error checking user status:', error);
-      }
-    };
-
-    // Check immediately on login
-    checkUserStatus();
-
-    // Then set up periodic checks (every 15 seconds)
-    const intervalId = setInterval(checkUserStatus, 15000);
-
-    // Clean up the interval on unmount
-    return () => clearInterval(intervalId);
-  }, [isAuthenticated, isLoading, isAdminAuth]);
-
-  // Function to get the auth token
+  // Function to get the auth token (access token from session or admin token)
   const getAuthToken = (): string | null => {
-    try {
-      return localStorage.getItem('adminAuthToken');
-    } catch (error) {
-      console.error('Error getting auth token:', error);
-      return null;
+    if (session?.access_token) {
+      return session.access_token;
     }
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('adminAuthToken');
+    }
+    return null;
   };
 
-  // Login function
+  // Login function for admin (hardcoded for now)
+  // For regular users, use Supabase client directly in login page
   const login = async (email: string, password: string): Promise<boolean> => {
+    // Admin hardcoded login
     if (email === 'novino@admin' && password === 'novino@admin') {
+      // For admin, we could create a special admin user in Supabase
+      // or keep this localStorage approach for backward compatibility
       try {
-        // Create a simple JWT-like token with timestamp and admin info
-        const token = safeBtoa(JSON.stringify({
+        const token = btoa(JSON.stringify({
           userId: 'admin-1',
           email: email,
           username: 'Admin',
           isAdmin: true,
           createdAt: new Date().toISOString()
         }));
-        
-        localStorage.setItem('adminAuthToken', token);
-        setIsAuthenticated(true);
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('adminAuthToken', token);
+          setHasAdminToken(true);
+        }
         return true;
       } catch (error) {
-        console.error('Error during login:', error);
+        console.error('Error during admin login:', error);
         return false;
       }
     }
-    return false;
+
+    // Regular user login via Supabase
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error || !data.session) {
+        console.error('Login error:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
   };
 
   // Logout function
-  const logout = () => {
+  const logout = async () => {
     try {
-      localStorage.removeItem('adminAuthToken');
-      setIsAuthenticated(false);
-      
-      // Close SSE connection if exists
-      if (sseConnection) {
-        sseConnection.close();
-        setSseConnection(null);
+      // Clear admin token if exists
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('adminAuthToken');
+        setHasAdminToken(false);
       }
-      
-      // Redirect directly to login without window reload
-      router.push('/admin/login');
+
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+
+      // Redirect to login
+      if (isAdminAuth) {
+        router.push('/admin/login');
+      } else {
+        router.push('/login');
+      }
     } catch (error) {
       console.error('Error during logout:', error);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      login, 
-      logout, 
-      isLoading, 
+    <AuthContext.Provider value={{
+      isAuthenticated,
+      user,
+      session,
+      login,
+      logout,
+      isLoading,
       isAdminAuth,
-      getAuthToken 
+      getAuthToken
     }}>
       {children}
     </AuthContext.Provider>
   );
-} 
+}

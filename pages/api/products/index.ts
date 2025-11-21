@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectToMongoDB from '@/lib/mongodb-client';
+import getSupabaseAdmin from '@/lib/supabase-admin';
 
 type ProductVariant = {
   id: string;
@@ -53,6 +53,80 @@ type Product = {
   createdAt?: string;
 };
 
+const supabase = getSupabaseAdmin();
+
+const serializeStandaloneProduct = (product: any) => ({
+  ...product,
+  id: product.id,
+  _id: product.id,
+  price: product.price ?? product.base_price,
+  basePrice: product.base_price ?? product.price,
+  shortDescription: product.short_description ?? product.shortDescription,
+  logoUrl: product.logo_url ?? product.logoUrl,
+  image: product.image ?? product.images?.[0],
+  images: Array.isArray(product.images) ? product.images : [],
+  variants: Array.isArray(product.variants) ? product.variants : [],
+  specifications: product.specifications,
+  faqSection: product.faq_section,
+  additionalImageUrl: product.additional_image_url,
+  featuredImageUrl: product.featured_image_url,
+  metaDescription: product.meta_description,
+  createdAt: product.created_at ?? product.createdAt,
+});
+
+const flattenCategoryProducts = (categories: any[]) =>
+  categories.flatMap((category) =>
+    (Array.isArray(category.products) ? category.products : []).map((product: any) => ({
+      ...product,
+      id: product.id,
+      _id: product.id,
+      price: product.basePrice ?? product.price,
+      basePrice: product.basePrice ?? product.price,
+      image: product.images?.[0] || '',
+      category: category.id,
+      categoryName: category.name,
+      type: 'artefact' as const,
+      createdAt: product.createdAt,
+      metaDescription: product.metaDescription,
+    }))
+  );
+
+const buildVariantList = (products: any[]) => {
+  const flattened: any[] = [];
+
+  products.forEach((product) => {
+    flattened.push(product);
+
+    if (product.variants && Array.isArray(product.variants)) {
+      product.variants.forEach((variant: ProductVariant) => {
+        flattened.push({
+          ...product,
+          id: `${product.id}-variant-${variant.id}`,
+          _id: `${product._id}-variant-${variant.id}`,
+          name: variant.name,
+          price: variant.price || product.price || product.basePrice,
+          basePrice: variant.price || product.basePrice || product.price,
+          image: variant.images?.[0] || variant.imageUrl || product.image,
+          images: variant.images || (variant.imageUrl ? [variant.imageUrl] : product.images),
+          quantity: variant.quantity,
+          isVariant: true,
+          variantId: variant.id,
+          variantName: variant.name,
+          variantType: variant.type,
+          parentProductId: product.id,
+          originalProduct: {
+            id: product.id,
+            name: product.name,
+            category: product.category,
+          },
+        });
+      });
+    }
+  });
+
+  return flattened;
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -60,167 +134,88 @@ export default async function handler(
   const { method } = req;
 
   try {
-    // Use cached MongoDB connection
-    const { db } = await connectToMongoDB();
-    const collection = db.collection('products');
-
     switch (method) {
       case 'GET':
-        // Get all products
         try {
-          const products = await collection.find({}).sort({ createdAt: -1 }).toArray();
-          
-          // Serialize ObjectId to string and ensure id property exists
-          const serializedProducts = products.map((prod) => ({
-            ...prod,
-            id: prod.id || (prod._id ? prod._id.toString() : undefined)
-          }));
-          
-          // If no products found in MongoDB, use sample data
-          if (!products || products.length === 0) {
-            console.log('No products found in MongoDB, returning sample data');
-            
-            // Sample product data for fallback
+          // All products are now in product_categories table
+          const { data, error } = await supabase
+            .from('product_categories')
+            .select('id, name, products, order_index, created_at')
+            .order('order_index', { ascending: true })
+            .order('created_at', { ascending: true });
+
+          if (error) {
+            throw error;
+          }
+
+          const categoryProducts = flattenCategoryProducts(data ?? []);
+          const combinedProducts = categoryProducts;
+
+          if (combinedProducts.length === 0) {
+            console.log('No products found in Supabase, returning sample data');
             const sampleProducts = [
               {
-                id: 1,
-                _id: "sample_1",
-                name: "Abstract Elegance",
-                price: "$2,327",
-                basePrice: "$2,327",
-                image: "/images/painting/2.1.png",
-                category: "Oil",
-                type: "painting",
-                description: "Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers."
+                id: 'sample_1',
+                _id: 'sample_1',
+                name: 'Abstract Elegance',
+                price: '$2,327',
+                basePrice: '$2,327',
+                image: '/images/painting/2.1.png',
+                category: 'Oil',
+                type: 'painting' as const,
+                description:
+                  'Abstract Elegance explores the interplay of form and color in modern composition. This oil painting features bold brushstrokes and a rich palette that creates depth and emotion, inviting the viewer to find their own meaning within its layers.',
               },
               {
-                id: 2,
-                _id: "sample_2",
-                name: "Serene Landscape",
-                price: "$1,850",
-                basePrice: "$1,850",
-                image: "/images/painting/1.2.png",
-                category: "Watercolor",
-                type: "painting",
-                description: "A peaceful watercolor landscape capturing the tranquility of nature. Soft brush strokes and delicate color blending create a sense of calm and serenity."
+                id: 'sample_2',
+                _id: 'sample_2',
+                name: 'Serene Landscape',
+                price: '$1,850',
+                basePrice: '$1,850',
+                image: '/images/painting/1.2.png',
+                category: 'Watercolor',
+                type: 'painting' as const,
+                description:
+                  'A peaceful watercolor landscape capturing the tranquility of nature. Soft brush strokes and delicate color blending create a sense of calm and serenity.',
               },
               {
-                id: 3,
-                _id: "sample_3",
-                name: "Ancient Vase",
-                price: "$3,250",
-                basePrice: "$3,250",
-                image: "/images/mug-black.png",
-                category: "Egyptian",
-                type: "artefact",
-                description: "This ancient Egyptian vase features intricate hieroglyphics and traditional design elements. Handcrafted using techniques passed down through generations, it represents the artistic mastery of one of history's most enduring civilizations."
-              }
+                id: 'sample_3',
+                _id: 'sample_3',
+                name: 'Ancient Vase',
+                price: '$3,250',
+                basePrice: '$3,250',
+                image: '/images/mug-black.png',
+                category: 'Egyptian',
+                type: 'artefact' as const,
+                description:
+                  'This ancient Egyptian vase features intricate hieroglyphics and traditional design elements. Handcrafted using techniques passed down through generations, it represents the artistic mastery of one of history\'s most enduring civilizations.',
+              },
             ];
-            
+
             return res.status(200).json(sampleProducts);
           }
-          
-          // Check if we should include variants as separate items
+
           const includeVariants = req.query.includeVariants === 'true';
-          
+
           if (includeVariants) {
-            // Flatten products and variants into a single array
-            const flattenedItems: any[] = [];
-            
-            serializedProducts.forEach((product: any) => {
-              // Add the main product
-              flattenedItems.push(product);
-              
-              // Add each variant as a separate item
-              if (product.variants && Array.isArray(product.variants)) {
-                product.variants.forEach((variant: ProductVariant) => {
-                  flattenedItems.push({
-                    ...product,
-                    // Override with variant-specific data
-                    id: `${product.id}-variant-${variant.id}`,
-                    _id: `${product._id}-variant-${variant.id}`,
-                    name: variant.name, // Show only variant name, not concatenated
-                    price: variant.price || product.price || product.basePrice,
-                    basePrice: variant.price || product.basePrice || product.price,
-                    image: variant.images?.[0] || variant.imageUrl || product.image || product.images?.[0],
-                    images: variant.images || (variant.imageUrl ? [variant.imageUrl] : product.images),
-                    quantity: variant.quantity,
-                    // Mark as variant for identification
-                    isVariant: true,
-                    variantId: variant.id,
-                    variantName: variant.name,
-                    variantType: variant.type,
-                    parentProductId: product.id,
-                    // Keep original product data for reference
-                    originalProduct: {
-                      id: product.id,
-                      name: product.name,
-                      category: product.category
-                    }
-                  });
-                });
-              }
-            });
-            
-            return res.status(200).json(flattenedItems);
+            return res.status(200).json(buildVariantList(combinedProducts));
           }
-          
-          res.status(200).json(serializedProducts);
+
+          res.status(200).json(combinedProducts);
         } catch (error) {
           console.error('Error fetching products:', error);
           res.status(500).json({ success: false, error: 'Failed to fetch products' });
         }
         break;
 
-      case 'POST':
-        // Create a new product
-        // Auto-generate slug if not provided
-        let slug = req.body.slug;
-        if (!slug && req.body.name) {
-          slug = req.body.name
-            .toLowerCase()
-            .trim()
-            .replace(/\s+/g, '-')
-            .replace(/[^a-z0-9-]/g, '');
-        }
-        
-        const newProduct = {
-          name: req.body.name,
-          description: req.body.description,
-          shortDescription: req.body.shortDescription || '',
-          logoUrl: req.body.logoUrl || '',
-          // Handle both price formats
-          price: req.body.price || req.body.basePrice,
-          basePrice: req.body.basePrice || req.body.price,
-          quantity: req.body.quantity || 1,
-          // Handle both image formats
-          image: req.body.image || (req.body.images && req.body.images.length > 0 ? req.body.images[0] : ''),
-          images: req.body.images || (req.body.image ? [req.body.image] : []),
-          category: req.body.category,
-          type: req.body.type,
-          // Add enhanced product properties
-          variants: req.body.variants || [],
-          specifications: req.body.specifications || { title: '', content: '' },
-          faqSection: req.body.faqSection || { faqs: [] },
-          additionalImageUrl: req.body.additionalImageUrl,
-          featured: req.body.featured || false,
-          featuredImageUrl: req.body.featuredImageUrl,
-          metaDescription: req.body.metaDescription,
-          slug: slug,
-          createdAt: new Date().toISOString()
-        };
-        
-        const result = await collection.insertOne(newProduct);
-        
-        // Return the created product with its ID
-        const createdProduct = {
-          ...newProduct,
-          _id: result.insertedId.toString(),
-          id: result.insertedId.toString()
-        };
-        
-        res.status(201).json(createdProduct);
+      case 'POST': {
+        // Products are now managed via product_categories API
+        res.status(400).json({ 
+          success: false, 
+          error: 'Products are managed via /api/artefact-categories endpoint. Add products to a category.' 
+        });
         break;
+      }
 
       default:
         res.setHeader('Allow', ['GET', 'POST']);
@@ -230,4 +225,4 @@ export default async function handler(
     console.error('API Error:', error);
     res.status(500).json({ success: false, error: 'Server error' });
   }
-} 
+}

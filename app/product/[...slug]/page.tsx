@@ -12,6 +12,7 @@ import WardrobeSection from "@/components/wardrobe-section"
 import Footer from "@/components/footer"
 import { useRouter, useParams, useSearchParams } from "next/navigation"
 import { useCart } from '@/contexts/CartContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { formatPrice, getProductUrl, slugifySegment } from '@/lib/utils'
 import Preloader from "@/components/ui/preloader"
 import { SITE_URL, generateProductSchema, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/seo"
@@ -276,32 +277,14 @@ export default function ProductDetail() {
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [hoveredVariant, setHoveredVariant] = useState<any>(null); // For preview on hover
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAuthenticated: isLoggedIn } = useAuth();
 
   // Reset current image when switching products
   useEffect(() => {
     setCurrentImage(0);
   }, [product]);
 
-  // Check if user is logged in
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include'
-        });
-        if (response.ok) {
-          setIsLoggedIn(true);
-        } else {
-          setIsLoggedIn(false);
-        }
-      } catch (error) {
-        console.error('Error checking auth:', error);
-        setIsLoggedIn(false);
-      }
-    };
-    checkAuth();
-  }, []);
+
 
   // Next.js useParams returns string | string[] | undefined
   const rawSlugParam = (params as any)?.slug ?? (params as any)?.id

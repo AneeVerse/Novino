@@ -9,12 +9,13 @@ import "@fontsource/dm-serif-display"
 import { CartProvider } from "@/contexts/CartContext"
 import CartDrawer from "@/components/ui/cart-drawer"
 import { useCart } from "@/contexts/CartContext"
-import { SessionProvider } from "next-auth/react"
+import { SessionContextProvider } from '@supabase/auth-helpers-react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { AuthProvider } from "@/contexts/AuthContext"
 import NavigationLoading from "@/components/navigation-loading"
 import { Toaster } from "@/components/ui/toaster"
 import Analytics from "@/components/analytics"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -36,6 +37,9 @@ export default function RootLayout({
   const isAdminRoute = pathname?.startsWith('/admin') || isDashboard;
   const isLinkoPage = pathname?.startsWith('/linko.page/');
   const isVCardPage = pathname?.startsWith('/vcard');
+
+  // Create Supabase client
+  const [supabaseClient] = useState(() => createClientComponentClient())
 
   useEffect(() => {
     const scrollToFooter = () => {
@@ -178,10 +182,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <SessionProvider
-            refetchInterval={isAdminRoute ? 0 : undefined}
-            refetchOnWindowFocus={!isAdminRoute}
-          >
+          <SessionContextProvider supabaseClient={supabaseClient}>
             <AuthProvider>
               <CartProvider>
                 {!isLinkoPage && !isVCardPage && !isDashboard ? (
@@ -194,7 +195,7 @@ export default function RootLayout({
                 <Analytics />
               </CartProvider>
             </AuthProvider>
-          </SessionProvider>
+          </SessionContextProvider>
         </ThemeProvider>
       </body>
     </html>

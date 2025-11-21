@@ -1,8 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient, ObjectId } from 'mongodb';
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const MONGODB_DB = process.env.MONGODB_DB || 'novino';
+import getSupabaseAdmin from '@/lib/supabase-admin';
 
 type CategoryOrderPayload = {
   id?: string;
@@ -10,26 +7,17 @@ type CategoryOrderPayload = {
   order?: number;
 };
 
+const supabase = getSupabaseAdmin();
+
 const serializeCategory = (category: any) => ({
   ...category,
-  _id: category._id.toString(),
-  id: category._id.toString(),
+  _id: category.id,
+  id: category.id,
+  order: typeof category.order_index === 'number' ? category.order_index : category.order,
+  createdAt: category.created_at ?? category.createdAt,
+  updatedAt: category.updated_at ?? category.updatedAt,
+  products: Array.isArray(category.products) ? category.products : [],
 });
-
-const sortCategoriesByOrder = (categoryList: any[]) => {
-  return [...categoryList].sort((a, b) => {
-    const orderA = typeof a.order === 'number' ? a.order : Number.MAX_SAFE_INTEGER;
-    const orderB = typeof b.order === 'number' ? b.order : Number.MAX_SAFE_INTEGER;
-
-    if (orderA === orderB) {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : Infinity;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : Infinity;
-      return dateA - dateB;
-    }
-
-    return orderA - orderB;
-  });
-};
 
 export default async function handler(
   req: NextApiRequest,
@@ -53,50 +41,38 @@ export default async function handler(
         return null;
       }
 
-      const position =
-        typeof item.order === 'number' ? item.order : index;
-
-      return {
-        id,
-        order: position,
-      };
+      const position = typeof item.order === 'number' ? item.order : index;
+      return { id, position };
     })
-    .filter(Boolean) as { id: string; order: number }[];
+    .filter(Boolean) as { id: string; position: number }[];
 
   if (updates.length === 0) {
     return res.status(400).json({ error: 'No valid category IDs provided' });
   }
 
-  const client = new MongoClient(MONGODB_URI);
-
   try {
-    await client.connect();
-    const db = client.db(MONGODB_DB);
-    const collection = db.collection('productCategories');
-
     const timestamp = new Date().toISOString();
 
-    await collection.bulkWrite(
-      updates.map(({ id, order }) => ({
-        updateOne: {
-          filter: { _id: new ObjectId(id) },
-          update: {
-            $set: {
-              order,
-              updatedAt: timestamp,
-            },
-          },
-        },
-      }))
+    await Promise.all(
+      updates.map(({ id, position }) =>
+        supabase
+          .from('product_categories')
+          .update({ order_index: position, updated_at: timestamp })
+          .eq('id', id)
+      )
     );
 
-    const categories = await collection
-      .find({})
-      .sort({ order: 1, createdAt: 1 })
-      .toArray();
-    const orderedCategories = sortCategoriesByOrder(categories);
-    const serialized = orderedCategories.map(serializeCategory);
+    const { data, error } = await supabase
+      .from('product_categories')
+      .select('*')
+      .order('order_index', { ascending: true })
+      .order('created_at', { ascending: true });
 
+    if (error) {
+      throw error;
+    }
+
+    const serialized = (data ?? []).map(serializeCategory);
     return res.status(200).json({ success: true, categories: serialized });
   } catch (error: any) {
     console.error('API Error:', error);
@@ -105,8 +81,6 @@ export default async function handler(
       error: 'Server error',
       message: error.message,
     });
-  } finally {
-    await client.close();
   }
 }
 

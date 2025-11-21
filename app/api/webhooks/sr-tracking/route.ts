@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectToDatabase from '@/lib/db';
-import Shipment from '@/models/Shipment';
-import Order from '@/models/Order';
+import { getSupabaseServiceRoleClient } from '@/lib/supabase-server';
 import { verifyShiprocketWebhook } from '@/lib/services/shiprocket';
 
 export async function POST(req: NextRequest) {
@@ -13,44 +11,84 @@ export async function POST(req: NextRequest) {
   }
 
   const payload = JSON.parse(rawBody);
-  await connectToDatabase();
+  const supabase = getSupabaseServiceRoleClient();
 
-  const shipment = await Shipment.findOne({ shiprocketShipmentId: payload.shipment_id });
+  // Find shipment by Shiprocket shipment ID
+  const { data: shipment } = await supabase
+    .from('shipments')
+    .select('*')
+    .eq('shiprocket_shipment_id', payload.shipment_id?.toString())
+    .single();
+
   if (!shipment) {
     return NextResponse.json({ ok: true });
   }
 
-  shipment.status = payload.current_status ?? shipment.status;
-  shipment.trackingEvents = shipment.trackingEvents || [];
-  shipment.trackingEvents.push({
-    status: payload.current_status,
-    location: payload.current_location,
-    remarks: payload.remark,
-    recordedAt: payload.updated_at ? new Date(payload.updated_at) : new Date(),
-  });
-  await shipment.save();
+  // Update shipment status and tracking events
+  const trackingEvents = [
+    ...(shipment.metadata?.tracking_events || []),
+    {
+      status: payload.current_status,
+      location: payload.current_location,
+      remarks: payload.remark,
+      recordedAt: payload.updated_at ? new Date(payload.updated_at).toISOString() : new Date().toISOString(),
+    },
+  ];
 
-  const order = await Order.findById(shipment.orderId);
+  await supabase
+    .from('shipments')
+    .update({
+      status: payload.current_status?.toLowerCase() || shipment.status,
+      metadata: {
+        ...shipment.metadata,
+        tracking_events: trackingEvents,
+      },
+    })
+    .eq('id', shipment.id);
+
+  // Update order status based on shipment status
+  const { data: order } = await supabase
+    .from('orders')
+    .select('status_timeline')
+    .eq('id', shipment.order_id)
+    .single();
+
   if (order) {
+    let orderStatus = order.order_status;
+    let deliveredAt = null;
+
     if (payload.current_status === 'DELIVERED') {
-      order.orderStatus = 'delivered';
-      order.deliveredAt = new Date();
+      orderStatus = 'delivered';
+      deliveredAt = new Date().toISOString();
     } else if (payload.current_status === 'SHIPPED') {
-      order.orderStatus = 'shipped';
+      orderStatus = 'shipped';
     } else if (payload.current_status === 'PICKUP SCHEDULED') {
-      order.orderStatus = 'processing';
+      orderStatus = 'processing';
     }
 
-    order.statusTimeline = order.statusTimeline || [];
-    order.statusTimeline.push({
-      status: (payload.current_status || '').toLowerCase() || 'update',
-      note: payload.remark,
-      at: payload.updated_at ? new Date(payload.updated_at) : new Date(),
-    });
-    await order.save();
+    const statusTimeline = [
+      ...(order.status_timeline || []),
+      {
+        status: (payload.current_status || '').toLowerCase() || 'update',
+        note: payload.remark,
+        at: payload.updated_at ? new Date(payload.updated_at).toISOString() : new Date().toISOString(),
+      },
+    ];
+
+    const updateData: any = {
+      order_status: orderStatus,
+      status_timeline: statusTimeline,
+    };
+
+    if (deliveredAt) {
+      updateData.delivered_at = deliveredAt;
+    }
+
+    await supabase
+      .from('orders')
+      .update(updateData)
+      .eq('id', shipment.order_id);
   }
 
   return NextResponse.json({ ok: true });
 }
-
-

@@ -1,38 +1,37 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Order from '@/models/Order';
-import Cart from '@/models/Cart';
-import connectToDatabase from '@/lib/db';
-import { getTokenFromReq, verifyToken } from '@/lib/auth';
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Verify authentication
-    const token = getTokenFromReq(req);
-    if (!token) {
+    // Create authenticated Supabase client
+    const supabase = createPagesServerClient({ req, res });
+
+    // Check if user is authenticated
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
 
-    let userInfo;
-    try {
-      userInfo = verifyToken(token);
-    } catch (err) {
-      return res.status(401).json({ message: 'Invalid token' });
-    }
-
-    if (!userInfo || !userInfo.userId) {
-      return res.status(401).json({ message: 'Invalid token' });
-    }
-
-    // Connect to database
-    await connectToDatabase();
+    const user = session.user;
 
     switch (req.method) {
       case 'GET':
         // Get all orders for the authenticated user
-        const orders = await Order.find({ userId: userInfo.userId })
-          .sort({ orderedAt: -1 }); // Most recent first
+        const { data: orders, error: getError } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('ordered_at', { ascending: false }); // Most recent first
 
-        return res.status(200).json({ orders });
+        if (getError) {
+          console.error('Error fetching orders:', getError);
+          return res.status(500).json({ message: 'Error fetching orders' });
+        }
+
+        return res.status(200).json({ orders: orders || [] });
 
       case 'POST':
         // Create new order
@@ -44,7 +43,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           total,
           deliveryAddress,
           paymentMethod,
-          giftWrap
+          giftWrap,
+          razorpayOrderId
         } = req.body;
 
         // Validate required fields
@@ -65,36 +65,60 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         estimatedDelivery.setDate(estimatedDelivery.getDate() + 5);
 
         // Create order
-        const newOrder = await Order.create({
-          userId: userInfo.userId,
-          items,
-          subtotal: subtotal || 0,
-          gst: gst || 0,
-          shippingCost: shippingCost || 0,
-          total: total || 0,
-          deliveryAddress,
-          paymentMethod,
-          paymentStatus: paymentMethod === 'cod' ? 'pending' : 'pending',
-          orderStatus: 'confirmed',
-          giftWrap: giftWrap || false,
-          estimatedDelivery
-        });
+        const { data: newOrder, error: createError } = await supabase
+          .from('orders')
+          .insert({
+            user_id: user.id,
+            items: items,
+            subtotal: subtotal || 0,
+            gst: gst || 0,
+            shipping_cost: shippingCost || 0,
+            total: total || 0,
+            delivery_address: deliveryAddress,
+            payment_method: paymentMethod,
+            payment_status: paymentMethod === 'cod' ? 'pending' : 'requires_payment',
+            order_status: 'confirmed',
+            gift_wrap: giftWrap || false,
+            estimated_delivery: estimatedDelivery.toISOString(),
+            razorpay_order_id: razorpayOrderId || null,
+            status_timeline: [
+              {
+                status: 'confirmed',
+                note: 'Order confirmed',
+                at: new Date().toISOString()
+              }
+            ]
+          })
+          .select()
+          .single();
 
-        // Remove only the ordered items from cart
+        if (createError) {
+          console.error('Error creating order:', createError);
+          return res.status(500).json({ message: 'Error creating order', error: createError.message });
+        }
+
+        // Remove ordered items from cart
         try {
-          const orderedProductIds = items.map((item: any) => item.productId);
-          
+          const orderedProductIds = items.map((item: any) => item.productId || item.id);
+
           // Get current cart
-          const cart = await Cart.findOne({ userId: userInfo.userId });
-          
-          if (cart) {
+          const { data: cart } = await supabase
+            .from('carts')
+            .select('items')
+            .eq('user_id', user.id)
+            .single();
+
+          if (cart && cart.items) {
             // Filter out the ordered items
-            cart.items = cart.items.filter((cartItem: any) => {
+            const remainingItems = (cart.items as any[]).filter((cartItem: any) => {
               return !orderedProductIds.includes(String(cartItem.id));
             });
-            
-            // Save the updated cart
-            await cart.save();
+
+            // Update cart with remaining items
+            await supabase
+              .from('carts')
+              .update({ items: remainingItems })
+              .eq('user_id', user.id);
           }
         } catch (error) {
           console.error('Error updating cart:', error);
@@ -118,4 +142,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
-

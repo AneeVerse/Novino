@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectToDatabase from '@/lib/db';
-import Payment from '@/models/Payment';
-import Order from '@/models/Order';
+import { getSupabaseServiceRoleClient } from '@/lib/supabase-server';
 import { verifyRazorpayWebhook } from '@/lib/services/razorpay';
 
 export async function POST(req: NextRequest) {
@@ -18,31 +16,58 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  await connectToDatabase();
+  const supabase = getSupabaseServiceRoleClient();
 
-  const payment = await Payment.findOne({ razorpayOrderId: payload.order_id });
+  // Find payment by razorpay order ID
+  const { data: payment } = await supabase
+    .from('payments')
+    .select('*')
+    .eq('razorpay_order_id', payload.order_id)
+    .single();
+
   if (!payment) {
     return NextResponse.json({ ok: true });
   }
 
   if (event.event === 'payment.failed') {
-    payment.status = 'failed';
-    payment.failureReason = payload.error_description;
-    await payment.save();
+    // Update payment status
+    await supabase
+      .from('payments')
+      .update({
+        status: 'failed',
+        metadata: {
+          ...payment.metadata,
+          failure_reason: payload.error_description,
+        },
+      })
+      .eq('id', payment.id);
 
-    const order = await Order.findById(payment.orderId);
+    // Update order status
+    const { data: order } = await supabase
+      .from('orders')
+      .select('status_timeline')
+      .eq('id', payment.order_id)
+      .single();
+
     if (order) {
-      order.paymentStatus = 'failed';
-      order.statusTimeline = order.statusTimeline || [];
-      order.statusTimeline.push({
-        status: 'payment_failed',
-        note: payload.error_description,
-        at: new Date(),
-      });
-      await order.save();
+      const statusTimeline = [
+        ...(order.status_timeline || []),
+        {
+          status: 'payment_failed',
+          note: payload.error_description,
+          at: new Date().toISOString(),
+        },
+      ];
+
+      await supabase
+        .from('orders')
+        .update({
+          payment_status: 'failed',
+          status_timeline: statusTimeline,
+        })
+        .eq('id', payment.order_id);
     }
   }
 
   return NextResponse.json({ ok: true });
 }
-

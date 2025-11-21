@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
-import { signIn } from 'next-auth/react'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import { useToast } from '@/hooks/use-toast'
 
 // Validation functions
 const validateIdentifier = (identifier: string): string | null => {
@@ -29,22 +30,21 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [resetEmail, setResetEmail] = useState('')
-  const [resetOtp, setResetOtp] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [resetStage, setResetStage] = useState<'email' | 'otp' | 'newPassword'>('email')
-  const [errors, setErrors] = useState<{identifier?: string, password?: string}>({})
+  const [errors, setErrors] = useState<{ identifier?: string, password?: string }>({})
   const router = useRouter()
   const { closeCart } = useCart()
+  const supabase = useSupabaseClient()
+  const { toast } = useToast()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage('')
-    
+
     // Validate inputs
     const identifierError = validateIdentifier(identifier)
     const passwordError = validatePassword(password)
-    
+
     if (identifierError || passwordError) {
       setErrors({
         identifier: identifierError || undefined,
@@ -54,36 +54,81 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
-    
+
     setErrors({})
-    
+
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          identifier: identifier.trim(), 
-          password 
-        }),
-      })
-      const data = await res.json()
-      
-      if (res.ok) {
-        setMessage('Login successful! Redirecting...')
-        
-        // Sync cart by triggering a page reload (which will trigger cart context's sync logic)
-        // Will execute after this function due to the timeout
-        setTimeout(() => {
-          closeCart() // Close cart drawer before redirecting
-          router.push('/')
-        }, 1500)
-      } else {
-        setMessage(data.message || 'Login failed')
+      // Determine if identifier is email or username
+      const isEmail = identifier.includes('@')
+      let email = identifier
+
+      // If it's a username, look up the email from profiles table
+      if (!isEmail) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', identifier)
+          .single()
+
+        if (profileError || !profile) {
+          setMessage('Invalid username or password')
+          setLoading(false)
+          return
+        }
+
+        email = profile.email
       }
+
+      // Sign in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.toLowerCase(),
+        password,
+      })
+
+      if (error) {
+        console.error('Login error:', error)
+        setMessage(error.message || 'Invalid credentials')
+        setLoading(false)
+        return
+      }
+
+      if (!data.session) {
+        setMessage('Login failed - no session created')
+        setLoading(false)
+        return
+      }
+
+      // Check if user is blocked
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_blocked')
+        .eq('id', data.user.id)
+        .single()
+
+      if (profile?.is_blocked) {
+        await supabase.auth.signOut()
+        setMessage('Your account has been blocked. Please contact support.')
+        setLoading(false)
+        return
+      }
+
+      setMessage('Login successful! Redirecting...')
+
+      toast({
+        title: "Welcome back!",
+        description: "You've successfully logged in.",
+      })
+
+      // Sync cart and redirect
+      setTimeout(() => {
+        closeCart()
+        router.push('/')
+        router.refresh() // Refresh to update auth state
+      }, 1000)
+
     } catch (err) {
       console.error(err)
       setMessage('Network error. Please try again.')
-    } finally {
       setLoading(false)
     }
   }
@@ -91,7 +136,19 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setLoading(true)
     try {
-      await signIn('google', { callbackUrl: '/' })
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+
+      if (error) {
+        console.error('Google login error:', error)
+        setMessage('Error logging in with Google')
+        setLoading(false)
+      }
+      // If no error, browser will redirect to Google
     } catch (error) {
       console.error('Google login error:', error)
       setMessage('Error logging in with Google')
@@ -99,91 +156,24 @@ export default function LoginPage() {
     }
   }
 
-  const handleSendResetOtp = async (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage('')
-    
-    try {
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: resetEmail,
-          purpose: 'reset'
-        }),
-      })
-      const data = await res.json()
-      
-      if (res.ok) {
-        setMessage(`OTP sent to ${resetEmail}. Please check your inbox.`)
-        setResetStage('otp')
-      } else {
-        setMessage(data.message || 'Error sending OTP')
-      }
-    } catch (err) {
-      console.error(err)
-      setMessage('Network error. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
-    
     try {
-      const res = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: resetEmail,
-          otp: resetOtp,
-          purpose: 'reset'
-        }),
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
       })
-      const data = await res.json()
-      
-      if (res.ok) {
-        setMessage('OTP verified. Enter your new password.')
-        setResetStage('newPassword')
-      } else {
-        setMessage(data.message || 'Invalid OTP')
-      }
-    } catch (err) {
-      console.error(err)
-      setMessage('Network error. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
 
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
-    
-    try {
-      const res = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: resetEmail,
-          password: newPassword,
-          otp: resetOtp
-        }),
-      })
-      const data = await res.json()
-      
-      if (res.ok) {
-        setMessage('Password reset successful! You can now login.')
-        setShowForgotPassword(false)
-        setIdentifier(resetEmail)
-        setPassword('')
+      if (error) {
+        setMessage(error.message || 'Error sending reset email')
       } else {
-        setMessage(data.message || 'Password reset failed')
+        setMessage('Password reset email sent! Please check your inbox.')
+        toast({
+          title: "Email sent",
+          description: "Check your inbox for password reset instructions.",
+        })
       }
     } catch (err) {
       console.error(err)
@@ -194,103 +184,37 @@ export default function LoginPage() {
   }
 
   const renderForgotPasswordForm = () => {
-  return (
+    return (
       <div className="space-y-4">
-        {resetStage === 'email' && (
-          <>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="resetEmail">
-                Email Address
-              </label>
-              <Input
-                id="resetEmail"
-                type="email"
-                required
-                value={resetEmail}
-                onChange={e => setResetEmail(e.target.value)}
-                className="w-full bg-[#222222] border-[#444444] text-white"
-                disabled={loading}
-                placeholder="Enter your email address"
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white" 
-              disabled={loading}
-              onClick={handleSendResetOtp}
-            >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Send Verification Code
-            </Button>
-          </>
-        )}
-        
-        {resetStage === 'otp' && (
-          <>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="resetOtp">
-                Verification Code
-              </label>
-              <Input
-                id="resetOtp"
-                type="text"
-                required
-                value={resetOtp}
-                onChange={e => setResetOtp(e.target.value)}
-                className="w-full bg-[#222222] border-[#444444] text-white"
-                disabled={loading}
-                placeholder="Enter 6-digit code"
-                maxLength={6}
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white" 
-              disabled={loading}
-              onClick={handleVerifyOtp}
-            >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Verify Code
-            </Button>
-          </>
-        )}
-        
-        {resetStage === 'newPassword' && (
-          <>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="newPassword">
-                New Password
-              </label>
-              <Input
-                id="newPassword"
-                type="password"
-                required
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                className="w-full bg-[#222222] border-[#444444] text-white"
-                disabled={loading}
-                placeholder="Enter your new password"
-                minLength={6}
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white" 
-              disabled={loading}
-              onClick={handleResetPassword}
-            >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Reset Password
-            </Button>
-          </>
-        )}
-        
+        <div>
+          <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="resetEmail">
+            Email Address
+          </label>
+          <Input
+            id="resetEmail"
+            type="email"
+            required
+            value={resetEmail}
+            onChange={e => setResetEmail(e.target.value)}
+            className="w-full bg-[#222222] border-[#444444] text-white"
+            disabled={loading}
+            placeholder="Enter your email address"
+          />
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white"
+          disabled={loading}
+          onClick={handleForgotPassword}
+        >
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Send Reset Link
+        </Button>
+
         <div className="text-center">
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={() => {
               setShowForgotPassword(false)
               setMessage('')
@@ -316,7 +240,7 @@ export default function LoginPage() {
               value={identifier}
               onChange={e => {
                 setIdentifier(e.target.value)
-                if (errors.identifier) setErrors({...errors, identifier: undefined})
+                if (errors.identifier) setErrors({ ...errors, identifier: undefined })
               }}
               className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.identifier ? 'border-red-500' : ''}`}
               disabled={loading}
@@ -328,7 +252,7 @@ export default function LoginPage() {
           </div>
           {errors.identifier && <p className="text-red-400 text-xs mt-1 ml-4">{errors.identifier}</p>}
         </div>
-        
+
         <div>
           <div className="relative flex items-center">
             <Input
@@ -338,7 +262,7 @@ export default function LoginPage() {
               value={password}
               onChange={e => {
                 setPassword(e.target.value)
-                if (errors.password) setErrors({...errors, password: undefined})
+                if (errors.password) setErrors({ ...errors, password: undefined })
               }}
               className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.password ? 'border-red-500' : ''}`}
               disabled={loading}
@@ -362,8 +286,8 @@ export default function LoginPage() {
               Remember me
             </label>
           </div>
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={() => {
               setShowForgotPassword(true)
               setMessage('')
@@ -373,10 +297,10 @@ export default function LoginPage() {
             Forgot password?
           </button>
         </div>
-        
-        <Button 
-          type="submit" 
-          className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium py-2.5 rounded-full" 
+
+        <Button
+          type="submit"
+          className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium py-2.5 rounded-full"
           disabled={loading}
         >
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -387,7 +311,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 relative"
       style={{
         backgroundImage: "url('/loginbg.png')",
@@ -398,23 +322,23 @@ export default function LoginPage() {
     >
       {/* Overlay for better contrast */}
       <div className="absolute inset-0 bg-black/40"></div>
-      
+
       <div className="w-full max-w-md relative z-10">
         <div className="backdrop-blur-md bg-black/30 border border-[#444444] rounded-2xl shadow-lg p-8 w-full">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white">Login</h1>
           </div>
-          
+
           <form onSubmit={handleLogin}>
             {showForgotPassword ? renderForgotPasswordForm() : renderLoginForm()}
-            
+
             {message && (
-              <div className={`text-sm text-center mt-4 ${message.includes('successful') ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`text-sm text-center mt-4 ${message.includes('successful') || message.includes('sent') ? 'text-green-400' : 'text-red-400'}`}>
                 {message}
               </div>
             )}
           </form>
-          
+
           <div className="text-center mt-6">
             <p className="text-sm text-white">
               Don't have an account?{' '}
@@ -442,10 +366,10 @@ export default function LoginPage() {
                 className="w-full bg-white hover:bg-gray-100 text-gray-900 font-medium py-2.5 rounded-full flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
                 Login with Google
               </Button>
@@ -455,4 +379,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-} 
+}

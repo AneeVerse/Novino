@@ -1,45 +1,40 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Address from '@/models/Address';
-import connectToDatabase from '@/lib/db';
-import { getTokenFromReq, verifyToken } from '@/lib/auth';
-import mongoose from 'mongoose';
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Verify authentication
-    const token = getTokenFromReq(req);
-    if (!token) {
+    // Create authenticated Supabase client
+    const supabase = createPagesServerClient({ req, res });
+
+    // Check if user is authenticated
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
 
-    let userInfo;
-    try {
-      userInfo = verifyToken(token);
-    } catch (err) {
-      return res.status(401).json({ message: 'Invalid token' });
-    }
-
-    if (!userInfo || !userInfo.userId) {
-      return res.status(401).json({ message: 'Invalid token' });
-    }
-
-    // Connect to database
-    await connectToDatabase();
-
+    const user = session.user;
     const { id } = req.query;
 
-    // Validate ID
-    if (!id || !mongoose.Types.ObjectId.isValid(id as string)) {
+    // Validate ID (should be UUID for Supabase)
+    if (!id || typeof id !== 'string') {
       return res.status(400).json({ message: 'Invalid address ID' });
     }
 
     // Find address and verify ownership
-    const address = await Address.findById(id);
-    if (!address) {
+    const { data: address, error: findError } = await supabase
+      .from('addresses')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (findError || !address) {
       return res.status(404).json({ message: 'Address not found' });
     }
 
-    if (address.userId !== userInfo.userId) {
+    if (address.user_id !== user.id) {
       return res.status(403).json({ message: 'Not authorized to access this address' });
     }
 
@@ -48,39 +43,66 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Update address
         const { name, line1, line2, city, state, pincode, phone, isDefault } = req.body;
 
-        // Update fields
-        if (name) address.name = name;
-        if (line1) address.line1 = line1;
-        if (line2 !== undefined) address.line2 = line2;
-        if (city) address.city = city;
-        if (state) address.state = state;
-        if (pincode) address.pincode = pincode;
-        if (phone) address.phone = phone;
-        if (isDefault !== undefined) address.isDefault = isDefault;
+        const updateData: any = {};
+        if (name) updateData.name = name;
+        if (line1) updateData.line1 = line1;
+        if (line2 !== undefined) updateData.line2 = line2;
+        if (city) updateData.city = city;
+        if (state) updateData.state = state;
+        if (pincode) updateData.pincode = pincode;
+        if (phone) updateData.phone = phone;
+        if (isDefault !== undefined) updateData.is_default = isDefault;
 
-        await address.save();
+        const { data: updatedAddress, error: updateError } = await supabase
+          .from('addresses')
+          .update(updateData)
+          .eq('id', id)
+          .select()
+          .single();
 
-        return res.status(200).json({ 
+        if (updateError) {
+          console.error('Error updating address:', updateError);
+          return res.status(500).json({ message: 'Error updating address' });
+        }
+
+        return res.status(200).json({
           message: 'Address updated successfully',
-          address 
+          address: updatedAddress
         });
 
       case 'DELETE':
         // Delete address
-        await Address.findByIdAndDelete(id);
+        const { error: deleteError } = await supabase
+          .from('addresses')
+          .delete()
+          .eq('id', id);
 
-        return res.status(200).json({ 
+        if (deleteError) {
+          console.error('Error deleting address:', deleteError);
+          return res.status(500).json({ message: 'Error deleting address' });
+        }
+
+        return res.status(200).json({
           message: 'Address deleted successfully'
         });
 
       case 'PATCH':
-        // Set as default address
-        address.isDefault = true;
-        await address.save(); // The pre-save hook will handle removing default from others
+        // Set as default address (trigger will handle removing default from others)
+        const { data: defaultAddress, error: patchError } = await supabase
+          .from('addresses')
+          .update({ is_default: true })
+          .eq('id', id)
+          .select()
+          .single();
 
-        return res.status(200).json({ 
+        if (patchError) {
+          console.error('Error setting default address:', patchError);
+          return res.status(500).json({ message: 'Error setting default address' });
+        }
+
+        return res.status(200).json({
           message: 'Default address updated',
-          address 
+          address: defaultAddress
         });
 
       default:
@@ -89,10 +111,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } catch (error: any) {
     console.error('Error in address API:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       message: 'Internal server error',
-      error: error.message 
+      error: error.message
     });
   }
 }
-

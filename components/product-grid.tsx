@@ -6,51 +6,8 @@ import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { formatPrice, getProductUrl } from "@/lib/utils"
 
-// Product data
-const products = [
-  {
-    id: 1,
-    name: "LIGHTCOOL",
-    price: "$22.5",
-    image: "/images/mug-black.png",
-    category: "Mugs"
-  },
-  {
-    id: 2,
-    name: "LIGHTCOOL",
-    price: "$22.5",
-    image: "/images/mug-white.png",
-    category: "Mugs"
-  },
-  {
-    id: 3,
-    name: "CYCLEWING",
-    price: "$35",
-    image: "/images/cycle1.png",
-    category: "Feeds"
-  },
-  {
-    id: 4,
-    name: "VELOCITY",
-    price: "$32",
-    image: "/images/cycle2.png",
-    category: "Feeds"
-  },
-  {
-    id: 5,
-    name: "CLASSWING",
-    price: "$20",
-    image: "/images/notebook-white.png",
-    category: "Books"
-  },
-  {
-    id: 6,
-    name: "HOLOCANE",
-    price: "$23",
-    image: "/images/notebook-black.png",
-    category: "Books"
-  }
-]
+// Default empty products array - data should come from API via props
+const products: Product[] = []
 
 // Note: The filter buttons should be in the parent component
 // This component only renders the product grid

@@ -1,8 +1,31 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient, ObjectId } from 'mongodb';
+import getSupabaseAdmin from '@/lib/supabase-admin';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const MONGODB_DB = process.env.MONGODB_DB || 'novino';
+const supabase = getSupabaseAdmin();
+
+const serializeCategory = (category: any) => {
+  // Ensure name is always a string, not an object
+  let name = category.name;
+  if (typeof name === 'object' && name !== null) {
+    // If name is an object, try to extract the name property
+    name = name.name || name.toString() || 'Unnamed Category';
+  }
+  if (typeof name !== 'string') {
+    name = String(name || 'Unnamed Category');
+  }
+
+  return {
+    ...category,
+    _id: category.id,
+    id: category.id,
+    name: name,
+    description: typeof category.description === 'string' ? category.description : (category.description || ''),
+    order: typeof category.order_index === 'number' ? category.order_index : category.order,
+    createdAt: category.created_at ?? category.createdAt,
+    updatedAt: category.updated_at ?? category.updatedAt,
+    products: Array.isArray(category.products) ? category.products : [],
+  };
+};
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,71 +38,81 @@ export default async function handler(
     return res.status(400).json({ error: 'Invalid category ID' });
   }
 
-  const client = new MongoClient(MONGODB_URI);
-
   try {
-    await client.connect();
-    const db = client.db(MONGODB_DB);
-    const collection = db.collection('productCategories');
-
     switch (method) {
-      case 'GET':
-        // Get single category
-        const category = await collection.findOne({ _id: new ObjectId(id) });
+      case 'GET': {
+        const { data, error } = await supabase
+          .from('product_categories')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-        if (!category) {
-          return res.status(404).json({ error: 'Category not found' });
+        if (error) {
+          if (error.code === 'PGRST116') {
+            return res.status(404).json({ error: 'Category not found' });
+          }
+          throw error;
         }
 
-        const serializedCategory = {
-          ...category,
-          _id: category._id.toString(),
-          id: category._id.toString(),
-        };
-
-        res.status(200).json(serializedCategory);
+        res.status(200).json(serializeCategory(data));
         break;
+      }
 
-      case 'PUT':
-        // Update category (including products)
-        const updateData = {
-          ...req.body,
-          updatedAt: new Date().toISOString(),
+      case 'PUT': {
+        const now = new Date().toISOString();
+        const { 
+          _id, 
+          id: bodyId, 
+          order, 
+          order_index,
+          createdAt,
+          updatedAt,
+          ...rest 
+        } = req.body || {};
+
+        // Only allow fields that exist in Supabase schema
+        const updatePayload: Record<string, any> = {
+          name: rest.name,
+          description: rest.description,
+          products: Array.isArray(rest.products) ? rest.products : rest.products || [],
+          updated_at: now,
         };
 
-        // Remove _id and id from update data to avoid conflicts
-        delete updateData._id;
-        delete updateData.id;
-
-        const updateResult = await collection.updateOne(
-          { _id: new ObjectId(id) },
-          { $set: updateData }
-        );
-
-        if (updateResult.matchedCount === 0) {
-          return res.status(404).json({ error: 'Category not found' });
+        if (typeof (order_index ?? order) === 'number') {
+          updatePayload.order_index = order_index ?? order;
         }
 
-        // Fetch the updated category
-        const updatedCategory = await collection.findOne({ _id: new ObjectId(id) });
+        const { data, error } = await supabase
+          .from('product_categories')
+          .update(updatePayload)
+          .eq('id', id)
+          .select('*')
+          .single();
 
-        res.status(200).json({
-          ...updatedCategory,
-          _id: updatedCategory!._id.toString(),
-          id: updatedCategory!._id.toString(),
-        });
+        if (error) {
+          if (error.code === 'PGRST116') {
+            return res.status(404).json({ error: 'Category not found' });
+          }
+          throw error;
+        }
+
+        res.status(200).json(serializeCategory(data));
         break;
+      }
 
-      case 'DELETE':
-        // Delete category
-        const deleteResult = await collection.deleteOne({ _id: new ObjectId(id) });
+      case 'DELETE': {
+        const { error } = await supabase
+          .from('product_categories')
+          .delete()
+          .eq('id', id);
 
-        if (deleteResult.deletedCount === 0) {
-          return res.status(404).json({ error: 'Category not found' });
+        if (error) {
+          throw error;
         }
 
         res.status(200).json({ success: true, message: 'Category deleted' });
         break;
+      }
 
       default:
         res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
@@ -92,8 +125,6 @@ export default async function handler(
       error: 'Server error',
       message: error.message,
     });
-  } finally {
-    await client.close();
   }
 }
 

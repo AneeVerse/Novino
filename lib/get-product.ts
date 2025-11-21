@@ -1,5 +1,4 @@
-import { ObjectId } from 'mongodb';
-import connectToMongoDB from '@/lib/mongodb-client';
+import getSupabaseAdmin from '@/lib/supabase-admin';
 
 export type ProductVariant = {
     id: string;
@@ -53,89 +52,86 @@ export type Product = {
     updatedAt?: string;
 };
 
+const supabase = getSupabaseAdmin();
+
+const serializeStandaloneProduct = (product: any) => ({
+    ...product,
+    _id: product.id,
+    id: product.id,
+    price: product.price ?? product.base_price,
+    basePrice: product.base_price ?? product.price,
+    shortDescription: product.short_description ?? product.shortDescription,
+    logoUrl: product.logo_url ?? product.logoUrl,
+    image: product.image ?? product.images?.[0],
+    images: Array.isArray(product.images) ? product.images : [],
+    variants: Array.isArray(product.variants) ? product.variants : [],
+    specifications: product.specifications,
+    faqSection: product.faq_section,
+    additionalImageUrl: product.additional_image_url,
+    featuredImageUrl: product.featured_image_url,
+    metaDescription: product.meta_description,
+    createdAt: product.created_at ?? product.createdAt,
+    updatedAt: product.updated_at ?? product.updatedAt,
+});
+
+const toCategoryProduct = (category: any, product: any) => ({
+    ...product,
+    _id: product.id,
+    id: product.id,
+    price: product.basePrice ?? product.price,
+    basePrice: product.basePrice ?? product.price,
+    image: product.images?.[0] || '',
+    category: category.id,
+    categoryName: category.name,
+    type: 'artefact' as const,
+    description: product.description || '',
+});
+
+// Standalone products table removed - all products are in product_categories
+async function findStandaloneProductRow(identifier: string) {
+    return null;
+}
+
+async function findCategoryProduct(identifier: string) {
+    const { data, error } = await supabase
+        .from('product_categories')
+        .select('id, name, products')
+        .order('order_index', { ascending: true });
+
+    if (error) {
+        throw error;
+    }
+
+    for (const category of data ?? []) {
+        const products = Array.isArray(category.products) ? category.products : [];
+        const matched = products.find(
+            (product: any) =>
+                product.id === identifier ||
+                product.slug === identifier ||
+                String(product.id) === identifier
+        );
+
+        if (matched) {
+            return toCategoryProduct(category, matched);
+        }
+    }
+
+    return null;
+}
+
 export async function getProduct(id: string): Promise<Product | null> {
     try {
-        // Use cached MongoDB connection
-        const { db } = await connectToMongoDB();
-        const collection = db.collection('products');
-
-        // Convert string ID to ObjectId if needed
-        let objectId;
-        try {
-            if (typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id)) {
-                objectId = new ObjectId(id);
-            }
-        } catch (e) {
-            console.error('Invalid ObjectId:', e);
+        const standalone = await findStandaloneProductRow(id);
+        if (standalone) {
+            return JSON.parse(JSON.stringify(serializeStandaloneProduct(standalone)));
         }
 
-        // Query by either ObjectId or string id
-        const query = objectId
-            ? { $or: [{ _id: objectId }, { id: id }] }
-            : { id: id };
-
-        let product = null;
-
-        // First, try to find by slug (if the id doesn't look like an ObjectId or numeric ID)
-        const isObjectId = typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
-        const isNumeric = !isNaN(Number(id));
-
-        if (!isObjectId && !isNumeric) {
-            // Likely a slug, try to find by slug first
-            product = await collection.findOne({ slug: id });
+        const categoryProduct = await findCategoryProduct(id);
+        if (categoryProduct) {
+            return JSON.parse(JSON.stringify(categoryProduct));
         }
 
-        // If not found by slug, try the original query (by ID)
-        if (!product) {
-            product = await collection.findOne(query);
-        }
-
-        // If no result and id is numeric, try to find by numeric ID
-        if (!product && isNumeric) {
-            const numericId = parseInt(id as string, 10);
-            product = await collection.findOne({ id: numericId });
-        }
-
-        // If still not found, search in productCategories collection
-        if (!product) {
-            const productCategoriesCollection = db.collection('productCategories');
-
-            // Search for the product inside any category's products array
-            const categoryWithProduct = await productCategoriesCollection.findOne({
-                'products.id': id as string
-            });
-
-            if (categoryWithProduct) {
-                // Find the specific product within the category
-                const foundProduct = categoryWithProduct.products?.find((p: any) => p.id === id);
-
-                if (foundProduct) {
-                    // Transform the product to match the expected format
-                    product = {
-                        ...foundProduct,
-                        _id: foundProduct.id,
-                        id: foundProduct.id,
-                        price: foundProduct.basePrice,
-                        image: foundProduct.images?.[0] || '',
-                        category: categoryWithProduct._id.toString(),
-                        type: 'artefact' as const,
-                        description: foundProduct.description || '',
-                    };
-                }
-            }
-        }
-
-        if (!product) {
-            return null;
-        }
-
-        // Add a numeric id property if it doesn't exist
-        if (product && !product.id && product._id) {
-            product.id = product._id.toString();
-        }
-
-        // Serialize ObjectId and dates to strings to be safe for Server Components -> Client Components
-        return JSON.parse(JSON.stringify(product));
+        return null;
     } catch (err) {
         console.error('Product query error:', err);
         return null;

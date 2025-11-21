@@ -300,6 +300,79 @@ export default function CheckoutPage() {
       });
       return;
     }
+
+    // Ensure address is saved to database before placing order
+    // If address doesn't have an ID or required fields, save it first
+    let finalAddress = deliveryAddress;
+    
+    // Check if address needs to be saved (no ID or missing required fields)
+    if (!deliveryAddress.id || !deliveryAddress.phone || !deliveryAddress.line1 || !deliveryAddress.city || !deliveryAddress.state) {
+      try {
+        // Build address payload
+        const addressPayload = {
+          name: deliveryAddress.name,
+          phone: deliveryAddress.phone || '',
+          line1: deliveryAddress.line1 || deliveryAddress.address?.split(',')[0] || deliveryAddress.address || '',
+          line2: deliveryAddress.line2 || '',
+          city: deliveryAddress.city || '',
+          state: deliveryAddress.state || '',
+          pincode: deliveryAddress.pincode,
+          isDefault: false
+        };
+
+        // Validate required fields
+        if (!addressPayload.name || !addressPayload.line1 || !addressPayload.city || 
+            !addressPayload.state || !addressPayload.pincode || !addressPayload.phone) {
+          toast({
+            variant: "destructive",
+            title: "Invalid Address",
+            description: "Please ensure all address fields are filled correctly. Redirecting to cart.",
+          });
+          router.push('/cart');
+          return;
+        }
+
+        // Save address to database
+        const addressResponse = await fetch('/api/addresses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(addressPayload)
+        });
+        
+        if (addressResponse.ok) {
+          const { address } = await addressResponse.json();
+          finalAddress = {
+            ...deliveryAddress,
+            id: address.id || address._id,
+            name: address.name,
+            phone: address.phone,
+            line1: address.line1,
+            line2: address.line2 || '',
+            city: address.city,
+            state: address.state,
+            pincode: address.pincode
+          };
+          // Update localStorage with saved address
+          localStorage.setItem('selectedAddress', JSON.stringify(finalAddress));
+        } else {
+          const errorData = await addressResponse.json().catch(() => ({ message: 'Failed to save address' }));
+          toast({
+            variant: "destructive",
+            title: "Save Failed",
+            description: errorData.message || "Failed to save address. Please try again.",
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error saving address:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occurred while saving the address. Please try again.",
+        });
+        return;
+      }
+    }
     
     const orderData = {
       items: selectedCartItems.map((item: any) => ({
@@ -315,13 +388,13 @@ export default function CheckoutPage() {
       shippingCost: 0,
       total,
       deliveryAddress: {
-        name: deliveryAddress.name,
-        line1: deliveryAddress.line1 || deliveryAddress.address?.split(',')[0] || deliveryAddress.address,
-        line2: deliveryAddress.line2 || '',
-        city: deliveryAddress.city || '',
-        state: deliveryAddress.state || '',
-        pincode: deliveryAddress.pincode,
-        phone: deliveryAddress.phone || ''
+        name: finalAddress.name,
+        line1: finalAddress.line1 || finalAddress.address?.split(',')[0] || finalAddress.address,
+        line2: finalAddress.line2 || '',
+        city: finalAddress.city || '',
+        state: finalAddress.state || '',
+        pincode: finalAddress.pincode,
+        phone: finalAddress.phone || ''
       },
       paymentMethod: 'razorpay',
       giftWrap: cartExtras.giftWrap

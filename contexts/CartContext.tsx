@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Define types for cart items
 export interface CartItem {
@@ -33,15 +34,15 @@ interface CartContextType {
 // Create the context with default values
 const CartContext = createContext<CartContextType>({
   cart: [],
-  addToCart: () => {},
-  removeFromCart: () => {},
-  updateQuantity: () => {},
-  clearCart: () => {},
+  addToCart: () => { },
+  removeFromCart: () => { },
+  updateQuantity: () => { },
+  clearCart: () => { },
   getCartTotal: () => 0,
   getCartCount: () => 0,
   isCartOpen: false,
-  openCart: () => {},
-  closeCart: () => {},
+  openCart: () => { },
+  closeCart: () => { },
   isLoading: false,
   isLoggedIn: false,
   isAuthReady: false,
@@ -56,84 +57,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Replace NextAuth session with custom token-based auth check
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAuthReady, setIsAuthReady] = useState(false);
-  
-  // Check authentication on mount and when cookies change
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (typeof window !== 'undefined') {
-        try {
-          // First check: Is there a profile page check we can do?
-          // If we're on the profile page, we're definitely logged in
-          const isOnProfilePage = window.location.pathname.includes('/profile');
-          if (isOnProfilePage) {
-            console.log('Auth determined from profile page access');
-            setIsLoggedIn(true);
-            return;
-          }
-          
-          // Second check: Try API auth check, but only do this once on mount
-          const response = await fetch('/api/auth/me', {
-            credentials: 'include'
-          });
-          
-          if (response.ok) {
-            console.log('Auth confirmed via API');
-            setIsLoggedIn(true);
-            return;
-          }
-          
-          // Third check: Cookie exists check
-          const cookies = document.cookie.split(';');
-          const tokenCookie = cookies.find(c => c.trim().startsWith('token='));
-          
-          if (tokenCookie && tokenCookie.length > 6) {
-            console.log('Auth token found in cookies');
-            setIsLoggedIn(true);
-            return;
-          }
-          
-          // If we get here, user is not logged in
-          console.log('User is not authenticated');
-          setIsLoggedIn(false);
-        } catch (error) {
-          console.error('Auth check error:', error);
-          // If error occurred, default to cookie check as fallback
-          const hasToken = document.cookie.includes('token=');
-          console.log('Fallback auth check - Token present:', hasToken);
-          setIsLoggedIn(hasToken);
-        } finally {
-          setIsAuthReady(true);
-        }
-      }
-    };
-    
-    // Only check on mount
-    checkAuth();
-    
-    // Set up a listener for storage events to detect login/logout from other tabs
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'logout' || event.key === 'login') {
-        setIsAuthReady(false);
-        checkAuth();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
+
+  // Use AuthContext for authentication
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const isLoggedIn = isAuthenticated;
+  const isAuthReady = !isAuthLoading;
 
   // Load cart on mount and when authentication status changes
   useEffect(() => {
     let isMounted = true;
-    
+
     async function loadCart() {
+      if (isAuthLoading) return;
+
       setIsLoading(true);
       try {
         if (isLoggedIn) {
@@ -165,11 +101,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
 
     loadCart();
-    
+
     return () => {
       isMounted = false;
     };
-  }, [isLoggedIn]);
+  }, [isLoggedIn, isAuthLoading]);
 
   // Function to load cart from localStorage
   const loadLocalCart = () => {
@@ -191,7 +127,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies for auth
+        // No need for credentials: 'include' if using Supabase client in API route, 
+        // but if API route expects cookies, we might need it. 
+        // However, since we are using Supabase Auth, the session is handled via cookies automatically by the browser.
       });
 
       if (response.ok) {
@@ -215,7 +153,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ items: updatedCart }),
-        credentials: 'include', // Include cookies for auth
       });
 
       if (!response.ok) {
@@ -229,30 +166,29 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // Sync guest cart to server when user logs in (only once)
   useEffect(() => {
     const syncRef = { hasSynced: false };
-    
+
     async function syncCartOnLogin() {
-      if (isLoggedIn && !syncRef.hasSynced) {
+      if (isLoggedIn && !syncRef.hasSynced && !isAuthLoading) {
         try {
           // First, fetch server cart to see what's there
           const serverResponse = await fetch('/api/cart/get', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
           });
-          
+
           let serverCartItems: CartItem[] = [];
           if (serverResponse.ok) {
             const serverData = await serverResponse.json();
             serverCartItems = serverData.items || [];
           }
-          
+
           // Get local cart
           const localCart = localStorage.getItem('novinoCart');
-          
+
           if (localCart) {
             try {
               const parsedLocalCart = JSON.parse(localCart);
-              
+
               // Only sync if there are items in the local cart
               if (Array.isArray(parsedLocalCart) && parsedLocalCart.length > 0) {
                 const response = await fetch('/api/cart/sync', {
@@ -261,13 +197,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({ guestCartItems: parsedLocalCart }),
-                  credentials: 'include',
                 });
-                
+
                 if (response.ok) {
                   const data = await response.json();
                   setCart(data.items || []);
-                  
+
                   // Clear local cart after successful sync
                   localStorage.removeItem('novinoCart');
                   syncRef.hasSynced = true;
@@ -275,23 +210,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                   // If sync fails, merge locally and show server cart
                   const mergedCart = [...serverCartItems];
                   const now = new Date();
-                  
+
                   for (const guestItem of parsedLocalCart) {
-                    const existingIndex = mergedCart.findIndex(item => 
-                      String(item.id) === String(guestItem.id) && 
+                    const existingIndex = mergedCart.findIndex(item =>
+                      String(item.id) === String(guestItem.id) &&
                       ((!item.variant && !guestItem.variant) || item.variant === guestItem.variant)
                     );
-                    
+
                     if (existingIndex !== -1) {
                       mergedCart[existingIndex].quantity += guestItem.quantity || 1;
                     } else {
-                      mergedCart.push({ 
-                        ...guestItem, 
-                        addedAt: guestItem.addedAt || now 
+                      mergedCart.push({
+                        ...guestItem,
+                        addedAt: guestItem.addedAt || now
                       });
                     }
                   }
-                  
+
                   setCart(mergedCart);
                   localStorage.removeItem('novinoCart');
                   syncRef.hasSynced = true;
@@ -331,28 +266,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     }
-    
-    syncCartOnLogin();
-  }, [isLoggedIn]);
+
+    if (isLoggedIn && !isAuthLoading) {
+      syncCartOnLogin();
+    }
+  }, [isLoggedIn, isAuthLoading]);
 
   // Save cart to localStorage if not logged in
   useEffect(() => {
-    if (!isLoggedIn && !isLoading) {
+    if (!isLoggedIn && !isLoading && !isAuthLoading) {
       localStorage.setItem('novinoCart', JSON.stringify(cart));
     }
-  }, [cart, isLoggedIn, isLoading]);
+  }, [cart, isLoggedIn, isLoading, isAuthLoading]);
 
   // Update server cart when cart changes for logged-in users (debounced)
   useEffect(() => {
-    if (isLoggedIn && !isLoading && cart.length >= 0) {
+    if (isLoggedIn && !isLoading && !isAuthLoading && cart.length >= 0) {
       // Debounce updates to prevent too many API calls
       const timeoutId = setTimeout(() => {
         updateServerCart(cart);
       }, 500); // 500ms debounce
-      
+
       return () => clearTimeout(timeoutId);
     }
-  }, [cart, isLoggedIn, isLoading]);
+  }, [cart, isLoggedIn, isLoading, isAuthLoading]);
 
   // Add item to cart
   const addToCart = (item: CartItem) => {
@@ -361,14 +298,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       console.error('Invalid cart item:', item);
       return;
     }
-    
+
     setCart(prevCart => {
       // Ensure quantity is at least 1
       const quantity = item.quantity || 1;
-      
+
       // Normalize IDs for comparison (handle both string and number)
       const itemId = String(item.id).trim();
-      
+
       // Check if item already exists in cart (with same id AND name AND variant if applicable)
       // This ensures different products are never merged, even if IDs somehow match
       const existingItemIndex = prevCart.findIndex(
@@ -377,7 +314,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           const idMatch = cartItemId === itemId;
           const nameMatch = cartItem.name === item.name;
           const variantMatch = (!cartItem.variant && !item.variant) || cartItem.variant === item.variant;
-          
+
           // Only consider it a match if ALL three match: ID, name, and variant
           return idMatch && nameMatch && variantMatch;
         }
@@ -405,16 +342,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         return [...prevCart, newItem];
       }
     });
-    
+
     // Open cart drawer when item is added
     setIsCartOpen(true);
   };
 
   // Remove item from cart
   const removeFromCart = (itemId: string | number, variant?: string) => {
-    setCart(prevCart => 
-      prevCart.filter(item => 
-        item.id !== itemId || 
+    setCart(prevCart =>
+      prevCart.filter(item =>
+        item.id !== itemId ||
         (variant && item.variant !== variant)
       )
     );
@@ -422,8 +359,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Update item quantity
   const updateQuantity = (itemId: string | number, quantity: number, variant?: string) => {
-    setCart(prevCart => 
-      prevCart.map(item => 
+    setCart(prevCart =>
+      prevCart.map(item =>
         (item.id === itemId && ((!variant && !item.variant) || item.variant === variant))
           ? { ...item, quantity }
           : item
@@ -440,10 +377,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const getCartTotal = () => {
     return cart.reduce((total, item) => {
       // Convert price to number if it's a string
-      const itemPrice = typeof item.price === 'string' 
-        ? parseFloat(item.price.replace(/[^0-9.]/g, '')) 
+      const itemPrice = typeof item.price === 'string'
+        ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
         : item.price;
-      
+
       return total + (itemPrice * item.quantity);
     }, 0);
   };
@@ -452,12 +389,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const getCartCount = () => {
     return cart.reduce((count, item) => count + item.quantity, 0);
   };
-  
+
   // Open cart drawer
   const openCart = () => {
     setIsCartOpen(true);
   };
-  
+
   // Close cart drawer
   const closeCart = () => {
     setIsCartOpen(false);

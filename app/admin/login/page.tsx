@@ -28,13 +28,17 @@ export default function AdminLoginPage() {
     e.preventDefault()
     setLoading(true)
     setMessage('')
-    
+
     try {
       const success = await login(email, password)
-      
+
       if (success) {
         setMessage('Login successful! Redirecting...')
-        // The useEffect will handle redirection
+        setRedirecting(true)
+        // Explicitly redirect to dashboard
+        setTimeout(() => {
+          router.push('/dashboard')
+        }, 1000)
       } else {
         setMessage('Invalid admin credentials')
       }
@@ -47,7 +51,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div 
+    <div
       className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 relative"
       style={{
         backgroundImage: "url('/loginbg.png')",
@@ -58,13 +62,13 @@ export default function AdminLoginPage() {
     >
       {/* Overlay for better contrast */}
       <div className="absolute inset-0 bg-black/40"></div>
-      
+
       <div className="w-full max-w-md relative z-10">
         <div className="backdrop-blur-md bg-black/30 border border-[#444444] rounded-2xl shadow-lg p-8 w-full">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white">Admin Login</h1>
           </div>
-          
+
           <form onSubmit={handleLogin}>
             <div className="space-y-5">
               <div>
@@ -84,7 +88,7 @@ export default function AdminLoginPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <div className="relative flex items-center">
                   <Input
@@ -103,15 +107,15 @@ export default function AdminLoginPage() {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium py-2.5 rounded-full" 
+              <Button
+                type="submit"
+                className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium py-2.5 rounded-full"
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Login
               </Button>
-              
+
               {message && (
                 <div className={`text-sm text-center mt-4 ${message.includes('successful') ? 'text-green-400' : 'text-red-400'}`}>
                   {message}
@@ -119,7 +123,7 @@ export default function AdminLoginPage() {
               )}
             </div>
           </form>
-          
+
           <div className="text-center mt-6">
             <p className="text-sm text-white">
               Go back to{' '}
@@ -132,4 +136,4 @@ export default function AdminLoginPage() {
       </div>
     </div>
   );
-} 
+}

@@ -14,12 +14,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { 
-  Loader2, User, ShoppingBag, MapPin, Shield, LogOut, 
+import {
+  Loader2, User, ShoppingBag, MapPin, Shield, LogOut,
   Package, Truck, CheckCircle2, Clock, XCircle, AlertCircle,
   Edit, Trash2, Plus, Eye, RefreshCw, X, CreditCard, Calendar,
   Navigation
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import TrackingJourneyCard from "@/components/orders/tracking-journey-card";
 import { getTrackingPreviewData } from "@/components/orders/mock-tracking-data";
 
@@ -94,14 +95,15 @@ export default function ProfilePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  
-  const [user, setUser] = useState<{
-    username: string;
-    email: string;
-    name?: string;
-    userId?: string;
-  } | null>(null);
-  
+  const { user: supabaseUser, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+
+  const user = supabaseUser ? {
+    username: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+    email: supabaseUser.email || '',
+    name: supabaseUser.user_metadata?.full_name,
+    userId: supabaseUser.id
+  } : null;
+
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -109,16 +111,16 @@ export default function ProfilePage() {
   const [shipments, setShipments] = useState<Record<string, Shipment>>({});
   const [shipmentLoading, setShipmentLoading] = useState(false);
   const [shipmentError, setShipmentError] = useState<string | null>(null);
-  
+
   // Tab state
   const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'profile');
-  
+
   // Password change state
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
-  
+
   // Address form state
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
@@ -130,33 +132,22 @@ export default function ProfilePage() {
     state: "",
     pincode: ""
   });
-  
+
   // Check if user is logged in
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const res = await fetch("/api/auth/me");
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-          
-          // Fetch orders and addresses
-          fetchOrders();
-          fetchAddresses();
-        } else {
-          router.push('/login');
-        }
-      } catch (err) {
-        console.error(err);
-        router.push('/login');
-      } finally {
+    if (!authLoading) {
+      if (isAuthenticated && user) {
         setLoading(false);
+        // Fetch orders and addresses
+        fetchOrders();
+        fetchAddresses();
+      } else {
+        setLoading(false);
+        router.push('/login');
       }
     }
-    
-    checkAuth();
-  }, [router]);
-  
+  }, [isAuthenticated, authLoading, router]);
+
   // Fetch orders
   const fetchOrders = async () => {
     try {
@@ -169,7 +160,7 @@ export default function ProfilePage() {
       console.error('Error fetching orders:', error);
     }
   };
-  
+
   // Fetch addresses
   const fetchAddresses = async () => {
     try {
@@ -206,35 +197,16 @@ export default function ProfilePage() {
   };
   const selectedShipment = selectedOrder ? shipments[selectedOrder._id] : null;
 
-  
+
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/auth/logout", { 
-        method: "POST",
-        credentials: 'include' // Ensure cookies are sent
+      await logout();
+
+      // Show success message
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out"
       });
-      
-      if (res.ok) {
-        // Clear any client-side storage
-        if (typeof window !== 'undefined') {
-          // Clear localStorage
-          localStorage.clear();
-          // Clear sessionStorage
-          sessionStorage.clear();
-        }
-        
-        // Show success message
-        toast({
-          title: "Logged out",
-          description: "You have been successfully logged out"
-        });
-        
-        // Force a hard redirect to login page
-        // Using window.location ensures a full page reload and clears any cached state
-        window.location.href = "/login";
-      } else {
-        throw new Error('Logout failed');
-      }
     } catch (err) {
       console.error(err);
       toast({
@@ -244,7 +216,7 @@ export default function ProfilePage() {
       });
     }
   };
-  
+
   // Password validation
   const validatePassword = (password: string): string | null => {
     if (!password) return 'Password is required';
@@ -259,27 +231,27 @@ export default function ProfilePage() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordLoading(true);
-    
+
     const passwordError = validatePassword(newPassword);
     if (passwordError) {
       toast({ variant: "destructive", title: "Invalid Password", description: passwordError });
       setPasswordLoading(false);
       return;
     }
-    
+
     if (newPassword !== confirmPassword) {
       toast({ variant: "destructive", title: "Password Mismatch", description: "Passwords don't match" });
       setPasswordLoading(false);
       return;
     }
-    
+
     try {
       const res = await fetch("/api/auth/change-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword, newPassword })
       });
-      
+
       if (res.ok) {
         toast({ title: "Success", description: "Password updated successfully" });
         setCurrentPassword("");
@@ -295,24 +267,24 @@ export default function ProfilePage() {
       setPasswordLoading(false);
     }
   };
-  
+
   // Address handlers
   const handleSaveAddress = async () => {
     if (!addressForm.name || !addressForm.line1 || !addressForm.city || !addressForm.state || !addressForm.pincode) {
       toast({ variant: "destructive", title: "Missing Fields", description: "Please fill all required fields" });
       return;
     }
-    
+
     try {
       const url = editingAddressId ? `/api/addresses/${editingAddressId}` : '/api/addresses';
       const method = editingAddressId ? 'PUT' : 'POST';
-      
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(addressForm)
       });
-      
+
       if (res.ok) {
         toast({ title: "Success", description: editingAddressId ? "Address updated" : "Address added" });
         fetchAddresses();
@@ -326,10 +298,10 @@ export default function ProfilePage() {
       toast({ variant: "destructive", title: "Error", description: "Network error" });
     }
   };
-  
+
   const handleDeleteAddress = async (id: string) => {
     if (!confirm('Are you sure you want to delete this address?')) return;
-    
+
     try {
       const res = await fetch(`/api/addresses/${id}`, { method: 'DELETE' });
       if (res.ok) {
@@ -340,7 +312,7 @@ export default function ProfilePage() {
       toast({ variant: "destructive", title: "Error", description: "Could not delete address" });
     }
   };
-  
+
   const handleSetDefaultAddress = async (id: string) => {
     try {
       const res = await fetch(`/api/addresses/${id}`, { method: 'PATCH' });
@@ -352,10 +324,10 @@ export default function ProfilePage() {
       toast({ variant: "destructive", title: "Error", description: "Could not update address" });
     }
   };
-  
+
   const handleCancelOrder = async (orderId: string) => {
     if (!confirm('Are you sure you want to cancel this order?')) return;
-    
+
     try {
       const res = await fetch(`/api/orders/${orderId}`, { method: 'PATCH' });
       if (res.ok) {
@@ -369,13 +341,18 @@ export default function ProfilePage() {
       toast({ variant: "destructive", title: "Error", description: "Could not cancel order" });
     }
   };
-  
+
   const formatCurrency = (amount: number = 0) => {
     return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
-  
+
   // Status badge component
-  const getOrderStatusBadge = (status: string) => {
+  const getOrderStatusBadge = (status: string | undefined | null) => {
+    // Handle undefined/null status with default
+    if (!status || typeof status !== 'string') {
+      status = 'pending';
+    }
+
     const statusConfig = {
       pending: { color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: Clock },
       confirmed: { color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: CheckCircle2 },
@@ -384,10 +361,10 @@ export default function ProfilePage() {
       delivered: { color: 'bg-green-500/20 text-green-400 border-green-500/30', icon: CheckCircle2 },
       cancelled: { color: 'bg-red-500/20 text-red-400 border-red-500/30', icon: XCircle }
     };
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     const Icon = config.icon;
-    
+
     return (
       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${config.color}`}>
         <Icon className="w-3.5 h-3.5" />
@@ -395,41 +372,81 @@ export default function ProfilePage() {
       </span>
     );
   };
-  
-  const getPaymentStatusBadge = (status: string) => {
+
+  const getPaymentStatusBadge = (status: string | undefined | null) => {
+    // Handle undefined/null status with default
+    if (!status || typeof status !== 'string') {
+      status = 'pending';
+    }
+
     const colors = {
       paid: 'bg-green-500/20 text-green-400 border-green-500/30',
       pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       failed: 'bg-red-500/20 text-red-400 border-red-500/30',
-      refunded: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+      refunded: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+      requires_payment: 'bg-orange-500/20 text-orange-400 border-orange-500/30'
     };
-    
+
+    const statusText = {
+      pending: 'COD - Pending',
+      requires_payment: 'Payment Required',
+      paid: 'Paid',
+      failed: 'Failed',
+      refunded: 'Refunded'
+    };
+
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors[status as keyof typeof colors] || colors.pending}`}>
-        {status === 'pending' && 'COD - Pending'}
-        {status === 'paid' && 'Paid'}
-        {status === 'failed' && 'Failed'}
-        {status === 'refunded' && 'Refunded'}
+        {statusText[status as keyof typeof statusText] || status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
   };
-  
+
+  // Helper function to safely get order status (handles both camelCase and snake_case)
+  const getOrderStatus = (order: Order | any): string => {
+    return order?.orderStatus || order?.order_status || 'pending';
+  };
+
+  // Helper function to safely get payment status (handles both camelCase and snake_case)
+  const getPaymentStatus = (order: Order | any): string => {
+    return order?.paymentStatus || order?.payment_status || 'pending';
+  };
+
+  // Helper function to safely get delivery address (handles both camelCase and snake_case, and missing values)
+  const getDeliveryAddress = (order: Order | any): Order['deliveryAddress'] | null => {
+    const addr = order?.deliveryAddress || order?.delivery_address;
+    if (!addr || typeof addr !== 'object') {
+      return null;
+    }
+    // Ensure all required fields have defaults
+    return {
+      name: addr.name || 'N/A',
+      line1: addr.line1 || '',
+      line2: addr.line2 || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      pincode: addr.pincode || '',
+      phone: addr.phone || '',
+      email: addr.email || ''
+    };
+  };
+
   const selectedOrderTotals = selectedOrder
     ? (() => {
-        const subtotal =
-          typeof selectedOrder.subtotal === 'number'
-            ? selectedOrder.subtotal
-            : selectedOrder.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        const shipping =
-          typeof selectedOrder.shippingCost === 'number' ? selectedOrder.shippingCost : 0;
-        const gstAmount =
-          typeof selectedOrder.gst === 'number'
-            ? selectedOrder.gst
-            : Math.max(selectedOrder.total - subtotal - shipping, 0);
-        return { subtotal, shipping, gstAmount };
-      })()
+      const subtotal =
+        typeof selectedOrder.subtotal === 'number'
+          ? selectedOrder.subtotal
+          : selectedOrder.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const shipping =
+        typeof selectedOrder.shippingCost === 'number' ? selectedOrder.shippingCost : 0;
+      const gstAmount =
+        typeof selectedOrder.gst === 'number'
+          ? selectedOrder.gst
+          : Math.max(selectedOrder.total - subtotal - shipping, 0);
+      return { subtotal, shipping, gstAmount };
+    })()
     : null;
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2D2D2D] to-[#1a1a1a] flex items-center justify-center">
@@ -468,19 +485,19 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-        
+
         {/* Tabs Section */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-[#333333] border border-[#444444] p-1.5 rounded-xl flex-wrap h-auto gap-2">
-            <TabsTrigger 
-              value="profile" 
+            <TabsTrigger
+              value="profile"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#AE876D] data-[state=active]:to-[#8d6c58] data-[state=active]:text-white rounded-lg text-white/70 hover:text-white transition-all flex items-center gap-2"
             >
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="orders" 
+            <TabsTrigger
+              value="orders"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#AE876D] data-[state=active]:to-[#8d6c58] data-[state=active]:text-white rounded-lg text-white/70 hover:text-white transition-all flex items-center gap-2"
             >
               <ShoppingBag className="w-4 h-4" />
@@ -489,15 +506,15 @@ export default function ProfilePage() {
                 <span className="bg-[#AE876D] text-white text-xs px-2 py-0.5 rounded-full">{orders.length}</span>
               )}
             </TabsTrigger>
-            <TabsTrigger 
-              value="addresses" 
+            <TabsTrigger
+              value="addresses"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#AE876D] data-[state=active]:to-[#8d6c58] data-[state=active]:text-white rounded-lg text-white/70 hover:text-white transition-all flex items-center gap-2"
             >
               <MapPin className="w-4 h-4" />
               <span className="hidden sm:inline">Addresses</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="security" 
+            <TabsTrigger
+              value="security"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#AE876D] data-[state=active]:to-[#8d6c58] data-[state=active]:text-white rounded-lg text-white/70 hover:text-white transition-all flex items-center gap-2"
             >
               <Shield className="w-4 h-4" />
@@ -544,7 +561,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </TabsContent>
-          
+
           {/* Orders Tab */}
           <TabsContent value="orders" className="space-y-6">
             {orders.length === 0 ? (
@@ -571,8 +588,8 @@ export default function ProfilePage() {
                             <h3 className="text-lg font-semibold text-white">
                               Order #{order.orderNumber}
                             </h3>
-                            {getOrderStatusBadge(order.orderStatus)}
-                            {getPaymentStatusBadge(order.paymentStatus)}
+                            {getOrderStatusBadge(getOrderStatus(order))}
+                            {getPaymentStatusBadge(getPaymentStatus(order))}
                           </div>
                           <p className="text-white/50 text-sm mt-1">
                             Placed on {new Date(order.orderedAt).toLocaleDateString('en-IN', {
@@ -589,7 +606,7 @@ export default function ProfilePage() {
                           <p className="text-white/50 text-sm">{order.items.length} item(s)</p>
                         </div>
                       </div>
-                      
+
                       {/* Order Items */}
                       <div className="space-y-3 mb-4">
                         {order.items.slice(0, 2).map((item, idx) => (
@@ -624,7 +641,7 @@ export default function ProfilePage() {
                           </p>
                         )}
                       </div>
-                      
+
                       {/* Delivery Address */}
                       <div className="bg-[#222222] rounded-lg p-4 mb-4">
                         <p className="text-white/70 text-sm font-medium mb-2 flex items-center gap-2">
@@ -632,13 +649,21 @@ export default function ProfilePage() {
                           Delivery Address
                         </p>
                         <p className="text-white text-sm">
-                          {order.deliveryAddress.name}<br />
-                          {order.deliveryAddress.line1}
-                          {order.deliveryAddress.line2 && `, ${order.deliveryAddress.line2}`}<br />
-                          {order.deliveryAddress.city}, {order.deliveryAddress.state} - {order.deliveryAddress.pincode}
+                          {(() => {
+                            const addr = getDeliveryAddress(order);
+                            if (!addr) return 'Address not available';
+                            return (
+                              <>
+                                {addr.name}<br />
+                                {addr.line1}
+                                {addr.line2 && `, ${addr.line2}`}<br />
+                                {addr.city}, {addr.state} - {addr.pincode}
+                              </>
+                            );
+                          })()}
                         </p>
                       </div>
-                      
+
                       {/* Payment Method */}
                       <div className="flex items-center gap-2 mb-4 text-sm">
                         <span className="text-white/70">Payment Method:</span>
@@ -646,7 +671,7 @@ export default function ProfilePage() {
                           {order.paymentMethod === 'cod' ? 'Cash on Delivery' : order.paymentMethod}
                         </span>
                       </div>
-                      
+
                       {/* Actions */}
                       <div className="flex flex-wrap gap-3 pt-4 border-t border-[#444444]">
                         <Button
@@ -661,7 +686,7 @@ export default function ProfilePage() {
                           <Eye className="w-4 h-4 mr-2" />
                           View Details
                         </Button>
-                        {order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && (
+                        {getOrderStatus(order) !== 'cancelled' && getOrderStatus(order) !== 'delivered' && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -704,7 +729,7 @@ export default function ProfilePage() {
                         </Button>
                       </DialogTitle>
                     </DialogHeader>
-                    
+
                     <div className="space-y-6 mt-4">
                       {/* Order Status & Info */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[#1A1A1A] rounded-lg border border-[#333333]">
@@ -728,7 +753,7 @@ export default function ProfilePage() {
                             <Package className="w-4 h-4 text-white/60" />
                             <span className="text-sm text-white/60">Order Status</span>
                           </div>
-                          {getOrderStatusBadge(selectedOrder.orderStatus)}
+                          {getOrderStatusBadge(getOrderStatus(selectedOrder))}
                         </div>
                       </div>
 
@@ -791,7 +816,7 @@ export default function ProfilePage() {
                             ))}
                           </div>
                         </div>
-                        
+
                         {/* Payment Summary - Right Side */}
                         <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] space-y-3 h-fit">
                           <p className="text-white font-semibold text-base">Payment Summary</p>
@@ -831,7 +856,7 @@ export default function ProfilePage() {
                             <div className="flex justify-between">
                               <span>Payment Status</span>
                               <span className="font-medium text-white capitalize">
-                                {selectedOrder.paymentStatus}
+                                {getPaymentStatus(selectedOrder)}
                               </span>
                             </div>
                             {selectedOrder.giftWrap && (
@@ -851,25 +876,32 @@ export default function ProfilePage() {
                             <MapPin className="w-4 h-4 text-[#AE876D]" />
                             Delivery Information
                           </p>
-                          <p className="text-white font-medium">{selectedOrder.deliveryAddress.name}</p>
-                          <p className="text-white/70">
-                            {selectedOrder.deliveryAddress.line1}
-                            {selectedOrder.deliveryAddress.line2 && (
+                          {(() => {
+                            const addr = getDeliveryAddress(selectedOrder);
+                            if (!addr) return <p className="text-white/60">Address not available</p>;
+                            return (
                               <>
-                                <br />
-                                {selectedOrder.deliveryAddress.line2}
+                                <p className="text-white font-medium">{addr.name}</p>
+                                <p className="text-white/70">
+                                  {addr.line1}
+                                  {addr.line2 && (
+                                    <>
+                                      <br />
+                                      {addr.line2}
+                                    </>
+                                  )}
+                                  <br />
+                                  {addr.city}, {addr.state} - {addr.pincode}
+                                </p>
+                                {addr.phone && (
+                                  <p className="text-white/60">Phone: {addr.phone}</p>
+                                )}
+                                {addr.email && (
+                                  <p className="text-white/60">Email: {addr.email}</p>
+                                )}
                               </>
-                            )}
-                            <br />
-                            {selectedOrder.deliveryAddress.city}, {selectedOrder.deliveryAddress.state} -{' '}
-                            {selectedOrder.deliveryAddress.pincode}
-                          </p>
-                          {selectedOrder.deliveryAddress.phone && (
-                            <p className="text-white/60">Phone: {selectedOrder.deliveryAddress.phone}</p>
-                          )}
-                          {selectedOrder.deliveryAddress.email && (
-                            <p className="text-white/60">Email: {selectedOrder.deliveryAddress.email}</p>
-                          )}
+                            );
+                          })()}
                         </div>
                         <div className="p-4 rounded-lg border border-[#444444] bg-[#2a2a2a] text-sm space-y-2">
                           <p className="text-white font-semibold text-base">Order Insights</p>
@@ -892,10 +924,10 @@ export default function ProfilePage() {
                             <span className="text-white font-medium">
                               {selectedOrder.estimatedDelivery
                                 ? new Date(selectedOrder.estimatedDelivery).toLocaleDateString('en-IN', {
-                                    day: 'numeric',
-                                    month: 'long',
-                                    year: 'numeric'
-                                  })
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric'
+                                })
                                 : 'To be updated'}
                             </span>
                           </div>
@@ -927,21 +959,21 @@ export default function ProfilePage() {
                               accentColor="#AE876D"
                               trackingNumber={selectedShipment.awbCode || selectedOrder.orderNumber}
                               courierName={selectedShipment.courierName || 'Courier partner'}
-                              statusText={selectedShipment.status || selectedOrder.orderStatus}
+                              statusText={selectedShipment.status || getOrderStatus(selectedOrder)}
                               summaryLabel={selectedShipment.status || 'Your parcel is on the way'}
                               meta={{
                                 deliveryType:
-                                  selectedOrder.orderStatus === 'shipped' || selectedOrder.orderStatus === 'delivered'
+                                  getOrderStatus(selectedOrder) === 'shipped' || getOrderStatus(selectedOrder) === 'delivered'
                                     ? 'Express'
                                     : 'Standard',
                                 estimate: selectedOrder.estimatedDelivery
                                   ? new Date(selectedOrder.estimatedDelivery).toLocaleDateString('en-IN', {
-                                      day: 'numeric',
-                                      month: 'short',
-                                    })
+                                    day: 'numeric',
+                                    month: 'short',
+                                  })
                                   : selectedShipment.trackingEvents?.length
-                                  ? 'Live updates'
-                                  : 'Updating soon',
+                                    ? 'Live updates'
+                                    : 'Updating soon',
                                 weight: 'Pending',
                               }}
                               stops={[
@@ -949,26 +981,27 @@ export default function ProfilePage() {
                                   label: selectedShipment.courierName || 'Pickup scheduled',
                                   detail: selectedShipment.pickupScheduledFor
                                     ? new Date(selectedShipment.pickupScheduledFor).toLocaleString('en-IN', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                      })
+                                      day: 'numeric',
+                                      month: 'short',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })
                                     : 'Awaiting pickup confirmation',
                                 },
                                 {
-                                  label: selectedOrder.deliveryAddress.city,
-                                  detail: `${selectedOrder.deliveryAddress.state} · ${selectedOrder.deliveryAddress.pincode}`,
+                                  label: getDeliveryAddress(selectedOrder)?.city || 'City',
+                                  detail: `${getDeliveryAddress(selectedOrder)?.state || 'State'} · ${getDeliveryAddress(selectedOrder)?.pincode || 'Pincode'}`,
                                 },
                               ]}
                               shipper={{
                                 name: selectedShipment.courierName || 'Courier partner',
                                 role: selectedShipment.status || 'Logistics partner',
                                 rating: 4.8,
-                                phone: selectedOrder.deliveryAddress.phone,
-                                whatsappUrl: selectedOrder.deliveryAddress.phone
-                                  ? `https://wa.me/91${selectedOrder.deliveryAddress.phone.replace(/\D/g, '')}`
-                                  : undefined,
+                                phone: getDeliveryAddress(selectedOrder)?.phone,
+                                whatsappUrl: (() => {
+                                  const addr = getDeliveryAddress(selectedOrder);
+                                  return addr?.phone ? `https://wa.me/91${addr.phone.replace(/\D/g, '')}` : undefined;
+                                })(),
                                 supportUrl: selectedShipment.trackingUrl,
                               }}
                               events={selectedShipment.trackingEvents || []}
@@ -992,40 +1025,41 @@ export default function ProfilePage() {
                             <TrackingJourneyCard
                               {...getTrackingPreviewData({
                                 trackingNumber: selectedOrder.orderNumber,
-                                courierName: selectedOrder.orderStatus === 'shipped' ? 'Express Partner' : 'Nimbus Express',
-                                statusText: selectedOrder.orderStatus || 'Processing',
+                                courierName: getOrderStatus(selectedOrder) === 'shipped' ? 'Express Partner' : 'Nimbus Express',
+                                statusText: getOrderStatus(selectedOrder) || 'Processing',
                                 summaryLabel: 'Preview · shipment card',
                                 meta: {
                                   deliveryType:
-                                    selectedOrder.orderStatus === 'shipped' || selectedOrder.orderStatus === 'delivered'
+                                    getOrderStatus(selectedOrder) === 'shipped' || getOrderStatus(selectedOrder) === 'delivered'
                                       ? 'Express'
                                       : 'Standard',
                                   estimate: selectedOrder.estimatedDelivery
                                     ? new Date(selectedOrder.estimatedDelivery).toLocaleDateString('en-IN', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                      })
+                                      day: 'numeric',
+                                      month: 'short',
+                                    })
                                     : 'ETA coming soon',
                                   weight: '—',
                                 },
                                 stops: [
                                   {
-                                    label: selectedOrder.deliveryAddress.line1,
-                                    detail: selectedOrder.deliveryAddress.city,
+                                    label: getDeliveryAddress(selectedOrder)?.line1 || 'Address Line 1',
+                                    detail: getDeliveryAddress(selectedOrder)?.city || 'City',
                                   },
                                   {
-                                    label: `${selectedOrder.deliveryAddress.city}, ${selectedOrder.deliveryAddress.state}`,
-                                    detail: selectedOrder.deliveryAddress.pincode,
+                                    label: `${getDeliveryAddress(selectedOrder)?.city || 'City'}, ${getDeliveryAddress(selectedOrder)?.state || 'State'}`,
+                                    detail: getDeliveryAddress(selectedOrder)?.pincode || 'Pincode',
                                   },
                                 ],
                                 shipper: {
-                                  name: selectedOrder.deliveryAddress.name,
+                                  name: getDeliveryAddress(selectedOrder)?.name || 'Recipient',
                                   role: 'Preview courier',
                                   rating: 4.9,
-                                  phone: selectedOrder.deliveryAddress.phone,
-                                  whatsappUrl: selectedOrder.deliveryAddress.phone
-                                    ? `https://wa.me/91${selectedOrder.deliveryAddress.phone.replace(/\D/g, '')}`
-                                    : undefined,
+                                  phone: getDeliveryAddress(selectedOrder)?.phone,
+                                  whatsappUrl: (() => {
+                                    const addr = getDeliveryAddress(selectedOrder);
+                                    return addr?.phone ? `https://wa.me/91${addr.phone.replace(/\D/g, '')}` : undefined;
+                                  })(),
                                 },
                               })}
                             />
@@ -1062,7 +1096,7 @@ export default function ProfilePage() {
               </DialogContent>
             </Dialog>
           </TabsContent>
-          
+
           {/* Addresses Tab */}
           <TabsContent value="addresses" className="space-y-6">
             {!showAddressForm && (
@@ -1080,7 +1114,7 @@ export default function ProfilePage() {
                 </Button>
               </div>
             )}
-            
+
             {showAddressForm ? (
               <div className="bg-gradient-to-br from-[#333333] to-[#2a2a2a] rounded-xl p-6 md:p-8 border border-[#444444]">
                 <h3 className="text-xl font-semibold text-white mb-6">
@@ -1237,7 +1271,7 @@ export default function ProfilePage() {
               </div>
             )}
           </TabsContent>
-          
+
           {/* Security Tab */}
           <TabsContent value="security" className="space-y-6">
             <div className="bg-gradient-to-br from-[#333333] to-[#2a2a2a] rounded-xl p-6 md:p-8 border border-[#444444]">

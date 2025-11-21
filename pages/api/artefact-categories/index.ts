@@ -1,8 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient, ObjectId } from 'mongodb';
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const MONGODB_DB = process.env.MONGODB_DB || 'novino';
+import getSupabaseAdmin from '@/lib/supabase-admin';
 
 export interface ArtefactCategory {
   _id?: string;
@@ -27,91 +24,132 @@ export interface ArtefactProduct {
   createdAt: string;
 }
 
+const supabase = getSupabaseAdmin();
+
+const serializeCategory = (category: any) => {
+  // Ensure name is always a string, not an object
+  let name = category.name;
+  if (typeof name === 'object' && name !== null) {
+    // If name is an object, try to extract the name property
+    name = name.name || name.toString() || 'Unnamed Category';
+  }
+  if (typeof name !== 'string') {
+    name = String(name || 'Unnamed Category');
+  }
+
+  return {
+    ...category,
+    _id: category.id,
+    id: category.id,
+    name: name,
+    description: typeof category.description === 'string' ? category.description : (category.description || ''),
+    order: typeof category.order_index === 'number' ? category.order_index : category.order,
+    createdAt: category.created_at ?? category.createdAt,
+    updatedAt: category.updated_at ?? category.updatedAt,
+    products: Array.isArray(category.products) ? category.products : [],
+  };
+};
+
+const sortCategoriesByOrder = (categoryList: any[]) => {
+  return [...categoryList].sort((a, b) => {
+    const orderA =
+      typeof a.order_index === 'number'
+        ? a.order_index
+        : typeof a.order === 'number'
+          ? a.order
+          : Number.MAX_SAFE_INTEGER;
+    const orderB =
+      typeof b.order_index === 'number'
+        ? b.order_index
+        : typeof b.order === 'number'
+          ? b.order
+          : Number.MAX_SAFE_INTEGER;
+
+    if (orderA === orderB) {
+      const dateA = a.created_at
+        ? new Date(a.created_at).getTime()
+        : a.createdAt
+          ? new Date(a.createdAt).getTime()
+          : Infinity;
+      const dateB = b.created_at
+        ? new Date(b.created_at).getTime()
+        : b.createdAt
+          ? new Date(b.createdAt).getTime()
+          : Infinity;
+      return dateA - dateB;
+    }
+
+    return orderA - orderB;
+  });
+};
+
+const getNextOrderValue = async () => {
+  const { data, error } = await supabase
+    .from('product_categories')
+    .select('order_index')
+    .order('order_index', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error && error.code !== 'PGRST116') {
+    throw error;
+  }
+
+  if (!data || typeof data.order_index !== 'number') {
+    return 0;
+  }
+
+  return data.order_index + 1;
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   const { method } = req;
 
-  const client = new MongoClient(MONGODB_URI);
-
   try {
-    await client.connect();
-    const db = client.db(MONGODB_DB);
-    const collection = db.collection('productCategories');
+    switch (method) {
+      case 'GET': {
+        const { data, error } = await supabase
+          .from('product_categories')
+          .select('*')
+          .order('order_index', { ascending: true })
+          .order('created_at', { ascending: true });
 
-    const serializeCategory = (category: any) => ({
-      ...category,
-      _id: category._id.toString(),
-      id: category._id.toString(),
-    });
-
-    const sortCategoriesByOrder = (categoryList: any[]) => {
-      return [...categoryList].sort((a, b) => {
-        const orderA = typeof a.order === 'number' ? a.order : Number.MAX_SAFE_INTEGER;
-        const orderB = typeof b.order === 'number' ? b.order : Number.MAX_SAFE_INTEGER;
-
-        if (orderA === orderB) {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : Infinity;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : Infinity;
-          return dateA - dateB;
+        if (error) {
+          throw error;
         }
 
-        return orderA - orderB;
-      });
-    };
-
-    const getNextOrderValue = async () => {
-      const lastCategory = await collection
-        .find({})
-        .sort({ order: -1 })
-        .limit(1)
-        .toArray();
-
-      if (lastCategory.length === 0) {
-        return 0;
-      }
-
-      const currentOrder =
-        typeof lastCategory[0].order === 'number' ? lastCategory[0].order : -1;
-      return currentOrder + 1;
-    };
-
-    switch (method) {
-      case 'GET':
-        // Get all artefact categories
-        const categories = await collection
-          .find({})
-          .sort({ order: 1, createdAt: 1 })
-          .toArray();
-        const orderedCategories = sortCategoriesByOrder(categories);
-        
-        // Serialize the categories
+        const orderedCategories = sortCategoriesByOrder(data ?? []);
         const serializedCategories = orderedCategories.map(serializeCategory);
-        
         res.status(200).json(serializedCategories);
         break;
+      }
 
-      case 'POST':
-        // Create a new artefact category
+      case 'POST': {
         const nextOrder = await getNextOrderValue();
-        const newCategory: ArtefactCategory = {
-          name: req.body.name,
-          description: req.body.description || '',
-          products: [],
-          order: nextOrder,
-          createdAt: new Date().toISOString(),
-        };
+        const now = new Date().toISOString();
+        const { data, error } = await supabase
+          .from('product_categories')
+          .insert({
+            name: req.body.name,
+            description: req.body.description || '',
+            products: [],
+            order_index: nextOrder,
+            created_at: now,
+            updated_at: now,
+          })
+          .select('*')
+          .single();
 
-        const result = await collection.insertOne(newCategory);
+        if (error) {
+          throw error;
+        }
 
-        const createdCategory = serializeCategory({
-          ...newCategory,
-          _id: result.insertedId,
-        });
-
-        res.status(201).json(createdCategory);
+        res.status(201).json(serializeCategory(data));
         break;
+      }
 
       default:
         res.setHeader('Allow', ['GET', 'POST']);
@@ -124,8 +162,6 @@ export default async function handler(
       error: 'Server error',
       message: error.message,
     });
-  } finally {
-    await client.close();
   }
 }
 

@@ -313,7 +313,7 @@ export default function CartPage() {
   };
   
   // Handle place order with address validation
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     // Check if at least one item is selected first
     if (selectedCount === 0) {
       toast({
@@ -330,14 +330,97 @@ export default function CartPage() {
     
     // Check if address is added
     if (!deliveryAddress) {
-      // No address - redirect to address page
-      router.push('/cart/address');
+      toast({
+        variant: "destructive",
+        title: "Address Required",
+        description: "Please add a delivery address first",
+      });
       return;
     }
     
-    // Address exists - store it and go directly to payment
+    // Ensure address is saved to database before proceeding
+    // Check if address has an ID (already saved) or needs to be saved
+    if (!deliveryAddress.id || !savedAddresses.find(addr => addr.id === deliveryAddress.id)) {
+      // Address needs to be saved to database
+      try {
+        const addressPayload = {
+          name: deliveryAddress.name,
+          phone: deliveryAddress.phone || '',
+          line1: deliveryAddress.line1 || deliveryAddress.address?.split(',')[0] || deliveryAddress.address || '',
+          line2: deliveryAddress.line2 || '',
+          city: deliveryAddress.city || '',
+          state: deliveryAddress.state || '',
+          pincode: deliveryAddress.pincode,
+          isDefault: savedAddresses.length === 0 // First address is default
+        };
+
+        // Validate required fields
+        if (!addressPayload.name || !addressPayload.line1 || !addressPayload.city || 
+            !addressPayload.state || !addressPayload.pincode || !addressPayload.phone) {
+          toast({
+            variant: "destructive",
+            title: "Invalid Address",
+            description: "Please ensure all address fields are filled correctly",
+          });
+          return;
+        }
+
+        const response = await fetch('/api/addresses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(addressPayload)
+        });
+        
+        if (response.ok) {
+          const { address } = await response.json();
+          const formattedAddress = {
+            id: address.id || address._id,
+            name: address.name,
+            phone: address.phone,
+            pincode: address.pincode,
+            address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
+            line1: address.line1,
+            line2: address.line2 || '',
+            city: address.city,
+            state: address.state,
+            estimatedDelivery: "3-5 business days",
+            isDefault: address.is_default || address.isDefault
+          };
+          
+          // Update state and localStorage
+          setDeliveryAddress(formattedAddress);
+          localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
+          
+          // Add to saved addresses if not already there
+          if (!savedAddresses.find(addr => addr.id === formattedAddress.id)) {
+            setSavedAddresses([...savedAddresses, formattedAddress]);
+          }
+          
+          // Proceed to checkout
+          router.push('/checkout');
+        } else {
+          const errorData = await response.json().catch(() => ({ message: 'Failed to save address' }));
+          toast({
+            variant: "destructive",
+            title: "Save Failed",
+            description: errorData.message || "Failed to save address. Please try again.",
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error saving address:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occurred while saving the address. Please try again.",
+        });
+        return;
+      }
+    } else {
+      // Address already saved - proceed to checkout
     localStorage.setItem('selectedAddress', JSON.stringify(deliveryAddress));
     router.push('/checkout');
+    }
   };
 
   if (isLoading) {
@@ -496,8 +579,9 @@ export default function CartPage() {
                                 setEditingAddressId(address.id);
                                 setAddressForm({
                                   name: address.name,
+                                  phone: address.phone || '',
                                   line1: address.line1,
-                                  line2: address.line2,
+                                  line2: address.line2 || '',
                                   city: address.city,
                                   pincode: address.pincode,
                                   state: address.state

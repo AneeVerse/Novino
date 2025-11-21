@@ -7,9 +7,7 @@ import {
   fetchShiprocketProductsList,
 } from "@/lib/services/shiprocket";
 import type { ShiprocketOrder, ShiprocketProduct } from "@/lib/services/shiprocket";
-import connectToDatabase from "@/lib/db";
-import Order from "@/models/Order";
-import Shipment from "@/models/Shipment";
+import { getSupabaseServiceRoleClient } from "@/lib/supabase-server";
 
 const DEFAULT_RANGE_DAYS = 14;
 const DEFAULT_PER_PAGE = 25;
@@ -65,7 +63,8 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
   if (!orders.length) return orders;
 
   try {
-    await connectToDatabase();
+    const supabase = getSupabaseServiceRoleClient();
+
     const orderNumbers = Array.from(
       new Set(
         orders
@@ -76,39 +75,27 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
 
     if (!orderNumbers.length) return orders;
 
-    const localOrders = await Order.find({ orderNumber: { $in: orderNumbers } })
-      .select(["orderNumber", "items", "deliveryAddress", "total", "shipmentId", "_id"])
-      .lean();
+    // Fetch local orders from Supabase
+    const { data: localOrders } = await supabase
+      .from('orders')
+      .select('order_number, items, delivery_address, total, id')
+      .in('order_number', orderNumbers);
 
-    const localOrderMap = new Map(localOrders.map((order) => [order.orderNumber, order]));
-    const shipmentIds = localOrders
-      .map((order) => {
-        const shipmentId = order.shipmentId as { toString?: () => string } | undefined;
-        return shipmentId?.toString?.();
-      })
-      .filter((id): id is string => Boolean(id));
+    if (!localOrders || !localOrders.length) return orders;
 
-    const shipments = shipmentIds.length
-      ? await Shipment.find({ _id: { $in: shipmentIds } })
-          .select([
-            "orderId",
-            "shiprocketOrderId",
-            "shiprocketShipmentId",
-            "courierName",
-            "awbCode",
-            "trackingUrl",
-            "status",
-            "pickupScheduledFor",
-            "trackingEvents",
-          ])
-          .lean()
-      : [];
+    const localOrderMap = new Map(localOrders.map((order) => [order.order_number, order]));
+    const orderIds = localOrders.map((order) => order.id).filter((id): id is string => Boolean(id));
 
-    const shipmentById = new Map(
-      shipments.map((shipment) => [shipment._id?.toString() ?? "", shipment])
-    );
+    // Fetch shipments for these orders
+    const { data: shipments } = orderIds.length
+      ? await supabase
+        .from('shipments')
+        .select('order_id, shiprocket_order_id, shiprocket_shipment_id, courier_name, tracking_id, tracking_url, status, expected_delivery_date, metadata')
+        .in('order_id', orderIds)
+      : { data: [] };
+
     const shipmentByOrderId = new Map(
-      shipments.map((shipment) => [shipment.orderId?.toString() ?? "", shipment])
+      (shipments || []).map((shipment) => [shipment.order_id, shipment])
     );
 
     const enriched = orders.map((order) => {
@@ -120,97 +107,94 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
         return order;
       }
 
-      const shipment =
-        (local.shipmentId &&
-          shipmentById.get((local.shipmentId as { toString?: () => string })?.toString?.() ?? "")) ||
-        shipmentByOrderId.get((local._id as { toString?: () => string })?.toString?.() ?? "");
+      const shipment = local.id ? shipmentByOrderId.get(local.id) : null;
 
-        const address = local.deliveryAddress || {};
-        if (!order.billing_customer_name && address.name) {
-          order.billing_customer_name = address.name;
-        }
-        if (!order.billing_email && address.email) {
-          order.billing_email = address.email;
-        }
-        if ((isMaskedPhone(order.billing_phone) || !order.billing_phone) && address.phone) {
-          order.billing_phone = address.phone;
-        }
+      const address = local.delivery_address || {};
+      if (!order.billing_customer_name && address.name) {
+        order.billing_customer_name = address.name;
+      }
+      if (!order.billing_email && address.email) {
+        order.billing_email = address.email;
+      }
+      if ((isMaskedPhone(order.billing_phone) || !order.billing_phone) && address.phone) {
+        order.billing_phone = address.phone;
+      }
 
-        order.customer = {
-          name: address.name,
-          email: address.email,
-          phone: address.phone,
-          city: address.city,
-          state: address.state,
-          pincode: address.pincode,
-          address: [address.line1, address.line2].filter(Boolean).join(", "),
-        };
-        order.billing_address = order.customer.address;
-        order.billing_city = address.city;
-        order.billing_state = address.state;
-        order.billing_pincode = address.pincode;
+      order.customer = {
+        name: address.name,
+        email: address.email,
+        phone: address.phone,
+        city: address.city,
+        state: address.state,
+        pincode: address.pincode,
+        address: [address.line1, address.line2].filter(Boolean).join(", "),
+      };
+      order.billing_address = order.customer.address;
+      order.billing_city = address.city;
+      order.billing_state = address.state;
+      order.billing_pincode = address.pincode;
 
-        if (!order.order_items || order.order_items.length === 0) {
-          order.order_items = (local.items || []).map((item: any) => ({
-            name: item.name,
-            sku: item.productId,
-            units: item.quantity,
-            selling_price: item.price,
-            product_image: item.image,
-          }));
+      if (!order.order_items || order.order_items.length === 0) {
+        order.order_items = (local.items || []).map((item: any) => ({
+          name: item.name,
+          sku: item.productId || item.id,
+          units: item.quantity,
+          selling_price: item.price,
+          product_image: item.image,
+        }));
+      } else {
+        order.order_items = order.order_items.map((item, index) => {
+          if (item.name && item.sku && item.selling_price && (item as any).product_image) {
+            return item;
+          }
+          const fallback = local.items?.[index];
+          if (!fallback) return item;
+          return {
+            ...item,
+            name: item.name || fallback.name,
+            sku: item.sku || fallback.productId || fallback.id,
+            selling_price: item.selling_price || fallback.price,
+            units: item.units ?? fallback.quantity,
+            product_image: (item as any).product_image || fallback.image,
+          };
+        });
+      }
+
+      if (local?.id) {
+        (order as any).localOrderId = local.id;
+      }
+
+      if (shipment) {
+        if (!order.shipments || order.shipments.length === 0) {
+          order.shipments = [
+            {
+              awb_code: shipment.tracking_id,
+              courier_company_name: shipment.courier_name,
+              status: shipment.status,
+            },
+          ];
         } else {
-          order.order_items = order.order_items.map((item, index) => {
-            if (item.name && item.sku && item.selling_price && (item as any).product_image) {
-              return item;
-            }
-            const fallback = local.items?.[index];
-            if (!fallback) return item;
-            return {
-              ...item,
-              name: item.name || fallback.name,
-              sku: item.sku || fallback.productId,
-              selling_price: item.selling_price || fallback.price,
-              units: item.units ?? fallback.quantity,
-              product_image: (item as any).product_image || fallback.image,
-            };
-          });
+          order.shipments = order.shipments.map((item) => ({
+            awb_code: item.awb_code || shipment.tracking_id,
+            courier_company_name: item.courier_company_name || shipment.courier_name,
+            status: item.status || shipment.status,
+            shipment_mode: item.shipment_mode,
+            shipment_type: item.shipment_type,
+          }));
         }
 
-        if (local?._id) {
-          (order as any).localOrderId = local._id.toString();
+        if (!order.status && shipment.status) {
+          order.status = shipment.status;
         }
 
-        if (shipment) {
-          if (!order.shipments || order.shipments.length === 0) {
-            order.shipments = [
-              {
-                awb_code: shipment.awbCode,
-                courier_company_name: shipment.courierName,
-                status: shipment.status,
-              },
-            ];
-          } else {
-            order.shipments = order.shipments.map((item) => ({
-              awb_code: item.awb_code || shipment.awbCode,
-              courier_company_name: item.courier_company_name || shipment.courierName,
-              status: item.status || shipment.status,
-              shipment_mode: item.shipment_mode,
-              shipment_type: item.shipment_type,
-            }));
-          }
+        (order as any).trackingEvents = shipment.metadata?.tracking_events || [];
+        (order as any).trackingUrl = shipment.tracking_url || (order as any).trackingUrl;
+        (order as any).pickupScheduledFor = shipment.expected_delivery_date || (order as any).pickupScheduledFor;
+        (order as any).shiprocketShipmentId = shipment.shiprocket_shipment_id || (order as any).shiprocketShipmentId;
+      }
 
-          if (!order.status && shipment.status) {
-            order.status = shipment.status;
-          }
-
-          (order as any).trackingEvents = shipment.trackingEvents || [];
-          (order as any).trackingUrl = shipment.trackingUrl || (order as any).trackingUrl;
-          (order as any).pickupScheduledFor = shipment.pickupScheduledFor || (order as any).pickupScheduledFor;
-          (order as any).shiprocketShipmentId = shipment.shiprocketShipmentId || (order as any).shiprocketShipmentId;
-        }
-
-        return order;
-      });
+      return order;
+    });
 
     return enriched;
   } catch (error) {
@@ -229,9 +213,9 @@ const enrichOrdersWithShiprocketProducts = async (orders: ShiprocketOrder[]) => 
       const hasImage =
         Boolean(
           (item as any).product_image ||
-            (item as any).image ||
-            (item as any).image_url ||
-            (item as any).item_image
+          (item as any).image ||
+          (item as any).image_url ||
+          (item as any).item_image
         ) || false;
       if ((!hasName || !hasImage) && item.sku) {
         missingSkus.add(item.sku);
@@ -397,4 +381,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

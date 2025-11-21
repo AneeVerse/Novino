@@ -1,9 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import connectToMongoDB from '@/lib/mongodb-client';
-
-// MongoDB connection check
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const MONGODB_DB = process.env.MONGODB_DB || 'novino';
+import getSupabaseAdmin from '@/lib/supabase-admin';
 
 type Category = {
   _id?: string;
@@ -12,7 +8,18 @@ type Category = {
   type: 'painting' | 'artefact';
   description?: string;
   createdAt?: string;
+  updatedAt?: string;
 };
+
+const supabase = getSupabaseAdmin();
+
+const serializeCategory = (category: any): Category => ({
+  ...category,
+  _id: category.id,
+  id: category.id,
+  createdAt: category.created_at,
+  updatedAt: category.updated_at,
+});
 
 export default async function handler(
   req: NextApiRequest,
@@ -23,80 +30,23 @@ export default async function handler(
   console.log('Categories API called with method:', method);
   console.log('Request body:', req.body);
   
-  // If no database is available, provide fallback functionality
-  if (!MONGODB_URI || MONGODB_URI === 'mongodb://localhost:27017') {
-    console.log('Using fallback data (no MongoDB connection)');
-    
-    // In-memory data store (would be replaced by file system in production)
-    let fallbackCategories = [
-      { id: '1', name: 'Oil', type: 'painting', description: 'Oil paintings' },
-      { id: '2', name: 'Acrylic', type: 'painting', description: 'Acrylic paintings' },
-      { id: '3', name: 'Watercolor', type: 'painting', description: 'Watercolor paintings' },
-      { id: '4', name: 'Mixed Media', type: 'painting', description: 'Mixed media paintings' },
-      { id: '5', name: 'Egyptian', type: 'artefact', description: 'Egyptian artefacts' },
-      { id: '6', name: 'Asian', type: 'artefact', description: 'Asian artefacts' },
-      { id: '7', name: 'European', type: 'artefact', description: 'European artefacts' },
-    ];
-    
-    // Simple in-memory fallback for testing
-    if (method === 'GET') {
-      return res.status(200).json(fallbackCategories);
-    }
-    
-    if (method === 'POST') {
-      const newCategory = {
-        id: Date.now().toString(),
-        name: req.body.name,
-        type: req.body.type,
-        description: req.body.description,
-        createdAt: new Date().toISOString()
-      };
-      
-      // Add to in-memory store (would write to file in production)
-      fallbackCategories.push(newCategory);
-      
-      console.log('Added new category in fallback mode:', newCategory);
-      console.log('Current categories:', fallbackCategories);
-      
-      return res.status(201).json(newCategory);
-    }
-    
-    return res.status(405).json({ error: `Method ${method} not allowed without database` });
-  }
-  
-  // Proceed with MongoDB if available
   try {
-    // Use cached MongoDB connection
-    const { db } = await connectToMongoDB();
-    const collection = db.collection('categories');
-
     switch (method) {
-      case 'GET':
-        // Get all categories
-        const categories = await collection.find({}).sort({ name: 1 }).toArray();
-        res.status(200).json(categories);
+      case 'GET': {
+        // Categories are now derived from product_categories
+        // Return empty array since categories are managed via product_categories
+        res.status(200).json([]);
         break;
+      }
 
-      case 'POST':
-        // Create a new category
-        const newCategory = {
-          name: req.body.name,
-          type: req.body.type,
-          description: req.body.description,
-          createdAt: new Date().toISOString()
-        };
-        
-        const result = await collection.insertOne(newCategory);
-        
-        // Return the created category with its ID
-        const createdCategory = {
-          ...newCategory,
-          _id: result.insertedId.toString(),
-          id: result.insertedId.toString()
-        };
-        
-        res.status(201).json(createdCategory);
+      case 'POST': {
+        // Categories are now managed via product_categories API
+        res.status(400).json({ 
+          success: false, 
+          error: 'Categories are managed via /api/artefact-categories endpoint' 
+        });
         break;
+      }
 
       default:
         res.setHeader('Allow', ['GET', 'POST']);
