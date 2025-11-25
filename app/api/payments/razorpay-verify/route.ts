@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
       },
       items: order.items.map((item: any) => ({
         name: item.name,
-        sku: item.productId || item.id,
+        sku: item.sku || item.productId || item.id, // Use human-readable SKU first
         units: item.quantity,
         sellingPrice: item.price,
       })),

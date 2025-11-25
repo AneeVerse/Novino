@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
             shipping_is_billing: true,
             order_items: (order.items || []).map((item: any) => ({
                 name: item.name,
-                sku: item.productId || item.id,
+                sku: item.sku || item.productId || item.id, // Use human-readable SKU first
                 units: item.quantity,
                 selling_price: item.price,
                 discount: 0,

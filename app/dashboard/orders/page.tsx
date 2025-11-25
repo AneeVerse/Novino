@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { RefreshCw, Search, Calendar, X, Truck, Clock, Star, MoreVertical, ExternalLink } from "lucide-react";
+import { SkuBadge } from "@/components/sku-generator";
 
 interface OrderItem {
   name?: string;
@@ -400,8 +401,8 @@ export default function OrdersPage() {
                             )}
                             <div>
                               <div className="text-sm">{item.name || 'N/A'}</div>
-                              <div className="text-xs text-white/50">SKU: {item.sku}</div>
-                              <div className="text-xs text-white/40">Qty: {item.units}</div>
+                              {item.sku && <SkuBadge sku={item.sku} className="mt-1" />}
+                              <div className="text-xs text-white/40 mt-1">Qty: {item.units}</div>
                             </div>
                           </div>
                         ))}

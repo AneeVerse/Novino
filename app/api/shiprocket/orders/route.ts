@@ -137,7 +137,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
       if (!order.order_items || order.order_items.length === 0) {
         order.order_items = (local.items || []).map((item: any) => ({
           name: item.name,
-          sku: item.productId || item.id,
+          sku: item.sku || item.productId || item.id, // Use human-readable SKU first
           units: item.quantity,
           selling_price: item.price,
           product_image: item.image,
