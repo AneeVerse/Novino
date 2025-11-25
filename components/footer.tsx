@@ -336,7 +336,17 @@ export default function Footer() {
                   href="https://www.aneeverse.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Designed & Managed By Aneeverse</a>
+                  className="flex items-center gap-2 text-gray-300 text-xs sm:text-sm font-medium font-satoshi hover:text-white transition-colors group"
+                >
+                  <span>Designed & Managed By Aneeverse</span>
+                  <Image
+                    src="/images/aneeverse-logo.svg"
+                    alt="AneeVerse Logo"
+                    width={24}
+                    height={24}
+                    className="h-5 w-5 sm:h-6 sm:w-6 opacity-80 group-hover:opacity-100 transition-opacity brightness-0 invert-100"
+                  />
+                </a>
               </div>
               {/* Payment options for mobile */}
               <div className="flex sm:hidden items-center justify-center mt-4">
