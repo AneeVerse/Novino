@@ -151,32 +151,58 @@ export default function ProductGrid({
             {subtitle}
           </span>
           {!hideCategoryFilters && propCategories.length > 1 && (
-            <div className="flex flex-col items-center gap-2 sm:gap-3 pt-6">
-              {[
-                propCategories.slice(0, 5),
-                propCategories.slice(5),
-              ].map((row, rowIndex) => (
-                row.length > 0 && (
-                  <div
-                    key={`category-row-${rowIndex}`}
-                    className="flex flex-wrap justify-center gap-2 sm:gap-3"
-                  >
-                    {row.map((category) => (
-                      <button
-                        key={category}
-                        className={`px-5 sm:px-7 py-2.5 rounded-full text-xs sm:text-sm tracking-[0.25em] transition-all duration-200 backdrop-blur ${category === activeCategory
-                          ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
-                          : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
-                          }`}
-                        onClick={() => handleCategoryChange(category)}
-                      >
-                        {category?.toUpperCase?.() ? category.toUpperCase() : category}
-                      </button>
-                    ))}
-                  </div>
-                )
-              ))}
-            </div>
+            <>
+              {/* Mobile: Horizontal Scroll */}
+              <div className="sm:hidden w-full pt-6 px-4">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory"
+                  style={{
+                    scrollSnapType: 'x mandatory',
+                    WebkitOverflowScrolling: 'touch'
+                  }}
+                >
+                  {propCategories.map((category) => (
+                    <button
+                      key={category}
+                      className={`flex-shrink-0 snap-center px-4 py-2 rounded-full text-[10px] tracking-[0.2em] transition-all duration-200 backdrop-blur whitespace-nowrap ${category === activeCategory
+                        ? "bg-white text-black font-semibold "
+                        : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
+                        }`}
+                      onClick={() => handleCategoryChange(category)}
+                    >
+                      {category?.toUpperCase?.() ? category.toUpperCase() : category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Desktop: Two Row Grid */}
+              <div className="hidden sm:flex flex-col items-center gap-2 sm:gap-3 pt-6">
+                {[
+                  propCategories.slice(0, 5),
+                  propCategories.slice(5),
+                ].map((row, rowIndex) => (
+                  row.length > 0 && (
+                    <div
+                      key={`category-row-${rowIndex}`}
+                      className="flex flex-wrap justify-center gap-2 sm:gap-3"
+                    >
+                      {row.map((category) => (
+                        <button
+                          key={category}
+                          className={`px-5 sm:px-7 py-2.5 rounded-full text-xs sm:text-sm tracking-[0.25em] transition-all duration-200 backdrop-blur ${category === activeCategory
+                            ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
+                            : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
+                            }`}
+                          onClick={() => handleCategoryChange(category)}
+                        >
+                          {category?.toUpperCase?.() ? category.toUpperCase() : category}
+                        </button>
+                      ))}
+                    </div>
+                  )
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>

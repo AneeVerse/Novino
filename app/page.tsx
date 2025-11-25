@@ -357,13 +357,23 @@ export default function Home() {
           letter-spacing: 0.23em;
         }
 
-        /* Mobile adjustment - move text down, smaller, and slightly left */
+        /* Mobile adjustment - move text down a bit more, smaller */
         @media (max-width: 767px) { /* Target screens smaller than md (768px) */
           .novino-hero-text {
-            top: 78%;
-            left: 50%; /* Shift slightly to the left */
+            top: 80%; /* Moved down slightly from 78% */
+            left: 50%;
             letter-spacing: 0.04em;
-            font-size: 88px !important; /* Smaller font size */
+            font-size: 88px !important;
+          }
+        }
+
+        /* Tablet adjustment - responsive sizing and positioning */
+        @media (min-width: 768px) and (max-width: 1023px) { /* Tablet range */
+          .novino-hero-text {
+            top: 50%; /* Better centered for tablets */
+            left: 51%;
+            letter-spacing: 0.15em;
+            font-size: 180px !important; /* Mid-size between mobile and desktop */
           }
         }
         
