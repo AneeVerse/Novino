@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { createRazorpayOrder, getRazorpayPublicKey } from '@/lib/services/razorpay';
 
 export async function POST(req: NextRequest) {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
   const {
@@ -24,6 +24,140 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Missing items or address' }, { status: 400 });
   }
 
+  const { getSupabaseServiceRoleClient } = await import('@/lib/supabase-server');
+  const serviceSupabase = getSupabaseServiceRoleClient();
+
+  // Build a map of product IDs -> SKU from product categories
+  const productSkuMap = new Map<string, string>();
+  try {
+    const { data: categories, error: categoriesError } = await serviceSupabase
+      .from('product_categories')
+      .select('id,name,sku_prefix,products');
+
+    if (categoriesError) {
+      console.error('Failed to load categories for SKU enrichment:', categoriesError);
+    } else {
+      categories?.forEach((category: any) => {
+        const defaultPrefix =
+          category?.sku_prefix ||
+          (category?.name
+            ? (category.name as string).replace(/[^a-z0-9]/gi, '').toUpperCase().slice(0, 8) || 'PRODUCT'
+            : 'PRODUCT');
+
+        (category?.products || []).forEach((product: any, index: number) => {
+          if (!product) return;
+          const productIdVariants = [
+            product.id,
+            product._id,
+            product.productId,
+            product.product_id,
+          ]
+            .filter(Boolean)
+            .map((val: any) => String(val));
+
+          const existingSku = typeof product.sku === 'string' && product.sku.trim().length > 0 ? product.sku : null;
+          const sequenceSource =
+            typeof product.order === 'number'
+              ? product.order + 1
+              : Number.isFinite(product.order)
+              ? Number(product.order) + 1
+              : index + 1;
+          const sequence = String(sequenceSource).padStart(3, '0');
+          const derivedSku = `${defaultPrefix}-${sequence}`;
+          const finalSku = existingSku ?? derivedSku;
+
+          productIdVariants.forEach((variantId) => {
+            if (!productSkuMap.has(variantId)) {
+              productSkuMap.set(variantId, finalSku);
+            }
+          });
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Unexpected error while building SKU map:', error);
+  }
+
+  const getSkuFromMap = (item: any) => {
+    const candidateIds = [
+      item?.sku ? null : item?.id,
+      item?.productId,
+      item?.product_id,
+      item?.categoryId,
+      item?.category_id,
+    ]
+      .filter((val) => val !== null && val !== undefined)
+      .map((val) => String(val));
+
+    for (const id of candidateIds) {
+      const sku = productSkuMap.get(id);
+      if (sku) return sku;
+    }
+    return null;
+  };
+
+  const enrichedItems = await Promise.all(
+    items.map(async (item: any) => {
+      if (item.sku && typeof item.sku === 'string' && item.sku.trim().length > 0) {
+        return item;
+      }
+
+      const skuFromMap = getSkuFromMap(item);
+      if (skuFromMap) {
+        return { ...item, sku: skuFromMap };
+      }
+
+      // Fallback: try to generate from category prefix (if provided on the item)
+      if (item.categoryId) {
+        try {
+          const { data: category } = await serviceSupabase
+            .from('product_categories')
+            .select('products, sku_prefix, name')
+            .eq('id', item.categoryId)
+            .single();
+
+          if (category?.products && Array.isArray(category.products)) {
+            const product = category.products.find(
+              (p: any) =>
+                p.id === item.id ||
+                p._id === item.id ||
+                p.name === item.name ||
+                p.id === item.productId ||
+                p._id === item.productId,
+            );
+
+            if (product?.sku) {
+              return { ...item, sku: product.sku };
+            }
+
+            if (category.sku_prefix || category.name) {
+              const defaultPrefix =
+                category?.sku_prefix ||
+                (category?.name
+                  ? (category.name as string).replace(/[^a-z0-9]/gi, '').toUpperCase().slice(0, 8) || 'PRODUCT'
+                  : 'PRODUCT');
+              const productIndex = category.products.findIndex(
+                (p: any) =>
+                  p.id === item.id ||
+                  p._id === item.id ||
+                  p.name === item.name ||
+                  p.id === item.productId ||
+                  p._id === item.productId,
+              );
+              const sequence = String((productIndex >= 0 ? productIndex : 0) + 1).padStart(3, '0');
+              return { ...item, sku: `${defaultPrefix}-${sequence}` };
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching SKU by category for item:', item.id, error);
+        }
+      }
+
+      // Final fallback: use productId/id
+      return { ...item, sku: item.productId || item.id };
+    }),
+  );
+
   // Calculate estimated delivery
   const estimatedDelivery = new Date();
   estimatedDelivery.setDate(estimatedDelivery.getDate() + 5);
@@ -33,7 +167,7 @@ export async function POST(req: NextRequest) {
     .from('orders')
     .insert({
       user_id: user.id,
-      items,
+      items: enrichedItems,
       subtotal,
       gst,
       shipping_cost: shippingCost,
@@ -67,9 +201,6 @@ export async function POST(req: NextRequest) {
 
   // Update order with Razorpay order ID - CRITICAL: Must complete before returning
   // Use service role client for update to bypass RLS if needed
-  const { getSupabaseServiceRoleClient } = await import('@/lib/supabase-server');
-  const serviceSupabase = getSupabaseServiceRoleClient();
-  
   const { data: updatedOrder, error: updateError } = await serviceSupabase
     .from('orders')
     .update({ razorpay_order_id: razorpayOrder.id })
