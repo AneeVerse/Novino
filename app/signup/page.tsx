@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -46,6 +46,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<{ email?: string, username?: string, password?: string }>({})
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
@@ -127,9 +128,13 @@ export default function SignupPage() {
         description: "Please check your email to verify your account before logging in.",
       })
 
+      // Get redirect URL from query params (if any) to pass to login
+      const redirectUrl = searchParams?.get('redirect')
+      const loginUrl = redirectUrl ? `/login?redirect=${encodeURIComponent(redirectUrl)}` : '/login'
+
       // Redirect to login after a delay
       setTimeout(() => {
-        router.push('/login')
+        router.push(loginUrl)
       }, 3000)
 
     } catch (err) {

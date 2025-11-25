@@ -1501,6 +1501,21 @@ export default function ProductDetail() {
                     All the paintings are high definition digital copy of the original artwork
                   </p>
 
+                  {/* Authentication Links - Only show if NOT logged in */}
+                  {!isLoggedIn && (
+                    <div className="pt-4 border-t border-white/10 mt-6">
+                      <div className="flex items-center justify-between text-xs">
+                        <Link href={`/signup?redirect=${encodeURIComponent(canonicalProductPath)}`} className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider">
+                          Are you new? Register
+                        </Link>
+                        <Link href={`/login?redirect=${encodeURIComponent(canonicalProductPath)}`} className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider">
+                          Already registered? Login
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+
+
                   {/* Care Guide - Collapsible Description Section - Always show */}
                   <div className="mt-6 border-t border-white/10 pt-6">
                     <button

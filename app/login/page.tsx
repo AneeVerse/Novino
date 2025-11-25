@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useToast } from '@/hooks/use-toast'
+
 
 // Validation functions
 const validateIdentifier = (identifier: string): string | null => {
@@ -32,6 +33,7 @@ export default function LoginPage() {
   const [resetEmail, setResetEmail] = useState('')
   const [errors, setErrors] = useState<{ identifier?: string, password?: string }>({})
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { closeCart } = useCart()
   const supabase = useSupabaseClient()
   const { toast } = useToast()
@@ -119,10 +121,14 @@ export default function LoginPage() {
         description: "You've successfully logged in.",
       })
 
+      // Get redirect URL from query params or default to home
+      const redirectUrl = searchParams?.get('redirect') || '/'
+
+
       // Sync cart and redirect
       setTimeout(() => {
         closeCart()
-        router.push('/')
+        router.push(redirectUrl)
         router.refresh() // Refresh to update auth state
       }, 1000)
 
@@ -132,6 +138,7 @@ export default function LoginPage() {
       setLoading(false)
     }
   }
+
 
   const handleGoogleLogin = async () => {
     setLoading(true)
