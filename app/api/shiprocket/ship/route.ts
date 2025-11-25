@@ -56,19 +56,121 @@ export async function POST(request: NextRequest) {
         // Try to get exact dimensions from the product's category
         if (order.items && order.items.length > 0) {
             const firstItem = order.items[0];
-            if (firstItem.categoryId) {
-                const { data: category } = await supabase
+            let categoryId = firstItem.categoryId || firstItem.category_id;
+            let foundCategory: any = null;
+            
+            console.log('[Shiprocket][Dimensions] Looking up dimensions for item:', {
+                itemId: firstItem.id,
+                productId: firstItem.productId,
+                name: firstItem.name,
+                categoryId: categoryId
+            });
+            
+            // If categoryId not in item, find it by searching categories for this product
+            // Priority: productId > SKU > name (to avoid matching wrong category when same SKU/name exists in multiple categories)
+            if (!categoryId) {
+                const { data: allCategories } = await supabase
                     .from('product_categories')
-                    .select('length, width, breadth, height, weight')
-                    .eq('id', firstItem.categoryId)
-                    .single();
-
-                if (category && category.length > 0) {
-                    packageLength = category.length || 30;
-                    packageBreadth = category.breadth || category.width || 26;
-                    packageHeight = category.height || 10;
-                    packageWeight = category.weight || 0.5;
+                    .select('id, name, products, length, width, breadth, height, weight');
+                
+                if (allCategories) {
+                    const productId = firstItem.productId || firstItem.id;
+                    const productIdStr = productId ? String(productId) : '';
+                    const itemSku = firstItem.sku ? firstItem.sku.trim().toUpperCase() : '';
+                    const itemName = firstItem.name ? firstItem.name.trim().toLowerCase() : '';
+                    
+                    // First pass: Try exact productId match (most reliable)
+                    for (const cat of allCategories) {
+                        if (Array.isArray(cat.products)) {
+                            const product = cat.products.find((p: any) => {
+                                const pIdStr = p.id ? String(p.id) : '';
+                                const pIdStrAlt = p._id ? String(p._id) : '';
+                                return pIdStr === productIdStr || pIdStrAlt === productIdStr;
+                            });
+                            if (product) {
+                                categoryId = cat.id;
+                                foundCategory = cat;
+                                console.log('[Shiprocket][Dimensions] Found category by productId:', cat.name, 'productId:', productIdStr);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Second pass: If no productId match, try SKU match
+                    if (!foundCategory && itemSku) {
+                        for (const cat of allCategories) {
+                            if (Array.isArray(cat.products)) {
+                                const product = cat.products.find((p: any) => {
+                                    const pSku = p.sku ? p.sku.trim().toUpperCase() : '';
+                                    return itemSku && pSku && itemSku === pSku;
+                                });
+                                if (product) {
+                                    categoryId = cat.id;
+                                    foundCategory = cat;
+                                    console.log('[Shiprocket][Dimensions] Found category by SKU:', cat.name, 'SKU:', itemSku);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Third pass: If still no match, try name match (least reliable)
+                    if (!foundCategory && itemName) {
+                        for (const cat of allCategories) {
+                            if (Array.isArray(cat.products)) {
+                                const product = cat.products.find((p: any) => {
+                                    const pName = p.name ? p.name.trim().toLowerCase() : '';
+                                    return itemName && pName && itemName === pName;
+                                });
+                                if (product) {
+                                    categoryId = cat.id;
+                                    foundCategory = cat;
+                                    console.log('[Shiprocket][Dimensions] Found category by name:', cat.name, 'name:', itemName);
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+
+            if (categoryId) {
+                // Use already fetched category or fetch it
+                if (!foundCategory) {
+                    const { data: category } = await supabase
+                        .from('product_categories')
+                        .select('length, width, breadth, height, weight, name')
+                        .eq('id', categoryId)
+                        .single();
+                    foundCategory = category;
+                }
+
+                if (foundCategory) {
+                    // Only use category dimensions if they're actually set (not 0 or null)
+                    if (foundCategory.length && Number(foundCategory.length) > 0) {
+                        packageLength = Number(foundCategory.length);
+                    }
+                    if (foundCategory.breadth && Number(foundCategory.breadth) > 0) {
+                        packageBreadth = Number(foundCategory.breadth);
+                    } else if (foundCategory.width && Number(foundCategory.width) > 0) {
+                        packageBreadth = Number(foundCategory.width);
+                    }
+                    if (foundCategory.height && Number(foundCategory.height) > 0) {
+                        packageHeight = Number(foundCategory.height);
+                    }
+                    if (foundCategory.weight && Number(foundCategory.weight) > 0) {
+                        packageWeight = Number(foundCategory.weight);
+                    }
+                    console.log('[Shiprocket][Dimensions] Using category dimensions:', {
+                        category: foundCategory.name,
+                        dimensions: `${packageLength}×${packageBreadth}×${packageHeight} cm`,
+                        weight: `${packageWeight} kg`
+                    });
+                } else {
+                    console.warn('[Shiprocket][Dimensions] Category not found, using defaults');
+                }
+            } else {
+                console.warn('[Shiprocket][Dimensions] No categoryId found for item, using defaults');
             }
         }
 
@@ -81,9 +183,10 @@ export async function POST(request: NextRequest) {
             delivery_pincode: address.pincode,
             dimensions: `${packageLength}×${packageBreadth}×${packageHeight} cm`,
             weight: `${packageWeight} kg`,
+            source: 'category_dimensions', // Indicates dimensions came from category
         });
 
-        const shiprocketOrderResponse = await createOrder({
+        const orderPayload = {
             order_id: order.order_number,
             order_date: new Date(order.created_at).toISOString().split('T')[0],
             pickup_location: pickupLocation,
@@ -112,9 +215,29 @@ export async function POST(request: NextRequest) {
             breadth: packageBreadth,
             height: packageHeight,
             weight: packageWeight,
+        };
+
+        console.log('[Shiprocket][CreateOrder] Sending payload with dimensions:', {
+            length: orderPayload.length,
+            breadth: orderPayload.breadth,
+            height: orderPayload.height,
+            weight: orderPayload.weight,
+            order_id: orderPayload.order_id
         });
 
-        console.log('Shiprocket response:', shiprocketOrderResponse);
+        const shiprocketOrderResponse = await createOrder(orderPayload);
+
+        console.log('[Shiprocket][CreateOrder] Response:', {
+            order_id: shiprocketOrderResponse.order_id,
+            shipment_id: shiprocketOrderResponse.shipment_id,
+            status: shiprocketOrderResponse.status,
+            sent_dimensions: {
+                length: orderPayload.length,
+                breadth: orderPayload.breadth,
+                height: orderPayload.height,
+                weight: orderPayload.weight
+            }
+        });
 
         // Check if order creation was successful
         if (!shiprocketOrderResponse.order_id || !shiprocketOrderResponse.shipment_id) {

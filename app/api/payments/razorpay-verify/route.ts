@@ -154,6 +154,71 @@ export async function POST(req: NextRequest) {
 
   let shipmentId: string | null = null;
 
+  // Calculate dimensions from product category
+  let packageDimensions: { length: number; breadth: number; height: number; weight: number } | undefined;
+  
+  if (order.items && order.items.length > 0) {
+    const firstItem = order.items[0];
+    const productId = firstItem.productId || firstItem.id;
+    const itemSku = firstItem.sku;
+    
+    try {
+      // Fetch all categories to find the product
+      const { data: allCategories } = await supabase
+        .from('product_categories')
+        .select('id, name, products, length, width, breadth, height, weight');
+      
+      if (allCategories) {
+        let foundCategory: any = null;
+        const productIdStr = productId ? String(productId) : '';
+        const itemSkuUpper = itemSku ? itemSku.trim().toUpperCase() : '';
+        
+        // First pass: Try exact productId match
+        for (const cat of allCategories) {
+          if (Array.isArray(cat.products)) {
+            const product = cat.products.find((p: any) => {
+              const pIdStr = p.id ? String(p.id) : '';
+              const pIdStrAlt = p._id ? String(p._id) : '';
+              return pIdStr === productIdStr || pIdStrAlt === productIdStr;
+            });
+            if (product && cat.length && Number(cat.length) > 0) {
+              foundCategory = cat;
+              break;
+            }
+          }
+        }
+        
+        // Second pass: Try SKU match
+        if (!foundCategory && itemSkuUpper) {
+          for (const cat of allCategories) {
+            if (Array.isArray(cat.products)) {
+              const product = cat.products.find((p: any) => {
+                const pSku = p.sku ? p.sku.trim().toUpperCase() : '';
+                return itemSkuUpper && pSku && itemSkuUpper === pSku;
+              });
+              if (product && cat.length && Number(cat.length) > 0) {
+                foundCategory = cat;
+                break;
+              }
+            }
+          }
+        }
+        
+        if (foundCategory) {
+          packageDimensions = {
+            length: Number(foundCategory.length),
+            breadth: Number(foundCategory.breadth || foundCategory.width || 26),
+            height: Number(foundCategory.height || 10),
+            weight: Number(foundCategory.weight || 0.5),
+          };
+          console.log('[RazorpayVerify] Using category dimensions:', foundCategory.name, packageDimensions);
+        }
+      }
+    } catch (error) {
+      console.warn('[RazorpayVerify] Failed to fetch category dimensions:', error);
+    }
+  }
+
   // Create Shiprocket shipment
   try {
     console.log('Creating Shiprocket shipment for order:', {
@@ -161,7 +226,8 @@ export async function POST(req: NextRequest) {
       orderNumber: order.order_number,
       total: order.total,
       itemCount: order.items.length,
-      deliveryPincode: order.delivery_address.pincode
+      deliveryPincode: order.delivery_address.pincode,
+      dimensions: packageDimensions
     });
 
     const shipmentResponse = await createShiprocketShipment({
@@ -186,6 +252,7 @@ export async function POST(req: NextRequest) {
         units: item.quantity,
         sellingPrice: item.price,
       })),
+      dimensions: packageDimensions,
     });
 
     console.log('Shiprocket shipment created successfully:', {

@@ -131,6 +131,14 @@ export interface CourierServiceability {
     is_surface: boolean;
     pickup_availability: string;
     delivery_availability: string;
+    rating?: number;
+    chargeable_weight?: number;
+    fuel_surcharge?: number;
+    rto_charges?: number;
+    total_amount?: number;
+    total_rate?: number;
+    pickup_date?: string;
+    delivery_type?: string;
 }
 
 export interface ShipmentCreationResponse {

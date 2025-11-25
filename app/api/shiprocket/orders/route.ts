@@ -98,7 +98,12 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
       (shipments || []).map((shipment) => [shipment.order_id, shipment])
     );
 
-    const enriched = orders.map((order) => {
+    // Fetch all categories once for dimension lookup
+    const { data: allCategories } = await supabase
+      .from('product_categories')
+      .select('id, name, products, length, width, breadth, height, weight');
+
+    const enriched = await Promise.all(orders.map(async (order) => {
       const local =
         (order.channel_order_id && localOrderMap.get(order.channel_order_id)) ||
         (order.order_id && localOrderMap.get(String(order.order_id)));
@@ -191,10 +196,117 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
         (order as any).trackingUrl = shipment.tracking_url || (order as any).trackingUrl;
         (order as any).pickupScheduledFor = shipment.expected_delivery_date || (order as any).pickupScheduledFor;
         (order as any).shiprocketShipmentId = shipment.shiprocket_shipment_id || (order as any).shiprocketShipmentId;
+
+        // Override dimensions from shipment metadata (our local source of truth)
+        const shipmentDims = shipment.metadata?.dimensions;
+        if (shipmentDims && shipmentDims.length && shipmentDims.breadth && shipmentDims.height && shipmentDims.weight) {
+          (order as any).length = shipmentDims.length;
+          (order as any).breadth = shipmentDims.breadth;
+          (order as any).height = shipmentDims.height;
+          (order as any).weight = shipmentDims.weight;
+        }
+      }
+
+      // If no shipment dimensions, try to get from category
+      if (!(order as any).length || !(order as any).breadth || !(order as any).height || !(order as any).weight) {
+        const firstItem = local.items?.[0];
+        if (firstItem) {
+          let categoryId = firstItem.categoryId || firstItem.category_id;
+          const productId = firstItem.productId || firstItem.id;
+          const itemSku = firstItem.sku;
+          
+          console.log('[Orders][Dimensions] Looking up dimensions for item:', {
+            productId,
+            itemSku,
+            name: firstItem.name,
+            categoryId
+          });
+          
+          // Find category by searching for product
+          // Priority: productId > SKU > name (to avoid matching wrong category when same SKU/name exists in multiple categories)
+          if (!categoryId && productId && allCategories) {
+            let foundCategory: any = null;
+            const productIdStr = String(productId);
+            const itemSkuUpper = itemSku ? itemSku.trim().toUpperCase() : '';
+            const itemNameLower = firstItem.name ? firstItem.name.trim().toLowerCase() : '';
+            
+            // First pass: Try exact productId match (most reliable)
+            for (const cat of allCategories) {
+              if (Array.isArray(cat.products)) {
+                const product = cat.products.find((p: any) => {
+                  const pIdStr = p.id ? String(p.id) : '';
+                  const pIdStrAlt = p._id ? String(p._id) : '';
+                  return pIdStr === productIdStr || pIdStrAlt === productIdStr;
+                });
+                if (product) {
+                  foundCategory = cat;
+                  console.log('[Orders][Dimensions] Found category by productId:', cat.name, 'productId:', productIdStr);
+                  break;
+                }
+              }
+            }
+            
+            // Second pass: If no productId match, try SKU match
+            if (!foundCategory && itemSkuUpper) {
+              for (const cat of allCategories) {
+                if (Array.isArray(cat.products)) {
+                  const product = cat.products.find((p: any) => {
+                    const pSku = p.sku ? p.sku.trim().toUpperCase() : '';
+                    return itemSkuUpper && pSku && itemSkuUpper === pSku;
+                  });
+                  if (product) {
+                    foundCategory = cat;
+                    console.log('[Orders][Dimensions] Found category by SKU:', cat.name, 'SKU:', itemSkuUpper);
+                    break;
+                  }
+                }
+              }
+            }
+            
+            // Third pass: If still no match, try name match (least reliable)
+            if (!foundCategory && itemNameLower) {
+              for (const cat of allCategories) {
+                if (Array.isArray(cat.products)) {
+                  const product = cat.products.find((p: any) => {
+                    const pName = p.name ? p.name.trim().toLowerCase() : '';
+                    return itemNameLower && pName && itemNameLower === pName;
+                  });
+                  if (product) {
+                    foundCategory = cat;
+                    console.log('[Orders][Dimensions] Found category by name:', cat.name, 'name:', itemNameLower);
+                    break;
+                  }
+                }
+              }
+            }
+            
+            if (foundCategory && foundCategory.length && Number(foundCategory.length) > 0) {
+              (order as any).length = Number(foundCategory.length);
+              (order as any).breadth = Number(foundCategory.breadth || foundCategory.width || 26);
+              (order as any).height = Number(foundCategory.height || 10);
+              (order as any).weight = Number(foundCategory.weight || 0.5);
+              console.log('[Orders][Dimensions] Using category dimensions:', foundCategory.name, {
+                length: (order as any).length,
+                breadth: (order as any).breadth,
+                height: (order as any).height,
+                weight: (order as any).weight
+              });
+            }
+          } else if (categoryId && allCategories) {
+            const category = allCategories.find(c => c.id === categoryId);
+            if (category && category.length && Number(category.length) > 0) {
+              (order as any).length = Number(category.length);
+              (order as any).breadth = Number(category.breadth || category.width || 26);
+              (order as any).height = Number(category.height || 10);
+              (order as any).weight = Number(category.weight || 0.5);
+              console.log('[Orders][Dimensions] Using category by ID:', category.name);
+            }
+          }
+        }
       }
 
       return order;
-    });
+    }));
 
     return enriched;
   } catch (error) {

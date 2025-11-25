@@ -49,6 +49,13 @@ export async function getServiceability(params: {
     delivery_postcode: string;
     weight: number;
     cod: 0 | 1;
+    length?: number;
+    breadth?: number;
+    height?: number;
+    declared_value?: number;
+    shipment_id?: number | string;
+    rate_calculator?: 0 | 1;
+    mode?: 'air' | 'surface';
 }): Promise<{ data: { available_courier_companies: CourierServiceability[] } }> {
     const searchParams = new URLSearchParams({
         pickup_postcode: params.pickup_postcode,
@@ -56,6 +63,28 @@ export async function getServiceability(params: {
         weight: params.weight.toString(),
         cod: params.cod.toString(),
     });
+
+    if (typeof params.length === 'number') {
+        searchParams.set('length', params.length.toString());
+    }
+    if (typeof params.breadth === 'number') {
+        searchParams.set('breadth', params.breadth.toString());
+    }
+    if (typeof params.height === 'number') {
+        searchParams.set('height', params.height.toString());
+    }
+    if (typeof params.declared_value === 'number') {
+        searchParams.set('declared_value', params.declared_value.toString());
+    }
+    if (params.shipment_id) {
+        searchParams.set('shipment_id', String(params.shipment_id));
+    }
+    if (typeof params.rate_calculator === 'number') {
+        searchParams.set('rate_calculator', params.rate_calculator.toString());
+    }
+    if (params.mode) {
+        searchParams.set('mode', params.mode);
+    }
 
     return shiprocketRequest(`/courier/serviceability?${searchParams.toString()}`);
 }

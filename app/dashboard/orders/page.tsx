@@ -46,10 +46,16 @@ interface Courier {
   id: number;
   name: string;
   rate: number;
-  estimated_delivery_days: number;
+  total_rate?: number;
+  estimated_delivery_days: number | string;
   freight_charge: number;
   cod_charges: number;
   rating: number;
+  chargeable_weight?: number;
+  fuel_surcharge?: number;
+  rto_charges?: number;
+  pickup_date?: string;
+  delivery_type?: string;
 }
 
 const TABS = [
@@ -547,14 +553,31 @@ export default function OrdersPage() {
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div className="flex items-center gap-2 text-white/60">
                               <Clock className="w-4 h-4" />
-                              <span>{courier.estimated_delivery_days} days delivery</span>
+                              <span>
+                                {(courier.delivery_type || '').toString() || 'Surface'} • {courier.estimated_delivery_days} days
+                              </span>
                             </div>
                             <div className="text-white/60">
-                              Freight: ₹{courier.freight_charge}
+                              Freight: ₹{courier.freight_charge.toFixed(2)}
                             </div>
+                            {courier.chargeable_weight && (
+                              <div className="text-white/60">
+                                Chargeable Weight: {courier.chargeable_weight} kg
+                              </div>
+                            )}
                             {courier.cod_charges > 0 && (
                               <div className="text-white/60">
-                                COD Charges: ₹{courier.cod_charges}
+                                COD Charges: ₹{courier.cod_charges.toFixed(2)}
+                              </div>
+                            )}
+                            {courier.fuel_surcharge && courier.fuel_surcharge > 0 && (
+                              <div className="text-white/60">
+                                Fuel Surcharge: ₹{courier.fuel_surcharge.toFixed(2)}
+                              </div>
+                            )}
+                            {courier.rto_charges && courier.rto_charges > 0 && (
+                              <div className="text-white/60">
+                                RTO Charges: ₹{courier.rto_charges.toFixed(2)}
                               </div>
                             )}
                           </div>
@@ -562,7 +585,9 @@ export default function OrdersPage() {
 
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <div className="text-2xl font-bold text-green-400">₹{courier.rate}</div>
+                            <div className="text-2xl font-bold text-green-400">
+                              ₹{(courier.total_rate ?? courier.rate).toFixed(2)}
+                            </div>
                             <div className="text-xs text-white/40">Total Rate</div>
                           </div>
                           <button
@@ -585,3 +610,4 @@ export default function OrdersPage() {
     </div>
   );
 }
+
