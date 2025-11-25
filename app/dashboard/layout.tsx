@@ -83,7 +83,7 @@ function DashboardContent({ children }: { children: ReactNode }) {
         logoHref="/dashboard"
         logoLabel="Novino"
       />
-      <div className="lg:pl-64">
+      <div className="lg:pl-[70px]"> {/* Changed from pl-64 to match collapsed sidebar */}
         <DashboardHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <main className="p-6">
           {children}

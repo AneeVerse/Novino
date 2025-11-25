@@ -144,31 +144,32 @@ export default function DashboardSidebar({
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Collapsible on hover */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-screen w-64 bg-[#1A1A1A] border-r border-[#333333] flex flex-col z-50 transition-transform duration-300",
+          "fixed left-0 top-0 h-screen bg-[#1A1A1A] border-r border-[#333333] flex flex-col z-50 transition-all duration-300 ease-in-out group",
+          "w-[70px] hover:w-64", // Collapsed by default, expands on hover
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Logo */}
-        <div className="h-16 border-b border-[#333333] flex items-center justify-between px-6">
-          <Link href={resolvedLogoHref} className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-[#A47E3B] rounded-md flex items-center justify-center">
+        <div className="h-16 border-b border-[#333333] flex items-center justify-center lg:justify-between px-4 lg:px-6 overflow-hidden">
+          <Link href={resolvedLogoHref} className="flex items-center space-x-2 min-w-0">
+            <div className="w-8 h-8 bg-[#A47E3B] rounded-md flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-lg">N</span>
             </div>
-            <span className="text-xl font-bold text-white">{resolvedLogoLabel}</span>
+            <span className="text-xl font-bold text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">{resolvedLogoLabel}</span>
           </Link>
           <button
             onClick={() => onOpenChange(false)}
-            className="lg:hidden p-2 hover:bg-[#222222] rounded-lg text-white"
+            className="lg:hidden p-2 hover:bg-[#222222] rounded-lg text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Search Bar */}
-        <div className="px-3 py-4 border-b border-[#333333]">
+        {/* Search Bar - Hidden when collapsed */}
+        <div className="px-3 py-4 border-b border-[#333333] opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/50" />
             <input
@@ -201,13 +202,13 @@ export default function DashboardSidebar({
                             : "text-white/70 hover:bg-[#222222] hover:text-white"
                         )}
                       >
-                        <div className="flex items-center space-x-3">
-                          <Icon className="w-5 h-5" />
-                          <span>{item.name}</span>
+                        <div className="flex items-center space-x-3 min-w-0 overflow-hidden">
+                          <Icon className="w-5 h-5 flex-shrink-0" />
+                          <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">{item.name}</span>
                         </div>
                         <ChevronRight
                           className={cn(
-                            "w-4 h-4 transition-transform text-white/50",
+                            "w-4 h-4 transition-all text-white/50 opacity-0 group-hover:opacity-100 duration-300",
                             isSubmenuOpen && "rotate-90"
                           )}
                         />
@@ -242,12 +243,12 @@ export default function DashboardSidebar({
                           : "text-white/70 hover:bg-[#222222] hover:text-white"
                       )}
                     >
-                      <div className="flex items-center space-x-3">
-                        <Icon className="w-5 h-5" />
-                        <span>{item.name}</span>
+                      <div className="flex items-center space-x-3 min-w-0 overflow-hidden">
+                        <Icon className="w-5 h-5 flex-shrink-0" />
+                        <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">{item.name}</span>
                       </div>
                       {item.badge && (
-                        <span className="bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                        <span className="bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           {item.badge}
                         </span>
                       )}
@@ -283,11 +284,11 @@ export default function DashboardSidebar({
 
         {/* User section at bottom */}
         <div className="border-t border-[#333333] p-4">
-          <div className="flex items-center space-x-3 px-3 py-2">
-            <div className="w-8 h-8 bg-[#A47E3B] rounded-full flex items-center justify-center text-white font-semibold text-sm">
+          <div className="flex items-center space-x-3 px-3 py-2 overflow-hidden">
+            <div className="w-8 h-8 bg-[#A47E3B] rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
               A
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <p className="text-sm font-medium text-white truncate">Admin</p>
               <p className="text-xs text-white/60 truncate">admin@novino.io</p>
             </div>
