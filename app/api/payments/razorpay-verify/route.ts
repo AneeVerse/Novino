@@ -156,6 +156,14 @@ export async function POST(req: NextRequest) {
 
   // Create Shiprocket shipment
   try {
+    console.log('Creating Shiprocket shipment for order:', {
+      orderId: order.id,
+      orderNumber: order.order_number,
+      total: order.total,
+      itemCount: order.items.length,
+      deliveryPincode: order.delivery_address.pincode
+    });
+
     const shipmentResponse = await createShiprocketShipment({
       orderId: order.id,
       orderNumber: order.order_number,
@@ -178,6 +186,12 @@ export async function POST(req: NextRequest) {
         units: item.quantity,
         sellingPrice: item.price,
       })),
+    });
+
+    console.log('Shiprocket shipment created successfully:', {
+      order_id: shipmentResponse.order_id,
+      shipment_id: shipmentResponse.shipment_id,
+      status: shipmentResponse.status
     });
 
     // Validate response
@@ -241,14 +255,47 @@ export async function POST(req: NextRequest) {
       });
     }
   } catch (shipmentError: any) {
-    console.error('Shiprocket shipment creation failed', {
+    // CRITICAL ERROR: Shiprocket creation failed
+    console.error('❌ SHIPROCKET SHIPMENT CREATION FAILED', {
+      environment: process.env.NODE_ENV || 'unknown',
+      orderId: order.id,
+      orderNumber: order.order_number,
       error: shipmentError.message,
       stack: shipmentError.stack,
+      deliveryAddress: {
+        name: order.delivery_address.name,
+        city: order.delivery_address.city,
+        pincode: order.delivery_address.pincode
+      },
+      timestamp: new Date().toISOString()
     });
+
+    // Add error to status timeline
     statusTimeline.push({
       status: 'processing',
-      note: 'Payment captured but shipment creation failed. Please contact support.',
+      note: `⚠️ Payment captured but shipment creation failed: ${shipmentError.message}. Support team notified.`,
       at: new Date().toISOString(),
+    });
+
+    // Store error in database for tracking
+    await supabase.from('shipments').insert({
+      order_id: order.id,
+      status: 'failed',
+      metadata: {
+        error: {
+          message: shipmentError.message,
+          stack: shipmentError.stack,
+          timestamp: new Date().toISOString(),
+          environment: process.env.NODE_ENV || 'unknown'
+        },
+        tracking_events: [
+          {
+            status: 'failed',
+            remarks: 'Shiprocket shipment creation failed - ' + shipmentError.message,
+            recordedAt: new Date().toISOString(),
+          },
+        ],
+      },
     });
   }
 
@@ -268,19 +315,32 @@ export async function POST(req: NextRequest) {
     console.error('Error updating order:', updateError);
   }
 
-  // Clear cart
+  // Clear cart - Remove ordered items
   try {
-    const orderedProductIds = order.items.map((item: any) => item.productId || item.id);
+    const orderedProductIds = order.items.map((item: any) =>
+      item.productId || item.product_id || item.id || item.categoryId || item.category_id
+    ).filter(Boolean);
+
     const { data: cart } = await supabase
       .from('carts')
       .select('items')
       .eq('user_id', order.user_id)
       .single();
 
-    if (cart && cart.items) {
+    if (cart && cart.items && Array.isArray(cart.items)) {
       const remainingItems = (cart.items as any[]).filter(
-        (cartItem: any) => !orderedProductIds.includes(String(cartItem.id))
+        (cartItem: any) => {
+          const cartItemId = String(cartItem.id || cartItem.productId || cartItem.product_id || cartItem.categoryId || cartItem.category_id);
+          return !orderedProductIds.includes(cartItemId);
+        }
       );
+
+      console.log('Clearing cart:', {
+        orderedProductIds,
+        originalCartCount: cart.items.length,
+        remainingCartCount: remainingItems.length
+      });
+
       await supabase
         .from('carts')
         .update({ items: remainingItems })

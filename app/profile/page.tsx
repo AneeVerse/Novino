@@ -739,13 +739,21 @@ export default function ProfilePage() {
                             <span className="text-sm text-white/60">Order Date</span>
                           </div>
                           <p className="text-white font-medium">
-                            {new Date(selectedOrder.orderedAt).toLocaleDateString('en-IN', {
-                              day: 'numeric',
-                              month: 'long',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
+                            {(() => {
+                              try {
+                                const date = new Date(selectedOrder.orderedAt);
+                                if (isNaN(date.getTime())) return 'To be updated';
+                                return date.toLocaleDateString('en-IN', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                });
+                              } catch (e) {
+                                return 'To be updated';
+                              }
+                            })()}
                           </p>
                         </div>
                         <div>
@@ -757,7 +765,12 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      {shipmentError && <p className="text-sm text-red-400">{shipmentError}</p>}
+                      {shipmentError && (
+                        <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                          <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                          <p className="text-sm text-green-400">Order confirmed! We'll update shipping details soon.</p>
+                        </div>
+                      )}
 
                       {/* Products & Payment Summary Row */}
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -882,23 +895,23 @@ export default function ProfilePage() {
                             return (
                               <>
                                 <p className="text-white font-medium">{addr.name}</p>
-                          <p className="text-white/70">
+                                <p className="text-white/70">
                                   {addr.line1}
                                   {addr.line2 && (
-                              <>
-                                <br />
+                                    <>
+                                      <br />
                                       {addr.line2}
-                              </>
-                            )}
-                            <br />
+                                    </>
+                                  )}
+                                  <br />
                                   {addr.city}, {addr.state} - {addr.pincode}
-                          </p>
+                                </p>
                                 {addr.phone && (
                                   <p className="text-white/60">Phone: {addr.phone}</p>
-                          )}
+                                )}
                                 {addr.email && (
                                   <p className="text-white/60">Email: {addr.email}</p>
-                          )}
+                                )}
                               </>
                             );
                           })()}
@@ -912,11 +925,19 @@ export default function ProfilePage() {
                           <div className="flex justify-between text-white/70">
                             <span>Placed On</span>
                             <span className="text-white font-medium">
-                              {new Date(selectedOrder.orderedAt).toLocaleDateString('en-IN', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric'
-                              })}
+                              {(() => {
+                                try {
+                                  const date = new Date(selectedOrder.orderedAt);
+                                  if (isNaN(date.getTime())) return 'To be updated';
+                                  return date.toLocaleDateString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  });
+                                } catch (e) {
+                                  return 'To be updated';
+                                }
+                              })()}
                             </span>
                           </div>
                           <div className="flex justify-between text-white/70">
