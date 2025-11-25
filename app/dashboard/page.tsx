@@ -11,7 +11,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown, FileText, MessageSquare, Image as ImageIcon, Package, Eye, Calendar, Clock, Plus, Edit, Trash2, ExternalLink, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, FileText, MessageSquare, Image as ImageIcon, Package, Eye, Calendar, Clock, Plus, Edit, Trash2, ExternalLink, Star, Users } from 'lucide-react';
 import ArtefactCategoryModal from '@/components/artefact-category-modal';
 import ArtefactCategoryGrid from '@/components/artefact-category-grid';
 import ArtefactCategoryDetail from '@/components/artefact-category-detail';
@@ -257,7 +257,16 @@ function DashboardContent() {
     };
   };
 
-  const [shiprocketRange, setShiprocketRange] = useState(() => makeRange(14));
+  const [shiprocketRange, setShiprocketRange] = useState(() => {
+    const today = new Date();
+    const from = new Date();
+    from.setDate(from.getDate() - 14);
+    return {
+      from: from.toISOString().slice(0, 10),
+      to: today.toISOString().slice(0, 10),
+      label: `Last 14 days`,
+    };
+  });
   const [shiprocketMetrics, setShiprocketMetrics] = useState<ShiprocketOverviewMetrics | null>(null);
   const [shiprocketMetricsLoading, setShiprocketMetricsLoading] = useState(true);
   const [shiprocketMetricsError, setShiprocketMetricsError] = useState<string | null>(null);
@@ -384,6 +393,13 @@ function DashboardContent() {
           to: shiprocketRange.to,
         });
 
+        console.log('📊 Fetching Shiprocket data:', {
+          from: shiprocketRange.from,
+          to: shiprocketRange.to,
+          label: shiprocketRange.label,
+          url: `/api/shiprocket/overview?${params.toString()}`
+        });
+
         const response = await fetch(`/api/shiprocket/overview?${params.toString()}`, {
           cache: 'no-store',
         });
@@ -393,6 +409,7 @@ function DashboardContent() {
         }
 
         const payload = await response.json();
+        console.log('📈 Shiprocket metrics received:', payload.data);
         if (!isMounted) return;
         setShiprocketMetrics(payload.data);
       } catch (err) {
@@ -841,6 +858,208 @@ function DashboardContent() {
   return (
     <div className="space-y-6">
       {/* Content sections based on activeTab */}
+      {activeTab === 'home' && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Home</h1>
+              <p className="text-white/60">Quick overview of your business metrics</p>
+            </div>
+            <div className="flex items-center gap-2 text-white/60 text-sm">
+              <Calendar className="w-4 h-4" />
+              <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+          </div>
+
+          {/* Summary Cards */}
+          <div>
+            <h2 className="text-xl font-semibold text-white mb-4">Summary</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Orders Card */}
+              <Card
+                onClick={() => router.push('/dashboard/orders')}
+                className="bg-white/5 border border-white/10 rounded-2xl shadow-lg hover:bg-white/10 transition-all duration-300 cursor-pointer"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-purple-500/20 border border-purple-500/30 rounded-xl">
+                      <Package className="w-6 h-6 text-purple-300" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-white mb-3">Orders</h3>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-white/60">Today</span>
+                          <span className="text-2xl font-bold text-white">
+                            {shiprocketMetrics?.todaysOrders ?? 0}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-white/60">Yesterday</span>
+                          <span className="text-xl font-semibold text-white/70">
+                            {shiprocketSalesSeries.length >= 2
+                              ? shiprocketSalesSeries[shiprocketSalesSeries.length - 2]?.orderCount ?? 0
+                              : 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Revenue Card */}
+              <Card
+                onClick={() => router.push('/dashboard/orders')}
+                className="bg-white/5 border border-white/10 rounded-2xl shadow-lg hover:bg-white/10 transition-all duration-300 cursor-pointer"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-cyan-500/20 border border-cyan-500/30 rounded-xl">
+                      <TrendingUp className="w-6 h-6 text-cyan-300" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-white mb-3">Revenue</h3>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-white/60">Today</span>
+                          <span className="text-2xl font-bold text-white">
+                            {formatCurrency(
+                              shiprocketSalesSeries.length > 0
+                                ? shiprocketSalesSeries[shiprocketSalesSeries.length - 1]?.totalRevenue ?? 0
+                                : 0
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-white/60">Yesterday</span>
+                          <span className="text-xl font-semibold text-white/70">
+                            {formatCurrency(
+                              shiprocketSalesSeries.length >= 2
+                                ? shiprocketSalesSeries[shiprocketSalesSeries.length - 2]?.totalRevenue ?? 0
+                                : 0
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Average Order Value Card */}
+              <Card
+                onClick={() => router.push('/dashboard/orders')}
+                className="bg-white/5 border border-white/10 rounded-2xl shadow-lg hover:bg-white/10 transition-all duration-300 cursor-pointer"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-emerald-500/20 border border-emerald-500/30 rounded-xl">
+                      <TrendingUp className="w-6 h-6 text-emerald-300" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-white mb-3">Avg Order Value</h3>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-white/60">Current</span>
+                          <span className="text-2xl font-bold text-white">
+                            {formatCurrency(shiprocketMetrics?.averageOrderValue ?? 0)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-white/60">Period Total</span>
+                          <span className="text-xl font-semibold text-white/70">
+                            {formatCurrency(shiprocketMetrics?.totalRevenue ?? 0)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Actions Needing Attention */}
+          <div>
+            <h2 className="text-2xl font-semibold text-white mb-4">Actions Needing Your Attention Today</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* New Orders to Process */}
+              <Card
+                onClick={() => router.push('/dashboard/orders')}
+                className="bg-white/5 border border-white/10 rounded-2xl shadow-lg hover:bg-white/10 transition-all duration-300 cursor-pointer"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-green-500/20 border border-green-500/30 rounded-xl">
+                      <Package className="w-6 h-6 text-green-300" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-white/60 mb-2">New Orders to be Processed</h3>
+                      <p className="text-4xl font-bold text-white">
+                        {shiprocketMetrics?.todaysOrders ?? 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Total Orders in Period */}
+              <Card
+                onClick={() => router.push('/dashboard/orders')}
+                className="bg-white/5 border border-white/10 rounded-2xl shadow-lg hover:bg-white/10 transition-all duration-300 cursor-pointer"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-orange-500/20 border border-orange-500/30 rounded-xl">
+                      <Clock className="w-6 h-6 text-orange-300" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-white/60 mb-2">Total Orders</h3>
+                      <p className="text-4xl font-bold text-white">
+                        {shiprocketMetrics?.totalOrders ?? 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* COD vs Prepaid */}
+              <Card
+                onClick={() => router.push('/dashboard/orders')}
+                className="bg-white/5 border border-white/10 rounded-2xl shadow-lg hover:bg-white/10 transition-all duration-300 cursor-pointer"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                      <Package className="w-6 h-6 text-blue-300" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-white/60 mb-2">Payment Methods</h3>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-white/50">COD</p>
+                          <p className="text-2xl font-bold text-white">
+                            {shiprocketMetrics?.codOrders ?? 0}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-white/50">Prepaid</p>
+                          <p className="text-2xl font-bold text-white">
+                            {shiprocketMetrics?.prepaidOrders ?? 0}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Header */}
@@ -855,19 +1074,143 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* Shiprocket Sales Performance */}
+          {/* Shiprocket Overview - MOVED TO TOP */}
+          <div className="space-y-4">
+            <div className="bg-gradient-to-br from-[#1E1E1E] via-[#171717] to-[#121212] border border-white/5 rounded-2xl p-6 shadow-[0px_10px_40px_rgba(0,0,0,0.5)] overflow-hidden">
+              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+                <div className="flex-1 space-y-2">
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.35em] text-white/40 uppercase">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#A47E3B] animate-pulse" />
+                    Orders
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-3xl font-semibold text-white">Shipments dashboard</h2>
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-white/5 border border-white/10 text-white/60">
+                      Live
+                    </span>
+                  </div>
+                  <p className="text-sm text-white/60">
+                    Synced{' '}
+                    {shiprocketMetrics?.fetchedAt
+                      ? new Date(shiprocketMetrics.fetchedAt).toLocaleString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })
+                      : 'just now'}
+                  </p>
+                </div>
+                <div className="flex flex-col items-start gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {shiprocketRangePresets.map((preset) => {
+                      const isActive = shiprocketRange.label === `Last ${preset.days} days`;
+                      return (
+                        <button
+                          key={preset.label}
+                          onClick={() => handleShiprocketRangeChange(preset.days)}
+                          className={`px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${isActive
+                            ? 'bg-white text-black shadow-lg shadow-white/30'
+                            : 'bg-white/10 text-white/70 border border-white/10 hover:text-white hover:bg-white/15'
+                            }`}
+                        >
+                          {preset.label}
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => {
+                        const from = shiprocketRange.from;
+                        const to = shiprocketRange.to;
+                        handleShiprocketRangeChange(14);
+                      }}
+                      className="p-2 bg-white/10 text-white/70 border border-white/10 hover:text-white hover:bg-white/15 rounded-2xl transition-all duration-200"
+                      title="Refresh"
+                    >
+                      <Clock className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {shiprocketMetricsError && (
+                <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-200 text-sm rounded-xl px-4 py-3">
+                  {shiprocketMetricsError}
+                </div>
+              )}
+
+              <div className="mt-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                  {[
+                    {
+                      title: 'Orders Placed',
+                      value: shiprocketMetrics?.totalOrders ?? 0,
+                      description: `${shiprocketRange.from} — ${shiprocketRange.to}`,
+                    },
+                    {
+                      title: 'Delivered',
+                      value: 0,
+                      description: 'Completed fulfilments',
+                    },
+                    {
+                      title: 'In Transit',
+                      value: 0,
+                      description: 'Moving through network',
+                    },
+                    {
+                      title: 'Revenue',
+                      value: shiprocketMetrics ? formatCurrency(shiprocketMetrics.totalRevenue) : 0,
+                      description: `AVG ${shiprocketMetrics ? formatCurrency(shiprocketMetrics.averageOrderValue) : '₹0'}`,
+                      isCurrency: true,
+                    },
+                  ].map((stat) => (
+                    <Card
+                      key={stat.title}
+                      onClick={() => router.push('/dashboard/orders')}
+                      className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60 hover:border-white/10 hover:bg-white/5 transition-all duration-300 cursor-pointer"
+                    >
+                      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                        <CardTitle className="text-sm font-medium text-white/70">{stat.title}</CardTitle>
+                        <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-4xl font-semibold text-white tracking-tight">
+                          {shiprocketMetricsLoading && !shiprocketMetrics ? (
+                            <span className="animate-pulse text-white/30">•••</span>
+                          ) : stat.isCurrency ? (
+                            stat.value
+                          ) : (
+                            Number(stat.value || 0).toLocaleString()
+                          )}
+                        </div>
+                        <p className="text-xs text-white/40 mt-3">{stat.description}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Shiprocket Sales Performance - MOVED BELOW */}
           <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-[0px_10px_30px_rgba(0,0,0,0.45)]">
             <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <CardTitle className="text-white text-2xl">Sales performance</CardTitle>
                 <CardDescription className="text-white/60">
-                  Shiprocket revenue • {shiprocketRange.from} → {shiprocketRange.to}
+                  Shiprocket revenue • {new Date(shiprocketRange.from).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} → {new Date(shiprocketRange.to).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </CardDescription>
               </div>
               <div className="text-sm text-white/60">
                 <span className="font-medium text-white">Last sync:</span>{' '}
                 {shiprocketMetrics?.fetchedAt
-                  ? new Date(shiprocketMetrics.fetchedAt).toLocaleString()
+                  ? new Date(shiprocketMetrics.fetchedAt).toLocaleString('en-IN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                  })
                   : '—'}
               </div>
             </CardHeader>
@@ -955,184 +1298,13 @@ function DashboardContent() {
             </CardContent>
           </Card>
 
-          {/* Shiprocket Overview */}
-          <div className="space-y-4">
-            <div className="bg-gradient-to-br from-[#1E1E1E] via-[#171717] to-[#121212] border border-white/5 rounded-2xl p-6 shadow-[0px_10px_40px_rgba(0,0,0,0.5)] overflow-hidden">
-              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-                <div className="flex-1 space-y-2">
-                  <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.35em] text-white/40 uppercase">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#A47E3B] animate-pulse" />
-                    Shiprocket
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-3xl font-semibold text-white">Fulfilment overview</h2>
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-white/5 border border-white/10 text-white/60">
-                      Live
-                    </span>
-                  </div>
-                  <p className="text-sm text-white/60">
-                    Data synced{' '}
-                    {shiprocketMetrics?.fetchedAt
-                      ? new Date(shiprocketMetrics.fetchedAt).toLocaleString()
-                      : 'just now'}
-                  </p>
-                </div>
-                <div className="flex flex-col items-start gap-3">
-                  <span className="text-xs tracking-wide text-white/40 uppercase">Range</span>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {shiprocketRangePresets.map((preset) => {
-                      const isActive = shiprocketRange.label === `Last ${preset.days} days`;
-                      return (
-                        <button
-                          key={preset.label}
-                          onClick={() => handleShiprocketRangeChange(preset.days)}
-                          className={`px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${isActive
-                            ? 'bg-white text-black shadow-lg shadow-white/30'
-                            : 'bg-white/10 text-white/70 border border-white/10 hover:text-white hover:bg-white/15'
-                            }`}
-                        >
-                          {preset.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {shiprocketMetricsError && (
-                <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-200 text-sm rounded-xl px-4 py-3">
-                  {shiprocketMetricsError}
-                </div>
-              )}
-
-              <div className="mt-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                  {[
-                    {
-                      title: "Today's Orders",
-                      value: shiprocketMetrics?.todaysOrders ?? 0,
-                      description: 'Orders created today',
-                    },
-                    {
-                      title: 'Total Orders',
-                      value: shiprocketMetrics?.totalOrders ?? 0,
-                      description: `Period ${shiprocketRange.from} → ${shiprocketRange.to}`,
-                    },
-                    {
-                      title: 'COD Orders',
-                      value: shiprocketMetrics?.codOrders ?? 0,
-                      description: 'Cash on Delivery share',
-                    },
-                    {
-                      title: 'Avg. Order Value',
-                      value: shiprocketMetrics ? formatCurrency(shiprocketMetrics.averageOrderValue) : 0,
-                      description: 'Across current range',
-                      isCurrency: true,
-                    },
-                  ].map((stat) => (
-                    <Card
-                      key={stat.title}
-                      className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60 hover:border-white/10 transition-all duration-300"
-                    >
-                      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                        <CardTitle className="text-sm font-medium text-white/70">{stat.title}</CardTitle>
-                        <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-4xl font-semibold text-white tracking-tight">
-                          {shiprocketMetricsLoading && !shiprocketMetrics ? (
-                            <span className="animate-pulse text-white/30">•••</span>
-                          ) : stat.isCurrency ? (
-                            stat.value
-                          ) : (
-                            Number(stat.value || 0).toLocaleString()
-                          )}
-                        </div>
-                        <p className="text-xs text-white/40 mt-3">{stat.description}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60">
-                    <CardHeader>
-                      <CardTitle className="text-white text-lg">Shipment details</CardTitle>
-                      <CardDescription className="text-white/60">
-                        Quick snapshot of fulfilment split
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-white">
-                      {[
-                        {
-                          label: 'Total shipments',
-                          value: shiprocketMetrics?.totalOrders ?? 0,
-                        },
-                        {
-                          label: 'COD share',
-                          value: shiprocketMetrics?.codOrders ?? 0,
-                        },
-                        {
-                          label: 'Prepaid share',
-                          value: shiprocketMetrics?.prepaidOrders ?? 0,
-                        },
-                        {
-                          label: "Today's orders",
-                          value: shiprocketMetrics?.todaysOrders ?? 0,
-                        },
-                      ].map((item) => (
-                        <div
-                          key={item.label}
-                          className="bg-white/5 rounded-2xl p-4 border border-white/5 backdrop-blur"
-                        >
-                          <p className="text-xs uppercase tracking-wide text-white/40">{item.label}</p>
-                          <p className="text-3xl font-semibold mt-2">
-                            {shiprocketMetricsLoading && !shiprocketMetrics ? (
-                              <span className="animate-pulse text-white/40">•••</span>
-                            ) : (
-                              Number(item.value || 0).toLocaleString()
-                            )}
-                          </p>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60">
-                    <CardHeader>
-                      <CardTitle className="text-white text-lg">Revenue summary</CardTitle>
-                      <CardDescription className="text-white/60">
-                        Gross value across the selected range
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex flex-col gap-4">
-                      <div className="bg-gradient-to-r from-[#A47E3B]/30 to-transparent rounded-2xl p-5 border border-[#A47E3B]/40">
-                        <p className="text-xs uppercase tracking-wide text-white/70">Total revenue</p>
-                        <p className="text-4xl font-semibold text-white mt-2">
-                          {shiprocketMetricsLoading && !shiprocketMetrics ? (
-                            <span className="animate-pulse text-white/40">•••</span>
-                          ) : shiprocketMetrics ? (
-                            formatCurrency(shiprocketMetrics.totalRevenue)
-                          ) : (
-                            '--'
-                          )}
-                        </p>
-                        <p className="text-xs text-white/60 mt-2">
-                          Avg order value{' '}
-                          {shiprocketMetrics ? formatCurrency(shiprocketMetrics.averageOrderValue) : '—'}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Stats Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Blogs Card */}
-            <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 transition-all duration-300">
+            <Card
+              onClick={() => navigateToTab('blogs')}
+              className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 hover:bg-white/5 transition-all duration-300 cursor-pointer"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xs font-semibold text-white/60 uppercase tracking-wide">
@@ -1152,7 +1324,10 @@ function DashboardContent() {
                   </Badge>
                 </div>
                 <button
-                  onClick={() => navigateToTab('blogs')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateToTab('blogs');
+                  }}
                   className="mt-4 w-full px-3 py-2 border border-white/10 hover:border-white/30 text-white/80 hover:text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   Manage Blogs
@@ -1162,7 +1337,10 @@ function DashboardContent() {
             </Card>
 
             {/* Testimonials Card */}
-            <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 transition-all duration-300">
+            <Card
+              onClick={() => navigateToTab('testimonials')}
+              className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 hover:bg-white/5 transition-all duration-300 cursor-pointer"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xs font-semibold text-white/60 uppercase tracking-wide">
@@ -1182,7 +1360,10 @@ function DashboardContent() {
                   </Badge>
                 </div>
                 <button
-                  onClick={() => navigateToTab('testimonials')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateToTab('testimonials');
+                  }}
                   className="mt-4 w-full px-3 py-2 border border-white/10 hover:border-white/30 text-white/80 hover:text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   Manage Testimonials
@@ -1192,7 +1373,10 @@ function DashboardContent() {
             </Card>
 
             {/* Products Card */}
-            <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 transition-all duration-300">
+            <Card
+              onClick={() => navigateToTab('products')}
+              className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 hover:bg-white/5 transition-all duration-300 cursor-pointer"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xs font-semibold text-white/60 uppercase tracking-wide">
@@ -1212,12 +1396,122 @@ function DashboardContent() {
                   </Badge>
                 </div>
                 <button
-                  onClick={() => navigateToTab('products')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateToTab('products');
+                  }}
                   className="mt-4 w-full px-3 py-2 border border-white/10 hover:border-white/30 text-white/80 hover:text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   View Products
                   <ExternalLink className="w-3 h-3" />
                 </button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* User Statistics Section */}
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card
+                onClick={() => router.push('/dashboard/users')}
+                className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 hover:bg-white/5 transition-all duration-300 cursor-pointer"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+                      Active Users
+                    </CardTitle>
+                    <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30">
+                      <Users className="w-4 h-4 text-emerald-300" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-semibold text-white tracking-tight">6</div>
+                  <p className="text-sm mt-2 text-emerald-300">Currently active</p>
+                </CardContent>
+              </Card>
+
+              <Card
+                onClick={() => router.push('/dashboard/users')}
+                className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 hover:bg-white/5 transition-all duration-300 cursor-pointer"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+                      Blocked Users
+                    </CardTitle>
+                    <div className="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30">
+                      <Users className="w-4 h-4 text-rose-300" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-semibold text-white tracking-tight">0</div>
+                  <p className="text-sm mt-2 text-rose-300">Account suspended</p>
+                </CardContent>
+              </Card>
+
+              <Card
+                onClick={() => router.push('/dashboard/users')}
+                className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40 hover:border-white/15 hover:bg-white/5 transition-all duration-300 cursor-pointer"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+                      Total Users
+                    </CardTitle>
+                    <div className="p-2.5 rounded-xl bg-sky-500/15 border border-sky-500/30">
+                      <Users className="w-4 h-4 text-sky-300" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-semibold text-white tracking-tight">6</div>
+                  <p className="text-sm mt-2 text-sky-300">All registered</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* User Statistics Chart */}
+            <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/40">
+              <CardHeader>
+                <CardTitle className="text-white">User Statistics</CardTitle>
+                <CardDescription className="text-white/60">Distribution of user statuses</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[250px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[
+                        { name: 'Active', value: 6, fill: '#4CAF50' },
+                        { name: 'Blocked', value: 0, fill: '#F44336' }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1f1f1f" />
+                      <XAxis dataKey="name" tick={{ fill: '#A0A0A0' }} axisLine={{ stroke: '#2a2a2a' }} tickLine={false} />
+                      <YAxis tick={{ fill: '#A0A0A0' }} axisLine={{ stroke: '#2a2a2a' }} tickLine={false} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#1C1C1C',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '12px',
+                          color: '#fff'
+                        }}
+                      />
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                        {[
+                          { name: 'Active', value: 6, fill: '#4CAF50' },
+                          { name: 'Blocked', value: 0, fill: '#F44336' }
+                        ].map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
           </div>

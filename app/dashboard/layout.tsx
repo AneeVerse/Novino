@@ -5,13 +5,20 @@ import { useRouter, usePathname } from "next/navigation";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import DashboardSidebar, { DashboardSidebarNavItem } from "@/components/dashboard-v2/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard-v2/DashboardHeader";
-import { Home, FileText, MessageSquare, Package, ShoppingCart, Users } from "lucide-react";
+import { Home, FileText, MessageSquare, Package, ShoppingCart, Users, LayoutDashboard } from "lucide-react";
 
 const legacyNavItems: DashboardSidebarNavItem[] = [
   {
-    name: "Overview",
-    href: "/dashboard",
+    name: "Home",
+    href: "/dashboard?tab=home",
     icon: Home,
+    activeMatcher: ({ pathname, searchParams }) =>
+      pathname === "/dashboard" && searchParams?.get("tab") === "home",
+  },
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
     activeMatcher: ({ pathname, searchParams }) =>
       pathname === "/dashboard" && !searchParams?.get("tab"),
   },
@@ -105,4 +112,4 @@ export default function DashboardLayout({
       </DashboardContent>
     </AuthProvider>
   );
-} 
+}

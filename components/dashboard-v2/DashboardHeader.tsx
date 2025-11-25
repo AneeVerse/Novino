@@ -29,7 +29,7 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-[#1A1A1A] border-b border-[#333333] flex items-center justify-between px-6">
-      {/* Left: Menu button and Date Range */}
+      {/* Left: Menu button */}
       <div className="flex items-center space-x-4">
         <button
           onClick={onMenuClick}
@@ -37,16 +37,6 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
         >
           <Menu className="w-5 h-5" />
         </button>
-        
-        {/* Date Range Picker - matching Nuxt template */}
-        <div className="hidden md:flex items-center space-x-2">
-          <div className="px-3 py-1.5 bg-[#222222] border border-[#333333] rounded-lg text-sm text-white/70">
-            Nov 4, 2025 - Nov 18, 2025
-          </div>
-          <div className="px-3 py-1.5 bg-[#222222] border border-[#333333] rounded-lg text-sm text-white/70">
-            Daily
-          </div>
-        </div>
       </div>
 
       {/* Right: Actions */}
