@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { RefreshCw, Search, Calendar, X, Truck, Clock, Star } from "lucide-react";
+import { RefreshCw, Search, Calendar, X, Truck, Clock, Star, MoreVertical, ExternalLink } from "lucide-react";
 
 interface OrderItem {
   name?: string;
@@ -112,9 +112,24 @@ export default function OrdersPage() {
   const [loadingCouriers, setLoadingCouriers] = useState(false);
   const [assigningCourier, setAssigningCourier] = useState(false);
 
+  // Dropdown menu state
+  const [openMenuOrderId, setOpenMenuOrderId] = useState<number | null>(null);
+
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (openMenuOrderId !== null) {
+        setOpenMenuOrderId(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openMenuOrderId]);
 
   const fetchOrders = async () => {
     try {
@@ -224,6 +239,27 @@ export default function OrdersPage() {
       alert('Failed to assign courier');
     } finally {
       setAssigningCourier(false);
+    }
+  };
+
+  const handleOpenShiprocket = async () => {
+    try {
+      // Open Shiprocket login page with auto-login
+      const response = await fetch('/api/shiprocket/get-login-url');
+      const data = await response.json();
+
+      if (data.success && data.loginUrl) {
+        window.open(data.loginUrl, '_blank');
+      } else {
+        // Fallback: open Shiprocket directly
+        window.open('https://app.shiprocket.in/seller/orders/new', '_blank');
+      }
+    } catch (error) {
+      console.error('Failed to open Shiprocket:', error);
+      // Fallback: open Shiprocket directly
+      window.open('https://app.shiprocket.in/seller/orders/new', '_blank');
+    } finally {
+      setOpenMenuOrderId(null);
     }
   };
 
@@ -405,13 +441,41 @@ export default function OrdersPage() {
                       </td>
 
                       <td className="px-4 py-4">
-                        <button
-                          onClick={() => handleShipNow(order)}
-                          disabled={shippingOrder === order.localOrderId || !!order.awb_code || !order.localOrderId}
-                          className="px-4 py-2 bg-[#6366F1] hover:bg-[#5558E3] disabled:bg-white/10 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors"
-                        >
-                          {shippingOrder === order.localOrderId ? 'Processing...' : order.awb_code ? 'Shipped' : !order.localOrderId ? 'N/A' : 'Ship Now'}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleShipNow(order)}
+                            disabled={shippingOrder === order.localOrderId || !!order.awb_code || !order.localOrderId}
+                            className="px-4 py-2 bg-[#6366F1] hover:bg-[#5558E3] disabled:bg-white/10 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors"
+                          >
+                            {shippingOrder === order.localOrderId ? 'Processing...' : order.awb_code ? 'Shipped' : !order.localOrderId ? 'N/A' : 'Ship Now'}
+                          </button>
+
+                          {/* Three-dot menu */}
+                          <div className="relative">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenMenuOrderId(openMenuOrderId === order.id ? null : order.id);
+                              }}
+                              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+
+                            {/* Dropdown menu */}
+                            {openMenuOrderId === order.id && (
+                              <div className="absolute right-0 mt-2 w-48 bg-[#1A1A1A] border border-white/10 rounded-lg shadow-xl z-10">
+                                <button
+                                  onClick={handleOpenShiprocket}
+                                  className="w-full px-4 py-3 text-left text-sm hover:bg-white/10 flex items-center gap-2 rounded-lg transition-colors"
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                  Open Shiprocket
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   ))}
