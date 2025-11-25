@@ -191,10 +191,10 @@ function DashboardContent() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [paintings, setPaintings] = useState<Product[]>([]);
   const [artefacts, setArtefacts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<{id: string; name: string; type: 'painting' | 'artefact'}[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string; type: 'painting' | 'artefact' }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   // New Artefact Category System States
   const [artefactCategories, setArtefactCategories] = useState<ArtefactCategory[]>([]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -205,12 +205,12 @@ function DashboardContent() {
   const [showArtefactProductForm, setShowArtefactProductForm] = useState(false);
   const [currentArtefactProduct, setCurrentArtefactProduct] = useState<ArtefactProduct | undefined>(undefined);
   const [isReorderingCategories, setIsReorderingCategories] = useState(false);
-  
+
   // Get tab from URL parameter
   const searchParams = useSearchParams();
   const tabParam = searchParams ? searchParams.get('tab') : null;
   const [activeTab, setActiveTab] = useState(tabParam || 'overview');
-  
+
   // Update activeTab when URL parameter changes
   useEffect(() => {
     if (searchParams) {
@@ -231,7 +231,7 @@ function DashboardContent() {
       maximumFractionDigits: 0,
     }).format(value || 0);
 
-  
+
   // State for forms
   const [showBlogForm, setShowBlogForm] = useState(false);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
@@ -239,7 +239,7 @@ function DashboardContent() {
   const [currentBlog, setCurrentBlog] = useState<Blog | undefined>(undefined);
   const [currentTestimonial, setCurrentTestimonial] = useState<Testimonial | undefined>(undefined);
   const [currentProduct, setCurrentProduct] = useState<Product | undefined>(undefined);
-  
+
   // Form modes
   const [blogFormMode, setBlogFormMode] = useState<'add' | 'edit'>('add');
   const [testimonialFormMode, setTestimonialFormMode] = useState<'add' | 'edit'>('add');
@@ -275,7 +275,7 @@ function DashboardContent() {
         throw new Error('Failed to fetch blogs');
       }
       const blogsData = await blogsResponse.json();
-      
+
       // Process data to ensure it has id property
       const processedBlogs = blogsData.map((blog: any) => ({
         ...blog,
@@ -283,27 +283,27 @@ function DashboardContent() {
         // Generate slug from title if not provided
         slug: blog.slug || blog.title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
       }));
-      
+
       // Fetch testimonials
       const testimonialsResponse = await fetch('/api/testimonials');
       if (!testimonialsResponse.ok) {
         throw new Error('Failed to fetch testimonials');
       }
       const testimonialsData = await testimonialsResponse.json();
-      
+
       // Process data to ensure it has id property
       const processedTestimonials = testimonialsData.map((testimonial: any) => ({
         ...testimonial,
         id: testimonial._id || testimonial.id
       }));
-      
+
       // Fetch products
       const productsResponse = await fetch('/api/products');
       if (!productsResponse.ok) {
         throw new Error('Failed to fetch products');
       }
       const productsData = await productsResponse.json();
-      
+
       // Process products and separate into paintings and artefacts
       const processedProducts = productsData.map((product: any) => {
         // Convert to a format compatible with our UI
@@ -320,10 +320,10 @@ function DashboardContent() {
         };
         return processedProduct;
       });
-      
+
       const paintingsData = processedProducts.filter((product: Product) => product.type === 'painting');
       const artefactsData = processedProducts.filter((product: Product) => product.type === 'artefact');
-      
+
       // Fetch categories
       try {
         const categoriesResponse = await fetch('/api/categories');
@@ -348,7 +348,7 @@ function DashboardContent() {
           { id: '7', name: 'European', type: 'artefact' }
         ]);
       }
-      
+
       setBlogs(processedBlogs);
       setTestimonials(processedTestimonials);
       setPaintings(paintingsData);
@@ -356,7 +356,7 @@ function DashboardContent() {
     } catch (err: any) {
       console.error('Error fetching data:', err);
       setError(err.message || 'Failed to load data');
-      
+
       // Fallback to sample data if API fails
       setBlogs(sampleBlogs);
       setTestimonials(sampleTestimonials);
@@ -371,7 +371,7 @@ function DashboardContent() {
     fetchData();
     fetchArtefactCategories();
   }, []);
-  
+
   useEffect(() => {
     let isMounted = true;
 
@@ -493,26 +493,31 @@ function DashboardContent() {
       setIsReorderingCategories(false);
     }
   };
-  
+
   // Create or update artefact category
-  const handleSaveCategory = async (name: string, description: string, careGuide?: string, measurement?: string, gsm?: string) => {
+  const handleSaveCategory = async (name: string, description: string, careGuide?: string, measurement?: string, gsm?: string, length?: string, width?: string, breadth?: string, height?: string, weight?: string) => {
     try {
       if (categoryModalMode === 'edit' && editingCategory) {
         // Update existing category
         const response = await fetch(`/api/artefact-categories/${editingCategory.id || editingCategory._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             ...editingCategory,
-            name, 
+            name,
             description,
             careGuide: careGuide || '',
             measurement: measurement || '',
             gsm: gsm || '',
+            length: length ? parseFloat(length) : 0,
+            width: width ? parseFloat(width) : 0,
+            breadth: breadth ? parseFloat(breadth) : 0,
+            height: height ? parseFloat(height) : 0,
+            weight: weight ? parseFloat(weight) : 0,
             updatedAt: new Date().toISOString()
           }),
         });
-        
+
         if (response.ok) {
           await fetchArtefactCategories();
           setEditingCategory(null);
@@ -522,15 +527,20 @@ function DashboardContent() {
         const response = await fetch('/api/artefact-categories', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            name, 
+          body: JSON.stringify({
+            name,
             description,
             careGuide: careGuide || '',
             measurement: measurement || '',
-            gsm: gsm || ''
+            gsm: gsm || '',
+            length: length ? parseFloat(length) : 0,
+            width: width ? parseFloat(width) : 0,
+            breadth: breadth ? parseFloat(breadth) : 0,
+            height: height ? parseFloat(height) : 0,
+            weight: weight ? parseFloat(weight) : 0,
           }),
         });
-        
+
         if (response.ok) {
           await fetchArtefactCategories();
         }
@@ -553,7 +563,7 @@ function DashboardContent() {
     setEditingCategory(category);
     setShowCategoryModal(true);
   };
-  
+
   // Update artefact category
   const handleUpdateCategory = async (category: ArtefactCategory) => {
     try {
@@ -562,7 +572,7 @@ function DashboardContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(category),
       });
-      
+
       if (response.ok) {
         await fetchArtefactCategories();
       }
@@ -571,14 +581,14 @@ function DashboardContent() {
       alert('Failed to update category');
     }
   };
-  
+
   // Delete artefact category
   const handleDeleteCategory = async (categoryId: string) => {
     try {
       const response = await fetch(`/api/artefact-categories/${categoryId}`, {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
         await fetchArtefactCategories();
       }
@@ -587,66 +597,66 @@ function DashboardContent() {
       alert('Failed to delete category');
     }
   };
-  
+
   // Add product to category
   const handleAddProduct = async (productData: Omit<ArtefactProduct, 'id' | 'order' | 'createdAt'>) => {
     if (!selectedCategory) return;
-    
+
     const newProduct: ArtefactProduct = {
       ...productData,
       id: Date.now().toString(),
       order: selectedCategory.products?.length || 0,
       createdAt: new Date().toISOString(),
     };
-    
+
     const updatedCategory = {
       ...selectedCategory,
       products: [...(selectedCategory.products || []), newProduct],
       updatedAt: new Date().toISOString(),
     };
-    
+
     // Update in database
     await handleUpdateCategory(updatedCategory);
-    
+
     // Immediately update local state to show in UI
     setSelectedCategory(updatedCategory);
-    
+
     // Refresh the categories list to update thumbnails
     await fetchArtefactCategories();
   };
-  
+
   // Edit artefact product in category
   const handleEditArtefactProduct = (product: ArtefactProduct) => {
     setCurrentArtefactProduct(product);
     setShowArtefactProductForm(true);
   };
-  
+
   // Update product in category
   const handleUpdateProduct = async (productData: Omit<ArtefactProduct, 'id' | 'order' | 'createdAt'>) => {
     if (!selectedCategory || !currentArtefactProduct) return;
-    
+
     const updatedProducts = selectedCategory.products.map(p =>
       p.id === currentArtefactProduct.id
         ? { ...p, ...productData }
         : p
     );
-    
+
     const updatedCategory = {
       ...selectedCategory,
       products: updatedProducts,
       updatedAt: new Date().toISOString(),
     };
-    
+
     // Update in database
     await handleUpdateCategory(updatedCategory);
-    
+
     // Immediately update local state to show in UI
     setSelectedCategory(updatedCategory);
-    
+
     // Refresh the categories list to update thumbnails
     await fetchArtefactCategories();
   };
-  
+
   // Delete artefact product from category
   const handleDeleteArtefactProduct = (productId: string) => {
     // This is handled in the category detail component
@@ -663,16 +673,16 @@ function DashboardContent() {
   const handleDeleteBlog = async (id: string) => {
     // Note: Consider adding confirmation dialog here too
     if (!confirm('Are you sure you want to delete this blog?')) return;
-    
+
     try {
       const response = await fetch(`/api/blogs/${id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete blog');
       }
-      
+
       // Remove the blog from the state
       setBlogs(blogs.filter(blog => blog.id !== id));
     } catch (err) {
@@ -692,16 +702,16 @@ function DashboardContent() {
   const handleDeleteTestimonial = async (id: string) => {
     // Note: Consider adding confirmation dialog here too
     if (!confirm('Are you sure you want to delete this testimonial?')) return;
-    
+
     try {
       const response = await fetch(`/api/testimonials/${id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete testimonial');
       }
-      
+
       // Remove the testimonial from the state
       setTestimonials(testimonials.filter(testimonial => testimonial.id !== id));
     } catch (err) {
@@ -722,16 +732,16 @@ function DashboardContent() {
   const handleDeleteProduct = async (id: string) => {
     // Note: Consider adding confirmation dialog here too
     if (!confirm('Are you sure you want to delete this product?')) return;
-    
+
     try {
       const response = await fetch(`/api/products/${id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete product');
       }
-      
+
       // Remove the product from the state
       setPaintings(paintings.filter(product => product.id !== id));
       setArtefacts(artefacts.filter(product => product.id !== id));
@@ -744,9 +754,9 @@ function DashboardContent() {
   // Transform the simple product to enhanced format for the form
   const convertToEnhancedProduct = (product: Product | undefined): EnhancedProduct | undefined => {
     if (!product) return undefined;
-    
+
     // Removed automatic fetch in convertToEnhancedProduct to prevent infinite loops
-    
+
     return {
       id: product.id,
       _id: product._id,
@@ -795,7 +805,7 @@ function DashboardContent() {
         <div className="bg-red-500/20 text-red-300 p-4 rounded max-w-md text-center">
           <h3 className="text-xl font-semibold mb-2">Error</h3>
           <p>{error}</p>
-          <button 
+          <button
             onClick={fetchData}
             className="mt-4 px-4 py-2 bg-[#A47E3B] text-white rounded hover:bg-[#8a6a31]"
           >
@@ -947,177 +957,176 @@ function DashboardContent() {
 
           {/* Shiprocket Overview */}
           <div className="space-y-4">
-          <div className="bg-gradient-to-br from-[#1E1E1E] via-[#171717] to-[#121212] border border-white/5 rounded-2xl p-6 shadow-[0px_10px_40px_rgba(0,0,0,0.5)] overflow-hidden">
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-              <div className="flex-1 space-y-2">
-                <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.35em] text-white/40 uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#A47E3B] animate-pulse" />
-                  Shiprocket
+            <div className="bg-gradient-to-br from-[#1E1E1E] via-[#171717] to-[#121212] border border-white/5 rounded-2xl p-6 shadow-[0px_10px_40px_rgba(0,0,0,0.5)] overflow-hidden">
+              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+                <div className="flex-1 space-y-2">
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.35em] text-white/40 uppercase">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#A47E3B] animate-pulse" />
+                    Shiprocket
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-3xl font-semibold text-white">Fulfilment overview</h2>
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-white/5 border border-white/10 text-white/60">
+                      Live
+                    </span>
+                  </div>
+                  <p className="text-sm text-white/60">
+                    Data synced{' '}
+                    {shiprocketMetrics?.fetchedAt
+                      ? new Date(shiprocketMetrics.fetchedAt).toLocaleString()
+                      : 'just now'}
+                  </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <h2 className="text-3xl font-semibold text-white">Fulfilment overview</h2>
-                  <span className="px-2 py-0.5 text-xs rounded-full bg-white/5 border border-white/10 text-white/60">
-                    Live
-                  </span>
-                </div>
-                <p className="text-sm text-white/60">
-                  Data synced{' '}
-                  {shiprocketMetrics?.fetchedAt
-                    ? new Date(shiprocketMetrics.fetchedAt).toLocaleString()
-                    : 'just now'}
-                </p>
-              </div>
-              <div className="flex flex-col items-start gap-3">
-                <span className="text-xs tracking-wide text-white/40 uppercase">Range</span>
-                <div className="flex flex-wrap items-center gap-2">
-                  {shiprocketRangePresets.map((preset) => {
-                    const isActive = shiprocketRange.label === `Last ${preset.days} days`;
-                    return (
-                      <button
-                        key={preset.label}
-                        onClick={() => handleShiprocketRangeChange(preset.days)}
-                        className={`px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
-                          isActive
+                <div className="flex flex-col items-start gap-3">
+                  <span className="text-xs tracking-wide text-white/40 uppercase">Range</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {shiprocketRangePresets.map((preset) => {
+                      const isActive = shiprocketRange.label === `Last ${preset.days} days`;
+                      return (
+                        <button
+                          key={preset.label}
+                          onClick={() => handleShiprocketRangeChange(preset.days)}
+                          className={`px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${isActive
                             ? 'bg-white text-black shadow-lg shadow-white/30'
                             : 'bg-white/10 text-white/70 border border-white/10 hover:text-white hover:bg-white/15'
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    );
-                  })}
+                            }`}
+                        >
+                          {preset.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {shiprocketMetricsError && (
+                <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-200 text-sm rounded-xl px-4 py-3">
+                  {shiprocketMetricsError}
+                </div>
+              )}
+
+              <div className="mt-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                  {[
+                    {
+                      title: "Today's Orders",
+                      value: shiprocketMetrics?.todaysOrders ?? 0,
+                      description: 'Orders created today',
+                    },
+                    {
+                      title: 'Total Orders',
+                      value: shiprocketMetrics?.totalOrders ?? 0,
+                      description: `Period ${shiprocketRange.from} → ${shiprocketRange.to}`,
+                    },
+                    {
+                      title: 'COD Orders',
+                      value: shiprocketMetrics?.codOrders ?? 0,
+                      description: 'Cash on Delivery share',
+                    },
+                    {
+                      title: 'Avg. Order Value',
+                      value: shiprocketMetrics ? formatCurrency(shiprocketMetrics.averageOrderValue) : 0,
+                      description: 'Across current range',
+                      isCurrency: true,
+                    },
+                  ].map((stat) => (
+                    <Card
+                      key={stat.title}
+                      className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60 hover:border-white/10 transition-all duration-300"
+                    >
+                      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                        <CardTitle className="text-sm font-medium text-white/70">{stat.title}</CardTitle>
+                        <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-4xl font-semibold text-white tracking-tight">
+                          {shiprocketMetricsLoading && !shiprocketMetrics ? (
+                            <span className="animate-pulse text-white/30">•••</span>
+                          ) : stat.isCurrency ? (
+                            stat.value
+                          ) : (
+                            Number(stat.value || 0).toLocaleString()
+                          )}
+                        </div>
+                        <p className="text-xs text-white/40 mt-3">{stat.description}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60">
+                    <CardHeader>
+                      <CardTitle className="text-white text-lg">Shipment details</CardTitle>
+                      <CardDescription className="text-white/60">
+                        Quick snapshot of fulfilment split
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-white">
+                      {[
+                        {
+                          label: 'Total shipments',
+                          value: shiprocketMetrics?.totalOrders ?? 0,
+                        },
+                        {
+                          label: 'COD share',
+                          value: shiprocketMetrics?.codOrders ?? 0,
+                        },
+                        {
+                          label: 'Prepaid share',
+                          value: shiprocketMetrics?.prepaidOrders ?? 0,
+                        },
+                        {
+                          label: "Today's orders",
+                          value: shiprocketMetrics?.todaysOrders ?? 0,
+                        },
+                      ].map((item) => (
+                        <div
+                          key={item.label}
+                          className="bg-white/5 rounded-2xl p-4 border border-white/5 backdrop-blur"
+                        >
+                          <p className="text-xs uppercase tracking-wide text-white/40">{item.label}</p>
+                          <p className="text-3xl font-semibold mt-2">
+                            {shiprocketMetricsLoading && !shiprocketMetrics ? (
+                              <span className="animate-pulse text-white/40">•••</span>
+                            ) : (
+                              Number(item.value || 0).toLocaleString()
+                            )}
+                          </p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60">
+                    <CardHeader>
+                      <CardTitle className="text-white text-lg">Revenue summary</CardTitle>
+                      <CardDescription className="text-white/60">
+                        Gross value across the selected range
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                      <div className="bg-gradient-to-r from-[#A47E3B]/30 to-transparent rounded-2xl p-5 border border-[#A47E3B]/40">
+                        <p className="text-xs uppercase tracking-wide text-white/70">Total revenue</p>
+                        <p className="text-4xl font-semibold text-white mt-2">
+                          {shiprocketMetricsLoading && !shiprocketMetrics ? (
+                            <span className="animate-pulse text-white/40">•••</span>
+                          ) : shiprocketMetrics ? (
+                            formatCurrency(shiprocketMetrics.totalRevenue)
+                          ) : (
+                            '--'
+                          )}
+                        </p>
+                        <p className="text-xs text-white/60 mt-2">
+                          Avg order value{' '}
+                          {shiprocketMetrics ? formatCurrency(shiprocketMetrics.averageOrderValue) : '—'}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </div>
-
-            {shiprocketMetricsError && (
-              <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-200 text-sm rounded-xl px-4 py-3">
-                {shiprocketMetricsError}
-              </div>
-            )}
-
-            <div className="mt-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                {[
-                  {
-                    title: "Today's Orders",
-                    value: shiprocketMetrics?.todaysOrders ?? 0,
-                    description: 'Orders created today',
-                  },
-                  {
-                    title: 'Total Orders',
-                    value: shiprocketMetrics?.totalOrders ?? 0,
-                    description: `Period ${shiprocketRange.from} → ${shiprocketRange.to}`,
-                  },
-                  {
-                    title: 'COD Orders',
-                    value: shiprocketMetrics?.codOrders ?? 0,
-                    description: 'Cash on Delivery share',
-                  },
-                  {
-                    title: 'Avg. Order Value',
-                    value: shiprocketMetrics ? formatCurrency(shiprocketMetrics.averageOrderValue) : 0,
-                    description: 'Across current range',
-                    isCurrency: true,
-                  },
-                ].map((stat) => (
-                  <Card
-                    key={stat.title}
-                    className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60 hover:border-white/10 transition-all duration-300"
-                  >
-                    <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                      <CardTitle className="text-sm font-medium text-white/70">{stat.title}</CardTitle>
-                      <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-4xl font-semibold text-white tracking-tight">
-                        {shiprocketMetricsLoading && !shiprocketMetrics ? (
-                          <span className="animate-pulse text-white/30">•••</span>
-                        ) : stat.isCurrency ? (
-                          stat.value
-                        ) : (
-                          Number(stat.value || 0).toLocaleString()
-                        )}
-                      </div>
-                      <p className="text-xs text-white/40 mt-3">{stat.description}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60">
-                  <CardHeader>
-                    <CardTitle className="text-white text-lg">Shipment details</CardTitle>
-                    <CardDescription className="text-white/60">
-                      Quick snapshot of fulfilment split
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-white">
-                    {[
-                      {
-                        label: 'Total shipments',
-                        value: shiprocketMetrics?.totalOrders ?? 0,
-                      },
-                      {
-                        label: 'COD share',
-                        value: shiprocketMetrics?.codOrders ?? 0,
-                      },
-                      {
-                        label: 'Prepaid share',
-                        value: shiprocketMetrics?.prepaidOrders ?? 0,
-                      },
-                      {
-                        label: "Today's orders",
-                        value: shiprocketMetrics?.todaysOrders ?? 0,
-                      },
-                    ].map((item) => (
-                      <div
-                        key={item.label}
-                        className="bg-white/5 rounded-2xl p-4 border border-white/5 backdrop-blur"
-                      >
-                        <p className="text-xs uppercase tracking-wide text-white/40">{item.label}</p>
-                        <p className="text-3xl font-semibold mt-2">
-                          {shiprocketMetricsLoading && !shiprocketMetrics ? (
-                            <span className="animate-pulse text-white/40">•••</span>
-                          ) : (
-                            Number(item.value || 0).toLocaleString()
-                          )}
-                        </p>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-[#111111] border border-white/5 rounded-2xl shadow-lg shadow-black/60">
-                  <CardHeader>
-                    <CardTitle className="text-white text-lg">Revenue summary</CardTitle>
-                    <CardDescription className="text-white/60">
-                      Gross value across the selected range
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-4">
-                    <div className="bg-gradient-to-r from-[#A47E3B]/30 to-transparent rounded-2xl p-5 border border-[#A47E3B]/40">
-                      <p className="text-xs uppercase tracking-wide text-white/70">Total revenue</p>
-                      <p className="text-4xl font-semibold text-white mt-2">
-                        {shiprocketMetricsLoading && !shiprocketMetrics ? (
-                          <span className="animate-pulse text-white/40">•••</span>
-                        ) : shiprocketMetrics ? (
-                          formatCurrency(shiprocketMetrics.totalRevenue)
-                        ) : (
-                          '--'
-                        )}
-                      </p>
-                      <p className="text-xs text-white/60 mt-2">
-                        Avg order value{' '}
-                        {shiprocketMetrics ? formatCurrency(shiprocketMetrics.averageOrderValue) : '—'}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
           </div>
 
           {/* Stats Cards Grid */}
@@ -1142,7 +1151,7 @@ function DashboardContent() {
                     Live
                   </Badge>
                 </div>
-                <button 
+                <button
                   onClick={() => navigateToTab('blogs')}
                   className="mt-4 w-full px-3 py-2 border border-white/10 hover:border-white/30 text-white/80 hover:text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
@@ -1172,7 +1181,7 @@ function DashboardContent() {
                     Live
                   </Badge>
                 </div>
-                <button 
+                <button
                   onClick={() => navigateToTab('testimonials')}
                   className="mt-4 w-full px-3 py-2 border border-white/10 hover:border-white/30 text-white/80 hover:text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
@@ -1202,7 +1211,7 @@ function DashboardContent() {
                     Live
                   </Badge>
                 </div>
-                <button 
+                <button
                   onClick={() => navigateToTab('products')}
                   className="mt-4 w-full px-3 py-2 border border-white/10 hover:border-white/30 text-white/80 hover:text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2"
                 >
@@ -1229,22 +1238,22 @@ function DashboardContent() {
                   <AreaChart data={getChartData()}>
                     <defs>
                       <linearGradient id="colorBlogs" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorTestimonials" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorProducts" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
                     <XAxis dataKey="name" stroke="#888888" />
                     <YAxis stroke="#888888" />
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{ backgroundColor: '#222222', border: '1px solid #333333', borderRadius: '8px' }}
                       labelStyle={{ color: '#fff' }}
                     />
@@ -1280,7 +1289,7 @@ function DashboardContent() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{ backgroundColor: '#222222', border: '1px solid #333333', borderRadius: '8px' }}
                     />
                   </PieChart>
@@ -1292,7 +1301,7 @@ function DashboardContent() {
         </div>
       )}
 
-      
+
       {activeTab === 'blogs' && (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -1300,7 +1309,7 @@ function DashboardContent() {
               <h1 className="text-3xl font-bold text-white mb-2">Manage Blogs</h1>
               <p className="text-white/60">Create and manage your blog posts</p>
             </div>
-            <button 
+            <button
               onClick={() => {
                 setCurrentBlog(undefined);
                 setBlogFormMode('add');
@@ -1312,7 +1321,7 @@ function DashboardContent() {
               Add New Blog
             </button>
           </div>
-          
+
           {/* Blog Cards Grid */}
           {blogs.length === 0 ? (
             <Card className="bg-[#1A1A1A] border-[#333333]">
@@ -1324,7 +1333,7 @@ function DashboardContent() {
                 <p className="text-white/60 text-center mb-6 max-w-sm">
                   Start creating engaging blog posts to share with your audience.
                 </p>
-                <button 
+                <button
                   onClick={() => {
                     setCurrentBlog(undefined);
                     setBlogFormMode('add');
@@ -1342,10 +1351,10 @@ function DashboardContent() {
               {blogs.map((blog) => (
                 <Card key={blog.id} className="bg-[#1A1A1A] border-[#333333] hover:border-blue-500/40 transition-all duration-300 overflow-hidden group">
                   <div className="relative h-48 overflow-hidden bg-[#222222]">
-                    <img 
-                      src={getValidImageUrl(blog.image)} 
-                      alt={blog.title} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
+                    <img
+                      src={getValidImageUrl(blog.image)}
+                      alt={blog.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute top-3 right-3">
                       <Badge className="bg-blue-500/90 text-white border-0 backdrop-blur-sm">
@@ -1364,28 +1373,28 @@ function DashboardContent() {
                   <CardContent className="space-y-4">
                     <div className="flex items-center text-sm text-white/50">
                       <Calendar className="w-4 h-4 mr-2" />
-                      {new Date(blog.createdAt).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric', 
-                        year: 'numeric' 
+                      {new Date(blog.createdAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
                       })}
                     </div>
                     <div className="flex gap-2">
-                      <Link 
+                      <Link
                         href={`/blogs/${blog.slug || blog.id}`}
                         className="flex-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium"
                       >
                         <Eye className="w-4 h-4" />
                         View
                       </Link>
-                      <button 
+                      <button
                         onClick={() => handleEditBlog(blog)}
                         className="flex-1 px-3 py-2 bg-[#222222] hover:bg-[#2A2A2A] text-white/80 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium"
                       >
                         <Edit className="w-4 h-4" />
                         Edit
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteBlog(blog.id)}
                         className="px-3 py-2 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center"
                       >
@@ -1399,7 +1408,7 @@ function DashboardContent() {
           )}
         </div>
       )}
-      
+
       {activeTab === 'testimonials' && (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -1407,7 +1416,7 @@ function DashboardContent() {
               <h1 className="text-3xl font-bold text-white mb-2">Manage Testimonials</h1>
               <p className="text-white/60">View and manage customer testimonials</p>
             </div>
-            <button 
+            <button
               onClick={() => {
                 setCurrentTestimonial(undefined);
                 setTestimonialFormMode('add');
@@ -1419,7 +1428,7 @@ function DashboardContent() {
               Add New Testimonial
             </button>
           </div>
-          
+
           {/* Testimonials Cards Grid */}
           {testimonials.length === 0 ? (
             <Card className="bg-[#1A1A1A] border-[#333333]">
@@ -1431,7 +1440,7 @@ function DashboardContent() {
                 <p className="text-white/60 text-center mb-6 max-w-sm">
                   Start collecting customer testimonials to build trust and credibility.
                 </p>
-                <button 
+                <button
                   onClick={() => {
                     setCurrentTestimonial(undefined);
                     setTestimonialFormMode('add');
@@ -1452,10 +1461,10 @@ function DashboardContent() {
                     <div className="flex items-start gap-4">
                       <div className="relative">
                         <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-purple-500/20 group-hover:ring-purple-500/40 transition-all">
-                          <img 
-                            src={testimonial.avatar} 
-                            alt={testimonial.name} 
-                            className="w-full h-full object-cover" 
+                          <img
+                            src={testimonial.avatar}
+                            alt={testimonial.name}
+                            className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
@@ -1467,9 +1476,9 @@ function DashboardContent() {
                         <CardDescription className="text-white/60 mt-1">{testimonial.location}</CardDescription>
                         <div className="flex items-center gap-1 mt-2">
                           {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={`w-4 h-4 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`} 
+                            <Star
+                              key={i}
+                              className={`w-4 h-4 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`}
                             />
                           ))}
                           <span className="text-sm text-white/50 ml-2">({testimonial.rating}/5)</span>
@@ -1482,14 +1491,14 @@ function DashboardContent() {
                       "{testimonial.comment}"
                     </p>
                     <div className="flex gap-2 pt-2">
-                      <button 
+                      <button
                         onClick={() => handleEditTestimonial(testimonial)}
                         className="flex-1 px-3 py-2 bg-[#222222] hover:bg-[#2A2A2A] text-white/80 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium"
                       >
                         <Edit className="w-4 h-4" />
                         Edit
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteTestimonial(testimonial.id)}
                         className="px-3 py-2 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white text-sm rounded-lg transition-all duration-200 flex items-center justify-center"
                       >
@@ -1503,7 +1512,7 @@ function DashboardContent() {
           )}
         </div>
       )}
-      
+
       {/* Products Tab - New Category-Based System */}
       {activeTab === 'products' && !showCategoryDetail && (
         <div className="space-y-6">
@@ -1512,7 +1521,7 @@ function DashboardContent() {
               <h1 className="text-3xl font-bold text-white mb-2">Manage Products</h1>
               <p className="text-white/60">Organize your products by categories</p>
             </div>
-            <button 
+            <button
               onClick={handleCreateCategoryClick}
               className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 font-medium"
             >
@@ -1520,7 +1529,7 @@ function DashboardContent() {
               Create Category
             </button>
           </div>
-          
+
           {/* Category Cards Grid */}
           {artefactCategories.length === 0 ? (
             <Card className="bg-[#1A1A1A] border-[#333333]">
@@ -1532,7 +1541,7 @@ function DashboardContent() {
                 <p className="text-white/60 text-center mb-6 max-w-sm">
                   Create categories to organize your products (like Mouse Pads, Desk Mats, etc.).
                 </p>
-                <button 
+                <button
                   onClick={handleCreateCategoryClick}
                   className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 font-medium"
                 >
@@ -1555,7 +1564,7 @@ function DashboardContent() {
           )}
         </div>
       )}
-      
+
       {/* Category Detail Overlay */}
       {activeTab === 'products' && selectedCategory && (
         <ArtefactCategoryDetail
@@ -1575,45 +1584,45 @@ function DashboardContent() {
           onDeleteProduct={handleDeleteArtefactProduct}
         />
       )}
-      
+
       {/* Forms */}
       {showBlogForm && (
-        <BlogForm 
-          mode={blogFormMode} 
-          blog={currentBlog} 
+        <BlogForm
+          mode={blogFormMode}
+          blog={currentBlog}
           onCancel={() => {
             setShowBlogForm(false);
             fetchData(); // Refresh data when form is closed
-          }} 
+          }}
         />
       )}
-      
+
       {showTestimonialForm && (
-        <TestimonialForm 
-          mode={testimonialFormMode} 
-          testimonial={currentTestimonial} 
+        <TestimonialForm
+          mode={testimonialFormMode}
+          testimonial={currentTestimonial}
           onCancel={() => {
             setShowTestimonialForm(false);
             fetchData(); // Refresh data when form is closed
-          }} 
+          }}
         />
       )}
-      
+
       {showProductForm && (
-        <EnhancedProductForm 
-          mode={productFormMode} 
+        <EnhancedProductForm
+          mode={productFormMode}
           product={convertToEnhancedProduct(currentProduct)}
           productType={productType}
-          categories={categories.filter(cat => 
+          categories={categories.filter(cat =>
             cat.type === productType
           )}
           onCancel={() => {
             setShowProductForm(false);
             fetchData(); // Refresh data when form is closed
-          }} 
+          }}
         />
       )}
-      
+
       {/* Artefact Category Modal */}
       <ArtefactCategoryModal
         isOpen={showCategoryModal}
@@ -1628,8 +1637,13 @@ function DashboardContent() {
         initialCareGuide={(editingCategory as any)?.careGuide || ''}
         initialMeasurement={(editingCategory as any)?.measurement || ''}
         initialGsm={(editingCategory as any)?.gsm || ''}
+        initialLength={(editingCategory as any)?.length?.toString() || ''}
+        initialWidth={(editingCategory as any)?.width?.toString() || ''}
+        initialBreadth={(editingCategory as any)?.breadth?.toString() || ''}
+        initialHeight={(editingCategory as any)?.height?.toString() || ''}
+        initialWeight={(editingCategory as any)?.weight?.toString() || ''}
       />
-      
+
       {/* Artefact Product Form */}
       {showArtefactProductForm && (
         <ArtefactProductForm

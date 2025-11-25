@@ -16,7 +16,8 @@ interface Order {
   id: number;
   order_id: string;
   channel_order_id?: string;
-  order_date: string;
+  order_date?: string;
+  created_at?: string;
   billing_customer_name: string;
   billing_email: string;
   billing_phone: string;
@@ -60,6 +61,42 @@ const TABS = [
   { label: 'All', value: 'ALL' },
 ];
 
+// Helper function to safely format dates from Shiprocket API
+const formatOrderDate = (dateStr: string | undefined): string => {
+  if (!dateStr) return 'N/A';
+
+  try {
+    // Try parsing as ISO date first
+    let date = new Date(dateStr);
+
+    // If invalid, try parsing other common formats
+    if (isNaN(date.getTime())) {
+      // Shiprocket might return dates like "2025-11-25 14:30:00" or other formats
+      // Try replacing spaces with T for ISO format
+      const isoLike = dateStr.replace(' ', 'T');
+      date = new Date(isoLike);
+    }
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date format from Shiprocket:', dateStr);
+      return 'Invalid Date';
+    }
+
+    return date.toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch (error) {
+    console.error('Error formatting date:', dateStr, error);
+    return 'Invalid Date';
+  }
+};
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +121,16 @@ export default function OrdersPage() {
       setLoading(true);
       const response = await fetch('/api/shiprocket/orders');
       const data = await response.json();
+
+      // Debug: Log the first order to see date format
+      if (data.data && data.data.length > 0) {
+        console.log('First order data:', {
+          order_id: data.data[0].order_id,
+          order_date: data.data[0].order_date,
+          created_at: data.data[0].created_at,
+        });
+      }
+
       setOrders(data.data || []);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
@@ -222,8 +269,8 @@ export default function OrdersPage() {
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
               className={`px-6 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${activeTab === tab.value
-                  ? 'bg-white text-black'
-                  : 'bg-white/5 hover:bg-white/10 text-white/70'
+                ? 'bg-white text-black'
+                : 'bg-white/5 hover:bg-white/10 text-white/70'
                 }`}
             >
               {tab.label}
@@ -291,7 +338,7 @@ export default function OrdersPage() {
                     <tr key={order.id} className="hover:bg-white/5">
                       <td className="px-4 py-4">
                         <div className="text-sm font-medium">{order.order_id}</div>
-                        <div className="text-xs text-white/50">{new Date(order.order_date).toLocaleString()}</div>
+                        <div className="text-xs text-white/50">{formatOrderDate(order.order_date || order.created_at)}</div>
                         {order.channel_order_id && (
                           <div className="text-xs text-white/30">#{order.channel_order_id}</div>
                         )}
@@ -328,17 +375,17 @@ export default function OrdersPage() {
                       </td>
 
                       <td className="px-4 py-4">
-                        <div className="text-xs text-white/60">
-                          <div>Dead wt: {order.weight || 0} kg</div>
-                          <div>Size: {order.length || 0} × {order.breadth || 0} × {order.height || 0} cm</div>
+                        <div className="text-xs text-white/70">
+                          <div>Dead wt: {order.weight || 0.5} kg</div>
+                          <div>Size: {order.length || 30} × {order.breadth || 26} × {order.height || 10} cm</div>
                         </div>
                       </td>
 
                       <td className="px-4 py-4">
                         <div className="text-sm font-medium">₹{order.sub_total || order.total || 0}</div>
                         <div className={`text-xs px-2 py-1 rounded inline-block mt-1 ${order.payment_method === 'Prepaid'
-                            ? 'bg-green-500/20 text-green-300'
-                            : 'bg-yellow-500/20 text-yellow-300'
+                          ? 'bg-green-500/20 text-green-300'
+                          : 'bg-yellow-500/20 text-yellow-300'
                           }`}>
                           {order.payment_method}
                         </div>
@@ -350,8 +397,8 @@ export default function OrdersPage() {
 
                       <td className="px-4 py-4">
                         <div className={`text-xs px-3 py-1 rounded-full inline-block font-medium ${order.status.includes('NEW') ? 'bg-blue-500/20 text-blue-300' :
-                            order.status.includes('DELIVERED') ? 'bg-green-500/20 text-green-300' :
-                              'bg-white/10 text-white/70'
+                          order.status.includes('DELIVERED') ? 'bg-green-500/20 text-green-300' :
+                            'bg-white/10 text-white/70'
                           }`}>
                           {order.status}
                         </div>
