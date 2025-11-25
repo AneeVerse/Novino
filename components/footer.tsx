@@ -42,9 +42,9 @@ export default function Footer() {
   return (
     <div className="relative overflow-hidden">
       <footer id="site-footer" className="relative mx-2 mb-12 max-w-[2400px]">
-        <div className="relative p-0 bg-[#292929] sm:bg-transparent" style={{ 
+        <div className="relative p-0 bg-[#292929] sm:bg-transparent" style={{
           backgroundImage: "none",
-          backgroundSize: "100% 100%", 
+          backgroundSize: "100% 100%",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center"
         }}>
@@ -56,7 +56,7 @@ export default function Footer() {
             backgroundPosition: "center",
             zIndex: -1
           }}></div>
-          
+
           {/* Mobile border overlay */}
           <div className="absolute inset-0 border-2 border-dashed border-white rounded-[20px] block sm:hidden"></div>
           {/* Desktop border overlay */}
@@ -77,7 +77,7 @@ export default function Footer() {
               filter: 'blur(70px)',
               mixBlendMode: 'overlay'
             }}></div>
-            
+
             {/* Bottom left glow */}
             <div className="absolute pointer-events-none" style={{
               bottom: '-20%',
@@ -89,7 +89,7 @@ export default function Footer() {
               filter: 'blur(50px)',
               mixBlendMode: 'overlay'
             }}></div>
-            
+
             {/* Top right glow */}
             <div className="absolute pointer-events-none" style={{
               top: '-15%',
@@ -101,7 +101,7 @@ export default function Footer() {
               filter: 'blur(55px)',
               mixBlendMode: 'overlay'
             }}></div>
-            
+
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-8 relative z-10">
               {/* Brand Column */}
               <div className="col-span-2 sm:col-span-3 md:col-span-1">
@@ -129,14 +129,14 @@ export default function Footer() {
               <div>
                 {/* Mobile view with collapsible sections */}
                 <div className="sm:hidden">
-                  <div 
-                    className="flex items-start cursor-pointer relative" 
+                  <div
+                    className="flex items-start cursor-pointer relative"
                     onClick={() => toggleSection('company')}
                   >
                     <h3 className="text-white text-base font-medium mb-3 font-satoshi">QUICK LINKS</h3>
-                    <ChevronRight 
-                      size={16} 
-                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.company ? 'rotate-90' : ''}`} 
+                    <ChevronRight
+                      size={16}
+                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.company ? 'rotate-90' : ''}`}
                     />
                   </div>
                   <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.company ? 'max-h-40' : 'max-h-0'}`}>
@@ -162,7 +162,7 @@ export default function Footer() {
                     </li>
                   </ul>
                 </div>
-                
+
                 {/* Desktop view with always visible links */}
                 <div className="hidden sm:block">
                   <h3 className="text-white text-lg font-medium mb-4 font-satoshi">QUICK LINKS</h3>
@@ -195,14 +195,14 @@ export default function Footer() {
               <div>
                 {/* Mobile view with collapsible sections */}
                 <div className="sm:hidden">
-                  <div 
-                    className="flex items-start cursor-pointer relative" 
+                  <div
+                    className="flex items-start cursor-pointer relative"
                     onClick={() => toggleSection('help')}
                   >
                     <h3 className="text-white text-base font-medium mb-3 font-satoshi">POLICY</h3>
-                    <ChevronRight 
-                      size={16} 
-                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.help ? 'rotate-90' : ''}`} 
+                    <ChevronRight
+                      size={16}
+                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.help ? 'rotate-90' : ''}`}
                     />
                   </div>
                   <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.help ? 'max-h-40' : 'max-h-0'}`}>
@@ -228,7 +228,7 @@ export default function Footer() {
                     </li>
                   </ul>
                 </div>
-                
+
                 {/* Desktop view with always visible links */}
                 <div className="hidden sm:block">
                   <h3 className="text-white text-lg font-medium mb-4 font-satoshi">POLICY</h3>
@@ -261,68 +261,68 @@ export default function Footer() {
               <div>
                 {/* Mobile view with collapsible sections */}
                 <div className="sm:hidden">
-                  <div 
-                    className="flex items-start cursor-pointer relative" 
+                  <div
+                    className="flex items-start cursor-pointer relative"
                     onClick={() => toggleSection('faq')}
                   >
                     <h3 className="text-white text-base font-medium mb-3 font-satoshi">FAQ</h3>
-                    <ChevronRight 
-                      size={16} 
-                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.faq ? 'rotate-90' : ''}`} 
+                    <ChevronRight
+                      size={16}
+                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.faq ? 'rotate-90' : ''}`}
                     />
                   </div>
                   <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.faq ? 'max-h-40' : 'max-h-0'}`}>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                      <Link href="/profile" className="text-gray-300 hover:text-white text-xs font-satoshi">
                         Account
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Manage Deliveries
+                      <Link href="/profile" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        My Orders
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Orders
+                      <Link href="/blogs" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Help & FAQ
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                      <Link href="/contact" className="text-gray-300 hover:text-white text-xs font-satoshi">
                         Customer Support
                       </Link>
                     </li>
                   </ul>
                 </div>
-                
+
                 {/* Desktop view with always visible links */}
                 <div className="hidden sm:block">
                   <h3 className="text-white text-lg font-medium mb-4 font-satoshi">FAQ</h3>
                   <ul className="space-y-2">
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                      <Link href="/profile" className="text-gray-300 hover:text-white text-sm font-satoshi">
                         Account
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Manage Deliveries
+                      <Link href="/profile" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        My Orders
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Orders
+                      <Link href="/blogs" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Help & FAQ
                       </Link>
                     </li>
                     <li>
-                      <Link href="#" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                      <Link href="/contact" className="text-gray-300 hover:text-white text-sm font-satoshi">
                         Customer Support
                       </Link>
                     </li>
                   </ul>
                 </div>
               </div>
-              
+
             </div>
 
             {/* Bottom Section */}
@@ -332,11 +332,11 @@ export default function Footer() {
                 <div className="hidden sm:flex items-center justify-center mx-4">
                   <img src="/images/Frame 53.png" alt="Payment Methods" className="h-6 sm:h-8" />
                 </div>
-                <a 
-                href="https://www.aneeverse.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Designed & Managed By Aneeverse</a>
+                <a
+                  href="https://www.aneeverse.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Designed & Managed By Aneeverse</a>
               </div>
               {/* Payment options for mobile */}
               <div className="flex sm:hidden items-center justify-center mt-4">

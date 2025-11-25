@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServiceRoleClient } from '@/lib/supabase-server';
 import { verifyPaymentSignature } from '@/lib/services/razorpay';
 import { createShiprocketShipment, scheduleShiprocketPickup } from '@/lib/services/shiprocket';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   const { orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature, paymentMethod } = await req.json();
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
         .eq('id', orderId)
         .select()
         .single();
-      
+
       if (updatedOrder) {
         order = updatedOrder;
       } else {
@@ -97,19 +98,19 @@ export async function POST(req: NextRequest) {
       triedById: !!orderById,
       triedByRazorpay: !orderById
     });
-    
+
     // Additional debug: try to list all orders to see what's in the DB
     const { data: allOrders } = await supabase
       .from('orders')
       .select('id, order_number, razorpay_order_id, created_at')
       .limit(10)
       .order('created_at', { ascending: false });
-    
+
     console.error('Recent orders in DB:', allOrders);
-    
+
     return NextResponse.json(
-      { 
-        message: 'Order not found', 
+      {
+        message: 'Order not found',
         details: orderError?.message,
         debug: { orderId, razorpayOrderId }
       },
@@ -295,6 +296,14 @@ export async function POST(req: NextRequest) {
     .select('*')
     .eq('id', orderId)
     .single();
+
+  // Send confirmation email
+  if (updatedOrder) {
+    // Run in background to not block response
+    sendOrderConfirmationEmail(updatedOrder).catch((err: any) =>
+      console.error('Failed to send order confirmation email:', err)
+    );
+  }
 
   return NextResponse.json({ order: updatedOrder, payment });
 }
