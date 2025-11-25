@@ -346,14 +346,14 @@ export default function ProductDetail() {
       const catsRes = await fetch('/api/artefact-categories');
       if (catsRes.ok) {
         const cats = await catsRes.json();
-        
+
         // Get category name from URL if available
         // URL has: "mouse-pads", Category has: "Mouse Pads"
         // Convert hyphenated URL to space-separated for matching
         const urlCategoryName = normalizedCategoryFromUrl || categorySegmentFromUrl;
         const urlCategoryNameWithSpaces = urlCategoryName?.toLowerCase().replace(/-/g, ' ') || '';
         const urlCategorySlug = urlCategoryName?.toLowerCase() || '';
-        
+
         // Find the category that contains this product
         // Try multiple matching strategies:
         // 1. Match by URL category name (most reliable) - convert hyphens to spaces and match
@@ -363,17 +363,17 @@ export default function ProductDetail() {
         let catItem = cats.find((cat: any) => {
           const catName = cat.name?.toLowerCase() || '';
           const catNameSlug = catName.replace(/\s+/g, '-');
-          
+
           // Match strategies:
           // 1. URL "mouse-pads" → "mouse pads" matches category "mouse pads"
           // 2. URL "mouse-pads" matches category slugified "mouse-pads"
           // 3. Direct name match
           const matchesByName = catName === urlCategoryNameWithSpaces;
           const matchesBySlug = catNameSlug === urlCategorySlug || catName === urlCategorySlug;
-          
+
           return matchesByName || matchesBySlug;
         });
-        
+
         // If not found by URL, try other methods
         if (!catItem) {
           catItem = cats.find((cat: any) => {
@@ -381,22 +381,22 @@ export default function ProductDetail() {
             const productCatId = product.category?.toString();
             const catName = cat.name?.toLowerCase() || '';
             const productCatName = product.category?.toLowerCase() || '';
-            
+
             // Also check if this product exists in the category's products array
             const hasProduct = cat.products?.some((p: any) => {
               const pId = p.id?.toString();
               const prodId = product.id?.toString();
               return pId === prodId;
             });
-            
-            return catId === productCatId || 
-                   catName === productCatName || 
-                   hasProduct ||
-                   (catName && productCatName && catName.includes(productCatName)) ||
-                   (catName && productCatName && productCatName.includes(catName));
+
+            return catId === productCatId ||
+              catName === productCatName ||
+              hasProduct ||
+              (catName && productCatName && catName.includes(productCatName)) ||
+              (catName && productCatName && productCatName.includes(catName));
           });
         }
-        
+
         // Set all category data (name, description, care guide) - same logic
         if (catItem) {
           setCategoryName(catItem?.name || product.category);
@@ -405,7 +405,7 @@ export default function ProductDetail() {
           const careGuide = (catItem?.careGuide || catItem?.care_guide || '').trim();
           const measurement = (catItem?.measurement || '').trim();
           const gsm = (catItem?.gsm || '').trim();
-          
+
           setCategoryCareGuide(careGuide);
           setCategoryMeasurement(measurement);
           setCategoryGsm(gsm);
@@ -1299,7 +1299,7 @@ export default function ProductDetail() {
                       </p>
                     </div>
                   )}
-                  
+
                   <div
                     className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] select-none group cursor-pointer overflow-visible"
                     onMouseEnter={() => setIsAutoScrolling(false)}
@@ -1496,28 +1496,10 @@ export default function ProductDetail() {
                     </button>
                   </div>
 
-                  {/* Trade Portal Link */}
-                  <div className="pt-6 border-t border-white/10">
-                    <div className="flex items-center justify-between text-xs">
-                      {!isLoggedIn ? (
-                        <>
-                          <Link href="/signup" className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider">
-                            Are you new? Register
-                          </Link>
-                          <Link href="/login" className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider">
-                            Already registered? Login
-                          </Link>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-white/40 font-['Roboto_Mono'] uppercase tracking-wider">Welcome back</span>
-                          <Link href="/dashboard" className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider">
-                            Go to Dashboard
-                          </Link>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                  {/* Product Information Text */}
+                  <p className="text-[10px] text-white/40 text-center font-['Roboto_Mono'] -mt-4">
+                    All the paintings are high definition digital copy of the original artwork
+                  </p>
 
                   {/* Care Guide - Collapsible Description Section - Always show */}
                   <div className="mt-6 border-t border-white/10 pt-6">
@@ -1589,7 +1571,7 @@ export default function ProductDetail() {
 
                 {displayedDescription && (
                   <div className="mb-5">
-                    <div className="text-white/70 leading-relaxed text-sm font-['Roboto_Mono'] transition-opacity duration-300">
+                    <div className="text-white/70 leading-relaxed text-base font-['Roboto_Mono'] transition-opacity duration-300">
                       <p className="whitespace-pre-line">{displayedDescription}</p>
                     </div>
                   </div>
@@ -1609,7 +1591,7 @@ export default function ProductDetail() {
 
                 {categoryNarrative && (
                   <div className="pt-6 border-t border-white/10">
-                    <div className="text-white/60 leading-relaxed text-sm font-['Roboto_Mono'] transition-opacity duration-300">
+                    <div className="text-white/60 leading-relaxed text-base font-['Roboto_Mono'] transition-opacity duration-300">
                       <p className="whitespace-pre-line">{categoryNarrative}</p>
                     </div>
                   </div>
@@ -1717,6 +1699,19 @@ export default function ProductDetail() {
           </div>
         )}
 
+
+        {/* Design Stories - Product Testimonial */}
+        <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
+          <div className="px-4 md:px-6">
+            <ProductTestimonial
+              items={testimonialItems}
+              categoryLinks={testimonialCategoryLinks}
+              title="Design Stories"
+              subtitle="Design"
+            />
+          </div>
+        </div>
+
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-16 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
@@ -1773,17 +1768,6 @@ export default function ProductDetail() {
           </div>
         )}
 
-        <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
-          <div className="px-4 md:px-6">
-            <ProductTestimonial
-              items={testimonialItems}
-              categoryLinks={testimonialCategoryLinks}
-              title="Design Stories"
-              subtitle="Design"
-            />
-          </div>
-        </div>
-
         {/* Testimonial Collection */}
         <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
           <div className="px-4 md:px-6">
@@ -1803,7 +1787,9 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
-      <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
+
+      {/* Footer Section */}
+      <div className="mx-auto w-full" style={{ maxWidth: "1440px" }}>
         <div className="px-4 md:px-6">
           <Footer />
         </div>
@@ -1812,4 +1798,5 @@ export default function ProductDetail() {
 
     </div>
   )
-} 
+
+}
