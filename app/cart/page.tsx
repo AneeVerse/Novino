@@ -68,7 +68,7 @@ export default function CartPage() {
         if (response.ok) {
           const data = await response.json();
           const formattedAddresses = data.addresses.map((addr: any) => ({
-            id: addr._id,
+            id: addr.id || addr._id, // Supabase uses 'id', MongoDB uses '_id'
             name: addr.name,
             phone: addr.phone,
             pincode: addr.pincode,
@@ -78,7 +78,7 @@ export default function CartPage() {
             city: addr.city,
             state: addr.state,
             estimatedDelivery: "3-5 business days",
-            isDefault: addr.isDefault
+            isDefault: addr.is_default || addr.isDefault
           }));
           
           setSavedAddresses(formattedAddresses);
