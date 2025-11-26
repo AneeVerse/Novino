@@ -35,7 +35,7 @@ const loadExternalScript = (src: string) => {
 };
 
 export default function CheckoutPage() {
-  const { cart, isLoggedIn, isAuthReady } = useCart();
+  const { cart, isLoggedIn, isAuthReady, removeFromCart } = useCart();
   const router = useRouter();
   const { toast } = useToast();
   const [isRedirectingToLogin, setIsRedirectingToLogin] = useState(false);
@@ -74,6 +74,7 @@ export default function CheckoutPage() {
   
   // State for delivery address
   const [deliveryAddress, setDeliveryAddress] = useState<{
+    id?: string;
     name: string;
     pincode: string;
     address: string;
@@ -508,6 +509,11 @@ export default function CheckoutPage() {
               const verifyError = await verifyRes.json();
               throw new Error(verifyError.message || 'Payment verification failed');
             }
+
+            // Remove purchased items from cart
+            selectedCartItems.forEach((item: any) => {
+              removeFromCart(item.id, item.variant);
+            });
 
             toast({
               title: "Payment Successful!",
