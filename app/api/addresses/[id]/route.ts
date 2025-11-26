@@ -8,7 +8,7 @@ export async function PUT(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -83,7 +83,7 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -147,7 +147,7 @@ export async function PATCH(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
         const { data: { user }, error: authError } = await supabase.auth.getUser();

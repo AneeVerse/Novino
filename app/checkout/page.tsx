@@ -138,12 +138,63 @@ export default function CheckoutPage() {
       }
     }
     
-    // Get address
-    const savedAddress = localStorage.getItem('selectedAddress');
-    if (savedAddress) {
-      setDeliveryAddress(JSON.parse(savedAddress));
+    // Fetch addresses from API
+    const fetchAddresses = async () => {
+      try {
+        const response = await fetch('/api/addresses');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.addresses && data.addresses.length > 0) {
+            // Find default or first address
+            const defaultAddress = data.addresses.find((addr: any) => addr.isDefault || addr.is_default) || data.addresses[0];
+            const formattedAddress = {
+              id: defaultAddress._id || defaultAddress.id,
+              name: defaultAddress.name,
+              phone: defaultAddress.phone,
+              pincode: defaultAddress.pincode,
+              address: `${defaultAddress.line1}${defaultAddress.line2 ? ', ' + defaultAddress.line2 : ''}`,
+              line1: defaultAddress.line1,
+              line2: defaultAddress.line2 || '',
+              city: defaultAddress.city,
+              state: defaultAddress.state,
+              estimatedDelivery: "3-5 business days"
+            };
+            setDeliveryAddress(formattedAddress);
+            localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
+          } else {
+            // Check localStorage as fallback
+            const savedAddress = localStorage.getItem('selectedAddress');
+            if (savedAddress) {
+              setDeliveryAddress(JSON.parse(savedAddress));
+            }
+          }
+        } else {
+          // If API fails, check localStorage as fallback
+          const savedAddress = localStorage.getItem('selectedAddress');
+          if (savedAddress) {
+            setDeliveryAddress(JSON.parse(savedAddress));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching addresses:', error);
+        // Fallback to localStorage
+        const savedAddress = localStorage.getItem('selectedAddress');
+        if (savedAddress) {
+          setDeliveryAddress(JSON.parse(savedAddress));
+        }
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchAddresses();
+    } else {
+      // If not logged in, check localStorage
+      const savedAddress = localStorage.getItem('selectedAddress');
+      if (savedAddress) {
+        setDeliveryAddress(JSON.parse(savedAddress));
+      }
     }
-  }, [cart]);
+  }, [cart, isLoggedIn]);
 
   if (!isAuthReady || isRedirectingToLogin) {
     return (
@@ -588,7 +639,7 @@ export default function CheckoutPage() {
                     <p className="text-white/70 text-xs sm:text-sm break-words">{deliveryAddress.address}</p>
                   </div>
                   <button 
-                    onClick={() => router.push('/cart')}
+                    onClick={() => router.push('/cart/address')}
                     className="text-[#AE876D] hover:text-[#8d6c58] text-xs sm:text-sm font-medium uppercase flex-shrink-0"
                   >
                     CHANGE
@@ -602,7 +653,7 @@ export default function CheckoutPage() {
                   </div>
                   <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4">No address added yet</p>
                   <button
-                    onClick={() => router.push('/cart')}
+                    onClick={() => router.push('/cart/address')}
                     className="bg-[#AE876D] hover:bg-[#8d6c58] text-white py-2 px-4 rounded-md text-xs sm:text-sm font-medium transition-colors"
                   >
                     Add Address

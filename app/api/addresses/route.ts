@@ -5,7 +5,7 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 // GET - Fetch all addresses for authenticated user
 export async function GET() {
     try {
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -36,7 +36,7 @@ export async function GET() {
 // POST - Create new address
 export async function POST(req: NextRequest) {
     try {
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
         const { data: { user }, error: authError } = await supabase.auth.getUser();

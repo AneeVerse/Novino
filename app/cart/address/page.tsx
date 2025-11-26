@@ -49,17 +49,17 @@ export default function AddressPage() {
         if (response.ok) {
           const data = await response.json();
           const formattedAddresses = data.addresses.map((addr: any) => ({
-            id: addr._id,
+            id: addr.id || addr._id, // Supabase uses 'id', MongoDB uses '_id'
             name: addr.name,
             phone: addr.phone,
             pincode: addr.pincode,
             address: `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}`,
             line1: addr.line1,
-            line2: addr.line2,
+            line2: addr.line2 || '',
             city: addr.city,
             state: addr.state,
             estimatedDelivery: "3-5 business days",
-            isDefault: addr.isDefault
+            isDefault: addr.is_default || addr.isDefault
           }));
           
           setSavedAddresses(formattedAddresses);
@@ -188,6 +188,9 @@ export default function AddressPage() {
     }
 
     if (trimmedLine1 && addressForm.city && addressForm.state && isPincodeVerified) {
+      // Get the current address being edited to preserve isDefault if not changing
+      const currentAddress = editingAddressId ? savedAddresses.find(addr => addr.id === editingAddressId) : null;
+      
       const addressPayload = {
         name: trimmedName,
         phone: addressForm.phone,
@@ -196,7 +199,7 @@ export default function AddressPage() {
         city: addressForm.city,
         state: addressForm.state,
         pincode: addressForm.pincode,
-        isDefault: savedAddresses.length === 0
+        isDefault: editingAddressId ? (currentAddress?.isDefault || false) : (savedAddresses.length === 0)
       };
       
       try {
@@ -211,17 +214,17 @@ export default function AddressPage() {
           if (response.ok) {
             const { address } = await response.json();
             const formattedAddress = {
-              id: address._id,
+              id: address._id || address.id,
               name: address.name,
               phone: address.phone,
               pincode: address.pincode,
               address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
               line1: address.line1,
-              line2: address.line2,
+              line2: address.line2 || '',
               city: address.city,
               state: address.state,
               estimatedDelivery: "3-5 business days",
-              isDefault: address.isDefault
+              isDefault: address.is_default || address.isDefault
             };
             
             const updated = savedAddresses.map(addr => 
@@ -229,10 +232,22 @@ export default function AddressPage() {
             );
             setSavedAddresses(updated);
             setSelectedAddress(formattedAddress);
+            localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
             
             toast({
               title: "Address Updated",
               description: "Address has been updated successfully",
+            });
+            
+            setShowAddressForm(false);
+            setEditingAddressId(null);
+            resetForm();
+          } else {
+            const errorData = await response.json().catch(() => ({ error: 'Failed to update address' }));
+            toast({
+              variant: "destructive",
+              title: "Update Failed",
+              description: errorData.error || "Failed to update address. Please try again.",
             });
           }
         } else {
@@ -246,33 +261,41 @@ export default function AddressPage() {
           if (response.ok) {
             const { address } = await response.json();
             const formattedAddress = {
-              id: address._id,
+              id: address._id || address.id,
               name: address.name,
               phone: address.phone,
               pincode: address.pincode,
               address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
               line1: address.line1,
-              line2: address.line2,
+              line2: address.line2 || '',
               city: address.city,
               state: address.state,
               estimatedDelivery: "3-5 business days",
-              isDefault: address.isDefault
+              isDefault: address.is_default || address.isDefault
             };
             
             const updated = [...savedAddresses, formattedAddress];
             setSavedAddresses(updated);
             setSelectedAddress(formattedAddress);
+            localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
             
             toast({
               title: "Address Added",
               description: "Delivery address has been saved successfully",
             });
+            
+            setShowAddressForm(false);
+            setEditingAddressId(null);
+            resetForm();
+          } else {
+            const errorData = await response.json().catch(() => ({ error: 'Failed to save address' }));
+            toast({
+              variant: "destructive",
+              title: "Save Failed",
+              description: errorData.error || "Failed to save address. Please try again.",
+            });
           }
         }
-        
-        setShowAddressForm(false);
-        setEditingAddressId(null);
-        resetForm();
       } catch (error) {
         console.error('Error saving address:', error);
         toast({
@@ -536,7 +559,10 @@ export default function AddressPage() {
                           ? 'border-[#AE876D] bg-[#AE876D]/10'
                           : 'border-[#444444] hover:border-[#555555]'
                       }`}
-                      onClick={() => setSelectedAddress(address)}
+                      onClick={() => {
+                        setSelectedAddress(address);
+                        localStorage.setItem('selectedAddress', JSON.stringify(address));
+                      }}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -552,11 +578,6 @@ export default function AddressPage() {
                           <p className="text-white/70 text-sm">{address.address}</p>
                           <p className="text-white/60 text-sm mt-1">{address.city}, {address.state}</p>
                         </div>
-                        {selectedAddress?.id === address.id && (
-                          <div className="ml-2 text-[#AE876D]">
-                            <Check className="w-5 h-5" />
-                          </div>
-                        )}
                       </div>
                       <div className="flex gap-2 mt-3">
                         <button
@@ -567,7 +588,7 @@ export default function AddressPage() {
                               name: address.name,
                               phone: address.phone,
                               line1: address.line1,
-                              line2: address.line2,
+                              line2: address.line2 || '',
                               city: address.city,
                               pincode: address.pincode,
                               state: address.state
@@ -599,15 +620,96 @@ export default function AddressPage() {
                                   title: "Address Deleted",
                                   description: "Address has been removed",
                                 });
+                                // Refresh addresses to get updated default status
+                                const refreshResponse = await fetch('/api/addresses');
+                                if (refreshResponse.ok) {
+                                  const refreshData = await refreshResponse.json();
+                                  const refreshedAddresses = refreshData.addresses.map((addr: any) => ({
+                                    id: addr.id || addr._id,
+                                    name: addr.name,
+                                    phone: addr.phone,
+                                    pincode: addr.pincode,
+                                    address: `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}`,
+                                    line1: addr.line1,
+                                    line2: addr.line2 || '',
+                                    city: addr.city,
+                                    state: addr.state,
+                                    estimatedDelivery: "3-5 business days",
+                                    isDefault: addr.is_default || addr.isDefault
+                                  }));
+                                  setSavedAddresses(refreshedAddresses);
+                                  const defaultAddr = refreshedAddresses.find((addr: SavedAddress) => addr.isDefault) || refreshedAddresses[0];
+                                  if (defaultAddr) {
+                                    setSelectedAddress(defaultAddr);
+                                    localStorage.setItem('selectedAddress', JSON.stringify(defaultAddr));
+                                  }
+                                }
+                              } else {
+                                const errorData = await response.json().catch(() => ({ error: 'Failed to delete address' }));
+                                toast({
+                                  variant: "destructive",
+                                  title: "Delete Failed",
+                                  description: errorData.error || "Failed to delete address. Please try again.",
+                                });
                               }
                             } catch (error) {
                               console.error('Error deleting address:', error);
+                              toast({
+                                variant: "destructive",
+                                title: "Error",
+                                description: "An error occurred while deleting the address",
+                              });
                             }
                           }}
                           className="text-xs text-red-400 hover:text-red-300 uppercase"
                         >
                           Delete
                         </button>
+                        {!address.isDefault && (
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                const response = await fetch(`/api/addresses/${address.id}`, {
+                                  method: 'PATCH'
+                                });
+                                
+                                if (response.ok) {
+                                  const updated = savedAddresses.map(addr => ({
+                                    ...addr,
+                                    isDefault: addr.id === address.id
+                                  }));
+                                  setSavedAddresses(updated);
+                                  const updatedAddress = updated.find(addr => addr.id === address.id);
+                                  if (updatedAddress) {
+                                    setSelectedAddress(updatedAddress);
+                                    localStorage.setItem('selectedAddress', JSON.stringify(updatedAddress));
+                                  }
+                                  toast({
+                                    title: "Default Address Set",
+                                    description: "This address is now your default",
+                                  });
+                                } else {
+                                  toast({
+                                    variant: "destructive",
+                                    title: "Update Failed",
+                                    description: "Failed to set default address. Please try again.",
+                                  });
+                                }
+                              } catch (error) {
+                                console.error('Error setting default address:', error);
+                                toast({
+                                  variant: "destructive",
+                                  title: "Error",
+                                  description: "An error occurred while setting default address",
+                                });
+                              }
+                            }}
+                            className="text-xs text-white/60 hover:text-white uppercase"
+                          >
+                            Set Default
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
