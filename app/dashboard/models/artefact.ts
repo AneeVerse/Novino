@@ -10,6 +10,7 @@ export interface ArtefactProduct {
   quantity: number;
   images: string[];
   metaDescription?: string;
+  testimonialImage?: string; // Separate image for testimonial section
   order: number; // For drag-and-drop ordering
   createdAt: string;
 }

@@ -196,7 +196,7 @@ export default function ProductTestimonial({
         onTouchEnd={handleTouchEnd}
       >
         {/* Product Image in Circle */}
-        <div className="relative w-full max-w-[300px] sm:max-w-[350px] md:max-w-[400px] mx-auto md:mx-0">
+        <div className="relative w-full max-w-[280px] sm:max-w-[340px] md:max-w-[400px] mx-auto md:mx-0">
           {/* Main circle container */}
           <div
             className="relative w-full overflow-visible flex items-center justify-center z-10"
@@ -209,7 +209,7 @@ export default function ProductTestimonial({
           >
             {/* Mobile overlay (only visible on mobile) */}
             <div 
-              className="absolute left-1/2 top-1/2 w-[350px] h-[420px] -translate-x-1/2 -translate-y-1/2 sm:hidden z-0"
+              className="absolute left-1/2 top-1/2 w-[310px] h-[370px] -translate-x-1/2 -translate-y-1/2 sm:hidden z-0"
               style={{
                 background: '#E8B08A',
                 filter: 'blur(30px)',
@@ -218,7 +218,7 @@ export default function ProductTestimonial({
               }}
             ></div>
             <div className="relative w-full h-full z-10 flex items-center justify-center py-4">
-              <div className="relative w-[80%] pb-[115%] overflow-hidden rounded-[36px] shadow-[0_20px_45px_-30px_rgba(0,0,0,0.6)]">
+              <div className="relative w-[90%] pb-[115%] overflow-hidden rounded-[36px]  bg-transparent">
               <div 
                   className={`absolute inset-0 transition-all duration-400 ease-in-out ${
                     isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0 duration-200'
@@ -230,7 +230,7 @@ export default function ProductTestimonial({
                     fill
                     className="object-cover transform transition-transform duration-400 ease-in-out"
                     priority
-                    sizes="(max-width: 640px) 300px, (max-width: 768px) 350px, 400px"
+                    sizes="(max-width: 640px) 280px, (max-width: 768px) 340px, 400px"
                     style={{ transform: 'translateZ(0)' }}
                   />
                 </div>

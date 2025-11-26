@@ -652,6 +652,12 @@ function DashboardContent() {
   const handleUpdateProduct = async (productData: Omit<ArtefactProduct, 'id' | 'order' | 'createdAt'>) => {
     if (!selectedCategory || !currentArtefactProduct) return;
 
+    // Log to verify testimonialImage is being received
+    console.log('Updating product with data:', { 
+      testimonialImage: productData.testimonialImage,
+      hasTestimonialImage: 'testimonialImage' in productData 
+    });
+
     const updatedProducts = selectedCategory.products.map(p =>
       p.id === currentArtefactProduct.id
         ? { ...p, ...productData }

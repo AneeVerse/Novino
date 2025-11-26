@@ -938,8 +938,13 @@ export default function ProductDetail() {
         type: relatedProduct.type
       });
 
+      // Simple logic: Use testimonialImage if it exists, otherwise use first product image
+      const testimonialImg = relatedProduct.testimonialImage 
+        ? relatedProduct.testimonialImage 
+        : (relatedProduct.images?.[0] || relatedProduct.image || "/images/placeholder.png");
+
       return {
-        image: relatedProduct.images?.[0] || relatedProduct.image || "/images/placeholder.png",
+        image: testimonialImg,
         altText: relatedProduct.name || "Novino design",
         quote: `${relatedProduct.name || "This piece"} from the ${relatedProduct.categoryName || relatedProduct.category || "Novino"
           } collection is crafted with layers of narrative and material.`,
@@ -994,6 +999,16 @@ export default function ProductDetail() {
           categories.forEach((category: any) => {
             if (category.products && Array.isArray(category.products)) {
               category.products.forEach((p: any) => {
+                // Read testimonialImage directly from product data if it exists
+                const testimonialImg = p.testimonialImage && typeof p.testimonialImage === 'string' && p.testimonialImage.trim() !== '' 
+                  ? p.testimonialImage.trim() 
+                  : null;
+                
+                // Debug log for products with testimonial images
+                if (testimonialImg) {
+                  console.log(`Product ${p.name} has testimonialImage:`, testimonialImg);
+                }
+                
                 allProducts.push({
                   id: p.id,
                   name: p.name,
@@ -1001,6 +1016,7 @@ export default function ProductDetail() {
                   basePrice: p.basePrice,
                   image: p.images?.[0] || '/images/placeholder.png',
                   images: p.images || [],
+                  testimonialImage: testimonialImg,
                   category: category.name,
                   categoryId: category.id || category._id,
                   categoryName: category.name,

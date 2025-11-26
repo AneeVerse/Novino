@@ -19,10 +19,12 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
     quantity: 1,
     images: [] as string[],
     metaDescription: '',
+    testimonialImage: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageInput, setImageInput] = useState('');
+  const [testimonialImageInput, setTestimonialImageInput] = useState('');
 
   useEffect(() => {
     if (product) {
@@ -33,7 +35,9 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
         quantity: product.quantity,
         images: product.images,
         metaDescription: product.metaDescription || '',
+        testimonialImage: product.testimonialImage || '',
       });
+      setTestimonialImageInput(product.testimonialImage || '');
     } else {
       // Reset form when adding new product
       setFormData({
@@ -43,8 +47,10 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
         quantity: 1,
         images: [],
         metaDescription: '',
+        testimonialImage: '',
       });
       setImageInput('');
+      setTestimonialImageInput('');
     }
   }, [product, isOpen]);
 
@@ -73,8 +79,10 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
         quantity: 1,
         images: [],
         metaDescription: '',
+        testimonialImage: '',
       });
       setImageInput('');
+      setTestimonialImageInput('');
       
       // Close form immediately after successful submit
       onClose();
@@ -295,6 +303,48 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Testimonial Image */}
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-2">
+                Testimonial Image
+                <span className="text-xs text-white/50 ml-2">(Optional - Different image for testimonial section)</span>
+              </label>
+              
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={testimonialImageInput}
+                  onChange={(e) => setTestimonialImageInput(e.target.value)}
+                  onBlur={(e) => setFormData({ ...formData, testimonialImage: e.target.value.trim() })}
+                  placeholder="Enter testimonial image URL"
+                  className="flex-1 px-4 py-2.5 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              {/* Testimonial Image Preview */}
+              {formData.testimonialImage && (
+                <div className="mt-3">
+                  <div className="relative w-full max-w-xs aspect-square rounded-lg border-2 border-[#333333] overflow-hidden bg-[#0A0A0A]">
+                    <img
+                      src={formData.testimonialImage}
+                      alt="Testimonial preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23333" width="100" height="100"/%3E%3Ctext fill="%23666" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EInvalid Image%3C/text%3E%3C/svg%3E';
+                      }}
+                    />
+                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs font-medium rounded">
+                      Testimonial
+                    </div>
+                  </div>
+                  <p className="text-xs text-white/50 mt-2">
+                    This image will be used in the testimonial section instead of the first product image
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
