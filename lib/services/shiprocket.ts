@@ -380,7 +380,29 @@ export async function fetchShiprocketOrdersList(filters: ShiprocketOrderFilters 
   if (filters.sort) query.set("sort", filters.sort);
 
   const path = `/orders${query.toString() ? `?${query.toString()}` : ""}`;
-  return shiprocketFetch<ShiprocketOrderListResponse>(path);
+  
+  try {
+    const response = await shiprocketFetch<ShiprocketOrderListResponse>(path);
+    
+    // Log response for debugging
+    if (filters.page === 1 || !filters.page) {
+      console.log('📦 Shiprocket orders API response:', {
+        path,
+        ordersCount: response.data?.length ?? 0,
+        pagination: response.meta?.pagination,
+        filters,
+      });
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('❌ Shiprocket orders API error:', {
+      path,
+      filters,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }
 
 export async function fetchShiprocketProductsList(filters: ShiprocketProductFilters = {}) {
@@ -400,7 +422,10 @@ export interface ShiprocketOverviewMetrics {
   codOrders: number;
   prepaidOrders: number;
   todaysOrders: number;
+  yesterdaysOrders?: number;
   totalRevenue: number;
+  todayRevenue?: number;
+  yesterdayRevenue?: number;
   averageOrderValue: number;
   period: { from: string; to: string };
   sampleSize: number;
@@ -414,35 +439,162 @@ function toNumber(value: unknown): number {
 }
 
 export async function getShiprocketOverviewMetrics(range: { from: string; to: string }) {
-  const response = await fetchShiprocketOrdersList({
+  // Fetch all orders with pagination
+  let allOrders: ShiprocketOrder[] = [];
+  let currentPage = 1;
+  const perPage = 200;
+  let hasMorePages = true;
+
+  console.log('📊 Fetching Shiprocket orders for metrics:', {
     from: range.from,
     to: range.to,
-    perPage: 200,
-    sort: "DESC",
+    perPage,
   });
 
-  const orders = response.data ?? [];
-  const todayISO = new Date().toISOString().slice(0, 10);
+  // Paginate through all orders
+  while (hasMorePages) {
+    try {
+      const response = await fetchShiprocketOrdersList({
+        from: range.from,
+        to: range.to,
+        page: currentPage,
+        perPage,
+        sort: "DESC",
+      });
+
+      const pageOrders = response.data ?? [];
+      allOrders = [...allOrders, ...pageOrders];
+
+      const pagination = response.meta?.pagination;
+      const totalPages = pagination?.total_pages ?? 1;
+      const currentPageCount = pagination?.count ?? pageOrders.length;
+
+      console.log(`📄 Fetched page ${currentPage}/${totalPages}: ${currentPageCount} orders (total so far: ${allOrders.length})`);
+
+      // Check if there are more pages
+      if (currentPage >= totalPages || pageOrders.length === 0 || currentPageCount < perPage) {
+        hasMorePages = false;
+      } else {
+        currentPage += 1;
+      }
+    } catch (error) {
+      console.error(`Error fetching page ${currentPage}:`, error);
+      hasMorePages = false;
+    }
+  }
+
+  console.log(`✅ Total orders fetched: ${allOrders.length}`);
+
+  // Get today's date in IST (Indian Standard Time, UTC+5:30)
+  // Shiprocket operates in IST, so we need to compare dates in IST
+  const now = new Date();
+  
+  // Get current date in IST format (YYYY-MM-DD)
+  // Use Intl.DateTimeFormat to get date in IST timezone
+  const istFormatter = new Intl.DateTimeFormat('en-CA', { 
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const todayISO = istFormatter.format(now);
+  
+  // Get yesterday's date in IST
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayISO = istFormatter.format(yesterday);
+
+  console.log('📅 Date calculations (IST):', {
+    utcNow: now.toISOString(),
+    todayISO,
+    yesterdayISO,
+    utcDate: now.toISOString().slice(0, 10),
+    istDate: todayISO,
+  });
+
+  // Helper function to parse Shiprocket date format
+  const parseShiprocketDate = (dateStr: string | undefined): string => {
+    if (!dateStr) return '';
+    
+    try {
+      // Try parsing as Date object - handles formats like "26 Nov 2025, 05:05 PM"
+      const parsed = new Date(dateStr);
+      if (!isNaN(parsed.getTime())) {
+        // Convert to IST and format as YYYY-MM-DD
+        const istFormatter = new Intl.DateTimeFormat('en-CA', { 
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        return istFormatter.format(parsed);
+      }
+    } catch (e) {
+      // If parsing fails, try ISO format check
+      if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+        return dateStr.slice(0, 10);
+      }
+    }
+    return '';
+  };
+
+  // Sample a few orders to see their date format
+  if (allOrders.length > 0) {
+    const sampleOrders = allOrders.slice(0, 3);
+    console.log('📋 Sample order dates:', sampleOrders.map(order => {
+      const rawDate = order.created_at || order.order_date || '';
+      const parsedISO = parseShiprocketDate(rawDate);
+      return {
+        order_id: order.order_id || order.channel_order_id,
+        created_at: order.created_at,
+        order_date: order.order_date,
+        parsedISO,
+        matchesToday: parsedISO === todayISO,
+      };
+    }));
+  }
 
   type RevenueTotals = {
     totalRevenue: number;
     codOrders: number;
     prepaidOrders: number;
     todaysOrders: number;
+    yesterdaysOrders: number;
+    todayRevenue: number;
+    yesterdayRevenue: number;
   };
 
-  const totals = orders.reduce<RevenueTotals>(
+  const totals = allOrders.reduce<RevenueTotals>(
     (acc, order) => {
       const total = toNumber(order.total) || toNumber(order.sub_total);
       acc.totalRevenue += total;
-      if (order.payment_method?.toUpperCase() === "COD") {
+
+      // Check payment method - handle various formats
+      const paymentMethod = (order.payment_method || '').toUpperCase().trim();
+      if (paymentMethod === "COD" || paymentMethod.includes("COD")) {
         acc.codOrders += 1;
+      } else if (paymentMethod) {
+        acc.prepaidOrders += 1;
       } else {
+        // If payment method is missing, default to prepaid
         acc.prepaidOrders += 1;
       }
-      if (order.created_at?.startsWith(todayISO)) {
+
+      // Check date - Shiprocket may use created_at or order_date
+      // Shiprocket returns dates in format like "26 Nov 2025, 05:05 PM"
+      const orderDate = order.created_at || order.order_date || '';
+      const orderDateISO = parseShiprocketDate(orderDate);
+
+      // Compare dates (just the date part, ignore time)
+      if (orderDateISO === todayISO) {
         acc.todaysOrders += 1;
+        acc.todayRevenue += total;
       }
+      if (orderDateISO === yesterdayISO) {
+        acc.yesterdaysOrders += 1;
+        acc.yesterdayRevenue += total;
+      }
+
       return acc;
     },
     {
@@ -450,21 +602,41 @@ export async function getShiprocketOverviewMetrics(range: { from: string; to: st
       codOrders: 0,
       prepaidOrders: 0,
       todaysOrders: 0,
+      yesterdaysOrders: 0,
+      todayRevenue: 0,
+      yesterdayRevenue: 0,
     }
   );
 
-  const totalOrders = orders.length;
+  const totalOrders = allOrders.length;
   const averageOrderValue = totalOrders ? totals.totalRevenue / totalOrders : 0;
+
+  console.log('📈 Calculated metrics:', {
+    totalOrders,
+    codOrders: totals.codOrders,
+    prepaidOrders: totals.prepaidOrders,
+    todaysOrders: totals.todaysOrders,
+    yesterdaysOrders: totals.yesterdaysOrders,
+    todayRevenue: totals.todayRevenue,
+    yesterdayRevenue: totals.yesterdayRevenue,
+    totalRevenue: totals.totalRevenue,
+    averageOrderValue,
+    todayISO,
+    yesterdayISO,
+  });
 
   const metrics: ShiprocketOverviewMetrics = {
     totalOrders,
     codOrders: totals.codOrders,
     prepaidOrders: totals.prepaidOrders,
     todaysOrders: totals.todaysOrders,
+    yesterdaysOrders: totals.yesterdaysOrders,
     totalRevenue: Number(totals.totalRevenue.toFixed(2)),
+    todayRevenue: Number(totals.todayRevenue.toFixed(2)),
+    yesterdayRevenue: Number(totals.yesterdayRevenue.toFixed(2)),
     averageOrderValue: Number(averageOrderValue.toFixed(2)),
     period: range,
-    sampleSize: response.meta?.pagination?.count ?? totalOrders,
+    sampleSize: allOrders.length,
     fetchedAt: new Date().toISOString(),
   };
 

@@ -21,17 +21,31 @@ export async function GET(request: NextRequest) {
   };
 
   try {
+    console.log('📊 Shiprocket overview API called with range:', range);
     const metrics = await getShiprocketOverviewMetrics(range);
+
+    console.log('✅ Shiprocket overview metrics calculated:', {
+      totalOrders: metrics.totalOrders,
+      codOrders: metrics.codOrders,
+      prepaidOrders: metrics.prepaidOrders,
+      todaysOrders: metrics.todaysOrders,
+      totalRevenue: metrics.totalRevenue,
+      averageOrderValue: metrics.averageOrderValue,
+    });
 
     return NextResponse.json({
       data: metrics,
       range,
     });
   } catch (error) {
-    console.error("Shiprocket overview fetch failed", error);
+    console.error("❌ Shiprocket overview fetch failed", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      range,
+    });
     return NextResponse.json(
       {
-        error: "Failed to load Shiprocket overview metrics",
+        error: error instanceof Error ? error.message : "Failed to load Shiprocket overview metrics",
         range,
       },
       { status: 500 }

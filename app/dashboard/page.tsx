@@ -97,7 +97,10 @@ interface ShiprocketOverviewMetrics {
   codOrders: number;
   prepaidOrders: number;
   todaysOrders: number;
+  yesterdaysOrders?: number;
   totalRevenue: number;
+  todayRevenue?: number;
+  yesterdayRevenue?: number;
   averageOrderValue: number;
   fetchedAt: string;
 }
@@ -904,9 +907,10 @@ function DashboardContent() {
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-white/60">Yesterday</span>
                           <span className="text-xl font-semibold text-white/70">
-                            {shiprocketSalesSeries.length >= 2
-                              ? shiprocketSalesSeries[shiprocketSalesSeries.length - 2]?.orderCount ?? 0
-                              : 0}
+                            {shiprocketMetrics?.yesterdaysOrders ?? 
+                              (shiprocketSalesSeries.length >= 2
+                                ? shiprocketSalesSeries[shiprocketSalesSeries.length - 2]?.orderCount ?? 0
+                                : 0)}
                           </span>
                         </div>
                       </div>
@@ -932,9 +936,10 @@ function DashboardContent() {
                           <span className="text-sm text-white/60">Today</span>
                           <span className="text-2xl font-bold text-white">
                             {formatCurrency(
-                              shiprocketSalesSeries.length > 0
+                              shiprocketMetrics?.todayRevenue ??
+                              (shiprocketSalesSeries.length > 0
                                 ? shiprocketSalesSeries[shiprocketSalesSeries.length - 1]?.totalRevenue ?? 0
-                                : 0
+                                : 0)
                             )}
                           </span>
                         </div>
@@ -942,9 +947,10 @@ function DashboardContent() {
                           <span className="text-sm text-white/60">Yesterday</span>
                           <span className="text-xl font-semibold text-white/70">
                             {formatCurrency(
-                              shiprocketSalesSeries.length >= 2
+                              shiprocketMetrics?.yesterdayRevenue ??
+                              (shiprocketSalesSeries.length >= 2
                                 ? shiprocketSalesSeries[shiprocketSalesSeries.length - 2]?.totalRevenue ?? 0
-                                : 0
+                                : 0)
                             )}
                           </span>
                         </div>
