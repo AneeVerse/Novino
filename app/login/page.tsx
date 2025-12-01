@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useToast } from '@/hooks/use-toast'
@@ -27,6 +27,7 @@ const validatePassword = (password: string): string | null => {
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
@@ -286,20 +287,30 @@ export default function LoginPage() {
           <div className="relative flex items-center">
             <Input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               value={password}
               onChange={e => {
                 setPassword(e.target.value)
                 if (errors.password) setErrors({ ...errors, password: undefined })
               }}
-              className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.password ? 'border-red-500' : ''}`}
+              className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 pr-12 h-12 [&::-ms-reveal]:hidden [&::-ms-clear]:hidden ${errors.password ? 'border-red-500' : ''}`}
+              autoComplete="current-password"
               disabled={loading}
               placeholder="Password"
             />
             <div className="absolute left-4 text-white">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 text-white/70 hover:text-white transition-colors z-10"
+              tabIndex={-1}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </div>
           {errors.password && <p className="text-red-400 text-xs mt-1 ml-4">{errors.password}</p>}
         </div>
@@ -362,7 +373,7 @@ export default function LoginPage() {
             {showForgotPassword ? renderForgotPasswordForm() : renderLoginForm()}
 
             {message && (
-              <div className={`text-sm text-center mt-4 ${message.includes('successful') || message.includes('sent') ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`text-sm text-center mt-4 px-4 py-2 rounded-lg ${message.includes('successful') || message.includes('sent') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
                 {message}
               </div>
             )}

@@ -363,3 +363,14 @@ html {
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
+/* Hide browser's native password reveal button on mobile */
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-strong-password-auto-fill-button {
+  display: none !important;
+}
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+}
+

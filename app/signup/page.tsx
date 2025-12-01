@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2, Mail, User, Lock } from 'lucide-react'
+import { Loader2, Mail, User, Lock, Eye, EyeOff } from 'lucide-react'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useToast } from '@/hooks/use-toast'
 
@@ -42,6 +42,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<{ email?: string, username?: string, password?: string }>({})
@@ -247,20 +248,30 @@ export default function SignupPage() {
                 <div className="relative flex items-center">
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={e => {
                       setPassword(e.target.value)
                       if (errors.password) setErrors({ ...errors, password: undefined })
                     }}
-                    className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.password ? 'border-red-500' : ''}`}
+                    className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 pr-12 h-12 [&::-ms-reveal]:hidden [&::-ms-clear]:hidden ${errors.password ? 'border-red-500' : ''}`}
+                    autoComplete="new-password"
                     disabled={loading}
                     placeholder="Password"
                   />
                   <div className="absolute left-4 text-white">
                     <Lock size={20} />
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 text-white/70 hover:text-white transition-colors z-10"
+                    tabIndex={-1}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
                 {errors.password && <p className="text-red-400 text-xs mt-1 ml-4">{errors.password}</p>}
                 {!errors.password && password && (
@@ -280,7 +291,7 @@ export default function SignupPage() {
               </Button>
 
               {message && (
-                <div className={`text-sm text-center mt-2 ${message.includes('successful') ? 'text-green-400' : 'text-red-400'}`}>
+                <div className={`text-sm text-center mt-2 px-4 py-2 rounded-lg ${message.includes('successful') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
                   {message}
                 </div>
               )}
