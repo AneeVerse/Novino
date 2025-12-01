@@ -77,7 +77,7 @@ export default function SignupPage() {
     try {
       // Normalize username to lowercase for consistency
       const normalizedUsername = username.trim().toLowerCase()
-      
+
       // Check if username is already taken (case-insensitive)
       const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
@@ -159,6 +159,14 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     setLoading(true)
     try {
+      // Get redirect URL from query params
+      const redirectUrl = searchParams?.get('redirect') || '/'
+
+      // Store redirect URL in localStorage to retrieve after OAuth callback
+      if (redirectUrl !== '/') {
+        localStorage.setItem('oauth_redirect', redirectUrl)
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

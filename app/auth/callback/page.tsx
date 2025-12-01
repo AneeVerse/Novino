@@ -32,8 +32,12 @@ export default function AuthCallbackPage() {
                     const { data: { session } } = await supabase.auth.getSession()
 
                     if (session) {
-                        // We are actually logged in! Redirect to home
-                        router.push('/')
+                        // We are actually logged in! Check for redirect URL
+                        const redirectUrl = localStorage.getItem('oauth_redirect') || '/'
+                        if (redirectUrl !== '/') {
+                            localStorage.removeItem('oauth_redirect')
+                        }
+                        router.push(redirectUrl)
                         router.refresh()
                         return
                     }
@@ -42,8 +46,12 @@ export default function AuthCallbackPage() {
                     return
                 }
 
-                // Successfully authenticated, redirect to home
-                router.push('/')
+                // Successfully authenticated, check for redirect URL
+                const redirectUrl = localStorage.getItem('oauth_redirect') || '/'
+                if (redirectUrl !== '/') {
+                    localStorage.removeItem('oauth_redirect')
+                }
+                router.push(redirectUrl)
                 router.refresh()
             } else {
                 // No code, might be an error or direct access

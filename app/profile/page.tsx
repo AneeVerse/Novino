@@ -78,14 +78,17 @@ interface Shipment {
 }
 
 interface Address {
-  _id: string;
+  _id?: string; // For backward compatibility
+  id?: string; // Supabase uses 'id'
   name: string;
   line1: string;
   line2?: string;
   city: string;
   state: string;
   pincode: string;
-  isDefault: boolean;
+  phone?: string;
+  isDefault?: boolean;
+  is_default?: boolean; // Supabase uses snake_case
 }
 
 const TRACKING_PREVIEW_ENABLED =
@@ -126,12 +129,15 @@ export default function ProfilePage() {
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [addressForm, setAddressForm] = useState({
     name: "",
+    phone: "",
     line1: "",
     line2: "",
     city: "",
     state: "",
     pincode: ""
   });
+  const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [pincodeMessage, setPincodeMessage] = useState("");
 
   // Check if user is logged in
   useEffect(() => {
@@ -147,6 +153,63 @@ export default function ProfilePage() {
       }
     }
   }, [isAuthenticated, authLoading, router]);
+
+  // Auto-fetch city and state from pincode
+  useEffect(() => {
+    const pin = addressForm.pincode.trim();
+    if (!pin) {
+      setPincodeStatus('idle');
+      setPincodeMessage('');
+      return;
+    }
+
+    if (pin.length < 6) {
+      setPincodeStatus('idle');
+      setPincodeMessage('Enter 6-digit pincode to auto-fill city & state');
+      return;
+    }
+
+    if (!/^\d{6}$/.test(pin)) {
+      setPincodeStatus('error');
+      setPincodeMessage('Pincode must be 6 digits');
+      return;
+    }
+
+    let cancelled = false;
+    const fetchPincodeDetails = async () => {
+      try {
+        setPincodeStatus('loading');
+        setPincodeMessage('Fetching city & state...');
+        const response = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+        const result = await response.json();
+        if (cancelled) return;
+
+        if (Array.isArray(result) && result[0]?.Status === 'Success') {
+          const office = result[0]?.PostOffice?.[0];
+          setAddressForm(prev => ({
+            ...prev,
+            city: office?.District || prev.city,
+            state: office?.State || prev.state,
+          }));
+          setPincodeStatus('success');
+          setPincodeMessage(`${office?.District || ''}, ${office?.State || ''}`.trim());
+        } else {
+          setPincodeStatus('error');
+          setPincodeMessage('Service unavailable for this pincode. Please verify.');
+        }
+      } catch (error) {
+        if (cancelled) return;
+        setPincodeStatus('error');
+        setPincodeMessage('Could not fetch details. Please try again.');
+      }
+    };
+
+    fetchPincodeDetails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [addressForm.pincode]);
 
   // Fetch orders
   const fetchOrders = async () => {
@@ -167,7 +230,14 @@ export default function ProfilePage() {
       const res = await fetch('/api/addresses');
       if (res.ok) {
         const data = await res.json();
-        setAddresses(data.addresses);
+        // Normalize addresses to have both id and _id for compatibility
+        const normalizedAddresses = data.addresses.map((addr: any) => ({
+          ...addr,
+          _id: addr.id || addr._id, // Use id as primary, fallback to _id
+          id: addr.id || addr._id, // Ensure id exists
+          isDefault: addr.is_default || addr.isDefault || false
+        }));
+        setAddresses(normalizedAddresses);
       }
     } catch (error) {
       console.error('Error fetching addresses:', error);
@@ -270,32 +340,75 @@ export default function ProfilePage() {
 
   // Address handlers
   const handleSaveAddress = async () => {
-    if (!addressForm.name || !addressForm.line1 || !addressForm.city || !addressForm.state || !addressForm.pincode) {
-      toast({ variant: "destructive", title: "Missing Fields", description: "Please fill all required fields" });
+    if (!addressForm.name || !addressForm.line1 || !addressForm.city || !addressForm.state || !addressForm.pincode || !addressForm.phone) {
+      toast({ variant: "destructive", title: "Missing Fields", description: "Please fill all required fields including phone number" });
       return;
     }
 
     try {
-      const url = editingAddressId ? `/api/addresses/${editingAddressId}` : '/api/addresses';
-      const method = editingAddressId ? 'PUT' : 'POST';
+      // Check if we're editing or creating
+      if (editingAddressId) {
+        // Update existing address
+        const res = await fetch(`/api/addresses/${editingAddressId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: addressForm.name,
+            phone: addressForm.phone,
+            line1: addressForm.line1,
+            line2: addressForm.line2 || '',
+            city: addressForm.city,
+            state: addressForm.state,
+            pincode: addressForm.pincode,
+            isDefault: false // Don't change default status on edit unless explicitly set
+          })
+        });
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(addressForm)
-      });
-
-      if (res.ok) {
-        toast({ title: "Success", description: editingAddressId ? "Address updated" : "Address added" });
-        fetchAddresses();
-        setShowAddressForm(false);
-        setEditingAddressId(null);
-        setAddressForm({ name: "", line1: "", line2: "", city: "", state: "", pincode: "" });
+        if (res.ok) {
+          toast({ title: "Success", description: "Address updated successfully" });
+          fetchAddresses();
+          setShowAddressForm(false);
+          setEditingAddressId(null);
+          setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "" });
+          setPincodeStatus('idle');
+          setPincodeMessage('');
+        } else {
+          const errorData = await res.json().catch(() => ({ message: 'Failed to update address' }));
+          toast({ variant: "destructive", title: "Update Failed", description: errorData.message || "Could not update address" });
+        }
       } else {
-        toast({ variant: "destructive", title: "Failed", description: "Could not save address" });
+        // Create new address
+        const res = await fetch('/api/addresses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: addressForm.name,
+            phone: addressForm.phone,
+            line1: addressForm.line1,
+            line2: addressForm.line2 || '',
+            city: addressForm.city,
+            state: addressForm.state,
+            pincode: addressForm.pincode,
+            isDefault: addresses.length === 0 // First address is default
+          })
+        });
+
+        if (res.ok) {
+          toast({ title: "Success", description: "Address added successfully" });
+          fetchAddresses();
+          setShowAddressForm(false);
+          setEditingAddressId(null);
+          setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "" });
+          setPincodeStatus('idle');
+          setPincodeMessage('');
+        } else {
+          const errorData = await res.json().catch(() => ({ message: 'Failed to add address' }));
+          toast({ variant: "destructive", title: "Add Failed", description: errorData.message || "Could not add address" });
+        }
       }
     } catch (error) {
-      toast({ variant: "destructive", title: "Error", description: "Network error" });
+      console.error('Error saving address:', error);
+      toast({ variant: "destructive", title: "Error", description: "Network error occurred" });
     }
   };
 
@@ -1126,7 +1239,9 @@ export default function ProfilePage() {
                   onClick={() => {
                     setShowAddressForm(true);
                     setEditingAddressId(null);
-                    setAddressForm({ name: "", line1: "", line2: "", city: "", state: "", pincode: "" });
+                    setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "" });
+                    setPincodeStatus('idle');
+                    setPincodeMessage('');
                   }}
                   className="bg-gradient-to-r from-[#AE876D] to-[#8d6c58] hover:from-[#8d6c58] hover:to-[#AE876D] text-white"
                 >
@@ -1152,6 +1267,17 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
+                    <label className="block text-sm font-medium mb-2 text-white/70">Phone Number *</label>
+                    <Input
+                      type="tel"
+                      value={addressForm.phone}
+                      onChange={(e) => setAddressForm(prev => ({ ...prev, phone: e.target.value }))}
+                      className="bg-[#222222] border-[#444444] text-white focus:border-[#AE876D]"
+                      placeholder="10-digit mobile number"
+                      maxLength={10}
+                    />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium mb-2 text-white/70">Address Line 1 *</label>
                     <Input
                       value={addressForm.line1}
@@ -1171,6 +1297,27 @@ export default function ProfilePage() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
+                      <label className="block text-sm font-medium mb-2 text-white/70">Pincode *</label>
+                      <Input
+                        value={addressForm.pincode}
+                        onChange={(e) => setAddressForm(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                        className="bg-[#222222] border-[#444444] text-white focus:border-[#AE876D]"
+                        placeholder="000000"
+                        maxLength={6}
+                      />
+                      {pincodeMessage && (
+                        <p className={`text-xs mt-1 ${
+                          pincodeStatus === 'success' ? 'text-green-400' : 
+                          pincodeStatus === 'error' ? 'text-red-400' : 
+                          pincodeStatus === 'loading' ? 'text-yellow-400' : 
+                          'text-white/60'
+                        }`}>
+                          {pincodeStatus === 'loading' && <Loader2 className="w-3 h-3 inline-block animate-spin mr-1" />}
+                          {pincodeMessage}
+                        </p>
+                      )}
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium mb-2 text-white/70">City *</label>
                       <Input
                         value={addressForm.city}
@@ -1188,15 +1335,6 @@ export default function ProfilePage() {
                         placeholder="State"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-white/70">Pincode *</label>
-                      <Input
-                        value={addressForm.pincode}
-                        onChange={(e) => setAddressForm(prev => ({ ...prev, pincode: e.target.value }))}
-                        className="bg-[#222222] border-[#444444] text-white focus:border-[#AE876D]"
-                        placeholder="000000"
-                      />
-                    </div>
                   </div>
                   <div className="flex gap-3 pt-4">
                     <Button
@@ -1209,7 +1347,9 @@ export default function ProfilePage() {
                       onClick={() => {
                         setShowAddressForm(false);
                         setEditingAddressId(null);
-                        setAddressForm({ name: "", line1: "", line2: "", city: "", state: "", pincode: "" });
+                        setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "" });
+                        setPincodeStatus('idle');
+                        setPincodeMessage('');
                       }}
                       variant="outline"
                       className="flex-1 border-[#444444] text-white/70 hover:bg-[#444444]"
@@ -1228,16 +1368,19 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {addresses.map((address) => (
                   <div
-                    key={address._id}
+                    key={address.id || address._id}
                     className="bg-gradient-to-br from-[#333333] to-[#2a2a2a] rounded-xl p-6 border border-[#444444] hover:border-[#AE876D]/50 transition-all"
                   >
-                    {address.isDefault && (
+                    {(address.isDefault || address.is_default) && (
                       <span className="inline-block bg-[#AE876D] text-white text-xs px-3 py-1 rounded-full mb-3">
                         Default
                       </span>
                     )}
                     <div className="text-white mb-4">
                       <p className="font-semibold text-lg mb-1">{address.name}</p>
+                      {address.phone && (
+                        <p className="text-white/60 text-sm mb-1">Phone: {address.phone}</p>
+                      )}
                       <p className="text-white/70 text-sm">
                         {address.line1}
                         {address.line2 && `, ${address.line2}`}
@@ -1252,15 +1395,23 @@ export default function ProfilePage() {
                         size="sm"
                         className="border-[#AE876D] text-[#AE876D] hover:bg-[#AE876D]/10"
                         onClick={() => {
-                          setEditingAddressId(address._id);
+                          const addressId = address.id || address._id;
+                          if (!addressId) {
+                            toast({ variant: "destructive", title: "Error", description: "Address ID not found" });
+                            return;
+                          }
+                          setEditingAddressId(addressId);
                           setAddressForm({
                             name: address.name,
+                            phone: address.phone || "",
                             line1: address.line1,
                             line2: address.line2 || "",
                             city: address.city,
                             state: address.state,
                             pincode: address.pincode
                           });
+                          setPincodeStatus('idle');
+                          setPincodeMessage('');
                           setShowAddressForm(true);
                         }}
                       >
@@ -1271,7 +1422,12 @@ export default function ProfilePage() {
                         variant="outline"
                         size="sm"
                         className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                        onClick={() => handleDeleteAddress(address._id)}
+                        onClick={() => {
+                          const addressId = address.id || address._id;
+                          if (addressId) {
+                            handleDeleteAddress(addressId);
+                          }
+                        }}
                       >
                         <Trash2 className="w-3.5 h-3.5 mr-1" />
                         Delete
@@ -1281,7 +1437,12 @@ export default function ProfilePage() {
                           variant="outline"
                           size="sm"
                           className="border-[#444444] text-white/70 hover:bg-[#444444]"
-                          onClick={() => handleSetDefaultAddress(address._id)}
+                          onClick={() => {
+                            const addressId = address.id || address._id;
+                            if (addressId) {
+                              handleSetDefaultAddress(addressId);
+                            }
+                          }}
                         >
                           Set Default
                         </Button>

@@ -63,7 +63,7 @@ export default function LoginPage() {
     try {
       // Normalize identifier by trimming
       const normalizedIdentifier = identifier.trim()
-      
+
       // Determine if identifier is email or username
       const isEmail = normalizedIdentifier.includes('@')
       let email = normalizedIdentifier
@@ -72,7 +72,7 @@ export default function LoginPage() {
       if (!isEmail) {
         // Normalize username to lowercase for case-insensitive lookup
         const usernameLower = normalizedIdentifier.toLowerCase()
-        
+
         // Use direct query (RLS policy allows public read of username and email)
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -166,6 +166,14 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setLoading(true)
     try {
+      // Get redirect URL from query params
+      const redirectUrl = searchParams?.get('redirect') || '/'
+
+      // Store redirect URL in localStorage to retrieve after OAuth callback
+      if (redirectUrl !== '/') {
+        localStorage.setItem('oauth_redirect', redirectUrl)
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
