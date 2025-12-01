@@ -380,8 +380,16 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
     <div className="container mx-auto px-0 md:px-0 mb-16 md:mb-24">
       <div className="max-w-[1440px] mx-auto px-0 md:px-0">
         <h2
-          className="text-white text-lg sm:text-[24px] md:text-[30px] font-medium uppercase leading-[1.2em] md:leading-[1.171875em] text-center mb-8 md:mb-12"
-          style={{ fontFamily: 'DM Serif Display', letterSpacing: '0.25em' }}
+          className="text-white text-[18px] sm:text-[40px] md:text-[56px] lg:text-[64px] font-light uppercase leading-[1.15] text-center mb-0 md:mb-16 lg:mb-20 px-4"
+          style={{
+            fontFamily: 'DM Serif Display',
+            letterSpacing: '0.08em',
+            background: 'linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.85) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            textShadow: '0 2px 20px rgba(255, 255, 255, 0.1)'
+          }}
         >
           {headingText}
         </h2>
