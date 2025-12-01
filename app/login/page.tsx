@@ -60,19 +60,41 @@ export default function LoginPage() {
     setErrors({})
 
     try {
+      // Normalize identifier by trimming
+      const normalizedIdentifier = identifier.trim()
+      
       // Determine if identifier is email or username
-      const isEmail = identifier.includes('@')
-      let email = identifier
+      const isEmail = normalizedIdentifier.includes('@')
+      let email = normalizedIdentifier
 
-      // If it's a username, look up the email from profiles table
+      // If it's a username, look up the email from profiles table (case-insensitive)
       if (!isEmail) {
+        // Normalize username to lowercase for case-insensitive lookup
+        const usernameLower = normalizedIdentifier.toLowerCase()
+        
+        // Use direct query (RLS policy allows public read of username and email)
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('email')
-          .eq('username', identifier)
-          .single()
+          .eq('username', usernameLower)
+          .maybeSingle()
 
-        if (profileError || !profile) {
+        if (profileError) {
+          console.error('Profile lookup error:', profileError)
+          // Log the error for debugging
+          console.error('Error details:', {
+            code: profileError.code,
+            message: profileError.message,
+            details: profileError.details,
+            hint: profileError.hint
+          })
+          setMessage('Invalid username or password')
+          setLoading(false)
+          return
+        }
+
+        if (!profile || !profile.email) {
+          console.error('Profile not found for username:', usernameLower)
           setMessage('Invalid username or password')
           setLoading(false)
           return

@@ -74,12 +74,23 @@ export default function SignupPage() {
     setErrors({})
 
     try {
-      // Check if username is already taken
-      const { data: existingProfile } = await supabase
+      // Normalize username to lowercase for consistency
+      const normalizedUsername = username.trim().toLowerCase()
+      
+      // Check if username is already taken (case-insensitive)
+      const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
         .select('username')
-        .eq('username', username.trim())
-        .single()
+        .ilike('username', normalizedUsername)
+        .maybeSingle()
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 is "no rows returned" which is expected when username doesn't exist
+        console.error('Error checking username:', checkError)
+        setMessage('Error checking username availability. Please try again.')
+        setLoading(false)
+        return
+      }
 
       if (existingProfile) {
         setErrors({ username: 'Username already taken' })
@@ -94,8 +105,8 @@ export default function SignupPage() {
         password,
         options: {
           data: {
-            username: username.trim(),
-            full_name: username.trim(),
+            username: normalizedUsername,
+            full_name: normalizedUsername,
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
