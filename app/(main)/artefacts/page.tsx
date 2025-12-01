@@ -46,17 +46,17 @@ export default function ArtefactsPage() {
       </section>
 
       {/* Clear separation from the hero section with negative margin to prevent overlap */}
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 mt-4 z-50 relative" style={{ marginTop: '2rem', clear: 'both' }}>
+      <div className="container mx-auto px-4 md:px-0 mt-4 z-50 relative" style={{ clear: 'both' }}>
         {/* DISCOVER EXTRAORDINARY ARTIFACTS Section */}
 
 
         {/* Gallery Grid - with negative margins to make it wider */}
-        <div className="mb-16 relative">
+        {/* <div className="mb-16 mt-20 relative" style={{ position: 'relative', zIndex: 30 }}>
           <FeaturedProducts
             initialProducts={artefactProducts}
             title="Featured Products"
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Video Section - Full width */}

@@ -152,21 +152,24 @@ export default function ProductGrid({
           </span>
           {!hideCategoryFilters && propCategories.length > 1 && (
             <>
-              {/* Mobile: Horizontal Scroll */}
+              {/* Mobile: Compact Chip Layout */}
               <div className="sm:hidden w-full pt-6 px-4">
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory"
-                  style={{
-                    scrollSnapType: 'x mandatory',
-                    WebkitOverflowScrolling: 'touch'
-                  }}
-                >
+                <div className="flex flex-wrap justify-center gap-1.5 pb-2">
                   {propCategories.map((category) => (
                     <button
                       key={category}
-                      className={`flex-shrink-0 snap-center px-4 py-2 rounded-full text-[10px] tracking-[0.2em] transition-all duration-200 backdrop-blur whitespace-nowrap ${category === activeCategory
-                        ? "bg-white text-black font-semibold "
+                      className={`rounded-full tracking-[0.15em] transition-all duration-200 backdrop-blur whitespace-nowrap ${category === activeCategory
+                        ? "bg-white text-black font-semibold shadow-sm"
                         : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
                         }`}
+                      style={{
+                        fontSize: 'clamp(0.6rem, 1.8vw, 0.75rem)',
+                        paddingTop: 'clamp(0.375rem, 1.5vw, 0.5rem)',
+                        paddingBottom: 'clamp(0.375rem, 1.5vw, 0.5rem)',
+                        paddingLeft: 'clamp(0.75rem, 1.5vw, 1rem)',
+                        paddingRight: 'clamp(0.75rem, 1.5vw, 1rem)',
+                        minHeight: '40px'
+                      }}
                       onClick={() => handleCategoryChange(category)}
                     >
                       {category?.toUpperCase?.() ? category.toUpperCase() : category}

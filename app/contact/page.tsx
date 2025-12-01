@@ -101,7 +101,7 @@ export default function ContactPage() {
                                 <div>
                                     <h3 className="text-lg font-medium mb-1">Email</h3>
                                     <p className="text-gray-400">team.novino@gmail.com</p>
-                                    <p className="text-gray-400">support@novino.io</p>
+                                  
                                 </div>
                             </div>
 
@@ -111,7 +111,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-medium mb-1">Phone</h3>
-                                    <p className="text-gray-400">+91 123 456 7890</p>
+                                    <p className="text-gray-400">+91 8655644869</p>
                                     <p className="text-gray-500 text-sm">(Mon-Fri, 9am - 6pm IST)</p>
                                 </div>
                             </div>
@@ -123,9 +123,11 @@ export default function ContactPage() {
                                 <div>
                                     <h3 className="text-lg font-medium mb-1">Office</h3>
                                     <p className="text-gray-400">
-                                        Novino Art Gallery<br />
-                                        Mumbai, Maharashtra<br />
-                                        India
+                                        NOVINO INK ARTS (OPC) Pvt Ltd<br />
+                                        Office No.607, Mayuresh Cosmos<br />
+                                        Sec - 11, Plot No. 37, CBD Belapur<br />
+                                        Navi Mumbai - 400 614<br />
+                                        Maharashtra, India
                                     </p>
                                 </div>
                             </div>
