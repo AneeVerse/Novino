@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { getCartCount } = useCart();
@@ -57,6 +58,27 @@ const Navbar = () => {
     };
   }, []);
 
+  // Check if image modal is open (by checking body class)
+  useEffect(() => {
+    const checkModalState = () => {
+      setIsImageModalOpen(document.body.classList.contains('image-modal-open'));
+    };
+
+    // Check initially
+    checkModalState();
+
+    // Watch for changes using MutationObserver
+    const observer = new MutationObserver(checkModalState);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   // Handle cart icon click - navigate to cart page
   const handleCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -71,7 +93,7 @@ const Navbar = () => {
   return (
     <>
       <nav className={`fixed top-0 left-0 w-full z-[1000] h-[80px] transition-all duration-300 ${scrolled || !shouldBeTransparent ? 'bg-[#2D2D2D]' : 'bg-transparent'
-        }`}>
+        } ${isImageModalOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="relative max-w-[1440px] mx-auto h-full flex justify-between items-center px-4 md:px-0">
           {/* Left section - Menu items (Desktop) */}
           <div className="hidden md:flex items-center space-x-6 h-full md:pl-6">
@@ -175,7 +197,7 @@ const Navbar = () => {
       {/* Full screen mobile menu - slides from top */}
       <div
         className={`fixed inset-0 bg-[#222222] z-[999] transform transition-transform duration-500 ease-in-out md:hidden ${isOpen ? 'translate-y-0' : '-translate-y-full'
-          }`}
+          } ${isImageModalOpen ? 'opacity-0 pointer-events-none' : ''}`}
       >
         <div className="h-[80px]"></div> {/* Space for navbar */}
         <div className="container mx-auto px-6 py-12 h-[calc(100vh-80px)] flex flex-col">

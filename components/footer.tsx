@@ -41,7 +41,7 @@ export default function Footer() {
 
   return (
     <div className="relative overflow-hidden">
-      <footer id="site-footer" className="relative mx-2 mb-12 max-w-[2400px]">
+      <footer id="site-footer" className="relative max-w-[1440px] mx-auto mb-12">
         <div className="relative p-0 bg-[#292929] sm:bg-transparent" style={{
           backgroundImage: "none",
           backgroundSize: "100% 100%",

@@ -3,7 +3,7 @@ import Link from "next/link"
 
 export default function WardrobeSection() {
   return (
-    <div className="relative mx-2 mb-16 overflow-hidden rounded-3xl max-w-[2400px] border border-white/10">
+    <div className="relative max-w-[1440px] mx-auto mb-16 overflow-hidden rounded-3xl border border-white/10">
       {/* Full background image */}
       <div className="relative w-full h-[420px] sm:h-[380px] md:h-[300px]">
         <Image
@@ -37,7 +37,7 @@ export default function WardrobeSection() {
           </div>
 
           {/* Button - Positioned absolutely to center on the design circle */}
-          <div className="mt-8 md:mt-0 flex-shrink-0 md:absolute md:right-[2%] md:top-[58%] md:-translate-y-1/2">
+        <div className="mt-8 md:mt-0 flex-shrink-0 md:absolute md:right-24 md:top-[58%] md:-translate-y-1/2">
             <Link
               href="/artefacts"
               className="group bg-black/95 text-white px-6 py-3.5 rounded-full hover:bg-zinc-800 transition-all duration-300 flex items-center justify-center gap-3 text-sm md:text-sm font-medium tracking-wide shadow-lg hover:shadow-xl hover:scale-105 border border-white/10"

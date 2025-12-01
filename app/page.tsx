@@ -302,7 +302,7 @@ export default function Home() {
       </div>
 
       {/* New container for remaining sections */}
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 z-10 relative">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6 z-10 relative">
         {/* Testimonial Collection */}
         <div className="mb-16">
           <Suspense fallback={<div className="min-h-[400px]" />}>

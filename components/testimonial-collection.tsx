@@ -128,7 +128,7 @@ export default function TestimonialCollection() {
   }
 
   return (
-    <div className="mx-2 mb-12 relative overflow-hidden">
+    <div className="max-w-[1440px] mx-auto mb-12 relative overflow-hidden">
       {/* Main container with dashed border - matched to Figma */}
       <div className="relative flex flex-col w-full overflow-hidden bg-zinc-900/30 backdrop-blur-sm" style={{
         boxSizing: 'border-box',

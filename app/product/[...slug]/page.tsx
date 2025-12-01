@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronUp, ChevronDown, ArrowLeft, Plus, Minus } from "lucide-react"
+import { ChevronUp, ChevronDown, ArrowLeft, Plus, Minus, X, ChevronLeft, ChevronRight } from "lucide-react"
 import paintingProductData from "@/public/data/painting-products.json"
 import TestimonialCollection from "@/components/testimonial-collection"
 import BlogSection from "@/components/blog-section"
@@ -280,12 +280,36 @@ export default function ProductDetail() {
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [hoveredVariant, setHoveredVariant] = useState<any>(null); // For preview on hover
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const { isAuthenticated: isLoggedIn } = useAuth();
 
   // Reset current image when switching products
   useEffect(() => {
     setCurrentImage(0);
   }, [product]);
+
+  // Close modal on ESC key press and manage body classes
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isImageModalOpen) {
+        setIsImageModalOpen(false);
+      }
+    };
+
+    if (isImageModalOpen) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+      // Add class to body to signal modal is open (for navbar hiding)
+      document.body.classList.add('image-modal-open');
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+      document.body.classList.remove('image-modal-open');
+    };
+  }, [isImageModalOpen]);
 
 
 
@@ -1320,6 +1344,7 @@ export default function ProductDetail() {
                     className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] select-none group cursor-pointer overflow-visible"
                     onMouseEnter={() => setIsAutoScrolling(false)}
                     onMouseLeave={() => setIsAutoScrolling(false)}
+                    onClick={() => setIsImageModalOpen(true)}
                   >
                     {/* Circular gradient glow that overflows and blends with background */}
                     <div
@@ -1632,6 +1657,70 @@ export default function ProductDetail() {
           </div>
         </div>
 
+        {/* Full-screen Image Modal */}
+        {isImageModalOpen && (
+          <div
+            className="fixed inset-0 z-[1001] bg-black/95 backdrop-blur-sm flex items-center justify-center"
+            onClick={() => setIsImageModalOpen(false)}
+          >
+            {/* Close button - Top right */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsImageModalOpen(false);
+              }}
+              className="absolute top-4 right-4 z-[1010] w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all duration-300 hover:scale-110 group"
+              aria-label="Close image"
+            >
+              <X size={24} className="text-white group-hover:text-white/80 transition-colors" />
+            </button>
+
+            {/* Image container - Clicking outside closes, clicking image doesn't */}
+            <div
+              className="relative w-full h-full flex items-center justify-center p-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center">
+                <Image
+                  src={displayImages[currentImage] || displayImages[0] || resolvedProductImage}
+                  alt={`${product.name || "Product Image"} - View ${currentImage + 1}`}
+                  fill
+                  style={{ objectFit: 'contain', objectPosition: 'center' }}
+                  className="pointer-events-none"
+                  draggable={false}
+                  priority
+                />
+              </div>
+            </div>
+
+            {/* Navigation arrows for multiple images */}
+            {displayImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImage((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-[1010] w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all duration-300 hover:scale-110 group"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft size={24} className="text-white group-hover:text-white/80 transition-colors" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImage((prev) => (prev + 1) % displayImages.length);
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-[1010] w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all duration-300 hover:scale-110 group"
+                  aria-label="Next image"
+                >
+                  <ChevronRight size={24} className="text-white group-hover:text-white/80 transition-colors" />
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Specification section - Only show if specifications exist */}
         {product.specifications && (product.specifications.title || product.specifications.content || product.specifications.imageUrl) && (
           <div className="mx-auto border-t border-white/10 pt-12 pb-6 w-full" style={{ maxWidth: "1440px" }}>
@@ -1751,7 +1840,6 @@ export default function ProductDetail() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {relatedProducts.slice(0, 3).map((relatedProduct) => {
                   const productImage = relatedProduct.images?.[0] || relatedProduct.image || '/images/placeholder.png';
-                  const productPrice = relatedProduct.basePrice || relatedProduct.price || 'Price on request';
                   const productName = relatedProduct.name || 'Untitled';
                   const productLink = getProductUrl({
                     id: relatedProduct.id,
@@ -1786,9 +1874,6 @@ export default function ProductDetail() {
                           <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors font-['Roboto_Mono']">
                             {productName}
                           </h3>
-                          <p className="text-sm text-white/60 font-['Roboto_Mono']">
-                            {formatPrice(productPrice)}
-                          </p>
                         </div>
                       </div>
                     </Link>
