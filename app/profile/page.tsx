@@ -799,17 +799,6 @@ export default function ProfilePage() {
                           <Eye className="w-4 h-4 mr-2" />
                           View Details
                         </Button>
-                        {getOrderStatus(order) !== 'cancelled' && getOrderStatus(order) !== 'delivered' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                            onClick={() => handleCancelOrder(order._id)}
-                          >
-                            <XCircle className="w-4 h-4 mr-2" />
-                            Cancel Order
-                          </Button>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -878,10 +867,24 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      {shipmentError && (
+                      {shipmentError && getPaymentStatus(selectedOrder) === 'paid' && (
                         <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                           <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
                           <p className="text-sm text-green-400">Order confirmed! We'll update shipping details soon.</p>
+                        </div>
+                      )}
+
+                      {getPaymentStatus(selectedOrder) === 'requires_payment' && (
+                        <div className="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                          <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                          <p className="text-sm text-yellow-400">Payment is pending. Please complete payment to process your order.</p>
+                        </div>
+                      )}
+
+                      {getPaymentStatus(selectedOrder) === 'failed' && (
+                        <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                          <p className="text-sm text-red-400">Payment failed. Please try placing a new order or contact support.</p>
                         </div>
                       )}
 
@@ -1306,12 +1309,11 @@ export default function ProfilePage() {
                         maxLength={6}
                       />
                       {pincodeMessage && (
-                        <p className={`text-xs mt-1 ${
-                          pincodeStatus === 'success' ? 'text-green-400' : 
-                          pincodeStatus === 'error' ? 'text-red-400' : 
-                          pincodeStatus === 'loading' ? 'text-yellow-400' : 
-                          'text-white/60'
-                        }`}>
+                        <p className={`text-xs mt-1 ${pincodeStatus === 'success' ? 'text-green-400' :
+                            pincodeStatus === 'error' ? 'text-red-400' :
+                              pincodeStatus === 'loading' ? 'text-yellow-400' :
+                                'text-white/60'
+                          }`}>
                           {pincodeStatus === 'loading' && <Loader2 className="w-3 h-3 inline-block animate-spin mr-1" />}
                           {pincodeMessage}
                         </p>
