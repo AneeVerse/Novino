@@ -24,6 +24,19 @@ export interface ArtefactCategory {
   products: ArtefactProduct[];
   createdAt: string;
   updatedAt?: string;
+  careGuide?: string;
+  measurement?: string;
+  gsm?: string;
+  size?: string;
+  thickness?: string;
+  frame?: string;
+  structure?: string;
+  material?: string;
+  length?: number;
+  width?: number;
+  breadth?: number;
+  height?: number;
+  weight?: number;
 }
 
 // Aliases for clarity (same interfaces, different names)

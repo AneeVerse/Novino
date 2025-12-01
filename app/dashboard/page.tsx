@@ -478,7 +478,38 @@ function DashboardContent() {
       const response = await fetch('/api/artefact-categories');
       if (response.ok) {
         const data = await response.json();
-        setArtefactCategories(sortCategoriesByOrder(data));
+        // Map snake_case from database to camelCase for frontend
+        const mappedData = data.map((cat: any) => {
+          // Convert legacy fields to details array if details doesn't exist
+          let details = cat.details || [];
+          if (!details || !Array.isArray(details) || details.length === 0) {
+            // Convert legacy fields to details format
+            details = [];
+            if (cat.size) details.push({ label: 'Size', value: cat.size });
+            if (cat.thickness) details.push({ label: 'Thickness', value: cat.thickness });
+            if (cat.frame) details.push({ label: 'Frame', value: cat.frame });
+            if (cat.structure) details.push({ label: 'Structure', value: cat.structure });
+            if (cat.material) details.push({ label: 'Material', value: cat.material });
+            if (cat.care_guide || cat.careGuide) details.push({ label: 'Care Guide', value: cat.care_guide || cat.careGuide });
+            if (cat.measurement) details.push({ label: 'Measurement', value: cat.measurement });
+            if (cat.gsm) details.push({ label: 'GSM', value: cat.gsm });
+          }
+          
+          return {
+            ...cat,
+            id: cat.id || cat._id,
+            _id: cat._id || cat.id,
+            details: details,
+            length: cat.length || 0,
+            width: cat.width || 0,
+            breadth: cat.breadth || 0,
+            height: cat.height || 0,
+            weight: cat.weight || 0,
+            createdAt: cat.created_at || cat.createdAt,
+            updatedAt: cat.updated_at || cat.updatedAt,
+          };
+        });
+        setArtefactCategories(sortCategoriesByOrder(mappedData));
       }
     } catch (error) {
       console.error('Error fetching artefact categories:', error);
@@ -515,7 +546,7 @@ function DashboardContent() {
   };
 
   // Create or update artefact category
-  const handleSaveCategory = async (name: string, description: string, careGuide?: string, measurement?: string, gsm?: string, length?: string, width?: string, breadth?: string, height?: string, weight?: string) => {
+  const handleSaveCategory = async (name: string, description: string, details?: Array<{label: string, value: string}>, length?: string, width?: string, breadth?: string, height?: string, weight?: string) => {
     try {
       if (categoryModalMode === 'edit' && editingCategory) {
         // Update existing category
@@ -526,9 +557,7 @@ function DashboardContent() {
             ...editingCategory,
             name,
             description,
-            careGuide: careGuide || '',
-            measurement: measurement || '',
-            gsm: gsm || '',
+            details: details || [],
             length: length ? parseFloat(length) : 0,
             width: width ? parseFloat(width) : 0,
             breadth: breadth ? parseFloat(breadth) : 0,
@@ -550,9 +579,7 @@ function DashboardContent() {
           body: JSON.stringify({
             name,
             description,
-            careGuide: careGuide || '',
-            measurement: measurement || '',
-            gsm: gsm || '',
+            details: details || [],
             length: length ? parseFloat(length) : 0,
             width: width ? parseFloat(width) : 0,
             breadth: breadth ? parseFloat(breadth) : 0,
@@ -1940,14 +1967,12 @@ function DashboardContent() {
         mode={categoryModalMode}
         initialName={editingCategory?.name || ''}
         initialDescription={editingCategory?.description || ''}
-        initialCareGuide={(editingCategory as any)?.careGuide || ''}
-        initialMeasurement={(editingCategory as any)?.measurement || ''}
-        initialGsm={(editingCategory as any)?.gsm || ''}
-        initialLength={(editingCategory as any)?.length?.toString() || ''}
-        initialWidth={(editingCategory as any)?.width?.toString() || ''}
-        initialBreadth={(editingCategory as any)?.breadth?.toString() || ''}
-        initialHeight={(editingCategory as any)?.height?.toString() || ''}
-        initialWeight={(editingCategory as any)?.weight?.toString() || ''}
+        initialDetails={(editingCategory as any)?.details || []}
+        initialLength={editingCategory?.length?.toString() || ''}
+        initialWidth={editingCategory?.width?.toString() || ''}
+        initialBreadth={editingCategory?.breadth?.toString() || ''}
+        initialHeight={editingCategory?.height?.toString() || ''}
+        initialWeight={editingCategory?.weight?.toString() || ''}
       />
 
       {/* Artefact Product Form */}

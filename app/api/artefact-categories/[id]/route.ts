@@ -25,9 +25,7 @@ export async function PUT(
         const updateData: any = {
             name: body.name,
             description: body.description,
-            care_guide: body.careGuide,
-            measurement: body.measurement,
-            gsm: body.gsm,
+            details: body.details || [],
             length: body.length || 0,
             width: body.width || 0,
             breadth: body.breadth || 0,

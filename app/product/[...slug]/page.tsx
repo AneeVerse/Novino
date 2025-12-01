@@ -267,9 +267,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<ProductWithDescription | undefined>(undefined)
   const [categoryName, setCategoryName] = useState<string>('')
   const [categoryDescription, setCategoryDescription] = useState<string>('')
-  const [categoryCareGuide, setCategoryCareGuide] = useState<string>('')
-  const [categoryMeasurement, setCategoryMeasurement] = useState<string>('')
-  const [categoryGsm, setCategoryGsm] = useState<string>('')
+  const [categoryDetails, setCategoryDetails] = useState<Array<{label: string, value: string}>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [hasLoadedProduct, setHasLoadedProduct] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -421,39 +419,43 @@ export default function ProductDetail() {
           });
         }
 
-        // Set all category data (name, description, care guide) - same logic
+        // Set all category data (name, description, details)
         if (catItem) {
           setCategoryName(catItem?.name || product.category);
           setCategoryDescription(catItem?.description || '');
-          // Trim values to remove trailing spaces
-          const careGuide = (catItem?.careGuide || catItem?.care_guide || '').trim();
-          const measurement = (catItem?.measurement || '').trim();
-          const gsm = (catItem?.gsm || '').trim();
-
-          setCategoryCareGuide(careGuide);
-          setCategoryMeasurement(measurement);
-          setCategoryGsm(gsm);
+          
+          // Get details from new format or convert legacy fields
+          let details: Array<{label: string, value: string}> = [];
+          if (catItem.details && Array.isArray(catItem.details) && catItem.details.length > 0) {
+            details = catItem.details;
+          } else {
+            // Convert legacy fields to details format
+            if (catItem.size) details.push({ label: 'Size', value: catItem.size });
+            if (catItem.thickness) details.push({ label: 'Thickness', value: catItem.thickness });
+            if (catItem.frame) details.push({ label: 'Frame', value: catItem.frame });
+            if (catItem.structure) details.push({ label: 'Structure', value: catItem.structure });
+            if (catItem.material) details.push({ label: 'Material', value: catItem.material });
+            if (catItem.care_guide || catItem.careGuide) details.push({ label: 'Care Guide', value: (catItem.care_guide || catItem.careGuide).trim() });
+            if (catItem.measurement) details.push({ label: 'Measurement', value: catItem.measurement.trim() });
+            if (catItem.gsm) details.push({ label: 'GSM', value: catItem.gsm.trim() });
+          }
+          
+          setCategoryDetails(details);
         } else {
           setCategoryName(product.category);
           setCategoryDescription('');
-          setCategoryCareGuide('');
-          setCategoryMeasurement('');
-          setCategoryGsm('');
+          setCategoryDetails([]);
         }
       } else {
         setCategoryName(product.category);
         setCategoryDescription('');
-        setCategoryCareGuide('');
-        setCategoryMeasurement('');
-        setCategoryGsm('');
+        setCategoryDetails([]);
       }
     } catch (e) {
       console.error('Error fetching categories:', e);
       setCategoryName(product.category);
       setCategoryDescription('');
-      setCategoryCareGuide('');
-      setCategoryMeasurement('');
-      setCategoryGsm('');
+      setCategoryDetails([]);
     }
   };
 
@@ -1575,26 +1577,14 @@ export default function ProductDetail() {
                     </button>
                     {isCareGuideOpen && (
                       <div className="mt-4 space-y-4 pt-4 border-t border-white/5 animate-in slide-in-from-top-2 duration-300">
-                        {categoryCareGuide && (
-                          <div className="flex items-start gap-4 pb-3 border-b border-white/5 last:border-b-0 last:pb-0">
-                            <span className="text-white/50 text-xs font-medium min-w-[110px] uppercase tracking-wider font-['Roboto_Mono']">CARE GUIDE</span>
-                            <span className="text-white/80 text-xs leading-relaxed">{categoryCareGuide}</span>
-                          </div>
-                        )}
-                        {categoryMeasurement && (
-                          <div className="flex items-start gap-4 pb-3 border-b border-white/5 last:border-b-0 last:pb-0">
-                            <span className="text-white/50 text-xs font-medium min-w-[110px] uppercase tracking-wider font-['Roboto_Mono']">MEASUREMENT</span>
-                            <span className="text-white/80 text-xs leading-relaxed">{categoryMeasurement}</span>
-                          </div>
-                        )}
-                        {categoryGsm && (
-                          <div className="flex items-start gap-4 pb-3 border-b border-white/5 last:border-b-0 last:pb-0">
-                            <span className="text-white/50 text-xs font-medium min-w-[110px] uppercase tracking-wider font-['Roboto_Mono']">GSM</span>
-                            <span className="text-white/80 text-xs leading-relaxed">{categoryGsm}</span>
-                          </div>
-                        )}
-                        {/* Show empty state if no data */}
-                        {!categoryCareGuide && !categoryMeasurement && !categoryGsm && (
+                        {categoryDetails.length > 0 ? (
+                          categoryDetails.map((detail, index) => (
+                            <div key={index} className="flex items-start gap-4 pb-3 border-b border-white/5 last:border-b-0 last:pb-0">
+                              <span className="text-white/50 text-xs font-medium min-w-[110px] uppercase tracking-wider font-['Roboto_Mono']">{detail.label.toUpperCase()}</span>
+                              <span className="text-white/80 text-xs leading-relaxed">{detail.value}</span>
+                            </div>
+                          ))
+                        ) : (
                           <div className="text-white/40 text-xs italic">
                             No details available
                           </div>

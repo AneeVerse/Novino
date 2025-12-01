@@ -1,18 +1,22 @@
 "use client";
 
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Plus, Trash2 } from 'lucide-react';
+
+interface DetailField {
+  id: string;
+  label: string;
+  value: string;
+}
 
 interface ArtefactCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (name: string, description: string, careGuide?: string, measurement?: string, gsm?: string, length?: string, width?: string, breadth?: string, height?: string, weight?: string) => void;
+  onSubmit: (name: string, description: string, details: DetailField[], length?: string, width?: string, breadth?: string, height?: string, weight?: string) => void;
   mode?: 'create' | 'edit';
   initialName?: string;
   initialDescription?: string;
-  initialCareGuide?: string;
-  initialMeasurement?: string;
-  initialGsm?: string;
+  initialDetails?: DetailField[];
   initialLength?: string;
   initialWidth?: string;
   initialBreadth?: string;
@@ -27,9 +31,7 @@ export default function ArtefactCategoryModal({
   mode = 'create',
   initialName = '',
   initialDescription = '',
-  initialCareGuide = '',
-  initialMeasurement = '',
-  initialGsm = '',
+  initialDetails = [],
   initialLength = '',
   initialWidth = '',
   initialBreadth = '',
@@ -38,29 +40,110 @@ export default function ArtefactCategoryModal({
 }: ArtefactCategoryModalProps) {
   const [categoryName, setCategoryName] = useState(initialName);
   const [categoryDescription, setCategoryDescription] = useState(initialDescription);
-  const [careGuide, setCareGuide] = useState(initialCareGuide);
-  const [measurement, setMeasurement] = useState(initialMeasurement);
-  const [gsm, setGsm] = useState(initialGsm);
+  const [details, setDetails] = useState<DetailField[]>(initialDetails.length > 0 ? initialDetails : [{ id: Date.now().toString(), label: '', value: '' }]);
   const [length, setLength] = useState(initialLength);
   const [width, setWidth] = useState(initialWidth);
   const [breadth, setBreadth] = useState(initialBreadth);
   const [height, setHeight] = useState(initialHeight);
   const [weight, setWeight] = useState(initialWeight);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Existing labels and values from database for suggestions
+  const [existingLabels, setExistingLabels] = useState<string[]>([]);
+  const [labelSuggestions, setLabelSuggestions] = useState<{ [key: string]: string[] }>({});
+
+  // Fetch existing labels and values from database for suggestions
+  React.useEffect(() => {
+    const fetchExistingOptions = async () => {
+      try {
+        const response = await fetch('/api/artefact-categories');
+        if (response.ok) {
+          const categories = await response.json();
+          const allLabels = new Set<string>();
+          const labelValueMap: { [key: string]: Set<string> } = {};
+          
+          categories.forEach((cat: any) => {
+            // Parse details JSON if exists
+            if (cat.details && Array.isArray(cat.details)) {
+              cat.details.forEach((detail: any) => {
+                if (detail.label && detail.value) {
+                  allLabels.add(detail.label);
+                  if (!labelValueMap[detail.label]) {
+                    labelValueMap[detail.label] = new Set();
+                  }
+                  labelValueMap[detail.label].add(detail.value);
+                }
+              });
+            }
+            
+            // Also check legacy fields
+            const legacyFields = [
+              { label: 'Size', value: cat.size },
+              { label: 'Thickness', value: cat.thickness },
+              { label: 'Frame', value: cat.frame },
+              { label: 'Structure', value: cat.structure },
+              { label: 'Material', value: cat.material },
+              { label: 'Care Guide', value: cat.care_guide || cat.careGuide },
+              { label: 'Measurement', value: cat.measurement },
+              { label: 'GSM', value: cat.gsm },
+            ];
+            
+            legacyFields.forEach(field => {
+              if (field.value) {
+                allLabels.add(field.label);
+                if (!labelValueMap[field.label]) {
+                  labelValueMap[field.label] = new Set();
+                }
+                labelValueMap[field.label].add(field.value);
+              }
+            });
+          });
+          
+          setExistingLabels(Array.from(allLabels).sort());
+          const suggestions: { [key: string]: string[] } = {};
+          Object.keys(labelValueMap).forEach(label => {
+            suggestions[label] = Array.from(labelValueMap[label]).sort();
+          });
+          setLabelSuggestions(suggestions);
+        }
+      } catch (error) {
+        console.error('Error fetching existing options:', error);
+      }
+    };
+    
+    if (isOpen) {
+      fetchExistingOptions();
+    }
+  }, [isOpen]);
 
   // Update form when initial values change
   React.useEffect(() => {
     setCategoryName(initialName);
     setCategoryDescription(initialDescription);
-    setCareGuide(initialCareGuide);
-    setMeasurement(initialMeasurement);
-    setGsm(initialGsm);
+    setDetails(initialDetails.length > 0 ? initialDetails : [{ id: Date.now().toString(), label: '', value: '' }]);
     setLength(initialLength);
     setWidth(initialWidth);
     setBreadth(initialBreadth);
     setHeight(initialHeight);
     setWeight(initialWeight);
-  }, [initialName, initialDescription, initialCareGuide, initialMeasurement, initialGsm, initialLength, initialWidth, initialBreadth, initialHeight, initialWeight]);
+  }, [initialName, initialDescription, initialDetails, initialLength, initialWidth, initialBreadth, initialHeight, initialWeight]);
+
+  // Add new detail field
+  const addDetailField = () => {
+    setDetails([...details, { id: Date.now().toString(), label: '', value: '' }]);
+  };
+
+  // Remove detail field
+  const removeDetailField = (id: string) => {
+    if (details.length > 1) {
+      setDetails(details.filter(d => d.id !== id));
+    }
+  };
+
+  // Update detail field
+  const updateDetailField = (id: string, field: 'label' | 'value', value: string) => {
+    setDetails(details.map(d => d.id === id ? { ...d, [field]: value } : d));
+  };
 
   if (!isOpen) return null;
 
@@ -73,12 +156,12 @@ export default function ArtefactCategoryModal({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(categoryName, categoryDescription, careGuide, measurement, gsm, length, width, breadth, height, weight);
+      // Filter out empty details
+      const validDetails = details.filter(d => d.label.trim() && d.value.trim());
+      await onSubmit(categoryName, categoryDescription, validDetails, length, width, breadth, height, weight);
       setCategoryName('');
       setCategoryDescription('');
-      setCareGuide('');
-      setMeasurement('');
-      setGsm('');
+      setDetails([{ id: Date.now().toString(), label: '', value: '' }]);
       setLength('');
       setWidth('');
       setBreadth('');
@@ -148,54 +231,72 @@ export default function ArtefactCategoryModal({
             />
           </div>
 
-          {/* Care Guide Fields */}
+          {/* Dynamic Detail Fields */}
           <div className="mb-6 space-y-4 border-t border-white/10 pt-4">
-            <h3 className="text-sm font-medium text-white/80 mb-3">Description Details (shown in product Description + section)</h3>
-
-            <div>
-              <label htmlFor="careGuide" className="block text-sm font-medium text-white/80 mb-2">
-                Care Guide
-              </label>
-              <input
-                type="text"
-                id="careGuide"
-                value={careGuide}
-                onChange={(e) => setCareGuide(e.target.value)}
-                placeholder="e.g., Handle with care"
-                className="w-full px-4 py-3 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-white/80">Description Details (shown in product Description + section)</h3>
+              <button
+                type="button"
+                onClick={addDetailField}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 rounded-lg text-xs transition-all"
                 disabled={isSubmitting}
-              />
+              >
+                <Plus size={14} />
+                Add Detail
+              </button>
             </div>
 
-            <div>
-              <label htmlFor="measurement" className="block text-sm font-medium text-white/80 mb-2">
-                Measurement
-              </label>
-              <input
-                type="text"
-                id="measurement"
-                value={measurement}
-                onChange={(e) => setMeasurement(e.target.value)}
-                placeholder="e.g., 9 inch"
-                className="w-full px-4 py-3 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="gsm" className="block text-sm font-medium text-white/80 mb-2">
-                GSM
-              </label>
-              <input
-                type="text"
-                id="gsm"
-                value={gsm}
-                onChange={(e) => setGsm(e.target.value)}
-                placeholder="e.g., No GSM"
-                className="w-full px-4 py-3 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                disabled={isSubmitting}
-              />
-            </div>
+            {details.map((detail, index) => (
+              <div key={detail.id} className="flex gap-2 items-start">
+                <div className="flex-1 grid grid-cols-2 gap-2">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={detail.label}
+                      onChange={(e) => updateDetailField(detail.id, 'label', e.target.value)}
+                      placeholder="Label (e.g., Size, Care Guide)"
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm"
+                      disabled={isSubmitting}
+                      list={`label-suggestions-${index}`}
+                    />
+                    {existingLabels.length > 0 && (
+                      <datalist id={`label-suggestions-${index}`}>
+                        {existingLabels.map((label, idx) => (
+                          <option key={idx} value={label} />
+                        ))}
+                      </datalist>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={detail.value}
+                      onChange={(e) => updateDetailField(detail.id, 'value', e.target.value)}
+                      placeholder="Value (e.g., 42.75 cm x 32.75 cm)"
+                      className="w-full px-3 py-2 bg-[#0A0A0A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all text-sm"
+                      disabled={isSubmitting}
+                      list={`value-suggestions-${index}`}
+                    />
+                    {labelSuggestions[detail.label] && labelSuggestions[detail.label].length > 0 && (
+                      <datalist id={`value-suggestions-${index}`}>
+                        {labelSuggestions[detail.label].map((value, idx) => (
+                          <option key={idx} value={value} />
+                        ))}
+                      </datalist>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeDetailField(detail.id)}
+                  disabled={details.length === 1 || isSubmitting}
+                  className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Remove this detail"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
           </div>
 
           {/* Shipping Dimensions */}

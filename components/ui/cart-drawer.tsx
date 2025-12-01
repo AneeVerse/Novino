@@ -6,6 +6,16 @@ import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import { X, Loader2, ChevronDown } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -16,6 +26,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { cart, removeFromCart, updateQuantity, getCartTotal, isLoading } = useCart();
   const [showOptions, setShowOptions] = useState(false);
   const optionsRef = useRef<HTMLDivElement>(null);
+  const [itemToRemove, setItemToRemove] = useState<{ id: string | number; variant?: string; name: string } | null>(null);
   
   // Close drawer when pressing escape key
   useEffect(() => {
@@ -61,9 +72,19 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     updateQuantity(id, currentQuantity + 1, variant);
   };
   
-  const handleDecreaseQuantity = (id: string | number, currentQuantity: number, variant?: string) => {
+  const handleDecreaseQuantity = (id: string | number, currentQuantity: number, variant?: string, itemName?: string) => {
     if (currentQuantity > 1) {
       updateQuantity(id, currentQuantity - 1, variant);
+    } else {
+      // Show confirmation dialog when quantity is 1
+      setItemToRemove({ id, variant, name: itemName || 'this item' });
+    }
+  };
+
+  const handleConfirmRemove = () => {
+    if (itemToRemove) {
+      removeFromCart(itemToRemove.id, itemToRemove.variant);
+      setItemToRemove(null);
     }
   };
   
@@ -165,9 +186,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </p>
                     <div className="flex items-center">
                       <button 
-                        onClick={() => handleDecreaseQuantity(item.id, item.quantity, item.variant)}
+                        onClick={() => handleDecreaseQuantity(item.id, item.quantity, item.variant, item.name)}
                         className="w-6 h-6 flex items-center justify-center border border-[#444444] text-white hover:bg-[#333333]"
-                        disabled={item.quantity <= 1}
                       >
                         −
                       </button>
@@ -241,6 +261,32 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           </div>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={!!itemToRemove} onOpenChange={(open) => !open && setItemToRemove(null)}>
+        <AlertDialogContent className="bg-[#222222] border-[#444444] text-white z-[10000]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Remove Item?</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/70">
+              Do you want to remove "{itemToRemove?.name}" from your cart?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => setItemToRemove(null)}
+              className="bg-transparent border-[#444444] text-white hover:bg-[#333333]"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmRemove}
+              className="bg-[#AE876D] hover:bg-[#8d6c58] text-white"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 } 
