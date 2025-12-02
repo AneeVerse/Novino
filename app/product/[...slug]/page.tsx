@@ -110,10 +110,10 @@ function PriceReveal({ price }: { price: string }) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div className="relative mb-8 w-fit">
+    <div className="relative mb-8 w-full sm:w-fit">
       {/* Container with perspective for 3D effect */}
       <div
-        className="relative h-24 w-64"
+        className="relative h-20 w-full sm:h-24 sm:w-64 mx-auto sm:mx-0"
         style={{ perspective: '1000px' }}
       >
         {/* Card wrapper with 3D flip */}
@@ -213,10 +213,10 @@ function PriceReveal({ price }: { price: string }) {
 
               {/* Price text with glow */}
               <div className="relative z-10 text-center">
-                <div className="text-3xl font-light font-['Roboto_Mono'] text-white tracking-wider drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">
+                <div className="text-2xl sm:text-3xl font-light font-['Roboto_Mono'] text-white tracking-wider drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">
                   {price}
                 </div>
-                <div className="mt-1 text-[10px] uppercase tracking-[0.3em] text-white/50 font-['Roboto_Mono']">
+                <div className="mt-1 text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-white/50 font-['Roboto_Mono']">
                   Exclusive Price
                 </div>
               </div>
@@ -1380,7 +1380,7 @@ export default function ProductDetail() {
   }
 
   return (
-    <div className="bg-[#2D2D2D] text-white min-h-screen">
+    <div className="bg-[#2D2D2D] text-white min-h-screen overflow-x-hidden">
       {/* SEO Schema - Injected into head for Google crawler */}
       {schemas.length > 0 && <SchemaInjector schemas={schemas} />}
 
@@ -1398,7 +1398,7 @@ export default function ProductDetail() {
         }
       `}</style>
 
-      <div className="w-full px-4 md:px-0 pt-24 pb-0">
+      <div className="w-full px-4 md:px-6 pt-24 pb-0 overflow-x-hidden">
 
         {isInvalidRoute && (
           <div className="bg-[#3D3D3D] text-white p-4 mb-6 rounded-md mx-auto" style={{ maxWidth: "1440px" }}>
@@ -1422,7 +1422,7 @@ export default function ProductDetail() {
         )}
 
         {/* Main product display - Clean layout without borders */}
-        <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
+        <div className="relative mb-16 mx-auto w-full overflow-x-hidden" style={{ maxWidth: "1440px" }}>
           <div className="relative z-10 px-4 md:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
               {/* Product media + purchase column */}
@@ -1529,15 +1529,15 @@ export default function ProductDetail() {
                 </div>
 
                 {/* Price and cart actions */}
-                <div className="md:col-span-3 md:col-start-5 flex flex-col justify-start order-2 md:order-2 py-8 pl-4 lg:pl-8 relative">
+                <div className="md:col-span-3 md:col-start-5 flex flex-col justify-start items-center md:items-start order-2 md:order-2 py-4 md:py-8 px-4 md:pl-4 lg:pl-8 relative w-full">
                   {/* Select Product (acting as variants from same category) */}
                   {categoryVariants.length > 0 && (
-                    <div className="flex flex-col gap-3 mb-8">
-                      <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono']">
+                    <div className="flex flex-col gap-3 mb-8 w-full">
+                      <div className="text-xs text-white/40 uppercase tracking-widest font-['Roboto_Mono'] text-center md:text-left w-full">
                         Select Variant
                       </div>
 
-                      <div className="flex gap-2 flex-wrap">
+                      <div className="flex gap-2 flex-wrap justify-center md:justify-start w-full">
                         {/* Current Product */}
                         <button
                           onClick={() => setSelectedVariant(null)}
@@ -1608,7 +1608,7 @@ export default function ProductDetail() {
 
                       {/* Display hover preview hint */}
                       {hoveredVariant && (
-                        <div className="text-xs text-white/40 font-['Roboto_Mono'] italic">
+                        <div className="text-xs text-white/40 font-['Roboto_Mono'] italic text-center md:text-left w-full">
                           Previewing: {hoveredVariant.name} • Click to select
                         </div>
                       )}
@@ -1616,11 +1616,13 @@ export default function ProductDetail() {
                   )}
 
                   {/* Price - Reveal Animation */}
-                  <PriceReveal price={formatPrice(displayedPrice)} />
+                  <div className="w-full flex justify-center md:justify-start">
+                    <PriceReveal price={formatPrice(displayedPrice)} />
+                  </div>
 
                   {/* Quantity and Add to Cart */}
-                  <div className="flex items-center gap-3 mb-8">
-                    <div className="flex items-center border border-white/20 rounded-sm overflow-hidden backdrop-blur-sm">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-8 w-full">
+                    <div className="flex items-center border border-white/20 rounded-sm overflow-hidden backdrop-blur-sm self-center sm:self-auto">
                       <button
                         onClick={decreaseQuantity}
                         className="w-10 h-12 flex items-center justify-center hover:bg-white/10 transition-all duration-300 text-lg font-light"
@@ -1640,25 +1642,25 @@ export default function ProductDetail() {
 
                     <button
                       onClick={handleAddToCart}
-                      className="flex-1 h-12 bg-white text-black hover:bg-white/90 hover:shadow-lg hover:shadow-white/20 px-6 uppercase tracking-widest text-xs font-medium transition-all duration-300 rounded-sm transform hover:scale-[1.02] active:scale-[0.98] font-['Roboto_Mono'] flex items-center justify-center"
+                      className="w-full sm:flex-1 h-12 bg-white text-black hover:bg-white/90 hover:shadow-lg hover:shadow-white/20 px-6 uppercase tracking-widest text-xs font-medium transition-all duration-300 rounded-sm transform hover:scale-[1.02] active:scale-[0.98] font-['Roboto_Mono'] flex items-center justify-center"
                     >
                       Add to Cart
                     </button>
                   </div>
 
                   {/* Product Information Text */}
-                  <p className="text-[10px] text-white/40 text-center font-['Roboto_Mono'] -mt-4">
+                  <p className="text-[10px] text-white/40 text-center md:text-left font-['Roboto_Mono'] -mt-4 px-2 md:px-0 w-full">
                     All the paintings are high definition digital copy of the original artwork
                   </p>
 
                   {/* Authentication Links - Only show if NOT logged in */}
                   {!isLoggedIn && (
-                    <div className="pt-4 border-t border-white/10 mt-6">
-                      <div className="flex items-center justify-between text-xs">
-                        <Link href={`/signup?redirect=${encodeURIComponent(canonicalProductPath)}`} className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider">
+                    <div className="pt-4 border-t border-white/10 mt-6 w-full">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 text-xs w-full">
+                        <Link href={`/signup?redirect=${encodeURIComponent(canonicalProductPath)}`} className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider text-center sm:text-left">
                           Are you new? Register
                         </Link>
-                        <Link href={`/login?redirect=${encodeURIComponent(canonicalProductPath)}`} className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider">
+                        <Link href={`/login?redirect=${encodeURIComponent(canonicalProductPath)}`} className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider text-center sm:text-right">
                           Already registered? Login
                         </Link>
                       </div>
@@ -1667,13 +1669,13 @@ export default function ProductDetail() {
 
 
                   {/* Care Guide - Collapsible Description Section - Always show */}
-                  <div className="mt-6 border-t border-white/10 pt-6">
+                  <div className="mt-6 border-t border-white/10 pt-6 w-full">
                     <button
                       type="button"
                       onClick={toggleCareGuide}
                       className="w-full flex justify-between items-center text-white text-sm font-medium text-left hover:text-white/80 transition-all duration-300 group"
                     >
-                      <span className="uppercase tracking-wider font-['Roboto_Mono'] text-xs">Description</span>
+                      <span className="uppercase tracking-wider font-['Roboto_Mono'] font-bold text-xs">Description</span>
                       <div className="flex items-center justify-center w-6 h-6 rounded-sm border border-white/20 group-hover:border-white/40 transition-all duration-300">
                         {isCareGuideOpen ? (
                           <Minus size={14} className="text-white/80 group-hover:text-white transition-colors" />
@@ -1686,8 +1688,8 @@ export default function ProductDetail() {
                       <div className="mt-4 space-y-4 pt-4 border-t border-white/5 animate-in slide-in-from-top-2 duration-300">
                         {categoryDetails.length > 0 ? (
                           categoryDetails.map((detail, index) => (
-                            <div key={index} className="flex items-start gap-4 pb-3 border-b border-white/5 last:border-b-0 last:pb-0">
-                              <span className="text-white/50 text-xs font-medium min-w-[110px] uppercase tracking-wider font-['Roboto_Mono']">{detail.label.toUpperCase()}</span>
+                            <div key={index} className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 pb-3 border-b border-white/5 last:border-b-0 last:pb-0">
+                              <span className="text-white/50 text-xs font-medium sm:min-w-[110px] uppercase tracking-wider font-['Roboto_Mono']">{detail.label.toUpperCase()}</span>
                               <span className="text-white/80 text-xs leading-relaxed">{detail.value}</span>
                             </div>
                           ))
@@ -1703,7 +1705,7 @@ export default function ProductDetail() {
               </div>
 
               {/* Storytelling column (shown last on mobile) */}
-              <div className="order-2 lg:order-1 lg:col-span-3 flex flex-col justify-start py-8 lg:-mr-12 text-center lg:text-left items-center lg:items-start">
+              <div className="order-2 lg:order-1 lg:col-span-3 flex flex-col justify-start py-4 sm:py-8 lg:-mr-12 text-center lg:text-left items-center lg:items-start px-4 sm:px-0">
                 {heroProductName && (
                   <>
                     <p className="text-sm font-semibold uppercase tracking-[0.35em] text-white/80 mb-3 font-['Roboto_Mono']">
@@ -1758,7 +1760,7 @@ export default function ProductDetail() {
                 // Reduce zoom box width to 92% to prevent right-side cutoff
                 const zoomBoxWidth = imageDimensions.width > 0 ? imageDimensions.width * 0.92 : 460;
                 const zoomBoxHeight = imageDimensions.height > 0 ? imageDimensions.height * 1.0 : 500;
-                
+
                 // Ensure zoom box doesn't overflow viewport on the right
                 const maxLeft = typeof window !== 'undefined' ? window.innerWidth - zoomBoxWidth - 20 : zoomPosition.left;
                 const adjustedLeft = Math.min(zoomPosition.left, maxLeft);
