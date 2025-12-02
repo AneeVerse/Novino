@@ -209,7 +209,7 @@ export default function Home() {
   return (
     <main className="relative min-h-screen bg-[#2D2D2D]">
       {/* Hero Section - Full width that extends to the top */}
-      <div className="relative w-full h-[600px] md:h-[728px] overflow-hidden">
+      <div className="relative w-full overflow-hidden" style={{ height: 'clamp(100vh, 100vh, 100vh)' }}>
         {/* Hero Image with Parallax Effect */}
         <div
           ref={heroImageRef}
@@ -251,7 +251,7 @@ export default function Home() {
           ></div>
           {/* Updated NOVINO text with custom class for scroll animation */}
           <h1
-            className={`novino-hero-text text-7xl sm:text-[160px] md:text-[230px] lg:text-[295px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            className={`novino-hero-text text-[161px] sm:text-[161px] md:text-[231px] lg:text-[296px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
           >
             NOVINO
           </h1>
@@ -283,7 +283,7 @@ export default function Home() {
         <ProductGrid
           key="home-product-grid"
           title="Bring the Patterns Home"
-          subtitle="Choose the design that speaks to you. Each product features one of five nature-inspired patterns created through direct observation and imagination."
+          subtitle="Choose the design that speaks to you."
           products={products}
           categories={categories}
           viewAllText="See All Products"
@@ -295,11 +295,11 @@ export default function Home() {
       </section>
 
       {/* Video Section - Full width */}
-      <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[730px] bg-[#2D2D2D] mb-16 sm:mb-24 md:mb-32">
+      {/* <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[730px] bg-[#2D2D2D] mb-16 sm:mb-24 md:mb-32">
         <Suspense fallback={<div className="w-full h-full bg-[#2D2D2D]" />}>
           <VideoSection />
         </Suspense>
-      </div>
+      </div> */}
 
       {/* New container for remaining sections */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-6 z-10 relative">
@@ -360,10 +360,10 @@ export default function Home() {
         /* Mobile adjustment - move text down a bit more, smaller */
         @media (max-width: 767px) { /* Target screens smaller than md (768px) */
           .novino-hero-text {
-            top: 80%; /* Moved down slightly from 78% */
+            top: 83%; /* Moved down slightly from 78% */
             left: 50%;
             letter-spacing: 0.04em;
-            font-size: 88px !important;
+            font-size: 92px !important;
           }
         }
 
