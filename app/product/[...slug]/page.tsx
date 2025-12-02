@@ -371,16 +371,30 @@ export default function ProductDetail() {
     setIsHoveringZoom(false);
   }, []);
 
-  // Close modal on ESC key press and manage body classes
+  // Close modal on ESC key press, handle arrow navigation, and manage body classes
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isImageModalOpen) {
+    const handleKeyboard = (e: KeyboardEvent) => {
+      if (!isImageModalOpen) return;
+
+      if (e.key === 'Escape') {
         setIsImageModalOpen(false);
+      } else if (e.key === 'ArrowLeft') {
+        setCurrentImage((prev) => {
+          const images = product?.images || [product?.image];
+          const length = images.length;
+          return (prev - 1 + length) % length;
+        });
+      } else if (e.key === 'ArrowRight') {
+        setCurrentImage((prev) => {
+          const images = product?.images || [product?.image];
+          const length = images.length;
+          return (prev + 1) % length;
+        });
       }
     };
 
     if (isImageModalOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleKeyboard);
       // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden';
       // Add class to body to signal modal is open (for navbar hiding)
@@ -388,11 +402,11 @@ export default function ProductDetail() {
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleKeyboard);
       document.body.style.overflow = 'unset';
       document.body.classList.remove('image-modal-open');
     };
-  }, [isImageModalOpen]);
+  }, [isImageModalOpen, product]);
 
 
 
@@ -1805,10 +1819,10 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* Full-screen Image Modal */}
+        {/* Image Modal with Right-Side Thumbnails */}
         {isImageModalOpen && (
           <div
-            className="fixed inset-0 z-[1001] bg-black/95 backdrop-blur-sm flex items-center justify-center"
+            className="fixed inset-0 z-[1001] bg-black/60 backdrop-blur-sm flex items-center justify-center"
             onClick={() => setIsImageModalOpen(false)}
           >
             {/* Close button - Top right */}
@@ -1817,55 +1831,104 @@ export default function ProductDetail() {
                 e.stopPropagation();
                 setIsImageModalOpen(false);
               }}
-              className="absolute top-4 right-4 z-[1010] w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all duration-300 hover:scale-110 group"
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[1020] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 hover:scale-110 group"
               aria-label="Close image"
             >
-              <X size={24} className="text-white group-hover:text-white/80 transition-colors" />
+              <X size={20} className="sm:w-6 sm:h-6 text-white" />
             </button>
 
-            {/* Image container - Clicking outside closes, clicking image doesn't */}
+            {/* Main Container - Two Column Layout */}
             <div
-              className="relative w-full h-full flex items-center justify-center p-8"
+              className="relative w-full h-full max-w-7xl flex items-center justify-center gap-4 sm:gap-6 p-4 sm:p-8"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center">
-                <Image
-                  src={displayImages[currentImage] || displayImages[0] || resolvedProductImage}
-                  alt={`${product.name || "Product Image"} - View ${currentImage + 1}`}
-                  fill
-                  style={{ objectFit: 'contain', objectPosition: 'center' }}
-                  className="pointer-events-none"
-                  draggable={false}
-                  priority
-                />
-              </div>
-            </div>
+              {/* Left Side - Main Image */}
+              <div className="relative flex-1 h-full flex items-center justify-center">
+                {/* Navigation Arrows - only show if multiple images */}
+                {displayImages.length > 1 && (
+                  <>
+                    {/* Left Arrow */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImage((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+                      }}
+                      className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-[1010] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 hover:scale-110"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft size={24} className="text-white" />
+                    </button>
 
-            {/* Navigation arrows for multiple images */}
-            {displayImages.length > 1 && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentImage((prev) => (prev - 1 + displayImages.length) % displayImages.length);
-                  }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-[1010] w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all duration-300 hover:scale-110 group"
-                  aria-label="Previous image"
-                >
-                  <ChevronLeft size={24} className="text-white group-hover:text-white/80 transition-colors" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentImage((prev) => (prev + 1) % displayImages.length);
-                  }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-[1010] w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 rounded-full transition-all duration-300 hover:scale-110 group"
-                  aria-label="Next image"
-                >
-                  <ChevronRight size={24} className="text-white group-hover:text-white/80 transition-colors" />
-                </button>
-              </>
-            )}
+                    {/* Right Arrow */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImage((prev) => (prev + 1) % displayImages.length);
+                      }}
+                      className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-[1010] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 hover:scale-110"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight size={24} className="text-white" />
+                    </button>
+                  </>
+                )}
+
+                {/* Main Image - Full Height */}
+                <div className="relative w-full h-full">
+                  <Image
+                    src={displayImages[currentImage] || displayImages[0] || resolvedProductImage}
+                    alt={`${product.name || "Product Image"} - View ${currentImage + 1}`}
+                    fill
+                    style={{ objectFit: 'contain', objectPosition: 'center' }}
+                    className="pointer-events-none"
+                    draggable={false}
+                    priority
+                  />
+                </div>
+
+                {/* Image counter - bottom left of main image */}
+                {displayImages.length > 1 && (
+                  <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/70 backdrop-blur-sm rounded-full">
+                    <span className="text-white text-xs sm:text-sm font-['Roboto_Mono']">
+                      {currentImage + 1} / {displayImages.length}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Side - Vertical Thumbnail Strip */}
+              {displayImages.length > 1 && (
+                <div className="hidden sm:flex flex-col gap-3 h-full max-h-[85vh] overflow-y-auto py-2 pr-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                  {displayImages.map((imageUrl, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImage(i);
+                      }}
+                      className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden rounded-lg border-2 transition-all duration-300 ${currentImage === i
+                        ? 'border-white shadow-lg shadow-white/30 scale-105'
+                        : 'border-white/30 hover:border-white/60 opacity-60 hover:opacity-100'
+                        }`}
+                    >
+                      <Image
+                        src={imageUrl}
+                        alt={`${product.name} thumbnail ${i + 1}`}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        className="pointer-events-none"
+                        draggable={false}
+                      />
+
+                      {/* Active indicator */}
+                      {currentImage === i && (
+                        <div className="absolute inset-0 bg-white/10 pointer-events-none" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
