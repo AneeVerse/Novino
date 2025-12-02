@@ -76,35 +76,35 @@ export default function ProductTestimonial({
   useEffect(() => {
     setCurrentIndex(0);
   }, [items?.length]);
-  
+
   // Handle touch events for swiping on mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     // Save the starting touch position
     touchStartX.current = e.touches[0].clientX;
-    
+
     // Pause autoplay during user interaction
     if (autoplayRef.current) {
       clearTimeout(autoplayRef.current);
     }
   };
-  
+
   const handleTouchMove = (e: React.TouchEvent) => {
     // Update end position as touch moves
     touchEndX.current = e.touches[0].clientX;
   };
-  
+
   const handleTouchEnd = () => {
     // Don't process swipe if already transitioning
     if (isTransitioning) return;
-    
+
     // Check if we have valid touch data
     if (touchStartX.current !== null && touchEndX.current !== null) {
       // Calculate swipe distance
       const distance = touchEndX.current - touchStartX.current;
-      
+
       // Minimum swipe distance to register (50px)
       const minSwipeDistance = 50;
-      
+
       if (distance > minSwipeDistance) {
         // Swiped right - go to previous
         prevTestimonial();
@@ -113,26 +113,26 @@ export default function ProductTestimonial({
         nextTestimonial();
       }
     }
-    
+
     // Reset touch values
     touchStartX.current = null;
     touchEndX.current = null;
   };
-  
+
   // Add debugging logs to diagnose the issue
   useEffect(() => {
     // Component mounted
   }, []);
-  
+
   // Simplified approach to handle testimonial changes
   const changeTestimonial = (index: number) => {
     if (index !== currentIndex && !isTransitioning) {
       setIsTransitioning(true);
-      
+
       // Reset the transition state after animation completes
       setTimeout(() => {
         setCurrentIndex(index);
-        
+
         // Shorter delay before removing the transition class to match the new animation duration
         setTimeout(() => {
           setIsTransitioning(false);
@@ -154,14 +154,14 @@ export default function ProductTestimonial({
       changeTestimonial(prevIndex);
     }
   };
-  
+
   // Safety timeout to reset isTransitioning if it gets stuck
   useEffect(() => {
     if (isTransitioning) {
       const safetyTimer = setTimeout(() => {
         setIsTransitioning(false);
       }, 1500); // Reduced safety timeout
-      
+
       return () => clearTimeout(safetyTimer);
     }
   }, [isTransitioning]);
@@ -170,14 +170,14 @@ export default function ProductTestimonial({
   useEffect(() => {
     const startAutoplay = () => {
       if (autoplayRef.current) clearTimeout(autoplayRef.current);
-      
+
       autoplayRef.current = setTimeout(() => {
         nextTestimonial();
       }, 7000); // Increased to 5 seconds to give more time to read testimonials
     };
 
     startAutoplay();
-    
+
     return () => {
       if (autoplayRef.current) clearTimeout(autoplayRef.current);
     };
@@ -189,7 +189,7 @@ export default function ProductTestimonial({
     <section
       className="relative w-full py-8 sm:py-16 md:py-24 overflow-visible bg-transparent"
     >
-      <div 
+      <div
         className="relative mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-8 md:gap-12 lg:gap-16 px-4 sm:px-6 md:px-8"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -208,7 +208,7 @@ export default function ProductTestimonial({
             }}
           >
             {/* Mobile overlay (only visible on mobile) */}
-            <div 
+            <div
               className="absolute left-1/2 top-1/2 w-[310px] h-[370px] -translate-x-1/2 -translate-y-1/2 sm:hidden z-0"
               style={{
                 background: '#E8B08A',
@@ -217,12 +217,11 @@ export default function ProductTestimonial({
                 borderRadius: '30%',
               }}
             ></div>
-            <div className="relative w-full h-full z-10 flex items-center justify-center py-4">
-              <div className="relative w-[90%] pb-[115%] overflow-hidden rounded-[36px]  bg-transparent">
-              <div 
-                  className={`absolute inset-0 transition-all duration-400 ease-in-out ${
-                    isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0 duration-200'
-                  }`}
+            <div className="relative w-full h-full z-10 flex items-center justify-center py-0">
+              <div className="relative w-[120%] pb-[145%]  overflow-hidden rounded-[36px]  bg-transparent">
+                <div
+                  className={`absolute inset-0 transition-all duration-400 ease-in-out ${isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0 duration-200'
+                    }`}
                 >
                   <Image
                     src={current.image}
@@ -245,9 +244,9 @@ export default function ProductTestimonial({
             {/* Main content */}
             <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 pr-4 sm:pr-6 relative">
               {/* Background blur effect */}
-              <div 
-                className="absolute -top-40 -left-64 z-0" 
-                style={{ 
+              <div
+                className="absolute -top-40 -left-64 z-0"
+                style={{
                   width: '100%',
                   height: '180%',
                   background: '#E8B08A',
@@ -257,7 +256,7 @@ export default function ProductTestimonial({
                   transform: 'translate(-55%, 5%) rotate(-5deg)'
                 }}
               ></div>
-            
+
               <h2 className="text-xl sm:text-2xl md:text-3xl font-light tracking-wide relative z-10" style={{ fontFamily: '"Roboto Mono", monospace' }}>
                 {title}
               </h2>
@@ -284,10 +283,9 @@ export default function ProductTestimonial({
 
               {/* Testimonial Quote */}
               <div className="relative min-h-[180px] sm:min-h-[200px] md:min-h-[220px] z-10 overflow-hidden">
-                <div 
-                  className={`absolute inset-0 flex flex-col justify-center transition-all duration-400 ease-in-out ${
-                    isTransitioning ? 'opacity-0 transform translate-y-[-20px]' : 'opacity-100 transform translate-y-0 duration-200'
-                  }`}
+                <div
+                  className={`absolute inset-0 flex flex-col justify-center transition-all duration-400 ease-in-out ${isTransitioning ? 'opacity-0 transform translate-y-[-20px]' : 'opacity-100 transform translate-y-0 duration-200'
+                    }`}
                 >
                   <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight" style={{ fontFamily: '"DM Serif Display", serif' }}>
                     "{current.quote}"
@@ -309,7 +307,7 @@ export default function ProductTestimonial({
             {/* Navigation Controls */}
             <div className="flex flex-col h-[220px] sm:h-[240px] justify-between items-center py-4">
               {/* Right arrow (for next) */}
-              <button 
+              <button
                 onClick={nextTestimonial}
                 className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center relative cursor-pointer hover:bg-white/10 rounded-full transition-colors"
                 disabled={isTransitioning}
@@ -327,11 +325,11 @@ export default function ProductTestimonial({
                   />
                 </div>
               </button>
-              
+
               {/* Dots indicators */}
               <div className="flex flex-col space-y-3 sm:space-y-4 items-center">
                 {testimonials.map((_, index) => (
-                  <button 
+                  <button
                     key={index}
                     onClick={() => changeTestimonial(index)}
                     className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${index === currentIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/70'}`}
@@ -341,9 +339,9 @@ export default function ProductTestimonial({
                   />
                 ))}
               </div>
-              
+
               {/* Left arrow (for previous) */}
-              <button 
+              <button
                 onClick={prevTestimonial}
                 className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center relative cursor-pointer hover:bg-white/10 rounded-full transition-colors"
                 disabled={isTransitioning}
