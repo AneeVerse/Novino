@@ -1398,7 +1398,7 @@ export default function ProductDetail() {
         }
       `}</style>
 
-      <div className="w-full px-4 md:px-6 pt-24 pb-0 overflow-x-hidden">
+      <div className="w-full px-4 md:px-0 pt-24 pb-0 overflow-x-hidden">
 
         {isInvalidRoute && (
           <div className="bg-[#3D3D3D] text-white p-4 mb-6 rounded-md mx-auto" style={{ maxWidth: "1440px" }}>
@@ -1422,7 +1422,7 @@ export default function ProductDetail() {
         )}
 
         {/* Main product display - Clean layout without borders */}
-        <div className="relative mb-16 mx-auto w-full overflow-x-hidden" style={{ maxWidth: "1440px" }}>
+        <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
           <div className="relative z-10 px-4 md:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
               {/* Product media + purchase column */}
@@ -1953,7 +1953,7 @@ export default function ProductDetail() {
 
         {/* Full-width image section after FAQs - Only show if additionalImageUrl exists */}
         {product.additionalImageUrl && (
-          <div className="relative w-screen mt-16 mb-16 overflow-hidden" style={{ marginLeft: 'calc(-50vw + 50%)' }}>
+          <div className="relative w-full md:w-screen mt-16 mb-16 overflow-hidden" style={{ marginLeft: 'calc(-50vw + 50%)', maxWidth: '100vw' }}>
             <div className="relative w-full" style={{ paddingTop: "56.25%" }}>  {/* 16:9 aspect ratio */}
               <Image
                 src={product.additionalImageUrl}
