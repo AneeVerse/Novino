@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronUp, ChevronDown, ArrowLeft, Plus, Minus, X, ChevronLeft, ChevronRight } from "lucide-react"
@@ -267,7 +267,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<ProductWithDescription | undefined>(undefined)
   const [categoryName, setCategoryName] = useState<string>('')
   const [categoryDescription, setCategoryDescription] = useState<string>('')
-  const [categoryDetails, setCategoryDetails] = useState<Array<{label: string, value: string}>>([])
+  const [categoryDetails, setCategoryDetails] = useState<Array<{ label: string, value: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [hasLoadedProduct, setHasLoadedProduct] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -279,12 +279,97 @@ export default function ProductDetail() {
   const [hoveredVariant, setHoveredVariant] = useState<any>(null); // For preview on hover
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isHoveringZoom, setIsHoveringZoom] = useState(false);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+  const [zoomPosition, setZoomPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const imageContainerRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated: isLoggedIn } = useAuth();
 
   // Reset current image when switching products
   useEffect(() => {
     setCurrentImage(0);
   }, [product]);
+
+  // Track image container dimensions for zoom calculation
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (imageContainerRef.current) {
+        const rect = imageContainerRef.current.getBoundingClientRect();
+        setImageDimensions({ width: rect.width, height: rect.height });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, [product, currentImage]);
+
+  // Handle mouse move for zoom
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageContainerRef.current) return;
+
+    const rect = imageContainerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Calculate percentage position (0-100%)
+    const percentX = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    const percentY = Math.max(0, Math.min(100, (y / rect.height) * 100));
+
+    setMousePosition({ x: percentX, y: percentY });
+
+    // Update zoom container position
+    setZoomPosition({
+      top: rect.top,
+      left: rect.right + 20
+    });
+  }, []);
+
+  // Calculate zoom background position with bounds checking
+  const getZoomBackgroundPosition = useCallback(() => {
+    if (imageDimensions.width === 0 || imageDimensions.height === 0) {
+      return { x: 0, y: 0 };
+    }
+
+    const zoomFactor = 3;
+    const zoomBoxWidth = imageDimensions.width * 0.92; // Match reduced zoom box width
+    const zoomBoxHeight = imageDimensions.height * 1.0; // Match left image height exactly
+    const zoomedWidth = imageDimensions.width * zoomFactor;
+    const zoomedHeight = imageDimensions.height * zoomFactor;
+
+    // Calculate desired position (centering the point under cursor)
+    let bgX = (mousePosition.x / 100) * zoomedWidth - zoomBoxWidth / 2;
+    let bgY = (mousePosition.y / 100) * zoomedHeight - zoomBoxHeight / 2;
+
+    // Clamp to keep within image bounds
+    const maxX = zoomedWidth - zoomBoxWidth;
+    const maxY = zoomedHeight - zoomBoxHeight;
+    bgX = Math.max(0, Math.min(maxX, bgX));
+    bgY = Math.max(0, Math.min(maxY, bgY));
+
+    return { x: -bgX, y: -bgY };
+  }, [mousePosition, imageDimensions]);
+
+  // Handle mouse enter for zoom
+  const handleMouseEnter = useCallback(() => {
+    setIsHoveringZoom(true);
+    setIsAutoScrolling(false);
+
+    // Set initial zoom position
+    if (imageContainerRef.current) {
+      const rect = imageContainerRef.current.getBoundingClientRect();
+      setZoomPosition({
+        top: rect.top,
+        left: rect.right + 20
+      });
+    }
+  }, []);
+
+  // Handle mouse leave for zoom
+  const handleMouseLeave = useCallback(() => {
+    setIsHoveringZoom(false);
+  }, []);
 
   // Close modal on ESC key press and manage body classes
   useEffect(() => {
@@ -423,9 +508,9 @@ export default function ProductDetail() {
         if (catItem) {
           setCategoryName(catItem?.name || product.category);
           setCategoryDescription(catItem?.description || '');
-          
+
           // Get details from new format or convert legacy fields
-          let details: Array<{label: string, value: string}> = [];
+          let details: Array<{ label: string, value: string }> = [];
           if (catItem.details && Array.isArray(catItem.details) && catItem.details.length > 0) {
             details = catItem.details;
           } else {
@@ -439,7 +524,7 @@ export default function ProductDetail() {
             if (catItem.measurement) details.push({ label: 'Measurement', value: catItem.measurement.trim() });
             if (catItem.gsm) details.push({ label: 'GSM', value: catItem.gsm.trim() });
           }
-          
+
           setCategoryDetails(details);
         } else {
           setCategoryName(product.category);
@@ -965,8 +1050,8 @@ export default function ProductDetail() {
       });
 
       // Simple logic: Use testimonialImage if it exists, otherwise use first product image
-      const testimonialImg = relatedProduct.testimonialImage 
-        ? relatedProduct.testimonialImage 
+      const testimonialImg = relatedProduct.testimonialImage
+        ? relatedProduct.testimonialImage
         : (relatedProduct.images?.[0] || relatedProduct.image || "/images/placeholder.png");
 
       return {
@@ -1026,15 +1111,15 @@ export default function ProductDetail() {
             if (category.products && Array.isArray(category.products)) {
               category.products.forEach((p: any) => {
                 // Read testimonialImage directly from product data if it exists
-                const testimonialImg = p.testimonialImage && typeof p.testimonialImage === 'string' && p.testimonialImage.trim() !== '' 
-                  ? p.testimonialImage.trim() 
+                const testimonialImg = p.testimonialImage && typeof p.testimonialImage === 'string' && p.testimonialImage.trim() !== ''
+                  ? p.testimonialImage.trim()
                   : null;
-                
+
                 // Debug log for products with testimonial images
                 if (testimonialImg) {
                   console.log(`Product ${p.name} has testimonialImage:`, testimonialImg);
                 }
-                
+
                 allProducts.push({
                   id: p.id,
                   name: p.name,
@@ -1299,6 +1384,20 @@ export default function ProductDetail() {
       {/* SEO Schema - Injected into head for Google crawler */}
       {schemas.length > 0 && <SchemaInjector schemas={schemas} />}
 
+      {/* Zoom animation styles */}
+      <style jsx>{`
+        @keyframes zoomFadeIn {
+          from {
+            opacity: 0;
+            transform: scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
+
       <div className="w-full px-4 md:px-0 pt-24 pb-0">
 
         {isInvalidRoute && (
@@ -1343,9 +1442,17 @@ export default function ProductDetail() {
                   )}
 
                   <div
+                    ref={imageContainerRef}
                     className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] select-none group cursor-pointer overflow-visible"
-                    onMouseEnter={() => setIsAutoScrolling(false)}
-                    onMouseLeave={() => setIsAutoScrolling(false)}
+                    onMouseEnter={(e) => {
+                      handleMouseEnter();
+                      setIsAutoScrolling(false);
+                    }}
+                    onMouseLeave={(e) => {
+                      handleMouseLeave();
+                      setIsAutoScrolling(false);
+                    }}
+                    onMouseMove={handleMouseMove}
                     onClick={() => setIsImageModalOpen(true)}
                   >
                     {/* Circular gradient glow that overflows and blends with background */}
@@ -1422,7 +1529,7 @@ export default function ProductDetail() {
                 </div>
 
                 {/* Price and cart actions */}
-                <div className="md:col-span-3 md:col-start-5 flex flex-col justify-start order-2 md:order-2 py-8 pl-4 lg:pl-8">
+                <div className="md:col-span-3 md:col-start-5 flex flex-col justify-start order-2 md:order-2 py-8 pl-4 lg:pl-8 relative">
                   {/* Select Product (acting as variants from same category) */}
                   {categoryVariants.length > 0 && (
                     <div className="flex flex-col gap-3 mb-8">
@@ -1643,6 +1750,55 @@ export default function ProductDetail() {
                   </div>
                 )}
               </div>
+
+              {/* Zoom View Overlay - Desktop only - Positioned to the right */}
+              {isHoveringZoom && displayedImage && imageDimensions.width > 0 && (() => {
+                const bgPos = getZoomBackgroundPosition();
+                const zoomFactor = 3;
+                // Reduce zoom box width to 92% to prevent right-side cutoff
+                const zoomBoxWidth = imageDimensions.width > 0 ? imageDimensions.width * 0.92 : 460;
+                const zoomBoxHeight = imageDimensions.height > 0 ? imageDimensions.height * 1.0 : 500;
+                
+                // Ensure zoom box doesn't overflow viewport on the right
+                const maxLeft = typeof window !== 'undefined' ? window.innerWidth - zoomBoxWidth - 20 : zoomPosition.left;
+                const adjustedLeft = Math.min(zoomPosition.left, maxLeft);
+
+                return (
+                  <div
+                    className="hidden lg:block fixed z-50 pointer-events-none overflow-hidden bg-[#f7f3ee] rounded-[28px] shadow-2xl border-2 border-white/20"
+                    style={{
+                      top: `${zoomPosition.top}px`,
+                      left: `${adjustedLeft}px`,
+                      width: `${zoomBoxWidth}px`,
+                      height: `${zoomBoxHeight}px`,
+                      opacity: 1,
+                      transition: 'opacity 0.15s ease-in-out',
+                      animation: 'zoomFadeIn 0.2s ease-in-out',
+                    }}
+                  >
+                    {/* Zoomed Image */}
+                    <div
+                      className="relative w-full h-full"
+                      style={{
+                        width: `${imageDimensions.width * zoomFactor}px`,
+                        height: `${imageDimensions.height * zoomFactor}px`,
+                        transform: `translate(${bgPos.x}px, ${bgPos.y}px)`,
+                        transition: 'transform 0.05s ease-out',
+                      }}
+                    >
+                      <Image
+                        src={displayedImage}
+                        alt="Zoomed product view"
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        className="pointer-events-none"
+                        priority
+                        unoptimized
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
