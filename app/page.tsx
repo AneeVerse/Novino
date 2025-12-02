@@ -337,7 +337,7 @@ export default function Home() {
             opacity: 1;
           }
           100% {
-            transform: translate(-50%, 53%);
+            transform: translate(-50%, 0);
             visibility: visible;
             opacity: 1;
           }
@@ -350,28 +350,28 @@ export default function Home() {
         /* Add styles for the hero text */
         .novino-hero-text {
           font-family: 'DM Serif Display', serif;
-          /* Desktop styles */
-          top: 44%;
+          /* Desktop styles - fixed to bottom using top */
+          top: calc(100vh - 250px);
           left: 51.5%;
           transform: translate(-50%, 200%); /* Initial position for animation */
           letter-spacing: 0.23em;
         }
 
-        /* Mobile adjustment - move text down a bit more, smaller */
+        /* Mobile adjustment - fixed to bottom using top */
         @media (max-width: 767px) { /* Target screens smaller than md (768px) */
           .novino-hero-text {
-            top: 83%; /* Moved down slightly from 78% */
+            top: calc(100vh - 77px);
             left: 50%;
             letter-spacing: 0.04em;
             font-size: 92px !important;
           }
         }
 
-        /* Tablet adjustment - responsive sizing and positioning */
+        /* Tablet adjustment - fixed to bottom using top */
         @media (min-width: 768px) and (max-width: 1023px) { /* Tablet range */
           .novino-hero-text {
-            top: 50%; /* Better centered for tablets */
-            left: 51%;
+            top: calc(100vh - 180px);
+            left: 50%;
             letter-spacing: 0.15em;
             font-size: 180px !important; /* Mid-size between mobile and desktop */
           }
