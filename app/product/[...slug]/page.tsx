@@ -300,9 +300,19 @@ export default function ProductDetail() {
       }
     };
 
+    // Initial update with a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(updateDimensions, 100);
+
+    // Also update immediately
     updateDimensions();
+
+    // Update on window resize
     window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', updateDimensions);
+    };
   }, [product, currentImage]);
 
   // Handle mouse move for zoom
@@ -356,9 +366,14 @@ export default function ProductDetail() {
     setIsHoveringZoom(true);
     setIsAutoScrolling(false);
 
-    // Set initial zoom position
+    // Update dimensions and zoom position when entering hover
     if (imageContainerRef.current) {
       const rect = imageContainerRef.current.getBoundingClientRect();
+
+      // Update dimensions to ensure zoom works immediately
+      setImageDimensions({ width: rect.width, height: rect.height });
+
+      // Set zoom position
       setZoomPosition({
         top: rect.top,
         left: rect.right + 20
