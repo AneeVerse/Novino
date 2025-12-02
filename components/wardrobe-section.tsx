@@ -12,7 +12,7 @@ export default function WardrobeSection() {
           fill
           className="object-cover"
           style={{
-            objectPosition: '-200px center',
+            objectPosition: 'right center',
             transform: 'scale(1)',
           }}
           priority

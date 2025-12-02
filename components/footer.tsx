@@ -57,10 +57,11 @@ export default function Footer() {
             zIndex: -1
           }}></div>
 
-          {/* Mobile border overlay */}
-          <div className="absolute inset-0 border-2 border-dashed border-white rounded-[20px] block sm:hidden"></div>
-          {/* Desktop border overlay */}
-          <div className="absolute inset-0 border-2 border-dashed border-white rounded-[20px] hidden sm:block pointer-events-none"></div>
+          {/* Border overlay - matching testimonial style */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            border: '2px dashed rgba(255, 255, 255, 0.2)',
+            borderRadius: '20px',
+          }}></div>
 
           {/* Content container with padding */}
           <div className="relative p-8 z-10">

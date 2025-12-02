@@ -35,7 +35,7 @@ export default function ArtefactsPage() {
         <ProductGrid
           key={`artefact-grid-${artefactProducts.length}`}
           title="Bring the Patterns Home"
-          subtitle="Choose the design that speaks to you. Each product features one of five nature-inspired patterns created through direct observation and imagination."
+          subtitle="Choose the design that speaks to you."
           products={artefactProducts}
           categories={categories}
           viewAllText="See All Products"
