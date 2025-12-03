@@ -57,6 +57,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [wasLoggedIn, setWasLoggedIn] = useState(false);
 
   // Use AuthContext for authentication
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -271,6 +272,22 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       syncCartOnLogin();
     }
   }, [isLoggedIn, isAuthLoading]);
+
+  // Track authentication state changes to detect logout
+  useEffect(() => {
+    if (!isAuthLoading) {
+      // If user was logged in and now is not, they logged out
+      if (wasLoggedIn && !isLoggedIn) {
+        // User has logged out - clear cart state and localStorage
+        setCart([]);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('novinoCart');
+        }
+      }
+      // Update the previous state
+      setWasLoggedIn(isLoggedIn);
+    }
+  }, [isLoggedIn, isAuthLoading, wasLoggedIn]);
 
   // Save cart to localStorage if not logged in
   useEffect(() => {

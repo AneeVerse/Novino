@@ -123,8 +123,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout function
   const logout = async () => {
     try {
-      // Clear admin token if exists
+      // Clear cart from localStorage before signing out
       if (typeof window !== 'undefined') {
+        localStorage.removeItem('novinoCart');
         localStorage.removeItem('adminAuthToken');
         setHasAdminToken(false);
       }

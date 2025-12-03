@@ -145,8 +145,9 @@ export default function LoginPage() {
       })
 
       // Get redirect URL from query params or default to home
-      const redirectUrl = searchParams?.get('redirect') || '/'
-
+      const redirectParam = searchParams?.get('redirect') || '/'
+      // Decode the redirect URL (searchParams.get already decodes, but be safe)
+      const redirectUrl = redirectParam
 
       // Sync cart and redirect
       setTimeout(() => {

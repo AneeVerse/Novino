@@ -10,10 +10,11 @@ import TestimonialCollection from "@/components/testimonial-collection"
 import BlogSection from "@/components/blog-section"
 import WardrobeSection from "@/components/wardrobe-section"
 import Footer from "@/components/footer"
-import { useRouter, useParams, useSearchParams } from "next/navigation"
+import { useRouter, useParams, useSearchParams, usePathname } from "next/navigation"
 import { useCart } from '@/contexts/CartContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatPrice, getProductUrl, slugifySegment } from '@/lib/utils'
+import { useToast } from '@/hooks/use-toast'
 import Preloader from "@/components/ui/preloader"
 import { SITE_URL, generateProductSchema, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/seo"
 import SchemaInjector from "@/components/seo/SchemaInjector"
@@ -264,6 +265,8 @@ export default function ProductDetail() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const { toast } = useToast()
   const [product, setProduct] = useState<ProductWithDescription | undefined>(undefined)
   const [categoryName, setCategoryName] = useState<string>('')
   const [categoryDescription, setCategoryDescription] = useState<string>('')
@@ -284,7 +287,6 @@ export default function ProductDetail() {
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [zoomPosition, setZoomPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
-  const { isAuthenticated: isLoggedIn } = useAuth();
 
   // Reset current image when switching products
   useEffect(() => {
@@ -573,8 +575,9 @@ export default function ProductDetail() {
     }
   };
 
-  // Add the cart context
+  // Add the cart context and auth
   const { addToCart } = useCart();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
   const resolveStaticProduct = useCallback(
     (
@@ -1210,6 +1213,29 @@ export default function ProductDetail() {
 
   // Add to cart handler
   const handleAddToCart = () => {
+    // Check if user is authenticated
+    if (!isAuthenticated && !isAuthLoading) {
+      // Show toast notification
+      toast({
+        title: "Login Required",
+        description: "Please login to add items to cart",
+        variant: "default",
+      });
+
+      // Get current product page URL with all query params
+      const currentUrl = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+      const encodedRedirectUrl = encodeURIComponent(currentUrl);
+
+      // Redirect to login with current page as redirect parameter
+      router.push(`/login?redirect=${encodedRedirectUrl}`);
+      return;
+    }
+
+    // Wait for auth to be ready
+    if (isAuthLoading) {
+      return;
+    }
+
     const cartSource = selectedVariant || product;
 
     if (!cartSource) {
@@ -1683,7 +1709,7 @@ export default function ProductDetail() {
                   </p>
 
                   {/* Authentication Links - Only show if NOT logged in */}
-                  {!isLoggedIn && (
+                  {!isAuthenticated && (
                     <div className="pt-4 border-t border-white/10 mt-6 w-full">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 text-xs w-full">
                         <Link href={`/signup?redirect=${encodeURIComponent(canonicalProductPath)}`} className="text-white/40 hover:text-white/70 transition font-['Roboto_Mono'] uppercase tracking-wider text-center sm:text-left">
