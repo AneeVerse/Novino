@@ -1894,37 +1894,37 @@ export default function ProductDetail() {
             >
               {/* Main Image Area */}
               <div className="relative flex-1 w-full h-full flex flex-col items-center justify-center sm:min-h-0">
-                {/* Navigation Arrows - only show if multiple images */}
-                {displayImages.length > 1 && (
-                  <>
-                    {/* Left Arrow */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentImage((prev) => (prev - 1 + displayImages.length) % displayImages.length);
-                      }}
-                      className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-[1010] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 hover:scale-110"
-                      aria-label="Previous image"
-                    >
-                      <ChevronLeft size={24} className="text-white" />
-                    </button>
-
-                    {/* Right Arrow */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentImage((prev) => (prev + 1) % displayImages.length);
-                      }}
-                      className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-[1010] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 hover:scale-110"
-                      aria-label="Next image"
-                    >
-                      <ChevronRight size={24} className="text-white" />
-                    </button>
-                  </>
-                )}
-
                 {/* Main Image - Full Height */}
                 <div className="relative w-full h-full min-h-[60vh] sm:min-h-0">
+                  {/* Navigation Arrows - only show if multiple images */}
+                  {displayImages.length > 1 && (
+                    <>
+                      {/* Left Arrow */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImage((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+                        }}
+                        className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-[1015] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft size={24} className="text-white" />
+                      </button>
+
+                      {/* Right Arrow */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImage((prev) => (prev + 1) % displayImages.length);
+                        }}
+                        className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-[1015] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight size={24} className="text-white" />
+                      </button>
+                    </>
+                  )}
+
                   <Image
                     src={displayImages[currentImage] || displayImages[0] || resolvedProductImage}
                     alt={`${product.name || "Product Image"} - View ${currentImage + 1}`}
@@ -1938,7 +1938,7 @@ export default function ProductDetail() {
 
                 {/* Mobile: Horizontal Thumbnail Strip at Bottom - Close to Main Image */}
                 {displayImages.length > 1 && (
-                  <div className="flex sm:hidden flex-row gap-3 w-full justify-center overflow-x-auto py-2 px-2 -mt-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                  <div className="flex sm:hidden flex-row gap-3 w-full justify-center items-center overflow-x-auto py-3 absolute bottom-12 left-0 right-0 z-[1020] scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
                     {displayImages.map((imageUrl, i) => (
                       <button
                         key={i}
