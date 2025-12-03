@@ -85,6 +85,28 @@ export default function Home() {
     });
   }, [paintingProducts]);
 
+  // Set mobile viewport height dynamically to handle browser UI
+  useEffect(() => {
+    // Function to set CSS custom property for viewport height
+    const setViewportHeight = () => {
+      // Use window.innerHeight for actual viewport (excludes browser UI)
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    // Set initial height
+    setViewportHeight();
+
+    // Update on resize and orientation change
+    window.addEventListener('resize', setViewportHeight);
+    window.addEventListener('orientationchange', setViewportHeight);
+
+    return () => {
+      window.removeEventListener('resize', setViewportHeight);
+      window.removeEventListener('orientationchange', setViewportHeight);
+    };
+  }, []);
+
   // Initial load - delay text appearance
   useEffect(() => {
     // Delay showing text on initial load
@@ -209,7 +231,7 @@ export default function Home() {
   return (
     <main className="relative min-h-screen bg-[#2D2D2D]">
       {/* Hero Section - Full width that extends to the top */}
-      <div className="relative w-full overflow-hidden" style={{ height: 'clamp(100vh, 100vh, 100vh)' }}>
+      <div className="relative w-full overflow-hidden" style={{ height: 'calc(var(--vh, 1vh) * 100)' }}>
         {/* Hero Image with Parallax Effect */}
         <div
           ref={heroImageRef}
@@ -351,7 +373,7 @@ export default function Home() {
         .novino-hero-text {
           font-family: 'DM Serif Display', serif;
           /* Desktop styles - fixed to bottom using top */
-          top: calc(100vh - 250px);
+          top: calc(var(--vh, 1vh) * 100 - 250px);
           left: 51.5%;
           transform: translate(-50%, 200%); /* Initial position for animation */
           letter-spacing: 0.23em;
@@ -360,7 +382,7 @@ export default function Home() {
         /* Mobile adjustment - fixed to bottom using top */
         @media (max-width: 767px) { /* Target screens smaller than md (768px) */
           .novino-hero-text {
-            top: calc(100vh - 77px);
+            top: calc(var(--vh, 1vh) * 100 - 80px);
             left: 50%;
             letter-spacing: 0.04em;
             font-size: 92px !important;
@@ -370,7 +392,7 @@ export default function Home() {
         /* Tablet adjustment - fixed to bottom using top */
         @media (min-width: 768px) and (max-width: 1023px) { /* Tablet range */
           .novino-hero-text {
-            top: calc(100vh - 180px);
+            top: calc(var(--vh, 1vh) * 100 - 180px);
             left: 50%;
             letter-spacing: 0.15em;
             font-size: 180px !important; /* Mid-size between mobile and desktop */

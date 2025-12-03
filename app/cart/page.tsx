@@ -241,8 +241,10 @@ export default function CartPage() {
   };
   
   const { subtotal, gst, cartTotal, total } = calculateTotals();
-  const selectedCount = getSelectedItems().length;
-  const totalItems = cart.length;
+  // Count total quantity of selected items, not number of unique items
+  const selectedCount = getSelectedItems().reduce((sum, item) => sum + item.quantity, 0);
+  // Count total quantity of all items, not number of unique items
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   
   // Helper function to check if address is selected
   const isAddressSelected = (addressId: string): boolean => {

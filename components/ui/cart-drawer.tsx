@@ -150,7 +150,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         onClose();
                       }}
                     >
-                      Artifacts
+                      Artefacts
                     </Link>
                   </div>
                 )}
@@ -242,14 +242,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       Paintings
                     </Link>
                     <Link
-                      href="/artifacts"
+                      href="/artefacts"
                       className="block w-full text-left px-4 py-3 text-white hover:bg-[#444444]"
                       onClick={() => {
                         setShowOptions(false);
                         onClose();
                       }}
                     >
-                      Artifacts
+                      Artefacts
                     </Link>
                   </div>
                 )}
