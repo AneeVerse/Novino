@@ -196,7 +196,7 @@ const Navbar = () => {
 
       {/* Full screen mobile menu - slides from top */}
       <div
-        className={`fixed inset-0 bg-[#222222] z-[999] transform transition-transform duration-500 ease-in-out md:hidden ${isOpen ? 'translate-y-0' : '-translate-y-full'
+        className={`fixed inset-0 bg-[#222222] z-[999] transform transition-transform duration-500 ease-in-out md:hidden overflow-hidden ${isOpen ? 'translate-y-0 visible' : '-translate-y-full invisible pointer-events-none'
           } ${isImageModalOpen ? 'opacity-0 pointer-events-none' : ''}`}
       >
         <div className="h-[80px]"></div> {/* Space for navbar */}

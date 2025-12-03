@@ -1451,6 +1451,15 @@ export default function ProductDetail() {
             transform: scale(1);
           }
         }
+        
+        /* Utility to hide scrollbars for horizontal scrolling */
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
       `}</style>
 
       <div className="w-full px-4 md:px-0 pt-24 pb-0 overflow-x-hidden">
@@ -1592,7 +1601,7 @@ export default function ProductDetail() {
                         Select Variant
                       </div>
 
-                      <div className="flex gap-2 flex-wrap justify-center md:justify-start w-full">
+                      <div className="flex gap-2 overflow-x-auto scrollbar-hide md:flex-wrap md:justify-start justify-start w-full pb-2 -mx-2 px-2 md:mx-0 md:px-0">
                         {/* Current Product */}
                         <button
                           onClick={() => setSelectedVariant(null)}
@@ -1878,13 +1887,13 @@ export default function ProductDetail() {
               <X size={20} className="sm:w-6 sm:h-6 text-white" />
             </button>
 
-            {/* Main Container - Two Column Layout */}
+            {/* Main Container - Responsive Layout */}
             <div
-              className="relative w-full h-full max-w-7xl flex items-center justify-center gap-4 sm:gap-6 p-4 sm:p-8"
+              className="relative w-full h-full max-w-7xl flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 p-4 sm:p-8"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Left Side - Main Image */}
-              <div className="relative flex-1 h-full flex items-center justify-center">
+              {/* Main Image Area */}
+              <div className="relative flex-1 w-full h-full flex flex-col items-center justify-center sm:min-h-0">
                 {/* Navigation Arrows - only show if multiple images */}
                 {displayImages.length > 1 && (
                   <>
@@ -1915,7 +1924,7 @@ export default function ProductDetail() {
                 )}
 
                 {/* Main Image - Full Height */}
-                <div className="relative w-full h-full">
+                <div className="relative w-full h-full min-h-[60vh] sm:min-h-0">
                   <Image
                     src={displayImages[currentImage] || displayImages[0] || resolvedProductImage}
                     alt={`${product.name || "Product Image"} - View ${currentImage + 1}`}
@@ -1927,19 +1936,43 @@ export default function ProductDetail() {
                   />
                 </div>
 
-                {/* Image counter - bottom left of main image */}
+                {/* Mobile: Horizontal Thumbnail Strip at Bottom - Close to Main Image */}
                 {displayImages.length > 1 && (
-                  <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-black/70 backdrop-blur-sm rounded-full">
-                    <span className="text-white text-xs sm:text-sm font-['Roboto_Mono']">
-                      {currentImage + 1} / {displayImages.length}
-                    </span>
+                  <div className="flex sm:hidden flex-row gap-3 w-full justify-center overflow-x-auto py-2 px-2 -mt-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                    {displayImages.map((imageUrl, i) => (
+                      <button
+                        key={i}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImage(i);
+                        }}
+                        className={`relative flex-shrink-0 w-20 h-20 overflow-hidden rounded-lg border-2 transition-all duration-300 ${currentImage === i
+                          ? 'border-white shadow-lg shadow-white/30 scale-105'
+                          : 'border-white/30 active:border-white/60 opacity-60 active:opacity-100'
+                          }`}
+                      >
+                        <Image
+                          src={imageUrl}
+                          alt={`${product.name} thumbnail ${i + 1}`}
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          className="pointer-events-none"
+                          draggable={false}
+                        />
+
+                        {/* Active indicator */}
+                        {currentImage === i && (
+                          <div className="absolute inset-0 bg-white/10 pointer-events-none" />
+                        )}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
 
-              {/* Right Side - Vertical Thumbnail Strip */}
+              {/* Desktop: Vertical Thumbnail Strip on Right */}
               {displayImages.length > 1 && (
-                <div className="hidden sm:flex flex-col gap-3 h-full max-h-[85vh] overflow-y-auto py-2 pr-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                <div className="hidden sm:flex flex-col gap-3 h-full max-h-[85vh] overflow-y-auto py-2 pr-4 pl-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
                   {displayImages.map((imageUrl, i) => (
                     <button
                       key={i}
