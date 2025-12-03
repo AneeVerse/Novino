@@ -217,8 +217,8 @@ export default function ProductTestimonial({
                 borderRadius: '30%',
               }}
             ></div>
-            <div className="relative w-full h-full z-10 flex items-center justify-center py-0">
-              <div className="relative w-[120%] pb-[145%]  overflow-hidden rounded-[36px]  bg-transparent">
+            <div className="relative w-full h-full z-10 flex items-center justify-center py-0" style={{ overflow: 'visible' }}>
+              <div className="relative w-[120%] pb-[145%] overflow-visible rounded-[36px] bg-transparent" style={{ transform: 'scale(1.4)' }}>
                 <div
                   className={`absolute inset-0 transition-all duration-400 ease-in-out ${isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0 duration-200'
                     }`}
@@ -227,7 +227,7 @@ export default function ProductTestimonial({
                     src={current.image}
                     alt={current.altText}
                     fill
-                    className="object-cover transform transition-transform duration-400 ease-in-out"
+                    className="object-contain transform transition-transform duration-400 ease-in-out"
                     priority
                     sizes="(max-width: 640px) 280px, (max-width: 768px) 340px, 400px"
                     style={{ transform: 'translateZ(0)' }}
@@ -239,7 +239,7 @@ export default function ProductTestimonial({
         </div>
 
         {/* Testimonial Content */}
-        <div className="flex-1 relative text-white h-auto sm:h-[350px] md:h-[400px] flex items-center mt-6 md:mt-0" style={{ fontFamily: '"Roboto Mono", monospace' }}>
+        <div className="flex-1 relative text-white h-auto sm:h-[350px] md:h-[400px] flex items-center mt-6 md:mt-0 ml-4 md:ml-6" style={{ fontFamily: '"Roboto Mono", monospace' }}>
           <div className="flex w-full">
             {/* Main content */}
             <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 pr-4 sm:pr-6 relative">
