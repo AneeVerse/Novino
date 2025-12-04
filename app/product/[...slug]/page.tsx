@@ -299,6 +299,15 @@ export default function ProductDetail() {
   const [imageWidth, setImageWidth] = useState(0);
   const swipeContainerRef = useRef<HTMLDivElement>(null);
 
+  // Modal image pinch-to-zoom state
+  const [modalZoomScale, setModalZoomScale] = useState(1);
+  const [modalZoomTranslate, setModalZoomTranslate] = useState({ x: 0, y: 0 });
+  const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null);
+  const [initialZoomScale, setInitialZoomScale] = useState(1);
+  const [panStart, setPanStart] = useState<{ x: number; y: number } | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const modalImageRef = useRef<HTMLDivElement>(null);
+
   // Reset current image when switching products
   useEffect(() => {
     setCurrentImage(0);
@@ -540,6 +549,74 @@ export default function ProductDetail() {
     setTouchEnd(null);
     setTouchOffset(0);
   }, [touchStart, touchEnd, imageWidth, currentImage, hoveredVariant, selectedVariant, product]);
+
+  // Helper function to calculate distance between two touch points
+  const getTouchDistance = (touch1: React.Touch, touch2: React.Touch) => {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // Handle pinch-to-zoom and pan on modal image
+  const handleModalImageTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      // Pinch gesture detected
+      const distance = getTouchDistance(e.touches[0], e.touches[1]);
+      setInitialPinchDistance(distance);
+      setInitialZoomScale(modalZoomScale);
+      setPanStart(null); // Clear any pan
+      setIsPanning(false);
+    } else if (e.touches.length === 1 && modalZoomScale > 1) {
+      // Single finger pan when zoomed
+      setPanStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+      setIsPanning(true);
+    }
+  }, [modalZoomScale]);
+
+  const handleModalImageTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2 && initialPinchDistance) {
+      // Pinch zoom
+      e.preventDefault();
+      const currentDistance = getTouchDistance(e.touches[0], e.touches[1]);
+      const scaleChange = currentDistance / initialPinchDistance;
+      const newScale = Math.min(Math.max(1, initialZoomScale * scaleChange), 4); // Limit between 1x and 4x
+      setModalZoomScale(newScale);
+    } else if (e.touches.length === 1 && isPanning && panStart && modalZoomScale > 1) {
+      // Pan with single finger when zoomed
+      e.preventDefault();
+      const deltaX = e.touches[0].clientX - panStart.x;
+      const deltaY = e.touches[0].clientY - panStart.y;
+
+      // Update translate position
+      setModalZoomTranslate(prev => ({
+        x: prev.x + deltaX / modalZoomScale,
+        y: prev.y + deltaY / modalZoomScale
+      }));
+
+      // Update pan start for next move
+      setPanStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    }
+  }, [initialPinchDistance, initialZoomScale, isPanning, panStart, modalZoomScale]);
+
+  const handleModalImageTouchEnd = useCallback(() => {
+    setInitialPinchDistance(null);
+    setPanStart(null);
+    setIsPanning(false);
+
+    // Reset zoom if it's close to 1
+    if (modalZoomScale < 1.1) {
+      setModalZoomScale(1);
+      setModalZoomTranslate({ x: 0, y: 0 });
+    }
+  }, [modalZoomScale]);
+
+  // Reset zoom when modal opens/closes or image changes
+  useEffect(() => {
+    if (!isImageModalOpen) {
+      setModalZoomScale(1);
+      setModalZoomTranslate({ x: 0, y: 0 });
+    }
+  }, [isImageModalOpen, currentImage]);
 
   // Close modal on ESC key press, handle arrow navigation, and manage body classes
   useEffect(() => {
@@ -2194,6 +2271,7 @@ export default function ProductDetail() {
           <div
             className="fixed inset-0 z-[1001] bg-black/60 backdrop-blur-sm flex items-center justify-center"
             onClick={() => setIsImageModalOpen(false)}
+            style={{ touchAction: 'pan-x pan-y' }}
           >
             {/* Close button - Top right */}
             <button
@@ -2203,6 +2281,7 @@ export default function ProductDetail() {
               }}
               className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[1020] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 hover:scale-110 group"
               aria-label="Close image"
+              style={{ touchAction: 'auto' }}
             >
               <X size={20} className="sm:w-6 sm:h-6 text-white" />
             </button>
@@ -2211,9 +2290,13 @@ export default function ProductDetail() {
             <div
               className="relative w-full h-full max-w-7xl flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 p-4 sm:p-8"
               onClick={(e) => e.stopPropagation()}
+              style={{ touchAction: 'pan-x pan-y' }}
             >
               {/* Main Image Area */}
-              <div className="relative flex-1 w-full h-full flex flex-col items-center justify-center sm:min-h-0">
+              <div
+                className="relative flex-1 w-full h-full flex flex-col items-center justify-center sm:min-h-0"
+                style={{ touchAction: 'pan-x pan-y' }}
+              >
                 {/* Navigation Arrows - only show if multiple images */}
                 {displayImages.length > 1 && (
                   <>
@@ -2225,6 +2308,7 @@ export default function ProductDetail() {
                       }}
                       className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-[1015] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
                       aria-label="Previous image"
+                      style={{ touchAction: 'auto' }}
                     >
                       <ChevronLeft size={24} className="text-white" />
                     </button>
@@ -2237,28 +2321,57 @@ export default function ProductDetail() {
                       }}
                       className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-[1015] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/80 backdrop-blur-sm rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
                       aria-label="Next image"
+                      style={{ touchAction: 'auto' }}
                     >
                       <ChevronRight size={24} className="text-white" />
                     </button>
                   </>
                 )}
 
-                {/* Main Image - Full Height */}
-                <div className="relative w-full h-full min-h-[60vh] sm:min-h-0">
-                  <Image
-                    src={displayImages[currentImage] || displayImages[0] || resolvedProductImage}
-                    alt={`${product.name || "Product Image"} - View ${currentImage + 1}`}
-                    fill
-                    style={{ objectFit: 'contain', objectPosition: 'center' }}
-                    className="pointer-events-none"
-                    draggable={false}
-                    priority
-                  />
+                {/* Main Image - Full Height with Custom Pinch-to-Zoom */}
+                <div
+                  ref={modalImageRef}
+                  className="relative w-full h-full min-h-[60vh] sm:min-h-0 overflow-hidden flex items-center justify-center"
+                  onTouchStart={handleModalImageTouchStart}
+                  onTouchMove={handleModalImageTouchMove}
+                  onTouchEnd={handleModalImageTouchEnd}
+                  style={{
+                    touchAction: 'none',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none'
+                  }}
+                >
+                  <div
+                    style={{
+                      transform: `scale(${modalZoomScale}) translate(${modalZoomTranslate.x}px, ${modalZoomTranslate.y}px)`,
+                      transition: initialPinchDistance ? 'none' : 'transform 0.3s ease-out',
+                      width: '100%',
+                      height: '100%',
+                      position: 'relative'
+                    }}
+                  >
+                    <Image
+                      src={displayImages[currentImage] || displayImages[0] || resolvedProductImage}
+                      alt={`${product.name || "Product Image"} - View ${currentImage + 1}`}
+                      fill
+                      style={{
+                        objectFit: 'contain',
+                        objectPosition: 'center',
+                        userSelect: 'none'
+                      }}
+                      className="pointer-events-none select-none"
+                      draggable={false}
+                      priority
+                    />
+                  </div>
                 </div>
 
-                {/* Mobile: Horizontal Thumbnail Strip at Bottom - Close to Main Image */}
+                {/* Mobile: Horizontal Thumbnail Strip at Bottom - Centered */}
                 {displayImages.length > 1 && (
-                  <div className="flex sm:hidden flex-row gap-3 w-full justify-center overflow-x-auto py-3 px-2 absolute bottom-12 left-0 right-0 z-[1020] scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent backdrop-blur-md mx-4">
+                  <div
+                    className="flex sm:hidden flex-row gap-3 w-full justify-center overflow-x-auto py-3 px-2 absolute bottom-12 left-0 right-0 z-[1020] scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+                    style={{ touchAction: 'pan-x' }}
+                  >
                     {displayImages.map((imageUrl, i) => (
                       <button
                         key={i}
@@ -2267,9 +2380,10 @@ export default function ProductDetail() {
                           setCurrentImage(i);
                         }}
                         className={`relative flex-shrink-0 w-20 h-20 overflow-hidden rounded-lg border-2 transition-all duration-300 ${currentImage === i
-                          ? 'border-white shadow-lg shadow-white/30 scale-105'
+                          ? 'border-white scale-105'
                           : 'border-white/30 active:border-white/60 opacity-60 active:opacity-100'
                           }`}
+                        style={{ touchAction: 'auto' }}
                       >
                         <Image
                           src={imageUrl}
