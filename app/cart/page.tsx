@@ -8,6 +8,16 @@ import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Check, X, MapPin, Calendar, AlertCircle } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SelectedItems {
   [key: string]: boolean;
@@ -53,6 +63,7 @@ export default function CartPage() {
   });
   const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [pincodeMessage, setPincodeMessage] = useState("");
+  const [itemToRemove, setItemToRemove] = useState<{ id: string | number; variant?: string; name: string } | null>(null);
   
   const resetAddressForm = () => {
     setAddressForm({ name: "", phone: "", line1: "", line2: "", city: "", pincode: "", state: "" });
@@ -300,9 +311,20 @@ export default function CartPage() {
     updateQuantity(id, currentQuantity + 1, variant);
   };
   
-  const handleDecreaseQuantity = (id: string | number, currentQuantity: number, variant?: string) => {
+  const handleDecreaseQuantity = (id: string | number, currentQuantity: number, variant?: string, itemName?: string) => {
     if (currentQuantity > 1) {
       updateQuantity(id, currentQuantity - 1, variant);
+    } else {
+      // Show confirmation dialog when quantity is 1
+      const item = cart.find(i => i.id === id && ((!variant && !i.variant) || i.variant === variant));
+      setItemToRemove({ id, variant, name: itemName || item?.name || 'this item' });
+    }
+  };
+
+  const handleConfirmRemove = () => {
+    if (itemToRemove) {
+      removeFromCart(itemToRemove.id, itemToRemove.variant);
+      setItemToRemove(null);
     }
   };
   
@@ -1111,7 +1133,7 @@ export default function CartPage() {
                             <span className="text-xs sm:text-sm text-white/70 mr-1 sm:mr-2">Qty:</span>
                             <div className="flex items-center border border-[#444444] rounded">
                         <button 
-                          onClick={() => handleDecreaseQuantity(item.id, item.quantity, item.variant)}
+                          onClick={() => handleDecreaseQuantity(item.id, item.quantity, item.variant, item.name)}
                           disabled={item.quantity <= 1}
                                 className="px-2 sm:px-3 py-1 sm:py-1.5 text-white hover:bg-[#444444] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                         >
@@ -1156,7 +1178,7 @@ export default function CartPage() {
                         {/* Action Buttons */}
                         <div className="flex flex-wrap gap-3 sm:gap-4 mt-3 sm:mt-4">
                           <button
-                            onClick={() => removeFromCart(item.id, item.variant)}
+                            onClick={() => setItemToRemove({ id: item.id, variant: item.variant, name: item.name })}
                             className="text-xs sm:text-sm text-white/70 hover:text-[#AE876D] uppercase font-medium"
                           >
                             REMOVE
@@ -1207,6 +1229,32 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={!!itemToRemove} onOpenChange={(open) => !open && setItemToRemove(null)}>
+        <AlertDialogContent className="bg-[#222222] border-[#444444] text-white z-[10000]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Remove Item?</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/70">
+              Do you want to remove "{itemToRemove?.name}" from your cart?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => setItemToRemove(null)}
+              className="bg-transparent border-[#444444] text-white hover:bg-[#333333]"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmRemove}
+              className="bg-[#AE876D] hover:bg-[#8d6c58] text-white"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 } 

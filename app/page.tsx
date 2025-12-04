@@ -242,7 +242,7 @@ export default function Home() {
           }}
         >
           <Image
-            src="/images/hero-section/HERO.jpg"
+            src="https://ik.imagekit.io/gkkczwgam/hero.webp?updatedAt=1764844020664"
             alt="Novino hero background"
             fill
             className="object-cover"

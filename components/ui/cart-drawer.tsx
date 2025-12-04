@@ -172,7 +172,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <div className="flex justify-between mb-1">
                       <h3 className="font-medium text-white">{item.name}</h3>
                       <button 
-                        onClick={() => removeFromCart(item.id, item.variant)}
+                        onClick={() => setItemToRemove({ id: item.id, variant: item.variant, name: item.name })}
                         className="text-sm text-white/70 hover:text-[#AE876D] uppercase"
                       >
                         Remove
