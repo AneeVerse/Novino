@@ -5,18 +5,20 @@ export default function WardrobeSection() {
   return (
     <div className="relative max-w-[1440px] mx-auto mb-16 overflow-hidden rounded-3xl border border-white/10">
       {/* Full background image */}
-      <div className="relative w-full h-[420px] sm:h-[380px] md:h-[300px]">
-        <Image
-          src="/images/wardrobe/b1 (1).png"
-          alt="Wardrobe background"
-          fill
-          className="object-cover"
-          style={{
-            objectPosition: 'right center',
-            transform: 'scale(1)',
-          }}
-          priority
-        />
+      <div className="relative w-full h-[420px] sm:h-[380px] md:h-[300px] overflow-hidden">
+        <div className="absolute inset-0 wardrobe-image-wrapper">
+          <Image
+            src="/images/wardrobe/b1 (1).png"
+            alt="Wardrobe background"
+            fill
+            className="object-cover wardrobe-bg-image"
+            style={{
+              objectPosition: 'left center',
+              transform: 'scale(1)',
+            }}
+            priority
+          />
+        </div>
 
         {/* Refined dark gradient overlay - smoother transition */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/50 via-40% to-transparent z-0 pointer-events-none" />
@@ -48,6 +50,29 @@ export default function WardrobeSection() {
           </div>
         </div>
       </div>
+
+      {/* Responsive image positioning styles */}
+      {/* Adjust --mobile-offset and --desktop-offset values to move image left (negative) or right (positive) */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .wardrobe-image-wrapper {
+          --mobile-offset: 0px; /* Adjust this: negative = left, positive = right */
+          --desktop-offset: 0px; /* Adjust this: negative = left, positive = right */
+          transform: translateX(var(--mobile-offset));
+        }
+        
+        .wardrobe-bg-image {
+          object-position: left center !important;
+        }
+        
+        @media (min-width: 768px) {
+          .wardrobe-image-wrapper {
+            transform: translateX(var(--desktop-offset));
+          }
+          .wardrobe-bg-image {
+            object-position: right center !important;
+          }
+        }
+      `}} />
     </div>
   )
 }
