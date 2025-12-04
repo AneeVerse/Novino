@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Check, X, Heart, MapPin, Calendar, AlertCircle } from "lucide-react";
+import { Loader2, Check, X, MapPin, Calendar, AlertCircle } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
 interface SelectedItems {
@@ -306,13 +306,6 @@ export default function CartPage() {
     }
   };
   
-  // Handle move to wishlist
-  const handleMoveToWishlist = (itemId: string | number, variant?: string) => {
-    // TODO: Implement wishlist functionality
-    console.log('Move to wishlist:', itemId, variant);
-    // For now, just remove from cart
-    removeFromCart(itemId, variant);
-  };
   
   // Handle place order with address validation
   const handlePlaceOrder = async () => {
@@ -1167,14 +1160,6 @@ export default function CartPage() {
                             className="text-xs sm:text-sm text-white/70 hover:text-[#AE876D] uppercase font-medium"
                           >
                             REMOVE
-                          </button>
-                          <button
-                            onClick={() => handleMoveToWishlist(item.id, item.variant)}
-                            className="text-xs sm:text-sm text-white/70 hover:text-[#AE876D] uppercase font-medium flex items-center"
-                          >
-                            <Heart className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                            <span className="hidden sm:inline">MOVE TO WISHLIST</span>
-                            <span className="sm:hidden">WISHLIST</span>
                           </button>
                         </div>
                       </div>
