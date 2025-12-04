@@ -1272,6 +1272,67 @@ export default function ProductDetail() {
     fetchRelatedProducts();
   }, [product, categoryName])
 
+  // Restore variant from URL hash on mount and when hash changes
+  useEffect(() => {
+    if (!product || !relatedProducts || relatedProducts.length === 0) return;
+
+    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    if (!hash) {
+      // Clear variant if no hash
+      setSelectedVariant(null);
+      return;
+    }
+
+    // Extract variant ID from hash (format: #variant-123)
+    const variantIdMatch = hash.match(/^#variant-(.+)$/);
+    if (!variantIdMatch) return;
+
+    const variantId = variantIdMatch[1];
+    
+    // Find variant in categoryVariants (relatedProducts)
+    const variant = relatedProducts.find((v: any) => String(v.id) === String(variantId));
+    
+    if (variant) {
+      setSelectedVariant(variant);
+      setCurrentImage(0);
+      setIsAutoScrolling(false);
+    } else {
+      // If variant not found, clear hash
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+      setSelectedVariant(null);
+    }
+  }, [product, relatedProducts, pathname]);
+
+  // Listen for hash changes (e.g., when coming back from login)
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (!product || !relatedProducts || relatedProducts.length === 0) return;
+
+      const hash = window.location.hash;
+      if (!hash) {
+        setSelectedVariant(null);
+        return;
+      }
+
+      const variantIdMatch = hash.match(/^#variant-(.+)$/);
+      if (!variantIdMatch) return;
+
+      const variantId = variantIdMatch[1];
+      const variant = relatedProducts.find((v: any) => String(v.id) === String(variantId));
+      
+      if (variant) {
+        setSelectedVariant(variant);
+        setCurrentImage(0);
+        setIsAutoScrolling(false);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [product, relatedProducts]);
+
 
   // Add to cart handler
   const handleAddToCart = () => {
@@ -1284,11 +1345,12 @@ export default function ProductDetail() {
         variant: "default",
       });
 
-      // Get current product page URL with all query params
-      const currentUrl = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+      // Get current product page URL with all query params and hash
+      const hash = typeof window !== 'undefined' ? window.location.hash : '';
+      const currentUrl = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '') + hash;
       const encodedRedirectUrl = encodeURIComponent(currentUrl);
 
-      // Redirect to login with current page as redirect parameter
+      // Redirect to login with current page as redirect parameter (including hash)
       router.push(`/login?redirect=${encodedRedirectUrl}`);
       return;
     }
@@ -1669,7 +1731,13 @@ export default function ProductDetail() {
                       <div className="flex gap-2 overflow-x-auto scrollbar-hide md:flex-wrap md:justify-start justify-start w-full pb-2 -mx-2 px-2 md:mx-0 md:px-0">
                         {/* Current Product */}
                         <button
-                          onClick={() => setSelectedVariant(null)}
+                          onClick={() => {
+                            setSelectedVariant(null);
+                            // Clear hash when selecting current product
+                            if (typeof window !== 'undefined') {
+                              window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                            }
+                          }}
                           onMouseEnter={() => setHoveredVariant(null)}
                           onMouseLeave={() => setHoveredVariant(null)}
                           className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${!selectedVariant
@@ -1703,12 +1771,23 @@ export default function ProductDetail() {
                               onMouseEnter={() => setHoveredVariant(variant)}
                               onMouseLeave={() => setHoveredVariant(null)}
                               onClick={() => {
-                                setSelectedVariant((prev) =>
-                                  prev?.id === variant.id ? prev : variant
-                                );
-                                setHoveredVariant(null);
-                                setCurrentImage(0);
-                                setIsAutoScrolling(false);
+                                const isAlreadySelected = selectedVariant?.id === variant.id;
+                                if (!isAlreadySelected) {
+                                  setSelectedVariant(variant);
+                                  setHoveredVariant(null);
+                                  setCurrentImage(0);
+                                  setIsAutoScrolling(false);
+                                  
+                                  // Set hash in URL to track selected variant
+                                  if (typeof window !== 'undefined') {
+                                    const variantHash = `#variant-${variant.id}`;
+                                    window.history.replaceState(
+                                      null,
+                                      '',
+                                      window.location.pathname + window.location.search + variantHash
+                                    );
+                                  }
+                                }
                               }}
                               className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${isActiveVariant
                                 ? 'border-white shadow-lg shadow-white/20'
