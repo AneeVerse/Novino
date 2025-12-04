@@ -287,10 +287,17 @@ export default function ProductDetail() {
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [zoomPosition, setZoomPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // Touch/swipe state for mobile image navigation
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+
+  // Smooth swipe state for mobile gallery
+  const [translateX, setTranslateX] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [touchOffset, setTouchOffset] = useState(0);
+  const [imageWidth, setImageWidth] = useState(0);
+  const swipeContainerRef = useRef<HTMLDivElement>(null);
 
   // Reset current image when switching products
   useEffect(() => {
@@ -395,60 +402,144 @@ export default function ProductDetail() {
   // Minimum swipe distance (in pixels) to trigger navigation
   const minSwipeDistance = 50;
 
-  // Handle touch start for swipe detection
+  // Track image width for mobile swipe
+  useEffect(() => {
+    const updateImageWidth = () => {
+      if (swipeContainerRef.current) {
+        const rect = swipeContainerRef.current.getBoundingClientRect();
+        setImageWidth(rect.width);
+        // Reset translateX when width changes
+        setTranslateX(-currentImage * rect.width);
+      }
+    };
+
+    const timeoutId = setTimeout(updateImageWidth, 100);
+    updateImageWidth();
+    window.addEventListener('resize', updateImageWidth);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', updateImageWidth);
+    };
+  }, [currentImage, product]);
+
+  // Sync translateX with currentImage when not swiping
+  useEffect(() => {
+    if (!isSwiping && imageWidth > 0) {
+      setTranslateX(-currentImage * imageWidth);
+    }
+  }, [currentImage, imageWidth, isSwiping]);
+
+  // Handle touch start for smooth swipe
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
     setTouchStart({ x: touch.clientX, y: touch.clientY });
     setTouchEnd(null);
+    setIsSwiping(true);
     setIsAutoScrolling(false);
+    // Store initial translateX offset
+    setTouchOffset(0);
   }, []);
 
-  // Handle touch move for swipe detection
+  // Handle touch move for real-time sliding
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (!touchStart || !imageWidth) return;
+
     const touch = e.touches[0];
-    setTouchEnd({ x: touch.clientX, y: touch.clientY });
-  }, []);
-
-  // Handle touch end and navigate based on swipe direction
-  const handleTouchEnd = useCallback(() => {
-    if (!touchStart || !touchEnd) return;
-
-    const distanceX = touchStart.x - touchEnd.x;
-    const distanceY = touchStart.y - touchEnd.y;
-    const isLeftSwipe = distanceX > minSwipeDistance;
-    const isRightSwipe = distanceX < -minSwipeDistance;
-    const isVerticalSwipe = Math.abs(distanceY) > Math.abs(distanceX);
+    const deltaX = touch.clientX - touchStart.x;
+    const deltaY = touch.clientY - touchStart.y;
 
     // Only handle horizontal swipes (ignore vertical scrolling)
-    if (isVerticalSwipe) {
-      setTouchStart(null);
-      setTouchEnd(null);
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
       return;
     }
+
+    // Prevent default scrolling during horizontal swipe
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Get current images array for bounds checking
+    const currentImages = (hoveredVariant || selectedVariant)?.images || product?.images || [product?.image].filter(Boolean);
+    const imageCount = currentImages.length;
+
+    // Calculate offset from current position
+    const offset = deltaX;
+    setTouchOffset(offset);
+
+    // Update translateX in real-time: base position + touch offset
+    const baseTranslateX = -currentImage * imageWidth;
+    let newTranslateX = baseTranslateX + offset;
+
+    // Apply rubber band resistance at edges for premium feel
+    const minTranslateX = -(imageCount - 1) * imageWidth; // Last image
+    const maxTranslateX = 0; // First image
+
+    // Rubber band effect: allow slight over-scroll with damping
+    if (newTranslateX > maxTranslateX) {
+      const overScroll = newTranslateX - maxTranslateX;
+      newTranslateX = maxTranslateX + overScroll * 0.3; // 30% damping
+    } else if (newTranslateX < minTranslateX) {
+      const overScroll = minTranslateX - newTranslateX;
+      newTranslateX = minTranslateX - overScroll * 0.3; // 30% damping
+    }
+
+    setTranslateX(newTranslateX);
+
+    // Update touchEnd for momentum calculation
+    setTouchEnd({ x: touch.clientX, y: touch.clientY });
+  }, [touchStart, imageWidth, currentImage, hoveredVariant, selectedVariant, product]);
+
+  // Handle touch end with momentum and snap
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStart || !imageWidth) {
+      setIsSwiping(false);
+      return;
+    }
+
+    const distanceX = touchStart.x - (touchEnd?.x || touchStart.x);
+    const distanceY = touchStart.y - (touchEnd?.y || touchStart.y);
+    const isVerticalSwipe = Math.abs(distanceY) > Math.abs(distanceX);
 
     // Get current images array
     const currentImages = (hoveredVariant || selectedVariant)?.images || product?.images || [product?.image].filter(Boolean);
     const imageCount = currentImages.length;
 
-    if (imageCount <= 1) {
+    if (imageCount <= 1 || isVerticalSwipe) {
+      // Reset to current image
+      setTranslateX(-currentImage * imageWidth);
+      setIsSwiping(false);
       setTouchStart(null);
       setTouchEnd(null);
+      setTouchOffset(0);
       return;
     }
 
-    if (isLeftSwipe) {
-      // Swipe left - go to next image
-      setCurrentImage((prev) => (prev + 1) % imageCount);
-      setIsAutoScrolling(false);
-    } else if (isRightSwipe) {
-      // Swipe right - go to previous image
-      setCurrentImage((prev) => (prev - 1 + imageCount) % imageCount);
-      setIsAutoScrolling(false);
+    // Calculate momentum and determine target image with enhanced smoothness
+    const swipeThreshold = imageWidth * 0.20; // Reduced to 20% for easier, smoother swiping
+    const absDistance = Math.abs(distanceX);
+
+    let targetImage = currentImage;
+
+    // Enhanced momentum detection - easier to trigger for smoother feel
+    if (absDistance > swipeThreshold || absDistance > minSwipeDistance * 0.8) {
+      if (distanceX > 0) {
+        // Swipe left (show next image)
+        targetImage = (currentImage + 1) % imageCount;
+      } else {
+        // Swipe right (show previous image)
+        targetImage = (currentImage - 1 + imageCount) % imageCount;
+      }
     }
 
+    // Animate to target image with smooth transition
+    setCurrentImage(targetImage);
+    setTranslateX(-targetImage * imageWidth);
+    setIsAutoScrolling(false);
+    setIsSwiping(false);
     setTouchStart(null);
     setTouchEnd(null);
-  }, [touchStart, touchEnd, hoveredVariant, selectedVariant, product]);
+    setTouchOffset(0);
+  }, [touchStart, touchEnd, imageWidth, currentImage, hoveredVariant, selectedVariant, product]);
 
   // Close modal on ESC key press, handle arrow navigation, and manage body classes
   useEffect(() => {
@@ -1288,10 +1379,10 @@ export default function ProductDetail() {
     if (!variantIdMatch) return;
 
     const variantId = variantIdMatch[1];
-    
+
     // Find variant in categoryVariants (relatedProducts)
     const variant = relatedProducts.find((v: any) => String(v.id) === String(variantId));
-    
+
     if (variant) {
       setSelectedVariant(variant);
       setCurrentImage(0);
@@ -1321,7 +1412,7 @@ export default function ProductDetail() {
 
       const variantId = variantIdMatch[1];
       const variant = relatedProducts.find((v: any) => String(v.id) === String(variantId));
-      
+
       if (variant) {
         setSelectedVariant(variant);
         setCurrentImage(0);
@@ -1629,9 +1720,97 @@ export default function ProductDetail() {
                     </div>
                   )}
 
+                  {/* Mobile: Smooth side-by-side swipe gallery */}
+                  <div
+                    ref={swipeContainerRef}
+                    className="lg:hidden relative w-full h-[360px] sm:h-[440px] select-none overflow-hidden rounded-[28px]"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    onClick={() => setIsImageModalOpen(true)}
+                    style={{ touchAction: 'pan-y pinch-zoom' }}
+                  >
+                    {/* Circular gradient glow */}
+                    <div
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none"
+                      style={{
+                        width: '140%',
+                        height: '140%',
+                        background: 'radial-gradient(circle, rgba(245,233,215,0.85) 0%, rgba(232,204,173,0.6) 35%, rgba(196,181,170,0.35) 60%, rgba(120,100,85,0.15) 80%, rgba(45,45,45,0) 100%)',
+                        borderRadius: '50%',
+                        filter: 'blur(40px)',
+                      }}
+                    />
+
+                    {/* Horizontal image container - ultra smooth connected scroll */}
+                    <div
+                      className="flex h-full"
+                      style={{
+                        transform: `translateX(${translateX}px)`,
+                        transition: isSwiping ? 'none' : 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                        willChange: 'transform',
+                        width: imageWidth > 0 ? `${displayImages.length * imageWidth}px` : `${displayImages.length * 100}%`,
+                      }}
+                    >
+                      {displayImages.map((imageUrl, index) => (
+                        <div
+                          key={index}
+                          className="relative flex-shrink-0 h-full bg-[#f7f3ee] overflow-hidden"
+                          style={{
+                            width: imageWidth > 0 ? `${imageWidth}px` : '100%',
+                            minWidth: imageWidth > 0 ? `${imageWidth}px` : '100%',
+                          }}
+                        >
+                          <div
+                            className="relative w-full h-full overflow-hidden shadow-[0_12px_24px_-18px_rgba(0,0,0,0.45)]"
+                            style={{
+                              borderRadius: isSwiping ? '0px' : '28px',
+                              transition: isSwiping ? 'none' : 'border-radius 0.3s ease-out'
+                            }}
+                          >
+                            <Image
+                              src={imageUrl}
+                              alt={`${product.name || "Product Image"} - View ${index + 1}`}
+                              fill
+                              style={{ objectFit: 'cover', objectPosition: 'center' }}
+                              priority={index === 0}
+                              className="pointer-events-none"
+                              draggable={false}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Subtle overlay */}
+                    <div
+                      className="absolute inset-0 bg-white/0 pointer-events-none z-20 rounded-[28px]"
+                    />
+
+                    {/* Carousel Dots Indicator - Mobile Only */}
+                    {displayImages.length > 1 && (
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-30 pointer-events-none">
+                        {displayImages.map((_, index) => (
+                          <div
+                            key={index}
+                            className="transition-all duration-300"
+                            style={{
+                              width: currentImage === index ? '24px' : '6px',
+                              height: '6px',
+                              borderRadius: '3px',
+                              backgroundColor: currentImage === index ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.4)',
+                              boxShadow: currentImage === index ? '0 2px 8px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.2)'
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Desktop: Original zoom functionality */}
                   <div
                     ref={imageContainerRef}
-                    className="relative w-full h-[360px] sm:h-[440px] lg:h-[500px] select-none group cursor-pointer overflow-visible"
+                    className="hidden lg:block relative w-full h-[500px] select-none group cursor-pointer overflow-visible"
                     onMouseEnter={(e) => {
                       handleMouseEnter();
                       setIsAutoScrolling(false);
@@ -1642,9 +1821,6 @@ export default function ProductDetail() {
                     }}
                     onMouseMove={handleMouseMove}
                     onClick={() => setIsImageModalOpen(true)}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
                   >
                     {/* Circular gradient glow that overflows and blends with background */}
                     <div
@@ -1686,9 +1862,9 @@ export default function ProductDetail() {
                     <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-all duration-500 pointer-events-none z-20 rounded-[28px]" />
                   </div>
 
-                  {/* Thumbnail Gallery - Changes based on variant hover/select */}
+                  {/* Thumbnail Gallery - Desktop only, hidden on mobile */}
                   {displayImages.length > 1 && (
-                    <div className="flex gap-2 justify-center flex-wrap">
+                    <div className="hidden lg:flex gap-2 justify-center flex-wrap">
                       {displayImages.map((imageUrl, i) => (
                         <button
                           key={i}
@@ -1777,7 +1953,7 @@ export default function ProductDetail() {
                                   setHoveredVariant(null);
                                   setCurrentImage(0);
                                   setIsAutoScrolling(false);
-                                  
+
                                   // Set hash in URL to track selected variant
                                   if (typeof window !== 'undefined') {
                                     const variantHash = `#variant-${variant.id}`;
@@ -1877,7 +2053,7 @@ export default function ProductDetail() {
 
 
                   {/* Care Guide - Collapsible Description Section - Always show */}
-                  <div className="mt-6 border-t border-white/10 pt-6 w-full">
+                  <div className="mt-6 border-t border-b border-white/10 pt-6 pb-6 w-full">
                     <button
                       type="button"
                       onClick={toggleCareGuide}
