@@ -42,6 +42,7 @@ export default function ArtefactsPage() {
           showViewAllButton={false}
           showOnePerCategoryInAll={false}
           maxAllProducts={0}
+          mobileGridLayout={true}
         />
       </section>
 

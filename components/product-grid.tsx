@@ -44,6 +44,7 @@ interface ProductGridProps {
   showOnePerCategoryInAll?: boolean; // When true, shows only one product per category in "All Products" view
   hideCategoryFilters?: boolean;
   maxAllProducts?: number; // Limit for "All Products" view (0 or undefined = default 9, negative = no limit)
+  mobileGridLayout?: boolean; // When true, shows grid layout on mobile instead of horizontal scroll
 }
 
 export default function ProductGrid({
@@ -57,7 +58,8 @@ export default function ProductGrid({
   onCategoryChange,
   showOnePerCategoryInAll = false,
   hideCategoryFilters = false,
-  maxAllProducts
+  maxAllProducts,
+  mobileGridLayout = false
 }: ProductGridProps) {
   // Use internal state only if no external state is provided
   const [internalActiveCategory, setInternalActiveCategory] = useState<string>(propCategories[0]);
@@ -212,79 +214,150 @@ export default function ProductGrid({
 
       {/* Product cards */}
       <div className="relative max-w-[1440px] mx-auto px-6 sm:px-10 -mt-12 sm:-mt-44 pb-16">
-        {/* Mobile: Horizontal Scroll */}
-        <div className="sm:hidden flex overflow-x-auto gap-6 pb-6 scrollbar-hide snap-x snap-mandatory scroll-smooth -mx-6 px-6"
-          style={{
-            scrollSnapType: 'x mandatory',
-            WebkitOverflowScrolling: 'touch'
-          }}
-        >
-          {displayProducts.map((product) => {
-            const primaryImage = product.image;
-            const secondaryImage = product.images && product.images[1];
+        {/* Mobile: Grid Layout (when mobileGridLayout is true) */}
+        {mobileGridLayout ? (
+          <div className="sm:hidden grid grid-cols-2 gap-3 sm:gap-4 pb-6">
+            {displayProducts.map((product) => {
+              const primaryImage = product.image;
+              const secondaryImage = product.images && product.images[1];
 
-            const productSlug =
-              typeof product.slug !== 'undefined'
-                ? product.slug.toString()
-                : undefined;
-            const baseProductUrl = getProductUrl({
-              id: product.isVariant && product.parentProductId ? product.parentProductId : product.id,
-              slug: productSlug,
-              category: product.category,
-              name: product.name || product.title,
-              title: product.name || product.title,
-              type: product.type
-            });
-            const productLink = product.isVariant && product.parentProductId && product.variantId
-              ? `${baseProductUrl}?variant=${product.variantId}`
-              : baseProductUrl;
+              const productSlug =
+                typeof product.slug !== 'undefined'
+                  ? product.slug.toString()
+                  : undefined;
+              const baseProductUrl = getProductUrl({
+                id: product.isVariant && product.parentProductId ? product.parentProductId : product.id,
+                slug: productSlug,
+                category: product.category,
+                name: product.name || product.title,
+                title: product.name || product.title,
+                type: product.type
+              });
+              const productLink = product.isVariant && product.parentProductId && product.variantId
+                ? `${baseProductUrl}?variant=${product.variantId}`
+                : baseProductUrl;
 
-            return (
-              <Link
-                href={productLink}
-                key={product.id}
-                className="group flex-none w-[280px] snap-center"
-                prefetch={true}
-              >
-                <div className="h-[380px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-500 hover:border-white/30 hover:shadow-[0_35px_70px_-30px_rgba(0,0,0,0.85)]">
-                  <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
-                    <Image
-                      src={primaryImage}
-                      alt={(product.name || product.title || "Product") as string}
-                      fill
-                      className={`object-cover transition duration-700 ease-out group-hover:scale-105 ${secondaryImage ? "group-hover:opacity-0" : ""
-                        }`}
-                      sizes="280px"
-                    />
-                    {secondaryImage && (
+              return (
+                <Link
+                  href={productLink}
+                  key={product.id}
+                  className="group"
+                  prefetch={true}
+                >
+                  <div className="h-[200px] rounded-2xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-500 hover:border-white/30 hover:shadow-[0_25px_50px_-20px_rgba(0,0,0,0.85)]">
+                    <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
                       <Image
-                        src={secondaryImage}
+                        src={primaryImage}
                         alt={(product.name || product.title || "Product") as string}
                         fill
-                        className="object-cover transition duration-700 ease-out opacity-0 group-hover:opacity-100"
-                        sizes="280px"
+                        className={`object-cover transition duration-700 ease-out group-hover:scale-105 ${secondaryImage ? "group-hover:opacity-0" : ""
+                          }`}
+                        sizes="(max-width: 640px) 50vw, 100vw"
                       />
-                    )}
-                    {/* Bottom shadow gradient for text visibility */}
-                    <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/95 via-black/65 to-transparent pointer-events-none"></div>
+                      {secondaryImage && (
+                        <Image
+                          src={secondaryImage}
+                          alt={(product.name || product.title || "Product") as string}
+                          fill
+                          className="object-cover transition duration-700 ease-out opacity-0 group-hover:opacity-100"
+                          sizes="(max-width: 640px) 50vw, 100vw"
+                        />
+                      )}
+                      {/* Bottom shadow gradient for text visibility */}
+                      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/95 via-black/65 to-transparent pointer-events-none"></div>
 
-                    {/* Text overlay at bottom - animates on hover */}
-                    <div className="absolute inset-x-0 bottom-0 p-5 z-10 transition-all duration-400 group-hover:-translate-y-2">
-                      <div className="space-y-2">
-                        <div className="text-xs uppercase tracking-[0.3em] text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] transition-all duration-400">
-                          {product.category}
+                      {/* Text overlay at bottom - animates on hover */}
+                      <div className="absolute inset-x-0 bottom-0 p-2.5 z-10 transition-all duration-400 group-hover:-translate-y-1">
+                        <div className="space-y-0.5">
+                          <div className="text-[9px] uppercase tracking-[0.2em] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] transition-all duration-400">
+                            {product.category}
+                          </div>
+                          <h3 className="text-xs text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] line-clamp-2">
+                            {product.name || product.title || "Untitled"}
+                          </h3>
                         </div>
-                        <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)]">
-                          {product.name || product.title || "Untitled"}
-                        </h3>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          /* Mobile: Horizontal Scroll (default behavior) */
+          <div className="sm:hidden flex overflow-x-auto gap-6 pb-6 scrollbar-hide snap-x snap-mandatory scroll-smooth -mx-6 px-6"
+            style={{
+              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
+            {displayProducts.map((product) => {
+              const primaryImage = product.image;
+              const secondaryImage = product.images && product.images[1];
+
+              const productSlug =
+                typeof product.slug !== 'undefined'
+                  ? product.slug.toString()
+                  : undefined;
+              const baseProductUrl = getProductUrl({
+                id: product.isVariant && product.parentProductId ? product.parentProductId : product.id,
+                slug: productSlug,
+                category: product.category,
+                name: product.name || product.title,
+                title: product.name || product.title,
+                type: product.type
+              });
+              const productLink = product.isVariant && product.parentProductId && product.variantId
+                ? `${baseProductUrl}?variant=${product.variantId}`
+                : baseProductUrl;
+
+              return (
+                <Link
+                  href={productLink}
+                  key={product.id}
+                  className="group flex-none w-[280px] snap-center"
+                  prefetch={true}
+                >
+                  <div className="h-[380px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-500 hover:border-white/30 hover:shadow-[0_35px_70px_-30px_rgba(0,0,0,0.85)]">
+                    <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
+                      <Image
+                        src={primaryImage}
+                        alt={(product.name || product.title || "Product") as string}
+                        fill
+                        className={`object-cover transition duration-700 ease-out group-hover:scale-105 ${secondaryImage ? "group-hover:opacity-0" : ""
+                          }`}
+                        sizes="280px"
+                      />
+                      {secondaryImage && (
+                        <Image
+                          src={secondaryImage}
+                          alt={(product.name || product.title || "Product") as string}
+                          fill
+                          className="object-cover transition duration-700 ease-out opacity-0 group-hover:opacity-100"
+                          sizes="280px"
+                        />
+                      )}
+                      {/* Bottom shadow gradient for text visibility */}
+                      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/95 via-black/65 to-transparent pointer-events-none"></div>
+
+                      {/* Text overlay at bottom - animates on hover */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 z-10 transition-all duration-400 group-hover:-translate-y-2">
+                        <div className="space-y-2">
+                          <div className="text-xs uppercase tracking-[0.3em] text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] transition-all duration-400">
+                            {product.category}
+                          </div>
+                          <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)]">
+                            {product.name || product.title || "Untitled"}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
         {/* Desktop: Grid */}
         <div className="hidden sm:grid grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -357,7 +430,7 @@ export default function ProductGrid({
 
         {/* Empty state for mobile */}
         {displayProducts.length === 0 && (
-          <div className="sm:hidden rounded-3xl border border-white/10 backdrop-blur-sm p-12 text-center text-white/80 drop-shadow-lg mx-6">
+          <div className={`sm:hidden rounded-3xl border border-white/10 backdrop-blur-sm p-12 text-center text-white/80 drop-shadow-lg ${mobileGridLayout ? 'mx-0' : 'mx-6'}`}>
             No products found in this category yet. Please check back soon.
           </div>
         )}
