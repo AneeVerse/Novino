@@ -287,6 +287,10 @@ export default function ProductDetail() {
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [zoomPosition, setZoomPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Touch/swipe state for mobile image navigation
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
 
   // Reset current image when switching products
   useEffect(() => {
@@ -387,6 +391,64 @@ export default function ProductDetail() {
   const handleMouseLeave = useCallback(() => {
     setIsHoveringZoom(false);
   }, []);
+
+  // Minimum swipe distance (in pixels) to trigger navigation
+  const minSwipeDistance = 50;
+
+  // Handle touch start for swipe detection
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+    setTouchEnd(null);
+    setIsAutoScrolling(false);
+  }, []);
+
+  // Handle touch move for swipe detection
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.touches[0];
+    setTouchEnd({ x: touch.clientX, y: touch.clientY });
+  }, []);
+
+  // Handle touch end and navigate based on swipe direction
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStart || !touchEnd) return;
+
+    const distanceX = touchStart.x - touchEnd.x;
+    const distanceY = touchStart.y - touchEnd.y;
+    const isLeftSwipe = distanceX > minSwipeDistance;
+    const isRightSwipe = distanceX < -minSwipeDistance;
+    const isVerticalSwipe = Math.abs(distanceY) > Math.abs(distanceX);
+
+    // Only handle horizontal swipes (ignore vertical scrolling)
+    if (isVerticalSwipe) {
+      setTouchStart(null);
+      setTouchEnd(null);
+      return;
+    }
+
+    // Get current images array
+    const currentImages = (hoveredVariant || selectedVariant)?.images || product?.images || [product?.image].filter(Boolean);
+    const imageCount = currentImages.length;
+
+    if (imageCount <= 1) {
+      setTouchStart(null);
+      setTouchEnd(null);
+      return;
+    }
+
+    if (isLeftSwipe) {
+      // Swipe left - go to next image
+      setCurrentImage((prev) => (prev + 1) % imageCount);
+      setIsAutoScrolling(false);
+    } else if (isRightSwipe) {
+      // Swipe right - go to previous image
+      setCurrentImage((prev) => (prev - 1 + imageCount) % imageCount);
+      setIsAutoScrolling(false);
+    }
+
+    setTouchStart(null);
+    setTouchEnd(null);
+  }, [touchStart, touchEnd, hoveredVariant, selectedVariant, product]);
 
   // Close modal on ESC key press, handle arrow navigation, and manage body classes
   useEffect(() => {
@@ -1518,6 +1580,9 @@ export default function ProductDetail() {
                     }}
                     onMouseMove={handleMouseMove}
                     onClick={() => setIsImageModalOpen(true)}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                   >
                     {/* Circular gradient glow that overflows and blends with background */}
                     <div
@@ -1894,37 +1959,37 @@ export default function ProductDetail() {
             >
               {/* Main Image Area */}
               <div className="relative flex-1 w-full h-full flex flex-col items-center justify-center sm:min-h-0">
+                {/* Navigation Arrows - only show if multiple images */}
+                {displayImages.length > 1 && (
+                  <>
+                    {/* Left Arrow */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImage((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+                      }}
+                      className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-[1015] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft size={24} className="text-white" />
+                    </button>
+
+                    {/* Right Arrow */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImage((prev) => (prev + 1) % displayImages.length);
+                      }}
+                      className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-[1015] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/80 backdrop-blur-sm rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight size={24} className="text-white" />
+                    </button>
+                  </>
+                )}
+
                 {/* Main Image - Full Height */}
                 <div className="relative w-full h-full min-h-[60vh] sm:min-h-0">
-                  {/* Navigation Arrows - only show if multiple images */}
-                  {displayImages.length > 1 && (
-                    <>
-                      {/* Left Arrow */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentImage((prev) => (prev - 1 + displayImages.length) % displayImages.length);
-                        }}
-                        className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-[1015] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
-                        aria-label="Previous image"
-                      >
-                        <ChevronLeft size={24} className="text-white" />
-                      </button>
-
-                      {/* Right Arrow */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentImage((prev) => (prev + 1) % displayImages.length);
-                        }}
-                        className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-[1015] w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
-                        aria-label="Next image"
-                      >
-                        <ChevronRight size={24} className="text-white" />
-                      </button>
-                    </>
-                  )}
-
                   <Image
                     src={displayImages[currentImage] || displayImages[0] || resolvedProductImage}
                     alt={`${product.name || "Product Image"} - View ${currentImage + 1}`}
@@ -1938,7 +2003,7 @@ export default function ProductDetail() {
 
                 {/* Mobile: Horizontal Thumbnail Strip at Bottom - Close to Main Image */}
                 {displayImages.length > 1 && (
-                  <div className="flex sm:hidden flex-row gap-3 w-full justify-center items-center overflow-x-auto py-3 absolute bottom-12 left-0 right-0 z-[1020] scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+                  <div className="flex sm:hidden flex-row gap-3 w-full justify-center overflow-x-auto py-3 px-2 absolute bottom-12 left-0 right-0 z-[1020] scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent backdrop-blur-md mx-4">
                     {displayImages.map((imageUrl, i) => (
                       <button
                         key={i}
