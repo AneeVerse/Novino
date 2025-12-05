@@ -184,7 +184,9 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
     e.preventDefault(); // Prevent default touch/pointer behaviors
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const x = clientX;
-    const walk = (x - startX.current) * 2.6; // Slightly reduced sensitivity for easier control
+    // Higher sensitivity for smooth, responsive scrolling on mobile
+    const multiplier = isMobile ? 2.3 : 2.6;
+    const walk = (x - startX.current) * multiplier;
     translateX.current = scrollLeft.current + walk;
 
     // Infinite loop logic - exact same as CreativeSection
@@ -218,56 +220,61 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
 
     if (scrollContainerRef.current) {
       scrollContainerRef.current.style.cursor = 'grab';
-
-      // Smooth snap to nearest centered card
       const container = scrollContainerRef.current;
-      const containerRect = container.parentElement?.getBoundingClientRect();
-      if (containerRect) {
-        const viewportCenter = containerRect.left + containerRect.width / 2;
 
-        let closestCardIndex: number | null = null;
-        let closestDistance = Infinity;
-
-        // Find the closest card to center
-        cardRefsMap.current.forEach((card, index) => {
-          const cardRect = card.getBoundingClientRect();
-          const cardCenter = cardRect.left + cardRect.width / 2;
-          const distance = Math.abs(viewportCenter - cardCenter);
-
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closestCardIndex = index;
-          }
-        });
-
-        // Snap to the closest card with smooth animation
-        if (closestCardIndex !== null) {
-          const closestCard = cardRefsMap.current.get(closestCardIndex);
-          if (closestCard) {
-            const cardRect = closestCard.getBoundingClientRect();
-            const cardCenter = cardRect.left + cardRect.width / 2;
-            const offset = viewportCenter - cardCenter;
-
-            // Apply smooth snap with transition
-            translateX.current += offset;
-            container.style.transition = 'transform 0.3s ease-out';
-            container.style.transform = `translateX(${translateX.current}px)`;
-
-            // Remove transition after animation
-            setTimeout(() => {
-              if (container) {
-                container.style.transition = '';
-              }
-            }, 300);
-          }
-        }
-      }
+      // Simple, smooth snap to nearest card
+      snapToNearestCard(container);
     }
 
     // Reset drag flag after a short delay
     setTimeout(() => {
       wasDraggingRef.current = false;
     }, 100);
+  };
+
+  // Helper function to snap to nearest card
+  const snapToNearestCard = (container: HTMLDivElement) => {
+    const containerRect = container.parentElement?.getBoundingClientRect();
+    if (containerRect) {
+      const viewportCenter = containerRect.left + containerRect.width / 2;
+
+      let closestCardIndex: number | null = null;
+      let closestDistance = Infinity;
+
+      // Find the closest card to center
+      cardRefsMap.current.forEach((card, index) => {
+        const cardRect = card.getBoundingClientRect();
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        const distance = Math.abs(viewportCenter - cardCenter);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestCardIndex = index;
+        }
+      });
+
+      // Snap to the closest card with smooth animation
+      if (closestCardIndex !== null) {
+        const closestCard = cardRefsMap.current.get(closestCardIndex);
+        if (closestCard) {
+          const cardRect = closestCard.getBoundingClientRect();
+          const cardCenter = cardRect.left + cardRect.width / 2;
+          const offset = viewportCenter - cardCenter;
+
+          // Apply smooth snap with transition
+          translateX.current += offset;
+          container.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)';
+          container.style.transform = `translateX(${translateX.current}px)`;
+
+          // Remove transition after animation
+          setTimeout(() => {
+            if (container) {
+              container.style.transition = '';
+            }
+          }, 400);
+        }
+      }
+    }
   };
 
   // Handle wheel/touchpad scroll for horizontal scrolling
@@ -415,6 +422,8 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
             className="flex gap-8 md:gap-12 px-4 md:px-6 items-start w-max will-change-transform cursor-grab active:cursor-grabbing select-none"
             style={{
               transform: `translateX(${translateX.current}px)`,
+              touchAction: 'pan-x', // Only allow horizontal panning on touch devices
+              WebkitOverflowScrolling: 'touch', // Momentum scrolling on iOS
             }}
           >
             {displayProducts.map((product, index) => {
@@ -426,7 +435,9 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
                   ref={(el) => setCardRef(index, el)}
                   className={`flex flex-col relative w-[75%] min-w-[75%] md:w-[calc((1440px-96px)/3)] md:min-w-[calc((1440px-96px)/3)] flex-none ${isCentered ? 'z-10' : 'z-0'}`}
                   style={{
-                    willChange: 'transform'
+                    willChange: isCentered ? 'transform, opacity' : 'auto',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
                   }}
                 >
                   <Link
