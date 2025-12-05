@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
                 breadth: body.breadth || 0,
                 height: body.height || 0,
                 weight: body.weight || 0,
+                design_story: body.design_story || body.designStory || null,
                 created_at: new Date().toISOString(),
             })
             .select()

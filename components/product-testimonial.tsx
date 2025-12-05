@@ -173,7 +173,7 @@ export default function ProductTestimonial({
 
       autoplayRef.current = setTimeout(() => {
         nextTestimonial();
-      }, 7000); // Increased to 5 seconds to give more time to read testimonials
+      }, 5000); // 5 seconds - smooth auto-scroll timing
     };
 
     startAutoplay();
@@ -190,9 +190,10 @@ export default function ProductTestimonial({
       className="relative w-full py-8 sm:py-16 md:py-24 overflow-visible bg-transparent"
     >
       <div
-        className="relative mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-8 md:gap-12 lg:gap-16 px-4 sm:px-6 md:px-8"
+        className="relative mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-8 md:gap-12 lg:gap-16 px-4 sm:px-6 md:px-8 touch-pan-x"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
+        style={{ touchAction: 'pan-x' }}
         onTouchEnd={handleTouchEnd}
       >
         {/* Product Image in Circle */}
@@ -220,7 +221,7 @@ export default function ProductTestimonial({
             <div className="relative w-full h-full z-10 flex items-center justify-center py-0" style={{ overflow: 'visible' }}>
               <div className="relative w-[120%] pb-[145%] overflow-visible rounded-[36px] bg-transparent" style={{ transform: 'scale(1.4)' }}>
                 <div
-                  className={`absolute inset-0 transition-all duration-400 ease-in-out ${isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0 duration-200'
+                  className={`absolute inset-0 transition-all duration-700 ease-out ${isTransitioning ? 'opacity-0 transform translate-x-[20px]' : 'opacity-100 transform translate-x-0'
                     }`}
                 >
                   <Image
@@ -284,7 +285,7 @@ export default function ProductTestimonial({
               {/* Testimonial Quote */}
               <div className="relative min-h-[180px] sm:min-h-[200px] md:min-h-[220px] z-10 overflow-hidden">
                 <div
-                  className={`absolute inset-0 flex flex-col justify-center transition-all duration-400 ease-in-out ${isTransitioning ? 'opacity-0 transform translate-y-[-20px]' : 'opacity-100 transform translate-y-0 duration-200'
+                  className={`absolute inset-0 flex flex-col justify-center transition-all duration-700 ease-out ${isTransitioning ? 'opacity-0 transform translate-y-[-20px]' : 'opacity-100 transform translate-y-0'
                     }`}
                 >
                   <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight" style={{ fontFamily: '"DM Serif Display", serif' }}>
@@ -305,7 +306,7 @@ export default function ProductTestimonial({
             </div>
 
             {/* Navigation Controls */}
-            <div className="flex flex-col h-[220px] sm:h-[240px] justify-between items-center py-4">
+            <div className="flex flex-col h-[280px] sm:h-[320px] justify-between items-center py-6">
               {/* Right arrow (for next) */}
               <button
                 onClick={nextTestimonial}
@@ -327,7 +328,7 @@ export default function ProductTestimonial({
               </button>
 
               {/* Dots indicators */}
-              <div className="flex flex-col space-y-3 sm:space-y-4 items-center">
+              <div className="flex flex-col space-y-4 sm:space-y-5 items-center">
                 {testimonials.map((_, index) => (
                   <button
                     key={index}

@@ -1295,13 +1295,100 @@ export default function ProductDetail() {
     }
   }
 
-  // State for dynamic related products
-  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  // State for all fetched products (fetched once, never changes based on variant)
+  const [allFetchedProducts, setAllFetchedProducts] = useState<any[]>([]);
+
+  // State for category variants (products from same category - for variant selector)
+  const [categoryVariants, setCategoryVariants] = useState<any[]>([]);
+
+  // Computed: Related products filtered by design (updates when selectedVariant changes)
+  const relatedProducts = useMemo(() => {
+    if (!allFetchedProducts || allFetchedProducts.length === 0) return [];
+    if (!product) return [];
+
+    // Use selectedVariant if available, otherwise use main product
+    const activeProductForDesign = selectedVariant || product;
+    const currentProduct = allFetchedProducts.find((p: any) => String(p.id) === String(activeProductForDesign.id));
+
+    // Get design story
+    let currentDesignStory = currentProduct?.designStory ||
+      currentProduct?.design_story ||
+      activeProductForDesign.designStory ||
+      activeProductForDesign.design_story;
+
+    // If no explicit designStory, try to extract from name or URL
+    if (!currentDesignStory) {
+      if (selectedVariant) {
+        // For variants, extract design from name by removing product types and articles
+        const variantName = (activeProductForDesign.name || '').toLowerCase();
+
+        // Remove product type words
+        const productTypes = ['bottle', 'bottles', 'coaster', 'coasters', 'notebook', 'notebooks',
+          'mug', 'mugs', 'desk', 'mat', 'mats', 'card', 'cards', 'pad', 'pads',
+          'diary', 'diaries', 'painting', 'paintings'];
+
+        let cleanName = variantName;
+        productTypes.forEach(type => {
+          cleanName = cleanName.replace(new RegExp(`\\b${type}\\b`, 'gi'), '');
+        });
+
+        // Remove articles only at the START of the name (not in middle like "Flowers of the Wild")
+        cleanName = cleanName.replace(/^(the|a|an)\s+/gi, '').trim().replace(/\s+/g, ' ');
+
+        if (cleanName) {
+          currentDesignStory = cleanName;  // "The Sun Bottle" -> "sun"
+        }
+      } else {
+        // For main product, extract from URL
+        if (typeof window !== 'undefined') {
+          const pathParts = window.location.pathname.split('/').filter(Boolean);
+          currentDesignStory = pathParts[pathParts.length - 1];
+        }
+      }
+    }
+
+    console.log('🎨 Design Detection:', {
+      usingVariant: !!selectedVariant,
+      activeProductName: activeProductForDesign.name,
+      extractedDesign: currentDesignStory
+    });
+
+    if (!currentDesignStory) return [];
+
+    // Filter by design
+    const normalizeDesign = (str: string) => {
+      return String(str || '')
+        .toLowerCase()
+        .replace(/[_-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
+
+    const normalizedCurrentDesign = normalizeDesign(currentDesignStory);
+    const currentProductIdStr = activeProductForDesign?.id ? String(activeProductForDesign.id) : '';
+
+    return allFetchedProducts.filter((p: any) => {
+      if (String(p.id) === currentProductIdStr) return false;
+
+      let productDesign = p.designStory || p.design_story;
+      if (!productDesign && p.slug) {
+        const slugParts = String(p.slug).toLowerCase().split('/');
+        productDesign = slugParts[slugParts.length - 1];
+      }
+
+      const normalizedProductDesign = normalizeDesign(productDesign || '');
+      const normalizedProductName = normalizeDesign(p.name || '');
+
+      return (normalizedProductDesign && normalizedProductDesign === normalizedCurrentDesign) ||
+        (normalizedProductName && normalizedCurrentDesign && normalizedProductName.includes(normalizedCurrentDesign));
+    });
+  }, [allFetchedProducts, product, selectedVariant]);
 
   const testimonialItems = useMemo(() => {
     if (!relatedProducts || relatedProducts.length === 0) return [];
 
-    return relatedProducts.slice(0, 4).map((relatedProduct) => {
+    // Show ALL products with same design (no limit)
+    return relatedProducts.map((relatedProduct) => {
       const productLink = getProductUrl({
         id: relatedProduct.id,
         slug: relatedProduct.slug,
@@ -1399,7 +1486,10 @@ export default function ProductDetail() {
                   tagline: p.tagline || '',
                   specifications: p.specifications,
                   faqSection: p.faqSection,
-                  variants: p.variants
+                  variants: p.variants,
+                  designStory: p.designStory || p.design_story || null,
+                  slug: p.slug,
+                  type: p.type
                 });
               });
             }
@@ -1410,12 +1500,113 @@ export default function ProductDetail() {
             return cat.products?.some((p: any) => p.id === product.id);
           });
 
-          // Filter products: get products from same category, excluding current product
+          // Get the current product's design story if available
+          // Use selectedVariant if available (when user clicks a variant), otherwise use the main product
+          const activeProductForDesign = selectedVariant || product;
+          const currentProduct = allProducts.find((p: any) => String(p.id) === String(activeProductForDesign.id));
+
+          // Priority 1: Use explicit designStory from product data (API)
+          let currentDesignStory = currentProduct?.designStory ||
+            currentProduct?.design_story ||
+            activeProductForDesign.designStory ||
+            activeProductForDesign.design_story;
+
+          // Priority 2: Extract from URL pathname if no designStory in database
+          // This handles legacy products and products without designStory set
+          if (!currentDesignStory && typeof window !== 'undefined') {
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            // URL format: /product/coasters/butterfly -> get "butterfly"
+            currentDesignStory = pathParts[pathParts.length - 1];
+          }
+
+          // Debug logging
+          console.log('🔍 Debug: Current Product for Design Matching:', {
+            usingVariant: !!selectedVariant,
+            activeProductId: activeProductForDesign.id,
+            activeProductName: activeProductForDesign.name,
+            extractedDesignStory: currentDesignStory,
+            pathname: typeof window !== 'undefined' ? window.location.pathname : null,
+          });
+
+          console.log('🔍 All products with design stories:',
+            allProducts
+              .map((p: any) => {
+                const design = p.designStory || p.design_story || (p.slug ? String(p.slug).split('/').pop() : null);
+                return {
+                  id: p.id,
+                  name: p.name,
+                  slug: p.slug,
+                  designStory: design
+                };
+              })
+              .filter((p: any) => p.designStory)
+          );
+
+          // Filter products: prioritize products with same design, then same category
           const currentProductIdStr = product?.id ? String(product.id) : '';
-          const related = allProducts.filter((p: any) => {
+          let related = allProducts.filter((p: any) => {
             if (String(p.id) === currentProductIdStr) return false;
 
-            // If we found the category, match by category ID
+            // First priority: Match by design story if it exists
+            if (currentDesignStory) {
+              // Try explicit designStory field first
+              let productDesign = p.designStory || p.design_story;
+
+              // If no explicit designStory, try to extract from slug
+              if (!productDesign && p.slug) {
+                const slugParts = String(p.slug).toLowerCase().split('/');
+                productDesign = slugParts[slugParts.length - 1];
+              }
+
+              // Normalize design names for comparison
+              // Convert "life_cycle" to "life cycle", "the-sun" to "the sun", etc.
+              const normalizeDesign = (str: string) => {
+                return String(str || '')
+                  .toLowerCase()
+                  .replace(/[_-]/g, ' ')  // Replace underscores and dashes with spaces
+                  .replace(/\s+/g, ' ')   // Replace multiple spaces with single space
+                  .trim();
+              };
+
+              const normalizedCurrentDesign = normalizeDesign(currentDesignStory);
+              const normalizedProductDesign = normalizeDesign(productDesign || '');
+              const normalizedProductName = normalizeDesign(p.name || '');
+
+              // Check if designs match OR product name contains the design
+              const hasDesignMatch =
+                (normalizedProductDesign && normalizedProductDesign === normalizedCurrentDesign) ||
+                (normalizedProductName && normalizedCurrentDesign && normalizedProductName.includes(normalizedCurrentDesign));
+
+              if (hasDesignMatch) {
+                console.log('✅ Design match found:', p.name, 'with design:', currentDesignStory);
+                return true;
+              }
+            }
+
+            return false;
+          });
+
+          // If no products with same design found, fall back to category filtering
+          if (related.length === 0) {
+            related = allProducts.filter((p: any) => {
+              if (String(p.id) === currentProductIdStr) return false;
+
+              // If we found the category, match by category ID
+              if (currentCategory) {
+                const currentCatId = currentCategory.id || currentCategory._id;
+                return String(p.categoryId) === String(currentCatId);
+              }
+
+              // Fallback: match by category name
+              return p.categoryName === categoryName;
+            });
+          }
+
+          // Also create a separate array for category-based variants (for variant selector)
+          const categoryBasedVariants = allProducts.filter((p: any) => {
+            if (String(p.id) === currentProductIdStr) return false;
+
+            // Match by category only
             if (currentCategory) {
               const currentCatId = currentCategory.id || currentCategory._id;
               return String(p.categoryId) === String(currentCatId);
@@ -1425,24 +1616,31 @@ export default function ProductDetail() {
             return p.categoryName === categoryName;
           });
 
-          console.log('✅ Related products found:', related.length, 'from category:', categoryName);
-          setRelatedProducts(related);
+          const matchType = currentDesignStory && related.length > 0 ? 'design' : 'category';
+          console.log(`✅ Related products found by ${matchType}:`, related.length,
+            currentDesignStory ? `(Design: ${currentDesignStory})` : `(Category: ${categoryName})`);
+          console.log(`📦 Category variants found:`, categoryBasedVariants.length, `(Category: ${categoryName})`);
+
+          setAllFetchedProducts(allProducts);  // Store all products
+          setCategoryVariants(categoryBasedVariants);  // For SELECT VARIANT section
         } else {
           console.error('Failed to fetch related products');
-          setRelatedProducts([]);
+          setAllFetchedProducts([]);
+          setCategoryVariants([]);
         }
       } catch (error) {
         console.error('Error fetching related products:', error);
-        setRelatedProducts([]);
+        setAllFetchedProducts([]);
+        setCategoryVariants([]);
       }
     }
 
     fetchRelatedProducts();
-  }, [product, categoryName])
+  }, [product, categoryName]) // Only re-fetch when product or category changes, NOT variant
 
   // Restore variant from URL hash on mount and when hash changes
   useEffect(() => {
-    if (!product || !relatedProducts || relatedProducts.length === 0) return;
+    if (!product || !categoryVariants || categoryVariants.length === 0) return;
 
     const hash = typeof window !== 'undefined' ? window.location.hash : '';
     if (!hash) {
@@ -1457,8 +1655,8 @@ export default function ProductDetail() {
 
     const variantId = variantIdMatch[1];
 
-    // Find variant in categoryVariants (relatedProducts)
-    const variant = relatedProducts.find((v: any) => String(v.id) === String(variantId));
+    // Find variant in categoryVariants (same category products)
+    const variant = categoryVariants.find((v: any) => String(v.id) === String(variantId));
 
     if (variant) {
       setSelectedVariant(variant);
@@ -1471,12 +1669,12 @@ export default function ProductDetail() {
       }
       setSelectedVariant(null);
     }
-  }, [product, relatedProducts, pathname]);
+  }, [product, categoryVariants, pathname]);
 
   // Listen for hash changes (e.g., when coming back from login)
   useEffect(() => {
     const handleHashChange = () => {
-      if (!product || !relatedProducts || relatedProducts.length === 0) return;
+      if (!product || !categoryVariants || categoryVariants.length === 0) return;
 
       const hash = window.location.hash;
       if (!hash) {
@@ -1488,7 +1686,7 @@ export default function ProductDetail() {
       if (!variantIdMatch) return;
 
       const variantId = variantIdMatch[1];
-      const variant = relatedProducts.find((v: any) => String(v.id) === String(variantId));
+      const variant = categoryVariants.find((v: any) => String(v.id) === String(variantId));
 
       if (variant) {
         setSelectedVariant(variant);
@@ -1568,9 +1766,8 @@ export default function ProductDetail() {
   const productImages = product?.images && product.images.length > 0 ? product.images : [resolvedProductImage];
   const totalImages = productImages.length;
 
-  // Treat all products in same category as variants
-  // Get all related products from the same category (excluding current product)
-  const categoryVariants = relatedProducts; // These are already filtered by category
+  // categoryVariants is now coming from the state set in the useEffect above
+  // It contains products from the same category (for the variant selector)
 
   // Get the current image to display based on hover or selection
   // Priority: hoveredVariant > selectedVariant > original product
@@ -2539,17 +2736,19 @@ export default function ProductDetail() {
         )}
 
 
-        {/* Design Stories - Product Testimonial */}
-        <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
-          <div className="px-4 md:px-6">
-            <ProductTestimonial
-              items={testimonialItems}
-              categoryLinks={testimonialCategoryLinks}
-              title="Design Stories"
-              subtitle="Design"
-            />
+        {/* Design Stories - Product Testimonial - Only show if related products exist */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
+            <div className="px-4 md:px-6">
+              <ProductTestimonial
+                items={testimonialItems}
+                categoryLinks={testimonialCategoryLinks}
+                title="Design Stories"
+                subtitle="Design"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
