@@ -139,10 +139,21 @@ export default function CheckoutPage() {
       }
     }
     
-    // Fetch addresses from API
+    // Fetch addresses from API - always fetch fresh data when logged in
     const fetchAddresses = async () => {
+      if (!isLoggedIn) {
+        // Clear any stale localStorage data if not logged in
+        localStorage.removeItem('selectedAddress');
+        return;
+      }
+
       try {
-        const response = await fetch('/api/addresses');
+        const response = await fetch('/api/addresses', {
+          cache: 'no-store', // Always fetch fresh data
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
         if (response.ok) {
           const data = await response.json();
           if (data.addresses && data.addresses.length > 0) {
@@ -161,41 +172,82 @@ export default function CheckoutPage() {
               estimatedDelivery: "3-5 business days"
             };
             setDeliveryAddress(formattedAddress);
+            // Sync with localStorage for consistency
             localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
           } else {
-            // Check localStorage as fallback
-            const savedAddress = localStorage.getItem('selectedAddress');
-            if (savedAddress) {
-              setDeliveryAddress(JSON.parse(savedAddress));
-            }
+            // No addresses found - clear localStorage to avoid stale data
+            localStorage.removeItem('selectedAddress');
+            setDeliveryAddress(null);
           }
         } else {
-          // If API fails, check localStorage as fallback
-          const savedAddress = localStorage.getItem('selectedAddress');
-          if (savedAddress) {
-            setDeliveryAddress(JSON.parse(savedAddress));
-          }
+          // API error - clear stale data
+          localStorage.removeItem('selectedAddress');
+          setDeliveryAddress(null);
+          console.error('Failed to fetch addresses:', response.status);
         }
       } catch (error) {
         console.error('Error fetching addresses:', error);
-        // Fallback to localStorage
-        const savedAddress = localStorage.getItem('selectedAddress');
-        if (savedAddress) {
-          setDeliveryAddress(JSON.parse(savedAddress));
-        }
+        // On error, clear stale data
+        localStorage.removeItem('selectedAddress');
+        setDeliveryAddress(null);
       }
     };
 
-    if (isLoggedIn) {
+    // Always fetch fresh addresses when logged in
+    if (isLoggedIn && isAuthReady) {
       fetchAddresses();
     } else {
-      // If not logged in, check localStorage
-      const savedAddress = localStorage.getItem('selectedAddress');
-      if (savedAddress) {
-        setDeliveryAddress(JSON.parse(savedAddress));
-      }
+      // Not logged in - clear any address data
+      setDeliveryAddress(null);
+      localStorage.removeItem('selectedAddress');
     }
-  }, [cart, isLoggedIn]);
+  }, [cart, isLoggedIn, isAuthReady]);
+
+  // Refetch addresses when page becomes visible (user returns to tab/window)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isLoggedIn && isAuthReady) {
+        // Refetch addresses when user returns to the page
+        const fetchAddresses = async () => {
+          try {
+            const response = await fetch('/api/addresses', {
+              cache: 'no-store',
+              headers: { 'Cache-Control': 'no-cache' }
+            });
+            if (response.ok) {
+              const data = await response.json();
+              if (data.addresses && data.addresses.length > 0) {
+                const defaultAddress = data.addresses.find((addr: any) => addr.isDefault || addr.is_default) || data.addresses[0];
+                const formattedAddress = {
+                  id: defaultAddress._id || defaultAddress.id,
+                  name: defaultAddress.name,
+                  phone: defaultAddress.phone,
+                  pincode: defaultAddress.pincode,
+                  address: `${defaultAddress.line1}${defaultAddress.line2 ? ', ' + defaultAddress.line2 : ''}`,
+                  line1: defaultAddress.line1,
+                  line2: defaultAddress.line2 || '',
+                  city: defaultAddress.city,
+                  state: defaultAddress.state,
+                  estimatedDelivery: "3-5 business days"
+                };
+                setDeliveryAddress(formattedAddress);
+                localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
+              } else {
+                localStorage.removeItem('selectedAddress');
+                setDeliveryAddress(null);
+              }
+            }
+          } catch (error) {
+            console.error('Error refetching addresses:', error);
+          }
+        };
+        fetchAddresses();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isLoggedIn, isAuthReady]);
 
   if (!isAuthReady || isRedirectingToLogin) {
     return (

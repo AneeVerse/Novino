@@ -114,6 +114,7 @@ export default function ProfilePage() {
   const [shipments, setShipments] = useState<Record<string, Shipment>>({});
   const [shipmentLoading, setShipmentLoading] = useState(false);
   const [shipmentError, setShipmentError] = useState<string | null>(null);
+  const [isRetryingPayment, setIsRetryingPayment] = useState(false);
 
   // Tab state
   const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'profile');
@@ -224,10 +225,15 @@ export default function ProfilePage() {
     }
   };
 
-  // Fetch addresses
+  // Fetch addresses - always fetch fresh from API
   const fetchAddresses = async () => {
     try {
-      const res = await fetch('/api/addresses');
+      const res = await fetch('/api/addresses', {
+        cache: 'no-store', // Always fetch fresh data
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
       if (res.ok) {
         const data = await res.json();
         // Normalize addresses to have both id and _id for compatibility
@@ -238,6 +244,8 @@ export default function ProfilePage() {
           isDefault: addr.is_default || addr.isDefault || false
         }));
         setAddresses(normalizedAddresses);
+      } else {
+        console.error('Failed to fetch addresses:', res.status);
       }
     } catch (error) {
       console.error('Error fetching addresses:', error);
@@ -525,6 +533,137 @@ export default function ProfilePage() {
     return order?.paymentStatus || order?.payment_status || 'pending';
   };
 
+  // Load Razorpay script dynamically
+  const loadRazorpayScript = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if ((window as any).Razorpay) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load Razorpay script'));
+      document.body.appendChild(script);
+    });
+  };
+
+  // Handle retry payment
+  const handleRetryPayment = async (order: Order | null) => {
+    if (!order) return;
+
+    setIsRetryingPayment(true);
+    try {
+      // Create new Razorpay order for this existing order
+      // Use the order ID (could be _id or id depending on database)
+      const orderId = (order as any).id || order._id;
+      const response = await fetch('/api/payments/retry-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to initiate payment');
+      }
+
+      const gateway = await response.json();
+
+      // Load Razorpay script
+      await loadRazorpayScript();
+
+      // Get customer details from order
+      const deliveryAddress = order.deliveryAddress || (order as any).delivery_address;
+      const sanitizedContact = (deliveryAddress?.phone || '')
+        .toString()
+        .replace(/[^0-9]/g, '')
+        .slice(-10);
+
+      // Open Razorpay payment gateway
+      const rzp = new (window as any).Razorpay({
+        key: gateway.key,
+        amount: gateway.amount,
+        currency: gateway.currency,
+        order_id: gateway.razorpayOrderId,
+        name: 'Novino',
+        description: `Payment for Order #${order.orderNumber}`,
+        prefill: {
+          name: gateway.customer?.name || deliveryAddress?.name || user?.name || '',
+          email: gateway.customer?.email || user?.email || '',
+          contact: sanitizedContact,
+        },
+        remember_user: false,
+        theme: { color: '#AE876D' },
+        handler: async (paymentResponse: any) => {
+          try {
+            // Verify payment
+            const verifyRes = await fetch('/api/payments/razorpay-verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId: gateway.orderId,
+                razorpayOrderId: paymentResponse.razorpay_order_id,
+                razorpayPaymentId: paymentResponse.razorpay_payment_id,
+                razorpaySignature: paymentResponse.razorpay_signature,
+                paymentMethod: 'razorpay',
+              }),
+            });
+
+            if (verifyRes.ok) {
+              setIsRetryingPayment(false);
+              toast({
+                title: 'Payment Successful',
+                description: 'Your payment has been processed successfully. Order will be confirmed shortly.',
+              });
+              
+              // Refresh orders to show updated status
+              fetchOrders();
+              
+              // Close modal and refresh
+              setSelectedOrder(null);
+            } else {
+              const error = await verifyRes.json();
+              throw new Error(error.message || 'Payment verification failed');
+            }
+          } catch (error: any) {
+            console.error('Payment verification error:', error);
+            setIsRetryingPayment(false);
+            toast({
+              variant: 'destructive',
+              title: 'Payment Verification Failed',
+              description: error.message || 'Please contact support if payment was deducted.',
+            });
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsRetryingPayment(false);
+          },
+        },
+      });
+
+      rzp.on('payment.failed', () => {
+        setIsRetryingPayment(false);
+        toast({
+          variant: 'destructive',
+          title: 'Payment Failed',
+          description: 'Payment could not be processed. Please try again or contact support.',
+        });
+      });
+
+      rzp.open();
+    } catch (error: any) {
+      console.error('Retry payment error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Payment Failed',
+        description: error.message || 'Failed to initiate payment. Please try again.',
+      });
+      setIsRetryingPayment(false);
+    }
+  };
+
   // Helper function to safely get delivery address (handles both camelCase and snake_case, and missing values)
   const getDeliveryAddress = (order: Order | any): Order['deliveryAddress'] | null => {
     const addr = order?.deliveryAddress || order?.delivery_address;
@@ -601,7 +740,8 @@ export default function ProfilePage() {
 
         {/* Tabs Section */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-[#333333] border border-[#444444] p-1.5 rounded-xl flex-wrap h-auto gap-2 justify-center">
+          <div className="flex justify-center w-full">
+            <TabsList className="bg-[#333333] border border-[#444444] p-1.5 rounded-xl flex-wrap h-auto gap-2 justify-center">
             <TabsTrigger
               value="profile"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#AE876D] data-[state=active]:to-[#8d6c58] data-[state=active]:text-white rounded-lg text-white/70 hover:text-white transition-all flex items-center gap-2"
@@ -634,6 +774,7 @@ export default function ProfilePage() {
               <span className="hidden sm:inline">Security</span>
             </TabsTrigger>
           </TabsList>
+          </div>
 
 
           {/* Profile Tab */}
@@ -787,6 +928,29 @@ export default function ProfilePage() {
 
                       {/* Actions */}
                       <div className="flex flex-wrap gap-3 pt-4 border-t border-[#444444]">
+                        {(getPaymentStatus(order) === 'requires_payment' || getPaymentStatus(order) === 'failed') && (
+                          <Button
+                            size="sm"
+                            className="bg-[#AE876D] hover:bg-[#8d6c58] text-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRetryPayment(order);
+                            }}
+                            disabled={isRetryingPayment}
+                          >
+                            {isRetryingPayment ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <CreditCard className="w-4 h-4 mr-2" />
+                                Pay Again
+                              </>
+                            )}
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
@@ -874,17 +1038,33 @@ export default function ProfilePage() {
                         </div>
                       )}
 
-                      {getPaymentStatus(selectedOrder) === 'requires_payment' && (
-                        <div className="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                          <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-                          <p className="text-sm text-yellow-400">Payment is pending. Please complete payment to process your order.</p>
-                        </div>
-                      )}
-
-                      {getPaymentStatus(selectedOrder) === 'failed' && (
-                        <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-                          <p className="text-sm text-red-400">Payment failed. Please try placing a new order or contact support.</p>
+                      {(getPaymentStatus(selectedOrder) === 'requires_payment' || getPaymentStatus(selectedOrder) === 'failed') && (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                            <p className="text-sm text-yellow-400">
+                              {getPaymentStatus(selectedOrder) === 'requires_payment' 
+                                ? 'Payment is pending. Please complete payment to process your order.'
+                                : 'Payment failed. You can retry payment for this order.'}
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => handleRetryPayment(selectedOrder)}
+                            disabled={isRetryingPayment}
+                            className="bg-[#AE876D] hover:bg-[#8d6c58] text-white whitespace-nowrap"
+                          >
+                            {isRetryingPayment ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <CreditCard className="w-4 h-4 mr-2" />
+                                Pay Again
+                              </>
+                            )}
+                          </Button>
                         </div>
                       )}
 

@@ -41,11 +41,16 @@ export default function AddressPage() {
   const [pincodeMessage, setPincodeMessage] = useState("");
   const [isPincodeVerified, setIsPincodeVerified] = useState(false);
 
-  // Load saved addresses
+  // Load saved addresses - always fetch fresh from API
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
-        const response = await fetch('/api/addresses');
+        const response = await fetch('/api/addresses', {
+          cache: 'no-store', // Always fetch fresh data
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
         if (response.ok) {
           const data = await response.json();
           const formattedAddresses = data.addresses.map((addr: any) => ({
@@ -68,10 +73,21 @@ export default function AddressPage() {
           const defaultAddress = formattedAddresses.find((addr: SavedAddress) => addr.isDefault) || formattedAddresses[0];
           if (defaultAddress) {
             setSelectedAddress(defaultAddress);
+            // Sync with localStorage for checkout page
+            localStorage.setItem('selectedAddress', JSON.stringify(defaultAddress));
+          } else {
+            // Clear localStorage if no addresses
+            localStorage.removeItem('selectedAddress');
           }
+        } else {
+          console.error('Failed to fetch addresses:', response.status);
+          // Clear stale localStorage data on API failure
+          localStorage.removeItem('selectedAddress');
         }
       } catch (error) {
         console.error('Error fetching addresses:', error);
+        // Clear stale localStorage data on error
+        localStorage.removeItem('selectedAddress');
       } finally {
         setLoading(false);
       }
@@ -227,12 +243,41 @@ export default function AddressPage() {
               isDefault: address.is_default || address.isDefault
             };
             
-            const updated = savedAddresses.map(addr => 
-              addr.id === editingAddressId ? formattedAddress : addr
-            );
-            setSavedAddresses(updated);
-            setSelectedAddress(formattedAddress);
-            localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
+            // Refresh addresses from API to ensure consistency
+            const refreshResponse = await fetch('/api/addresses', {
+              cache: 'no-store',
+              headers: { 'Cache-Control': 'no-cache' }
+            });
+            if (refreshResponse.ok) {
+              const refreshData = await refreshResponse.json();
+              const refreshedAddresses = refreshData.addresses.map((addr: any) => ({
+                id: addr.id || addr._id,
+                name: addr.name,
+                phone: addr.phone,
+                pincode: addr.pincode,
+                address: `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}`,
+                line1: addr.line1,
+                line2: addr.line2 || '',
+                city: addr.city,
+                state: addr.state,
+                estimatedDelivery: "3-5 business days",
+                isDefault: addr.is_default || addr.isDefault
+              }));
+              setSavedAddresses(refreshedAddresses);
+              const updatedDefault = refreshedAddresses.find((addr: SavedAddress) => addr.isDefault) || refreshedAddresses[0];
+              if (updatedDefault) {
+                setSelectedAddress(updatedDefault);
+                localStorage.setItem('selectedAddress', JSON.stringify(updatedDefault));
+              }
+            } else {
+              // Fallback to local update if refresh fails
+              const updated = savedAddresses.map(addr => 
+                addr.id === editingAddressId ? formattedAddress : addr
+              );
+              setSavedAddresses(updated);
+              setSelectedAddress(formattedAddress);
+              localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
+            }
             
             toast({
               title: "Address Updated",
@@ -274,10 +319,39 @@ export default function AddressPage() {
               isDefault: address.is_default || address.isDefault
             };
             
-            const updated = [...savedAddresses, formattedAddress];
-            setSavedAddresses(updated);
-            setSelectedAddress(formattedAddress);
-            localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
+            // Refresh addresses from API to ensure consistency
+            const refreshResponse = await fetch('/api/addresses', {
+              cache: 'no-store',
+              headers: { 'Cache-Control': 'no-cache' }
+            });
+            if (refreshResponse.ok) {
+              const refreshData = await refreshResponse.json();
+              const refreshedAddresses = refreshData.addresses.map((addr: any) => ({
+                id: addr.id || addr._id,
+                name: addr.name,
+                phone: addr.phone,
+                pincode: addr.pincode,
+                address: `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}`,
+                line1: addr.line1,
+                line2: addr.line2 || '',
+                city: addr.city,
+                state: addr.state,
+                estimatedDelivery: "3-5 business days",
+                isDefault: addr.is_default || addr.isDefault
+              }));
+              setSavedAddresses(refreshedAddresses);
+              const newDefault = refreshedAddresses.find((addr: SavedAddress) => addr.isDefault) || refreshedAddresses[0];
+              if (newDefault) {
+                setSelectedAddress(newDefault);
+                localStorage.setItem('selectedAddress', JSON.stringify(newDefault));
+              }
+            } else {
+              // Fallback to local update if refresh fails
+              const updated = [...savedAddresses, formattedAddress];
+              setSavedAddresses(updated);
+              setSelectedAddress(formattedAddress);
+              localStorage.setItem('selectedAddress', JSON.stringify(formattedAddress));
+            }
             
             toast({
               title: "Address Added",
@@ -324,27 +398,24 @@ export default function AddressPage() {
 
   return (
     <div className="min-h-screen bg-[#2D2D2D] text-white pt-24 pb-12">
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto px-4 max-w-7xl">
         {/* Progress Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center space-x-4">
-            <button 
-              onClick={() => router.push('/cart')}
-              className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
-            >
-              <div className="w-8 h-8 rounded-full bg-[#22c55e] flex items-center justify-center text-sm font-semibold">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-center space-x-1 sm:space-x-4 overflow-x-auto pb-2 px-2">
+            <div className="flex items-center flex-shrink-0">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#22c55e] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 ✓
               </div>
-              <span className="ml-2 text-sm font-medium text-white/60">MY BAG</span>
-            </button>
-            <div className="w-16 h-0.5 bg-[#444444]"></div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-[#AE876D] flex items-center justify-center text-sm font-semibold">
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/60">MY BAG</span>
+            </div>
+            <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
+            <div className="flex items-center flex-shrink-0">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#AE876D] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 2
               </div>
-              <span className="ml-2 text-sm font-medium text-[#AE876D]">ADDRESS</span>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-[#AE876D]">ADDRESS</span>
             </div>
-            <div className="w-16 h-0.5 bg-[#444444]"></div>
+            <div className="w-5 sm:w-16 h-0.5 bg-[#444444] flex-shrink-0"></div>
             <button 
               onClick={() => {
                 if (selectedAddress) {
@@ -357,12 +428,12 @@ export default function AddressPage() {
                   });
                 }
               }}
-              className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+              className="flex items-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
             >
-              <div className="w-8 h-8 rounded-full bg-[#444444] flex items-center justify-center text-sm font-semibold">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-[#444444] flex items-center justify-center text-[10px] sm:text-sm font-semibold">
                 3
               </div>
-              <span className="ml-2 text-sm font-medium text-white/60">PAYMENT</span>
+              <span className="ml-1 sm:ml-2 text-[10px] sm:text-sm font-medium text-white/60">PAYMENT</span>
             </button>
           </div>
         </div>
@@ -611,17 +682,15 @@ export default function AddressPage() {
                               });
                               
                               if (response.ok) {
-                                const updated = savedAddresses.filter(addr => addr.id !== address.id);
-                                setSavedAddresses(updated);
-                                if (selectedAddress?.id === address.id) {
-                                  setSelectedAddress(updated[0] || null);
-                                }
                                 toast({
                                   title: "Address Deleted",
                                   description: "Address has been removed",
                                 });
-                                // Refresh addresses to get updated default status
-                                const refreshResponse = await fetch('/api/addresses');
+                                // Always refresh addresses from API after delete
+                                const refreshResponse = await fetch('/api/addresses', {
+                                  cache: 'no-store',
+                                  headers: { 'Cache-Control': 'no-cache' }
+                                });
                                 if (refreshResponse.ok) {
                                   const refreshData = await refreshResponse.json();
                                   const refreshedAddresses = refreshData.addresses.map((addr: any) => ({
@@ -642,6 +711,21 @@ export default function AddressPage() {
                                   if (defaultAddr) {
                                     setSelectedAddress(defaultAddr);
                                     localStorage.setItem('selectedAddress', JSON.stringify(defaultAddr));
+                                  } else {
+                                    setSelectedAddress(null);
+                                    localStorage.removeItem('selectedAddress');
+                                  }
+                                } else {
+                                  // Fallback to local update
+                                  const updated = savedAddresses.filter(addr => addr.id !== address.id);
+                                  setSavedAddresses(updated);
+                                  if (selectedAddress?.id === address.id) {
+                                    setSelectedAddress(updated[0] || null);
+                                    if (updated[0]) {
+                                      localStorage.setItem('selectedAddress', JSON.stringify(updated[0]));
+                                    } else {
+                                      localStorage.removeItem('selectedAddress');
+                                    }
                                   }
                                 }
                               } else {
@@ -675,15 +759,44 @@ export default function AddressPage() {
                                 });
                                 
                                 if (response.ok) {
-                                  const updated = savedAddresses.map(addr => ({
-                                    ...addr,
-                                    isDefault: addr.id === address.id
-                                  }));
-                                  setSavedAddresses(updated);
-                                  const updatedAddress = updated.find(addr => addr.id === address.id);
-                                  if (updatedAddress) {
-                                    setSelectedAddress(updatedAddress);
-                                    localStorage.setItem('selectedAddress', JSON.stringify(updatedAddress));
+                                  // Always refresh addresses from API after setting default
+                                  const refreshResponse = await fetch('/api/addresses', {
+                                    cache: 'no-store',
+                                    headers: { 'Cache-Control': 'no-cache' }
+                                  });
+                                  if (refreshResponse.ok) {
+                                    const refreshData = await refreshResponse.json();
+                                    const refreshedAddresses = refreshData.addresses.map((addr: any) => ({
+                                      id: addr.id || addr._id,
+                                      name: addr.name,
+                                      phone: addr.phone,
+                                      pincode: addr.pincode,
+                                      address: `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}`,
+                                      line1: addr.line1,
+                                      line2: addr.line2 || '',
+                                      city: addr.city,
+                                      state: addr.state,
+                                      estimatedDelivery: "3-5 business days",
+                                      isDefault: addr.is_default || addr.isDefault
+                                    }));
+                                    setSavedAddresses(refreshedAddresses);
+                                    const defaultAddr = refreshedAddresses.find((addr: SavedAddress) => addr.isDefault);
+                                    if (defaultAddr) {
+                                      setSelectedAddress(defaultAddr);
+                                      localStorage.setItem('selectedAddress', JSON.stringify(defaultAddr));
+                                    }
+                                  } else {
+                                    // Fallback to local update
+                                    const updated = savedAddresses.map(addr => ({
+                                      ...addr,
+                                      isDefault: addr.id === address.id
+                                    }));
+                                    setSavedAddresses(updated);
+                                    const updatedAddress = updated.find(addr => addr.id === address.id);
+                                    if (updatedAddress) {
+                                      setSelectedAddress(updatedAddress);
+                                      localStorage.setItem('selectedAddress', JSON.stringify(updatedAddress));
+                                    }
                                   }
                                   toast({
                                     title: "Default Address Set",
