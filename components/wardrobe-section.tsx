@@ -24,7 +24,7 @@ export default function WardrobeSection() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/50 via-40% to-transparent z-0 pointer-events-none" />
 
         {/* Content overlay */}
-        <div className="absolute inset-0 flex flex-col md:flex-row items-center justify-between p-8 sm:p-10 md:p-16 z-10">
+        <div className="absolute inset-0 flex flex-col md:flex-row items-center justify-between p-4 sm:p-6 md:p-8 z-10">
           <div className="max-w-xl flex flex-col items-start gap-6 md:gap-8">
 
             {/* Text Content */}

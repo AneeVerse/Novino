@@ -571,8 +571,8 @@ export default function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2D2D2D] to-[#1a1a1a] pt-24 pb-12 px-4">
-      <div className="container mx-auto max-w-7xl">
+    <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] via-[#2D2D2D] to-[#1a1a1a] pt-24 pb-12">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6">
         {/* Header Section */}
         <div className="mb-8 relative">
           <div className="absolute inset-0 bg-gradient-to-r from-[#AE876D]/10 to-transparent rounded-2xl blur-xl"></div>
@@ -601,7 +601,7 @@ export default function ProfilePage() {
 
         {/* Tabs Section */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-[#333333] border border-[#444444] p-1.5 rounded-xl flex-wrap h-auto gap-2">
+          <TabsList className="bg-[#333333] border border-[#444444] p-1.5 rounded-xl flex-wrap h-auto gap-2 justify-center">
             <TabsTrigger
               value="profile"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#AE876D] data-[state=active]:to-[#8d6c58] data-[state=active]:text-white rounded-lg text-white/70 hover:text-white transition-all flex items-center gap-2"

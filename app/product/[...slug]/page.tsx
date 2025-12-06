@@ -2802,11 +2802,13 @@ export default function ProductDetail() {
           </div>
         )}
 
+      </div>
+
+      {/* Testimonial Collection and Wardrobe Section - matching homepage width */}
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6 z-10 relative">
         {/* Testimonial Collection */}
-        <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
-          <div className="px-4 md:px-6">
-            <TestimonialCollection />
-          </div>
+        <div className="mt-12 mb-16">
+          <TestimonialCollection />
         </div>
 
         {/* Blog Section - reduced spacing */}
@@ -2815,10 +2817,8 @@ export default function ProductDetail() {
         </div> */}
 
         {/* Wardrobe Section - reduced spacing */}
-        <div className="mt-8 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
-          <div className="px-4 md:px-6">
-            <WardrobeSection />
-          </div>
+        <div className="mt-8 mb-16">
+          <WardrobeSection />
         </div>
       </div>
 

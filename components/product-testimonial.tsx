@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import "@fontsource/roboto-mono"
 import "@fontsource/dm-serif-display"
 
@@ -72,6 +72,8 @@ export default function ProductTestimonial({
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const touchEndY = useRef<number | null>(null);
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -81,6 +83,7 @@ export default function ProductTestimonial({
   const handleTouchStart = (e: React.TouchEvent) => {
     // Save the starting touch position
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
 
     // Pause autoplay during user interaction
     if (autoplayRef.current) {
@@ -91,6 +94,7 @@ export default function ProductTestimonial({
   const handleTouchMove = (e: React.TouchEvent) => {
     // Update end position as touch moves
     touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
   };
 
   const handleTouchEnd = () => {
@@ -98,25 +102,35 @@ export default function ProductTestimonial({
     if (isTransitioning) return;
 
     // Check if we have valid touch data
-    if (touchStartX.current !== null && touchEndX.current !== null) {
-      // Calculate swipe distance
-      const distance = touchEndX.current - touchStartX.current;
+    if (touchStartX.current !== null && touchEndX.current !== null && 
+        touchStartY.current !== null && touchEndY.current !== null) {
+      // Calculate swipe distances
+      const distanceX = touchEndX.current - touchStartX.current;
+      const distanceY = touchEndY.current - touchStartY.current;
+
+      // Check if horizontal swipe is more dominant than vertical scroll
+      const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY);
 
       // Minimum swipe distance to register (50px)
       const minSwipeDistance = 50;
 
-      if (distance > minSwipeDistance) {
-        // Swiped right - go to previous
-        prevTestimonial();
-      } else if (distance < -minSwipeDistance) {
-        // Swiped left - go to next
-        nextTestimonial();
+      // Only process horizontal swipes, not vertical scrolls
+      if (isHorizontalSwipe && Math.abs(distanceX) > minSwipeDistance) {
+        if (distanceX > minSwipeDistance) {
+          // Swiped right - go to previous
+          prevTestimonial();
+        } else if (distanceX < -minSwipeDistance) {
+          // Swiped left - go to next
+          nextTestimonial();
+        }
       }
     }
 
     // Reset touch values
     touchStartX.current = null;
     touchEndX.current = null;
+    touchStartY.current = null;
+    touchEndY.current = null;
   };
 
   // Add debugging logs to diagnose the issue
@@ -185,15 +199,32 @@ export default function ProductTestimonial({
 
   const current = testimonials[currentIndex];
 
+  // Filter categoryLinks to only show the one matching the current product's category
+  const filteredCategoryLinks = useMemo(() => {
+    if (!current.category || categoryLinks.length === 0) return [];
+    
+    // Normalize category names for comparison (case-insensitive)
+    const currentCategoryNormalized = current.category.toUpperCase().trim();
+    
+    // Find the category link that matches the current product's category
+    const matchingLink = categoryLinks.find(link => {
+      const linkLabelNormalized = link.label.toUpperCase().trim();
+      return linkLabelNormalized === currentCategoryNormalized;
+    });
+    
+    // Return only the matching link, or empty array if no match
+    return matchingLink ? [matchingLink] : [];
+  }, [current.category, categoryLinks, currentIndex]);
+
   return (
     <section
       className="relative w-full py-8 sm:py-16 md:py-24 overflow-visible bg-transparent"
     >
       <div
-        className="relative mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-8 md:gap-12 lg:gap-16 px-4 sm:px-6 md:px-8 touch-pan-x"
+        className="relative mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 sm:gap-8 md:gap-12 lg:gap-16 px-2 sm:px-4 md:px-8"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
-        style={{ touchAction: 'pan-x' }}
+        style={{ touchAction: 'pan-x pan-y' }}
         onTouchEnd={handleTouchEnd}
       >
         {/* Product Image in Circle */}
@@ -240,10 +271,10 @@ export default function ProductTestimonial({
         </div>
 
         {/* Testimonial Content */}
-        <div className="flex-1 relative text-white h-auto sm:h-[350px] md:h-[400px] flex items-center mt-6 md:mt-0 ml-4 md:ml-6" style={{ fontFamily: '"Roboto Mono", monospace' }}>
+        <div className="flex-1 relative text-white h-auto sm:h-[350px] md:h-[400px] flex items-center mt-6 md:mt-0 ml-0 md:ml-6" style={{ fontFamily: '"Roboto Mono", monospace' }}>
           <div className="flex w-full">
             {/* Main content */}
-            <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 pr-4 sm:pr-6 relative">
+            <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 pr-2 sm:pr-6 relative">
               {/* Background blur effect */}
               <div
                 className="absolute -top-40 -left-64 z-0"
@@ -262,9 +293,9 @@ export default function ProductTestimonial({
                 {title}
               </h2>
 
-              {categoryLinks.length > 0 && (
+              {filteredCategoryLinks.length > 0 && (
                 <div className="relative z-10 flex flex-wrap gap-2 sm:gap-3 pt-2">
-                  {categoryLinks.map((link) => (
+                  {filteredCategoryLinks.map((link) => (
                     <Link
                       key={`${link.label}-${link.href}`}
                       href={link.href}
@@ -306,7 +337,7 @@ export default function ProductTestimonial({
             </div>
 
             {/* Navigation Controls */}
-            <div className="flex flex-col h-[280px] sm:h-[320px] justify-between items-center py-6">
+            <div className="hidden sm:flex flex-col h-[280px] sm:h-[320px] justify-between items-center py-6 w-8 md:w-auto">
               {/* Right arrow (for next) */}
               <button
                 onClick={nextTestimonial}
