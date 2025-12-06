@@ -217,11 +217,24 @@ export default function ProductTestimonial({
   }, [current.category, categoryLinks, currentIndex]);
 
   return (
-    <section
-      className="relative w-full py-8 sm:py-16 md:py-24 overflow-visible bg-transparent"
-    >
+    <>
+      <style>{`
+        @media (max-width: 639px) {
+          .product-testimonial-oval {
+            aspect-ratio: 1 / 1.35 !important;
+          }
+        }
+        @media (min-width: 640px) {
+          .product-testimonial-oval {
+            aspect-ratio: 1 / 1.2 !important;
+          }
+        }
+      `}</style>
+      <section
+        className="relative w-full py-8 sm:py-16 md:py-24 overflow-visible bg-transparent"
+      >
       <div
-        className="relative mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 sm:gap-8 md:gap-12 lg:gap-16 px-2 sm:px-4 md:px-8"
+        className="relative mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 sm:gap-8 md:gap-12 lg:gap-16 px-4 sm:px-4 md:px-8"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         style={{ touchAction: 'pan-x pan-y' }}
@@ -231,11 +244,11 @@ export default function ProductTestimonial({
         <div className="relative w-full max-w-[280px] sm:max-w-[340px] md:max-w-[400px] mx-auto md:mx-0">
           {/* Main circle container */}
           <div
-            className="relative w-full overflow-visible flex items-center justify-center z-10"
+            className="relative w-full overflow-visible flex items-center justify-center z-10 product-testimonial-oval"
             style={{
               background: "radial-gradient(circle, rgba(196, 181, 170, 0.95) 65%, rgba(196, 181, 170, 0.8) 80%, rgba(196, 181, 170, 0.5) 90%, rgba(196, 181, 170, 0.2) 95%, rgba(196, 181, 170, 0) 100%)",
               borderRadius: "50%",
-              aspectRatio: "1 / 1.2",
+              aspectRatio: "1 / 1.35", // Default for mobile (taller)
               height: "auto"
             }}
           >
@@ -271,10 +284,10 @@ export default function ProductTestimonial({
         </div>
 
         {/* Testimonial Content */}
-        <div className="flex-1 relative text-white h-auto sm:h-[350px] md:h-[400px] flex items-center mt-6 md:mt-0 ml-0 md:ml-6" style={{ fontFamily: '"Roboto Mono", monospace' }}>
-          <div className="flex w-full">
+        <div className="flex-1 relative text-white h-auto sm:h-[350px] md:h-[400px] flex items-center mt-6 md:mt-0 ml-0 md:ml-6 w-full" style={{ fontFamily: '"Roboto Mono", monospace' }}>
+          <div className="flex w-full items-start">
             {/* Main content */}
-            <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 pr-2 sm:pr-6 relative">
+            <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 pr-1 sm:pr-6 relative min-w-0">
               {/* Background blur effect */}
               <div
                 className="absolute -top-40 -left-64 z-0"
@@ -319,7 +332,7 @@ export default function ProductTestimonial({
                   className={`absolute inset-0 flex flex-col justify-center transition-all duration-700 ease-out ${isTransitioning ? 'opacity-0 transform translate-y-[-20px]' : 'opacity-100 transform translate-y-0'
                     }`}
                 >
-                  <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight" style={{ fontFamily: '"DM Serif Display", serif' }}>
+                  <blockquote className="text-base sm:text-lg md:text-2xl lg:text-3xl font-normal leading-tight pr-1 sm:pr-4" style={{ fontFamily: '"DM Serif Display", serif' }}>
                     "{current.quote}"
                   </blockquote>
                   <p className="text-sm sm:text-base md:text-lg text-white/80 mt-2 sm:mt-3 italic" style={{ fontFamily: '"Roboto Mono", monospace', fontStyle: 'italic' }}>- {current.author}</p>
@@ -336,8 +349,8 @@ export default function ProductTestimonial({
               </div>
             </div>
 
-            {/* Navigation Controls */}
-            <div className="hidden sm:flex flex-col h-[280px] sm:h-[320px] justify-between items-center py-6 w-8 md:w-auto">
+            {/* Navigation Controls - visible on mobile, positioned on right */}
+            <div className="flex flex-col h-[280px] sm:h-[320px] justify-between items-center py-6 w-8 md:w-auto ml-1 sm:ml-0 flex-shrink-0">
               {/* Right arrow (for next) */}
               <button
                 onClick={nextTestimonial}
@@ -359,7 +372,7 @@ export default function ProductTestimonial({
               </button>
 
               {/* Dots indicators */}
-              <div className="flex flex-col space-y-4 sm:space-y-5 items-center">
+              <div className="flex flex-col space-y-3 sm:space-y-5 items-center">
                 {testimonials.map((_, index) => (
                   <button
                     key={index}
@@ -396,5 +409,6 @@ export default function ProductTestimonial({
         </div>
       </div>
     </section>
+    </>
   )
 }

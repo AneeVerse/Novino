@@ -288,6 +288,7 @@ export default function ProductDetail() {
   const [zoomPosition, setZoomPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
+
   // Touch/swipe state for mobile image navigation
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
@@ -297,6 +298,7 @@ export default function ProductDetail() {
   const [isSwiping, setIsSwiping] = useState(false);
   const [touchOffset, setTouchOffset] = useState(0);
   const [imageWidth, setImageWidth] = useState(0);
+  const [isResettingPosition, setIsResettingPosition] = useState(false); // For seamless infinite scroll
   const swipeContainerRef = useRef<HTMLDivElement>(null);
 
   // Modal image pinch-to-zoom state
@@ -417,8 +419,13 @@ export default function ProductDetail() {
       if (swipeContainerRef.current) {
         const rect = swipeContainerRef.current.getBoundingClientRect();
         setImageWidth(rect.width);
-        // Reset translateX when width changes
-        setTranslateX(-currentImage * rect.width);
+        // For infinite scroll: offset by 1 to account for the cloned first image at the beginning
+        const currentImages = (hoveredVariant || selectedVariant)?.images || product?.images || [product?.image].filter(Boolean);
+        if (currentImages.length > 1) {
+          setTranslateX(-(currentImage + 1) * rect.width);
+        } else {
+          setTranslateX(-currentImage * rect.width);
+        }
       }
     };
 
@@ -430,14 +437,20 @@ export default function ProductDetail() {
       clearTimeout(timeoutId);
       window.removeEventListener('resize', updateImageWidth);
     };
-  }, [currentImage, product]);
+  }, [currentImage, product, hoveredVariant, selectedVariant]);
 
   // Sync translateX with currentImage when not swiping
   useEffect(() => {
     if (!isSwiping && imageWidth > 0) {
-      setTranslateX(-currentImage * imageWidth);
+      // For infinite scroll: offset by 1 to account for the cloned first image
+      const currentImages = (hoveredVariant || selectedVariant)?.images || product?.images || [product?.image].filter(Boolean);
+      if (currentImages.length > 1) {
+        setTranslateX(-(currentImage + 1) * imageWidth);
+      } else {
+        setTranslateX(-currentImage * imageWidth);
+      }
     }
-  }, [currentImage, imageWidth, isSwiping]);
+  }, [currentImage, imageWidth, isSwiping, hoveredVariant, selectedVariant, product]);
 
   // Handle touch start for smooth swipe
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
@@ -467,7 +480,7 @@ export default function ProductDetail() {
     e.preventDefault();
     e.stopPropagation();
 
-    // Get current images array for bounds checking
+    // Get current images array
     const currentImages = (hoveredVariant || selectedVariant)?.images || product?.images || [product?.image].filter(Boolean);
     const imageCount = currentImages.length;
 
@@ -476,22 +489,11 @@ export default function ProductDetail() {
     setTouchOffset(offset);
 
     // Update translateX in real-time: base position + touch offset
-    const baseTranslateX = -currentImage * imageWidth;
+    // For infinite scroll: offset by 1 to account for cloned first image
+    const baseTranslateX = imageCount > 1 ? -(currentImage + 1) * imageWidth : -currentImage * imageWidth;
     let newTranslateX = baseTranslateX + offset;
 
-    // Apply rubber band resistance at edges for premium feel
-    const minTranslateX = -(imageCount - 1) * imageWidth; // Last image
-    const maxTranslateX = 0; // First image
-
-    // Rubber band effect: allow slight over-scroll with damping
-    if (newTranslateX > maxTranslateX) {
-      const overScroll = newTranslateX - maxTranslateX;
-      newTranslateX = maxTranslateX + overScroll * 0.3; // 30% damping
-    } else if (newTranslateX < minTranslateX) {
-      const overScroll = minTranslateX - newTranslateX;
-      newTranslateX = minTranslateX - overScroll * 0.3; // 30% damping
-    }
-
+    // No rubber band - allow infinite scrolling
     setTranslateX(newTranslateX);
 
     // Update touchEnd for momentum calculation
@@ -514,7 +516,7 @@ export default function ProductDetail() {
     const imageCount = currentImages.length;
 
     if (imageCount <= 1 || isVerticalSwipe) {
-      // Reset to current image
+      // Reset to current image (no infinite scroll for single image)
       setTranslateX(-currentImage * imageWidth);
       setIsSwiping(false);
       setTouchStart(null);
@@ -532,17 +534,18 @@ export default function ProductDetail() {
     // Enhanced momentum detection - easier to trigger for smoother feel
     if (absDistance > swipeThreshold || absDistance > minSwipeDistance * 0.8) {
       if (distanceX > 0) {
-        // Swipe left (show next image)
-        targetImage = (currentImage + 1) % imageCount;
+        // Swipe left (show next image) - allow moving beyond bounds for infinite effect
+        targetImage = currentImage + 1;
       } else {
-        // Swipe right (show previous image)
-        targetImage = (currentImage - 1 + imageCount) % imageCount;
+        // Swipe right (show previous image) - allow moving to negative for infinite effect
+        targetImage = currentImage - 1;
       }
     }
 
+    // For infinite scroll: offset by 1 to account for cloned first image
     // Animate to target image with smooth transition
     setCurrentImage(targetImage);
-    setTranslateX(-targetImage * imageWidth);
+    setTranslateX(-(targetImage + 1) * imageWidth);
     setIsAutoScrolling(false);
     setIsSwiping(false);
     setTouchStart(null);
@@ -2016,16 +2019,76 @@ export default function ProductDetail() {
                       }}
                     />
 
-                    {/* Horizontal image container - ultra smooth connected scroll */}
+                    {/* Horizontal image container - infinite scroll with cloned images */}
                     <div
                       className="flex h-full"
                       style={{
                         transform: `translateX(${translateX}px)`,
-                        transition: isSwiping ? 'none' : 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                        transition: (isSwiping || isResettingPosition) ? 'none' : 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                         willChange: 'transform',
-                        width: imageWidth > 0 ? `${displayImages.length * imageWidth}px` : `${displayImages.length * 100}%`,
+                        width: imageWidth > 0 ? `${(displayImages.length > 1 ? displayImages.length + 2 : displayImages.length) * imageWidth}px` : `${displayImages.length * 100}%`,
+                      }}
+                      onTransitionEnd={() => {
+                        // Handle seamless infinite loop after transition completes
+                        if (!isSwiping && displayImages.length > 1 && imageWidth > 0) {
+                          const imageCount = displayImages.length;
+
+                          // When currentImage goes beyond bounds, wrap it back
+                          if (currentImage >= imageCount) {
+                            // We've scrolled past the last real image to the cloned first image
+                            // Jump back to the real first image (index 0) WITHOUT transition
+                            const wrappedIndex = currentImage % imageCount;
+                            setIsResettingPosition(true); // Disable transition
+                            setCurrentImage(wrappedIndex);
+                            setTranslateX(-(wrappedIndex + 1) * imageWidth);
+                            // Re-enable transition after the instant jump
+                            setTimeout(() => {
+                              setIsResettingPosition(false);
+                            }, 50);
+                          } else if (currentImage < 0) {
+                            // We've scrolled before the first real image to the cloned last image
+                            // Jump forward to the real last image WITHOUT transition
+                            const wrappedIndex = ((currentImage % imageCount) + imageCount) % imageCount;
+                            setIsResettingPosition(true); // Disable transition
+                            setCurrentImage(wrappedIndex);
+                            setTranslateX(-(wrappedIndex + 1) * imageWidth);
+                            // Re-enable transition after the instant jump
+                            setTimeout(() => {
+                              setIsResettingPosition(false);
+                            }, 50);
+                          }
+                        }
                       }}
                     >
+                      {/* For infinite scroll: render [last, ...all, first] */}
+                      {displayImages.length > 1 && (
+                        <div
+                          className="relative flex-shrink-0 h-full bg-[#f7f3ee] overflow-hidden"
+                          style={{
+                            width: imageWidth > 0 ? `${imageWidth}px` : '100%',
+                            minWidth: imageWidth > 0 ? `${imageWidth}px` : '100%',
+                          }}
+                        >
+                          <div
+                            className="relative w-full h-full overflow-hidden shadow-[0_12px_24px_-18px_rgba(0,0,0,0.45)]"
+                            style={{
+                              borderRadius: isSwiping ? '0px' : '28px',
+                              transition: isSwiping ? 'none' : 'border-radius 0.3s ease-out'
+                            }}
+                          >
+                            <Image
+                              src={displayImages[displayImages.length - 1]}
+                              alt={`${product.name || "Product Image"} - Clone`}
+                              fill
+                              style={{ objectFit: 'cover', objectPosition: 'center' }}
+                              priority={false}
+                              className="pointer-events-none"
+                              draggable={false}
+                            />
+                          </div>
+                        </div>
+                      )}
+
                       {displayImages.map((imageUrl, index) => (
                         <div
                           key={index}
@@ -2054,6 +2117,34 @@ export default function ProductDetail() {
                           </div>
                         </div>
                       ))}
+
+                      {displayImages.length > 1 && (
+                        <div
+                          className="relative flex-shrink-0 h-full bg-[#f7f3ee] overflow-hidden"
+                          style={{
+                            width: imageWidth > 0 ? `${imageWidth}px` : '100%',
+                            minWidth: imageWidth > 0 ? `${imageWidth}px` : '100%',
+                          }}
+                        >
+                          <div
+                            className="relative w-full h-full overflow-hidden shadow-[0_12px_24px_-18px_rgba(0,0,0,0.45)]"
+                            style={{
+                              borderRadius: isSwiping ? '0px' : '28px',
+                              transition: isSwiping ? 'none' : 'border-radius 0.3s ease-out'
+                            }}
+                          >
+                            <Image
+                              src={displayImages[0]}
+                              alt={`${product.name || "Product Image"} - Clone`}
+                              fill
+                              style={{ objectFit: 'cover', objectPosition: 'center' }}
+                              priority={false}
+                              className="pointer-events-none"
+                              draggable={false}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Subtle overlay */}
