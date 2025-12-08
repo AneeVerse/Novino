@@ -157,65 +157,87 @@ export async function POST(req: NextRequest) {
   // Calculate dimensions from product category
   let packageDimensions: { length: number; breadth: number; height: number; weight: number } | undefined;
   
-  if (order.items && order.items.length > 0) {
-    const firstItem = order.items[0];
-    const productId = firstItem.productId || firstItem.id;
-    const itemSku = firstItem.sku;
+  // Fetch all categories once for both dimensions and name resolution
+  let allCategories: any[] | null = null;
+  try {
+    const { data: categories } = await supabase
+      .from('product_categories')
+      .select('id, name, products, length, width, breadth, height, weight');
+    allCategories = categories;
+  } catch (error) {
+    console.warn('[RazorpayVerify] Failed to fetch categories:', error);
+  }
+  
+  // Helper function to resolve category by productId (most reliable) or SKU/name
+  const resolveCategoryForItem = (item: any) => {
+    if (!allCategories || !Array.isArray(allCategories)) return null;
     
-    try {
-      // Fetch all categories to find the product
-      const { data: allCategories } = await supabase
-        .from('product_categories')
-        .select('id, name, products, length, width, breadth, height, weight');
-      
-      if (allCategories) {
-        let foundCategory: any = null;
-        const productIdStr = productId ? String(productId) : '';
-        const itemSkuUpper = itemSku ? itemSku.trim().toUpperCase() : '';
-        
-        // First pass: Try exact productId match
-        for (const cat of allCategories) {
-          if (Array.isArray(cat.products)) {
-            const product = cat.products.find((p: any) => {
-              const pIdStr = p.id ? String(p.id) : '';
-              const pIdStrAlt = p._id ? String(p._id) : '';
-              return pIdStr === productIdStr || pIdStrAlt === productIdStr;
-            });
-            if (product && cat.length && Number(cat.length) > 0) {
-              foundCategory = cat;
-              break;
-            }
+    const productId = item.productId || item.id;
+    const productIdStr = productId ? String(productId) : '';
+    const itemSku = item.sku ? item.sku.trim().toUpperCase() : '';
+    const itemName = item.name ? item.name.trim().toLowerCase() : '';
+    
+    // First: Try exact productId match (most reliable - same product can't be in multiple categories)
+    if (productIdStr) {
+      for (const cat of allCategories) {
+        if (Array.isArray(cat.products)) {
+          const product = cat.products.find((p: any) => {
+            const pIdStr = p.id ? String(p.id) : '';
+            const pIdStrAlt = p._id ? String(p._id) : '';
+            return pIdStr === productIdStr || pIdStrAlt === productIdStr;
+          });
+          if (product) {
+            return cat;
           }
-        }
-        
-        // Second pass: Try SKU match
-        if (!foundCategory && itemSkuUpper) {
-          for (const cat of allCategories) {
-            if (Array.isArray(cat.products)) {
-              const product = cat.products.find((p: any) => {
-                const pSku = p.sku ? p.sku.trim().toUpperCase() : '';
-                return itemSkuUpper && pSku && itemSkuUpper === pSku;
-              });
-              if (product && cat.length && Number(cat.length) > 0) {
-                foundCategory = cat;
-                break;
-              }
-            }
-          }
-        }
-        
-        if (foundCategory) {
-          packageDimensions = {
-            length: Number(foundCategory.length),
-            breadth: Number(foundCategory.breadth || foundCategory.width || 26),
-            height: Number(foundCategory.height || 10),
-            weight: Number(foundCategory.weight || 0.5),
-          };
-          console.log('[RazorpayVerify] Using category dimensions:', foundCategory.name, packageDimensions);
         }
       }
-    } catch (error) {
-      console.warn('[RazorpayVerify] Failed to fetch category dimensions:', error);
+    }
+    
+    // Second: Try SKU match (less reliable - same SKU might exist in multiple categories)
+    if (itemSku) {
+      for (const cat of allCategories) {
+        if (Array.isArray(cat.products)) {
+          const product = cat.products.find((p: any) => {
+            const pSku = p.sku ? p.sku.trim().toUpperCase() : '';
+            return itemSku && pSku && itemSku === pSku;
+          });
+          if (product) {
+            return cat;
+          }
+        }
+      }
+    }
+    
+    // Third: Try name match (least reliable)
+    if (itemName) {
+      for (const cat of allCategories) {
+        if (Array.isArray(cat.products)) {
+          const product = cat.products.find((p: any) => {
+            const pName = p.name ? p.name.trim().toLowerCase() : '';
+            return itemName && pName && itemName === pName;
+          });
+          if (product) {
+            return cat;
+          }
+        }
+      }
+    }
+    
+    return null;
+  };
+  
+  if (order.items && order.items.length > 0) {
+    const firstItem = order.items[0];
+    const foundCategory = resolveCategoryForItem(firstItem);
+    
+    if (foundCategory && foundCategory.length && Number(foundCategory.length) > 0) {
+      packageDimensions = {
+        length: Number(foundCategory.length),
+        breadth: Number(foundCategory.breadth || foundCategory.width || 26),
+        height: Number(foundCategory.height || 10),
+        weight: Number(foundCategory.weight || 0.5),
+      };
+      console.log('[RazorpayVerify] Using category dimensions:', foundCategory.name, packageDimensions);
     }
   }
 
@@ -246,12 +268,29 @@ export async function POST(req: NextRequest) {
         pincode: order.delivery_address.pincode,
         country: 'India',
       },
-      items: order.items.map((item: any) => ({
-        name: item.name,
-        sku: item.sku || item.productId || item.id, // Use human-readable SKU first
-        units: item.quantity,
-        sellingPrice: item.price,
-      })),
+      items: order.items.map((item: any) => {
+        // Use the same resolveCategoryForItem function to ensure consistency
+        const foundCategory = resolveCategoryForItem(item);
+        const categoryName = foundCategory?.name || '';
+        
+        const design = (item.name || '').toString().trim();
+        const combinedName = [categoryName, design].filter(Boolean).join(' ').trim() || design || item.sku || 'Item';
+        
+        console.log('[RazorpayVerify][ItemName] Building name:', {
+          productId: item.productId || item.id,
+          sku: item.sku,
+          originalName: item.name,
+          categoryName: categoryName,
+          finalName: combinedName
+        });
+        
+        return {
+          name: combinedName,
+          sku: item.sku || item.productId || item.id,
+          units: item.quantity,
+          sellingPrice: item.price,
+        };
+      }),
       dimensions: packageDimensions,
     });
 

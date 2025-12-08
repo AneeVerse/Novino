@@ -30,6 +30,91 @@ const isMaskedPhone = (value?: string) => {
 
 const normalizeSku = (sku?: string | null) => (sku ?? "").trim().toLowerCase();
 
+const resolveCategoryName = (item: any, allCategories?: any[]) => {
+  if (!allCategories || !Array.isArray(allCategories)) {
+    return (
+      item?.category_name ||
+      item?.categoryName ||
+      item?.category ||
+      item?.categoryId ||
+      item?.category_id ||
+      ""
+    );
+  }
+
+  // Prefer catalog match first (id -> productId/sku/name)
+  const categoryId = item?.categoryId || item?.category_id;
+  if (categoryId) {
+    const cat = allCategories.find((c) => c.id === categoryId);
+    if (cat?.name) return cat.name;
+  }
+
+  const productId = item?.productId || item?.id;
+  const productIdStr = productId ? String(productId) : "";
+  const itemSku = item?.sku ? item.sku.trim().toUpperCase() : "";
+  const itemName = item?.name ? item.name.trim().toLowerCase() : "";
+
+  // First: Try exact productId match (most reliable - same product can't be in multiple categories)
+  if (productIdStr) {
+    for (const cat of allCategories) {
+      if (!Array.isArray(cat.products)) continue;
+      const product = cat.products.find((p: any) => {
+        const pIdStr = p.id ? String(p.id) : "";
+        const pIdStrAlt = p._id ? String(p._id) : "";
+        return pIdStr === productIdStr || pIdStrAlt === productIdStr;
+      });
+      if (product) {
+        return cat.name || "";
+      }
+    }
+  }
+
+  // Second: Try SKU match (less reliable - same SKU might exist in multiple categories)
+  if (itemSku) {
+    for (const cat of allCategories) {
+      if (!Array.isArray(cat.products)) continue;
+      const product = cat.products.find((p: any) => {
+        const pSku = p.sku ? p.sku.trim().toUpperCase() : "";
+        return itemSku && pSku && itemSku === pSku;
+      });
+      if (product) {
+        return cat.name || "";
+      }
+    }
+  }
+
+  // Third: Try name match (least reliable)
+  if (itemName) {
+    for (const cat of allCategories) {
+      if (!Array.isArray(cat.products)) continue;
+      const product = cat.products.find((p: any) => {
+        const pName = p.name ? p.name.trim().toLowerCase() : "";
+        return itemName && pName && itemName === pName;
+      });
+      if (product) {
+        return cat.name || "";
+      }
+    }
+  }
+
+  // Fallback to inline category fields if no catalog match
+  return (
+    item?.category_name ||
+    item?.categoryName ||
+    item?.category ||
+    item?.categoryId ||
+    item?.category_id ||
+    ""
+  );
+};
+
+const buildItemName = (item: any, fallbackProductName?: string, allCategories?: any[]) => {
+  const design = (item?.name || fallbackProductName || "").toString().trim();
+  const category = resolveCategoryName(item, allCategories).toString().trim();
+  const combined = [category, design].filter(Boolean).join(" ").trim();
+  return combined || design || category || item?.sku || "Item";
+};
+
 const fetchProductsBySkus = async (skus: string[]) => {
   const map = new Map<string, ShiprocketProduct>();
   if (!skus.length) return map;
@@ -141,7 +226,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
 
       if (!order.order_items || order.order_items.length === 0) {
         order.order_items = (local.items || []).map((item: any) => ({
-          name: item.name,
+          name: buildItemName(item, undefined, allCategories),
           sku: item.sku || item.productId || item.id, // Use human-readable SKU first
           units: item.quantity,
           selling_price: item.price,
@@ -156,7 +241,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
           if (!fallback) return item;
           return {
             ...item,
-            name: item.name || fallback.name,
+            name: item.name || buildItemName(fallback, undefined, allCategories),
             sku: item.sku || fallback.productId || fallback.id,
             selling_price: item.selling_price || fallback.price,
             units: item.units ?? fallback.quantity,
@@ -355,7 +440,7 @@ const enrichOrdersWithShiprocketProducts = async (orders: ShiprocketOrder[]) => 
 
       return {
         ...item,
-        name: item.name || product.name || item.sku,
+        name: item.name || buildItemName(item, product.name, undefined),
         selling_price:
           item.selling_price ??
           product.selling_price ??

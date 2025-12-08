@@ -53,6 +53,11 @@ export async function POST(request: NextRequest) {
         let packageHeight = 10;   // cm - safe middle ground (between 1cm-33cm range)
         let packageWeight = 0.5;  // kg - safe overestimate (500g)
 
+        // Fetch categories once for name lookups (and dimensions fallback)
+        const { data: allCategories } = await supabase
+            .from('product_categories')
+            .select('id, name, products, length, width, breadth, height, weight');
+
         // Try to get exact dimensions from the product's category
         if (order.items && order.items.length > 0) {
             const firstItem = order.items[0];
@@ -69,10 +74,6 @@ export async function POST(request: NextRequest) {
             // If categoryId not in item, find it by searching categories for this product
             // Priority: productId > SKU > name (to avoid matching wrong category when same SKU/name exists in multiple categories)
             if (!categoryId) {
-                const { data: allCategories } = await supabase
-                    .from('product_categories')
-                    .select('id, name, products, length, width, breadth, height, weight');
-                
                 if (allCategories) {
                     const productId = firstItem.productId || firstItem.id;
                     const productIdStr = productId ? String(productId) : '';
@@ -137,12 +138,7 @@ export async function POST(request: NextRequest) {
             if (categoryId) {
                 // Use already fetched category or fetch it
                 if (!foundCategory) {
-                    const { data: category } = await supabase
-                        .from('product_categories')
-                        .select('length, width, breadth, height, weight, name')
-                        .eq('id', categoryId)
-                        .single();
-                    foundCategory = category;
+                    foundCategory = allCategories?.find((cat: any) => cat.id === categoryId) || null;
                 }
 
                 if (foundCategory) {
@@ -186,6 +182,92 @@ export async function POST(request: NextRequest) {
             source: 'category_dimensions', // Indicates dimensions came from category
         });
 
+        const resolveCategoryName = (item: any) => {
+            if (!allCategories || !Array.isArray(allCategories)) {
+                // Fallback to whatever is present inline
+                return (
+                    item?.category_name ||
+                    item?.categoryName ||
+                    item?.category ||
+                    item?.categoryId ||
+                    item?.category_id ||
+                    ''
+                );
+            }
+
+            // Prefer matching against our catalog first (id -> productId/sku/name)
+            const categoryId = item?.categoryId || item?.category_id;
+            if (categoryId) {
+                const cat = allCategories.find((c: any) => c.id === categoryId);
+                if (cat?.name) return cat.name;
+            }
+
+            const productId = item?.productId || item?.id;
+            const productIdStr = productId ? String(productId) : '';
+            const itemSku = item?.sku ? item.sku.trim().toUpperCase() : '';
+            const itemName = item?.name ? item.name.trim().toLowerCase() : '';
+
+            // First: Try exact productId match (most reliable - same product can't be in multiple categories)
+            if (productIdStr) {
+                for (const cat of allCategories) {
+                    if (!Array.isArray(cat.products)) continue;
+                    const product = cat.products.find((p: any) => {
+                        const pIdStr = p.id ? String(p.id) : '';
+                        const pIdStrAlt = p._id ? String(p._id) : '';
+                        return pIdStr === productIdStr || pIdStrAlt === productIdStr;
+                    });
+                    if (product) {
+                        return cat.name || '';
+                    }
+                }
+            }
+
+            // Second: Try SKU match (less reliable - same SKU might exist in multiple categories)
+            if (itemSku) {
+                for (const cat of allCategories) {
+                    if (!Array.isArray(cat.products)) continue;
+                    const product = cat.products.find((p: any) => {
+                        const pSku = p.sku ? p.sku.trim().toUpperCase() : '';
+                        return itemSku && pSku && itemSku === pSku;
+                    });
+                    if (product) {
+                        return cat.name || '';
+                    }
+                }
+            }
+
+            // Third: Try name match (least reliable)
+            if (itemName) {
+                for (const cat of allCategories) {
+                    if (!Array.isArray(cat.products)) continue;
+                    const product = cat.products.find((p: any) => {
+                        const pName = p.name ? p.name.trim().toLowerCase() : '';
+                        return itemName && pName && itemName === pName;
+                    });
+                    if (product) {
+                        return cat.name || '';
+                    }
+                }
+            }
+
+            // Finally, fallback to inline category fields if catalog match not found
+            return (
+                item?.category_name ||
+                item?.categoryName ||
+                item?.category ||
+                item?.categoryId ||
+                item?.category_id ||
+                ''
+            );
+        };
+
+        const buildItemName = (item: any, categoryName?: string) => {
+            const design = (item?.name || '').toString().trim();
+            const category = (categoryName || resolveCategoryName(item)).toString().trim();
+            const combined = [category, design].filter(Boolean).join(' ').trim();
+            return combined || design || category || item?.sku || 'Item';
+        };
+
         const orderPayload = {
             order_id: order.order_number,
             order_date: new Date(order.created_at).toISOString().split('T')[0],
@@ -200,15 +282,27 @@ export async function POST(request: NextRequest) {
             billing_email: address.email || 'noreply@novino.com',
             billing_phone: address.phone || '9999999999',
             shipping_is_billing: true,
-            order_items: (order.items || []).map((item: any) => ({
-                name: item.name,
-                sku: item.sku || item.productId || item.id, // Use human-readable SKU first
-                units: item.quantity,
-                selling_price: item.price,
-                discount: 0,
-                tax: 0,
-                hsn: 0,
-            })),
+            order_items: (order.items || []).map((item: any) => {
+                const categoryName = resolveCategoryName(item);
+                const finalName = buildItemName(item, categoryName);
+                console.log('[Shiprocket][ItemName] Building name:', {
+                    itemId: item.id,
+                    productId: item.productId,
+                    sku: item.sku,
+                    originalName: item.name,
+                    categoryName: categoryName,
+                    finalName: finalName
+                });
+                return {
+                    name: finalName,
+                    sku: item.sku || item.productId || item.id, // Use human-readable SKU first
+                    units: item.quantity,
+                    selling_price: item.price,
+                    discount: 0,
+                    tax: 0,
+                    hsn: 0,
+                };
+            }),
             payment_method: order.payment_status === 'paid' ? 'Prepaid' : 'COD',
             sub_total: order.total,
             length: packageLength,
@@ -224,6 +318,7 @@ export async function POST(request: NextRequest) {
             weight: orderPayload.weight,
             order_id: orderPayload.order_id
         });
+        console.log('[Shiprocket][CreateOrder] Order items being sent:', JSON.stringify(orderPayload.order_items, null, 2));
 
         const shiprocketOrderResponse = await createOrder(orderPayload);
 
