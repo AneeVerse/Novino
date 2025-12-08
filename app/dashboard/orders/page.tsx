@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -162,57 +162,17 @@ export default function OrdersPage() {
   };
 
   const handleShipNow = async (order: Order) => {
-    if (!order.localOrderId) {
-      alert('Order must exist in your database to ship.');
-      return;
-    }
-
-    setShippingOrder(order.localOrderId);
-
+    // For now, skip the courier selection flow and take the user directly
+    // to the Shiprocket "Ship Now" experience (same as the three-dot menu).
     try {
-      // Step 1: Create order in Shiprocket (if not already created)
-      if (!order.shiprocketShipmentId) {
-        const createResponse = await fetch('/api/shiprocket/ship', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ order_id: order.localOrderId }),
-        });
-
-        const createResult = await createResponse.json();
-
-        if (!createResult.success) {
-          alert(createResult.error || 'Failed to create shipment');
-          return;
-        }
-
-        // Update order with shipment_id
-        order.shiprocketShipmentId = createResult.shipment_id;
-      }
-
-      // Step 2: Get available couriers
-      setLoadingCouriers(true);
-      setSelectedOrderForCourier(order);
-      setShowCourierModal(true);
-
-      const couriersResponse = await fetch('/api/shiprocket/get-couriers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: order.localOrderId }),
-      });
-
-      const couriersResult = await couriersResponse.json();
-
-      if (couriersResult.success) {
-        setCouriers(couriersResult.couriers);
-      } else {
-        alert(couriersResult.error || 'Failed to get couriers');
-        setShowCourierModal(false);
-      }
+      setShippingOrder(order.localOrderId ?? null);
+      await handleOpenShiprocket();
     } catch (error) {
-      console.error('Ship now failed:', error);
-      alert('Failed to process shipment');
+      console.error('Ship now redirect failed:', error);
+      alert('Failed to open Shiprocket. Please try again.');
     } finally {
       setShippingOrder(null);
+      setShowCourierModal(false);
       setLoadingCouriers(false);
     }
   };
@@ -457,7 +417,8 @@ export default function OrdersPage() {
                             {shippingOrder === order.localOrderId ? 'Processing...' : order.awb_code ? 'Shipped' : !order.localOrderId ? 'N/A' : 'Ship Now'}
                           </button>
 
-                          {/* Three-dot menu */}
+                          {/* Temporary: hiding three-dot menu per request. Leaving code commented for easy restore. */}
+                          {/*
                           <div className="relative">
                             <button
                               onClick={(e) => {
@@ -469,7 +430,6 @@ export default function OrdersPage() {
                               <MoreVertical className="w-4 h-4" />
                             </button>
 
-                            {/* Dropdown menu */}
                             {openMenuOrderId === order.id && (
                               <div className="absolute right-0 mt-2 w-48 bg-[#1A1A1A] border border-white/10 rounded-lg shadow-xl z-10">
                                 <button
@@ -482,6 +442,7 @@ export default function OrdersPage() {
                               </div>
                             )}
                           </div>
+                          */}
                         </div>
                       </td>
                     </tr>

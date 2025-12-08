@@ -11,6 +11,11 @@ export default function ShiprocketLoginPage() {
     const [status, setStatus] = useState<'loading' | 'redirecting' | 'info'>('loading');
 
     useEffect(() => {
+        const formatShiprocketDate = (date: Date) => {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${date.getFullYear()}-${months[date.getMonth()]}-${String(date.getDate()).padStart(2, '0')}`;
+        };
+
         const openShiprocket = async () => {
             try {
                 setStatus('loading');
@@ -28,8 +33,14 @@ export default function ShiprocketLoginPage() {
                     // Wait a moment to show the message
                     await new Promise(resolve => setTimeout(resolve, 1000));
 
-                    // Redirect to Shiprocket orders page
-                    const shiprocketUrl = 'https://app.shiprocket.in/seller/orders/new?sku=&order_ids=&order_status=&channel_id=&payment_method=&pickup_address_id=&delivery_country=&quantity=&is_order_verified=&ship_weight=&previously_cancelled=&from=2025-Oct-27&to=2025-Nov-25';
+                    // Redirect to Shiprocket orders page with a rolling last-30-days range
+                    const toDate = new Date();
+                    const fromDate = new Date();
+                    fromDate.setDate(toDate.getDate() - 30);
+                    const from = formatShiprocketDate(fromDate);
+                    const to = formatShiprocketDate(toDate);
+
+                    const shiprocketUrl = `https://app.shiprocket.in/seller/orders/new?sku=&order_ids=&order_status=&channel_id=&payment_method=&pickup_address_id=&delivery_country=&quantity=&is_order_verified=&ship_weight=&previously_cancelled=&from=${from}&to=${to}`;
                     window.location.href = shiprocketUrl;
                 } else {
                     throw new Error('Shiprocket credentials not configured');
