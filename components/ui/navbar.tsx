@@ -94,19 +94,19 @@ const Navbar = () => {
     <>
       <nav className={`fixed top-0 left-0 w-full z-[1000] h-[80px] transition-all duration-300 ${scrolled || !shouldBeTransparent ? 'bg-[#2D2D2D]' : 'bg-transparent'
         } ${isImageModalOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-        <div className="relative max-w-[1440px] mx-auto h-full flex justify-between items-center px-4 md:px-0">
-          {/* Left section - Menu items (Desktop) */}
-          <div className="hidden md:flex items-center space-x-6 h-full md:pl-6">
-            <Link href="/paintings" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
+        <div className="relative max-w-[1440px] mx-auto h-full flex justify-between items-center px-4 md:px-6 lg:px-8">
+          {/* Left section - Menu items (Tablet & Desktop) */}
+          <div className="hidden md:flex items-center space-x-3 md:space-x-4 lg:space-x-6 h-full">
+            <Link href="/paintings" className="uppercase tracking-wider text-xs md:text-[11px] lg:text-sm font-medium font-roboto-mono text-white">
               PAINTINGS
             </Link>
-            <Link href="/artefacts" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
+            <Link href="/artefacts" className="uppercase tracking-wider text-xs md:text-[11px] lg:text-sm font-medium font-roboto-mono text-white">
               ARTEFACTS
             </Link>
-            <Link href="/journey" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
+            <Link href="/journey" className="uppercase tracking-wider text-xs md:text-[11px] lg:text-sm font-medium font-roboto-mono text-white">
               JOURNEY
             </Link>
-            {/* <Link href="/journal" className="uppercase tracking-wider text-sm font-medium font-roboto-mono text-white">
+            {/* <Link href="/journal" className="uppercase tracking-wider text-xs md:text-[11px] lg:text-sm font-medium font-roboto-mono text-white">
               JOURNAL
             </Link> */}
           </div>
@@ -144,14 +144,14 @@ const Navbar = () => {
           <div className="absolute left-1/2 transform -translate-x-1/2 text-center flex justify-center items-center h-full">
             <Link
               href="/"
-              className="flex items-center justify-center text-2xl md:text-3xl lg:text-4xl font-dm-serif-display tracking-[0.2em] text-white uppercase"
+              className="flex items-center justify-center text-2xl md:text-2xl lg:text-3xl xl:text-4xl font-dm-serif-display tracking-[0.15em] md:tracking-[0.18em] lg:tracking-[0.2em] text-white uppercase"
             >
               NOVINO
             </Link>
           </div>
 
           {/* Right section - Authentication */}
-          <div className="flex items-center space-x-2 md:space-x-4 md:pr-6 ml-auto">
+          <div className="flex items-center space-x-2 md:space-x-3 lg:space-x-4 ml-auto">
             <Link href={isAuthenticated ? "/profile" : "/login"} className="text-white">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

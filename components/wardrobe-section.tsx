@@ -39,7 +39,7 @@ export default function WardrobeSection() {
           </div>
 
           {/* Button - Positioned absolutely to center on the design circle */}
-        <div className="mt-8 md:mt-0 flex-shrink-0 md:absolute md:right-24 md:top-[58%] md:-translate-y-1/2">
+          <div className="mt-8 md:mt-0 flex-shrink-0 md:absolute md:right-24 md:top-[58%] md:-translate-y-1/2">
             <Link
               href="/artefacts"
               className="group bg-black/95 text-white px-6 py-3.5 rounded-full hover:bg-zinc-800 transition-all duration-300 flex items-center justify-center gap-3 text-sm md:text-sm font-medium tracking-wide shadow-lg hover:shadow-xl hover:scale-105 border border-white/10"
@@ -53,7 +53,8 @@ export default function WardrobeSection() {
 
       {/* Responsive image positioning styles */}
       {/* Adjust --mobile-offset and --desktop-offset values to move image left (negative) or right (positive) */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .wardrobe-image-wrapper {
           --mobile-offset: 0px; /* Adjust this: negative = left, positive = right */
           --desktop-offset: 0px; /* Adjust this: negative = left, positive = right */

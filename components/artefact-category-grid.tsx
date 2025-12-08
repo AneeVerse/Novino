@@ -117,7 +117,7 @@ export default function ArtefactCategoryGrid({
           Drag cards using the handle to change the order shown across the site.
         </p>
       )}
-      
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

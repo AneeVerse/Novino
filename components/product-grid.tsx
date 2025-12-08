@@ -180,32 +180,74 @@ export default function ProductGrid({
                 </div>
               </div>
 
-              {/* Desktop: Two Row Grid */}
-              <div className="hidden sm:flex flex-col items-center gap-2 sm:gap-3 pt-6">
-                {[
-                  propCategories.slice(0, 5),
-                  propCategories.slice(5),
-                ].map((row, rowIndex) => (
-                  row.length > 0 && (
-                    <div
-                      key={`category-row-${rowIndex}`}
-                      className="flex flex-wrap justify-center gap-2 sm:gap-3"
-                    >
-                      {row.map((category) => (
-                        <button
-                          key={category}
-                          className={`px-5 sm:px-7 py-2.5 rounded-full text-xs sm:text-sm tracking-[0.25em] transition-all duration-200 backdrop-blur ${category === activeCategory
-                            ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
-                            : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
-                            }`}
-                          onClick={() => handleCategoryChange(category)}
-                        >
-                          {category?.toUpperCase?.() ? category.toUpperCase() : category}
-                        </button>
-                      ))}
-                    </div>
-                  )
-                ))}
+              {/* Tablet & Desktop: Responsive Grid Layout */}
+              <div className="hidden sm:flex flex-col items-center gap-2 md:gap-2.5 lg:gap-3 pt-6 pb-6 md:pb-16 lg:pb-20 xl:pb-6">
+                {/* Tablet (768px-1023px): Show 4 items per row */}
+                {/* Desktop (1024px+): Show 5 items per row */}
+                {(() => {
+                  // Determine items per row based on screen size
+                  // We'll use CSS to show/hide the appropriate layout
+                  const tabletRows = [
+                    propCategories.slice(0, 4),
+                    propCategories.slice(4, 8),
+                    propCategories.slice(8),
+                  ].filter(row => row.length > 0);
+
+                  const desktopRows = [
+                    propCategories.slice(0, 5),
+                    propCategories.slice(5),
+                  ].filter(row => row.length > 0);
+
+                  return (
+                    <>
+                      {/* Tablet Layout (768px - 1023px): 4 items per row */}
+                      <div className="lg:hidden flex flex-col items-center gap-2">
+                        {tabletRows.map((row, rowIndex) => (
+                          <div
+                            key={`tablet-category-row-${rowIndex}`}
+                            className="flex flex-wrap justify-center gap-1.5 md:gap-2"
+                          >
+                            {row.map((category) => (
+                              <button
+                                key={category}
+                                className={`px-3 md:px-4 py-2 md:py-2.5 rounded-full text-[10px] md:text-xs tracking-[0.2em] transition-all duration-200 backdrop-blur whitespace-nowrap ${category === activeCategory
+                                  ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
+                                  : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
+                                  }`}
+                                onClick={() => handleCategoryChange(category)}
+                              >
+                                {category?.toUpperCase?.() ? category.toUpperCase() : category}
+                              </button>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Desktop Layout (1024px+): 5 items per row */}
+                      <div className="hidden lg:flex flex-col items-center gap-3">
+                        {desktopRows.map((row, rowIndex) => (
+                          <div
+                            key={`desktop-category-row-${rowIndex}`}
+                            className="flex flex-wrap justify-center gap-3"
+                          >
+                            {row.map((category) => (
+                              <button
+                                key={category}
+                                className={`px-7 py-2.5 rounded-full text-sm tracking-[0.25em] transition-all duration-200 backdrop-blur ${category === activeCategory
+                                  ? "bg-white text-black font-semibold shadow-lg shadow-white/20"
+                                  : "bg-white/10 text-white border border-white/10 hover:bg-white/20"
+                                  }`}
+                                onClick={() => handleCategoryChange(category)}
+                              >
+                                {category?.toUpperCase?.() ? category.toUpperCase() : category}
+                              </button>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </>
           )}
@@ -359,8 +401,8 @@ export default function ProductGrid({
           </div>
         )}
 
-        {/* Desktop: Grid */}
-        <div className="hidden sm:grid grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        {/* Tablet & Desktop: Grid */}
+        <div className="hidden sm:grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-8">
           {displayProducts.map((product) => {
             const primaryImage = product.image;
             const secondaryImage = product.images && product.images[1];
@@ -388,7 +430,7 @@ export default function ProductGrid({
                 className="group"
                 prefetch={true}
               >
-                <div className="h-[480px] rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-white/30 hover:shadow-[0_45px_90px_-35px_rgba(0,0,0,0.85)]">
+                <div className="h-[340px] md:h-[380px] lg:h-[480px] rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-white/30 hover:shadow-[0_45px_90px_-35px_rgba(0,0,0,0.85)]">
                   <div className="relative w-full h-full bg-[#1F1F1F] overflow-hidden">
                     <Image
                       src={primaryImage}
