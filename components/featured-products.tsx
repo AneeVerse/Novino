@@ -424,7 +424,7 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
         >
           <div
             ref={!isMobile ? scrollContainerRef : undefined}
-            className={`flex gap-8 md:gap-12 px-4 md:px-6 items-start ${isMobile ? '' : 'w-max will-change-transform cursor-grab active:cursor-grabbing'} select-none`}
+            className={`flex gap-8 md:gap-12 px-2 md:px-6 items-start ${isMobile ? '' : 'w-max will-change-transform cursor-grab active:cursor-grabbing'} select-none`}
             style={isMobile ? {} : {
               transform: `translateX(${translateX.current}px)`,
               touchAction: 'pan-x',

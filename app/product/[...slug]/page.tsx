@@ -1954,7 +1954,7 @@ export default function ProductDetail() {
         }
       `}</style>
 
-      <div className="w-full px-4 md:px-0 pt-24 pb-0 overflow-x-hidden">
+      <div className="w-full px-0 md:px-0 pt-24 pb-0 overflow-x-hidden">
 
         {isInvalidRoute && (
           <div className="bg-[#3D3D3D] text-white p-4 mb-6 rounded-md mx-auto" style={{ maxWidth: "1440px" }}>
@@ -1979,7 +1979,7 @@ export default function ProductDetail() {
 
         {/* Main product display - Clean layout without borders */}
         <div className="relative mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
-          <div className="relative z-10 px-4 md:px-6 lg:px-8">
+          <div className="relative z-10 px-2 md:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
               {/* Product media + purchase column */}
               <div className="order-1 lg:order-2 lg:col-span-9 grid grid-cols-1 md:grid-cols-7 gap-6 lg:gap-8">
@@ -2770,8 +2770,8 @@ export default function ProductDetail() {
         {/* FAQs section - accordion layout - Only show if FAQs exist */}
         {product.faqSection?.faqs && product.faqSection.faqs.length > 0 && (
           <div className="mx-auto border-t border-white/10 pt-20 pb-6 w-full" style={{ maxWidth: "1440px" }}>
-            <h2 className="text-2xl font-light mb-8 px-4 md:px-6">FAQs</h2>
-            <div className="flex flex-col-reverse md:flex-row gap-8 px-4 md:px-6">
+            <h2 className="text-2xl font-light mb-8 px-0 md:px-6">FAQs</h2>
+            <div className="flex flex-col-reverse md:flex-row gap-8 px-0 md:px-6">
               {/* FAQs list */}
               <div className={`w-full ${product.faqSection.imageUrl ? 'md:w-4/12' : 'md:w-full'} space-y-4 pt-8 ${product.faqSection.imageUrl ? 'md:pt-44' : 'md:pt-0'}`}>
                 {product.faqSection.faqs.map((faq: any, index: number) => (
@@ -2830,7 +2830,7 @@ export default function ProductDetail() {
         {/* Design Stories - Product Testimonial - Only show if related products exist */}
         {relatedProducts.length > 0 && (
           <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
-            <div className="px-4 md:px-6">
+            <div className="px-0 md:px-6">
               <ProductTestimonial
                 items={testimonialItems}
                 categoryLinks={testimonialCategoryLinks}
@@ -2844,7 +2844,7 @@ export default function ProductDetail() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-16 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
-            <div className="px-4 md:px-6">
+            <div className="px-2 md:px-6">
               <h2 className="text-2xl sm:text-3xl font-light mb-8 text-center font-['Roboto_Mono'] tracking-wider">Related Products</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {relatedProducts.slice(0, 3).map((relatedProduct) => {
@@ -2878,10 +2878,10 @@ export default function ProductDetail() {
                         </div>
                         <div className="p-5 sm:p-6 space-y-2">
                           <div className="text-xs uppercase tracking-[0.3em] text-white/60 font-['Roboto_Mono']">
-                            {relatedProduct.categoryName || relatedProduct.type || 'Product'}
+                            {productName}
                           </div>
                           <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors font-['Roboto_Mono']">
-                            {productName}
+                            {relatedProduct.categoryName || relatedProduct.type || 'Product'}
                           </h3>
                         </div>
                       </div>
@@ -2896,7 +2896,7 @@ export default function ProductDetail() {
       </div>
 
       {/* Testimonial Collection and Wardrobe Section - matching homepage width */}
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6 z-10 relative">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-6 z-10 relative">
         {/* Testimonial Collection */}
         {/* <div className="mt-12 mb-16">
           <TestimonialCollection />
@@ -2915,7 +2915,7 @@ export default function ProductDetail() {
 
       {/* Footer Section */}
       <div className="mx-auto w-full" style={{ maxWidth: "1440px" }}>
-        <div className="px-4 md:px-6">
+        <div className="px-2 md:px-6">
           <Footer />
         </div>
       </div>

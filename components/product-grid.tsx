@@ -255,7 +255,7 @@ export default function ProductGrid({
       </div>
 
       {/* Product cards */}
-      <div className="relative max-w-[1440px] mx-auto px-6 sm:px-10 -mt-12 sm:-mt-44 pb-16">
+      <div className="relative max-w-[1440px] mx-auto px-2 sm:px-10 -mt-12 sm:-mt-44 pb-16">
         {/* Mobile: Grid Layout (when mobileGridLayout is true) */}
         {mobileGridLayout ? (
           <div className="sm:hidden grid grid-cols-2 gap-3 sm:gap-4 pb-6">
@@ -327,7 +327,7 @@ export default function ProductGrid({
           </div>
         ) : (
           /* Mobile: Horizontal Scroll (default behavior) */
-          <div className="sm:hidden flex overflow-x-auto gap-6 pb-6 scrollbar-hide snap-x snap-mandatory scroll-smooth -mx-6 px-6"
+          <div className="sm:hidden flex overflow-x-auto gap-6 pb-6 scrollbar-hide snap-x snap-mandatory scroll-smooth -mx-2 px-2"
             style={{
               scrollSnapType: 'x mandatory',
               WebkitOverflowScrolling: 'touch'

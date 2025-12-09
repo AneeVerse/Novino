@@ -281,7 +281,7 @@ export default function Home() {
 
       </div>
 
-      <div className="container mx-auto px-4 md:px-0 mt-4 z-50 relative" style={{ clear: 'both' }}>
+      <div className="container mx-auto px-2 md:px-0 mt-4 z-50 relative" style={{ clear: 'both' }}>
         {/* Featured Products Section */}
         <div className="mb-16 mt-20 relative" style={{ position: 'relative', zIndex: 30 }}>
           <FeaturedProducts initialProducts={featuredPaintingProducts} />
@@ -324,7 +324,7 @@ export default function Home() {
       </div> */}
 
       {/* New container for remaining sections */}
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6 z-10 relative">
+      <div className="max-w-[1440px] mx-auto px-2 md:px-6 z-10 relative">
         {/* Testimonial Collection - Temporarily hidden */}
         {/* <div className="mb-16">
           <Suspense fallback={<div className="min-h-[400px]" />}>

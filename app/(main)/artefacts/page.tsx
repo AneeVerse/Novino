@@ -47,7 +47,7 @@ export default function ArtefactsPage() {
       </section>
 
       {/* Clear separation from the hero section with negative margin to prevent overlap */}
-      <div className="container mx-auto px-4 md:px-0 mt-4 z-50 relative" style={{ clear: 'both' }}>
+      <div className="container mx-auto px-2 md:px-0 mt-4 z-50 relative" style={{ clear: 'both' }}>
         {/* DISCOVER EXTRAORDINARY ARTIFACTS Section */}
 
 
@@ -68,7 +68,7 @@ export default function ArtefactsPage() {
       </div>
 
       {/* New container for remaining sections */}
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 z-10 relative">
+      <div className="container mx-auto px-2 sm:px-6 md:px-8 z-10 relative">
         {/* Testimonial Collection - Temporarily hidden */}
         {/* <div className="mb-16">
           <Suspense fallback={<div className="min-h-[400px]" />}>

@@ -62,7 +62,7 @@ export default function JourneyPage() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-  
+
   return (
     <main className="relative min-h-screen bg-[#2D2D2D]">
       {/* Hero Section */}
@@ -76,11 +76,11 @@ export default function JourneyPage() {
         />
 
         <div className="absolute inset-0 z-20 overflow-hidden">
-          <div 
-            className="absolute w-full text-center" 
-            style={{ 
-              top: '55%', 
-              left: '50%', 
+          <div
+            className="absolute w-full text-center"
+            style={{
+              top: '55%',
+              left: '50%',
               transform: 'translate(-50%, 44%)',
               height: '160px',
               background: '#E8B08A',
@@ -90,7 +90,7 @@ export default function JourneyPage() {
               zIndex: -1
             }}
           ></div>
-          <h1 
+          <h1
             className={`journey-hero-text text-[120px] md:text-[200px] lg:text-[260px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
           >
             JOURNEY
@@ -100,7 +100,7 @@ export default function JourneyPage() {
 
       {/* Intro Sections */}
       <section className="w-full py-20 bg-[#2D2D2D]">
-        <div className="container mx-auto px-6 md:px-8">
+        <div className="container mx-auto px-2 md:px-8">
           <div className="space-y-14 max-w-[1200px] mx-auto">
             <div className="flex flex-col gap-4">
               <h2 className="text-white text-3xl sm:text-4xl font-light font-['DM_Serif_Display']">Where It Started</h2>
@@ -123,7 +123,7 @@ export default function JourneyPage() {
 
       {/* Observation Section */}
       <section className="w-full py-20 bg-[#1F1F1F]">
-        <div className="container mx-auto px-6 md:px-8">
+        <div className="container mx-auto px-2 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h3 className="text-white text-3xl sm:text-4xl font-light font-['DM_Serif_Display']">How the Work Happens</h3>
@@ -148,7 +148,7 @@ export default function JourneyPage() {
 
       {/* Design Stories */}
       <section className="w-full py-20 bg-[#2D2D2D]">
-        <div className="container mx-auto px-6 md:px-8">
+        <div className="container mx-auto px-2 md:px-8">
           <div className="flex flex-col gap-4 mb-12 text-center max-w-[1200px] mx-auto">
             <h3 className="text-white text-3xl sm:text-4xl font-light font-['DM_Serif_Display']">What the Designs Mean</h3>
             <p className="text-white/80 text-lg leading-relaxed font-['Roboto_Mono']">
@@ -169,7 +169,7 @@ export default function JourneyPage() {
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent transition-opacity duration-500 group-hover:opacity-0" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent transition-opacity duration-500 group-hover:opacity-0" />
                 </div>
                 <div className="p-6 space-y-3">
                   <h4 className="text-white text-2xl font-light font-['DM_Serif_Display']">{story.title}</h4>
@@ -183,7 +183,7 @@ export default function JourneyPage() {
 
       {/* Black and White Section */}
       <section className="w-full py-20 bg-[#1F1F1F]">
-        <div className="container mx-auto px-6 md:px-8">
+        <div className="container mx-auto px-2 md:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="order-2 md:order-1 space-y-6">
               <h3 className="text-white text-3xl sm:text-4xl font-light font-['DM_Serif_Display']">Why Black and White</h3>
@@ -207,7 +207,7 @@ export default function JourneyPage() {
 
       {/* Reflection Section */}
       <section className="w-full py-20 bg-[#2D2D2D]">
-        <div className="container mx-auto px-6 md:px-8">
+        <div className="container mx-auto px-2 md:px-8">
           <div className="max-w-[1200px] mx-auto text-center space-y-6">
             <h3 className="text-white text-3xl sm:text-4xl font-light font-['DM_Serif_Display']">What You're Seeing</h3>
             <p className="text-white/80 text-lg leading-relaxed font-['Roboto_Mono']">
@@ -227,7 +227,10 @@ export default function JourneyPage() {
         </div>
       </section>
 
-      <Footer />
+      {/* Footer Section */}
+      <div className="max-w-[1440px] mx-auto px-2 md:px-6 z-10 relative">
+        <Footer />
+      </div>
 
       <style jsx global>{`
         @keyframes riseUp {

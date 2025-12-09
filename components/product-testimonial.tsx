@@ -317,16 +317,16 @@ export default function ProductTestimonial({
                   }}
                 ></div>
 
-                {/* Category Name + Design/Product Name - Side by side on all screens */}
-                <div className="flex flex-row items-center gap-2 sm:gap-3 relative z-10">
-                  {current.category && (
-                    <span className="text-sm sm:text-xl md:text-2xl font-semibold tracking-[0.15em] text-white uppercase" style={{ fontFamily: '"Roboto Mono", monospace' }}>
-                      {current.category}
+                {/* Design/Product Name + Category Name - Side by side on all screens */}
+                <div className="flex flex-row flex-nowrap items-center gap-2 sm:gap-3 relative z-10">
+                  {current.productName && (
+                    <span className="text-xs sm:text-lg md:text-xl font-semibold tracking-[0.15em] text-white uppercase whitespace-nowrap" style={{ fontFamily: '"Roboto Mono", monospace' }}>
+                      {current.productName}
                     </span>
                   )}
-                  {current.productName && (
-                    <span className="text-sm sm:text-xl md:text-2xl font-semibold tracking-[0.15em] text-white uppercase" style={{ fontFamily: '"Roboto Mono", monospace' }}>
-                      {current.productName}
+                  {current.category && (
+                    <span className="text-xs sm:text-lg md:text-xl font-semibold tracking-[0.15em] text-white uppercase whitespace-nowrap" style={{ fontFamily: '"Roboto Mono", monospace' }}>
+                      {current.category}
                     </span>
                   )}
                 </div>
