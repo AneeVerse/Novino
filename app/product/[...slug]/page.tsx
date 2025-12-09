@@ -2898,9 +2898,9 @@ export default function ProductDetail() {
       {/* Testimonial Collection and Wardrobe Section - matching homepage width */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-6 z-10 relative">
         {/* Testimonial Collection */}
-        <div className="mt-12 mb-16">
+        {/* <div className="mt-12 mb-16">
           <TestimonialCollection />
-        </div>
+        </div> */}
 
         {/* Blog Section - reduced spacing */}
         {/* <div className="mt-8">

@@ -325,12 +325,12 @@ export default function Home() {
 
       {/* New container for remaining sections */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-6 z-10 relative">
-        {/* Testimonial Collection */}
-        <div className="mb-16">
+        {/* Testimonial Collection - Temporarily hidden */}
+        {/* <div className="mb-16">
           <Suspense fallback={<div className="min-h-[400px]" />}>
             <TestimonialCollection />
           </Suspense>
-        </div>
+        </div> */}
 
         {/* Blog Section */}
         {/* <div className="mb-16">

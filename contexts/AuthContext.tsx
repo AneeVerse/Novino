@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // For regular users, use Supabase client directly in login page
   const login = async (email: string, password: string): Promise<boolean> => {
     // Admin hardcoded login
-    if (email === 'novino@admin' && password === 'novino@admin') {
+    if (email === 'business@novino.io' && password === 'Dontchangeme@01') {
       // For admin, we could create a special admin user in Supabase
       // or keep this localStorage approach for backward compatibility
       try {

@@ -69,12 +69,12 @@ export default function ArtefactsPage() {
 
       {/* New container for remaining sections */}
       <div className="container mx-auto px-4 sm:px-6 md:px-8 z-10 relative">
-        {/* Testimonial Collection */}
-        <div className="mb-16">
+        {/* Testimonial Collection - Temporarily hidden */}
+        {/* <div className="mb-16">
           <Suspense fallback={<div className="min-h-[400px]" />}>
             <TestimonialCollection />
           </Suspense>
-        </div>
+        </div> */}
 
         {/* Blog Section */}
         {/* <div className="mb-16">
