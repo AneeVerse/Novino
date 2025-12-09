@@ -363,7 +363,7 @@ export default function LoginPage() {
     <div
       className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 relative"
       style={{
-        backgroundImage: "url('/loginbg.png')",
+        backgroundImage: "url('https://ik.imagekit.io/gkkczwgam/hero.webp?updatedAt=1764844020664')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat"
