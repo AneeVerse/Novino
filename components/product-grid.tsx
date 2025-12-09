@@ -386,10 +386,10 @@ export default function ProductGrid({
                       <div className="absolute inset-x-0 bottom-0 p-5 z-10 transition-all duration-400 group-hover:-translate-y-2">
                         <div className="space-y-2">
                           <div className="text-xs uppercase tracking-[0.3em] text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] transition-all duration-400">
-                            {product.category}
+                            {product.name || product.title || "Untitled"}
                           </div>
                           <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)]">
-                            {product.name || product.title || "Untitled"}
+                            {product.category}
                           </h3>
                         </div>
                       </div>
@@ -456,10 +456,10 @@ export default function ProductGrid({
                     <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-10 transition-all duration-400 group-hover:-translate-y-3">
                       <div className="space-y-2">
                         <div className="text-xs uppercase tracking-[0.3em] text-white drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] transition-all duration-400">
-                          {product.category}
+                          {product.name || product.title || "Untitled"}
                         </div>
                         <h3 className="text-lg text-white font-medium tracking-wide group-hover:text-[#E5C29F] transition-colors drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
-                          {product.name || product.title || "Untitled"}
+                          {product.category}
                         </h3>
                       </div>
                     </div>
