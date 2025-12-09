@@ -421,7 +421,23 @@ export default function OrdersPage() {
                       </td>
 
                       <td className="px-4 py-4">
-                        <div className="text-xs text-white/60">{order.pickup_location || 'N/A'}</div>
+                        <div className="relative group">
+                          <div className="text-xs text-white/60 cursor-pointer hover:text-white/80 transition-colors">
+                            {order.pickup_location || 'N/A'}
+                          </div>
+                          {/* Pickup Address Tooltip */}
+                          <div className="absolute left-0 top-full mt-2 z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200">
+                            <div className="bg-[#FFFDE7] text-black p-3 rounded-lg shadow-xl min-w-[250px] text-xs leading-relaxed border border-yellow-200">
+                              <div className="font-semibold mb-1">{order.pickup_location || 'work'}</div>
+                              <div>NOVINO INK ARTS (OPC) Pvt Ltd,</div>
+                              <div>Office No.807, Mayuresh Cosmos,</div>
+                              <div>Sec - 11, Plot No. 37, CBD Belapur,</div>
+                              <div>Navi Mumbai - 400 614</div>
+                              <div>Maharashtra-400614</div>
+                              <div className="mt-1 font-medium">8655844069</div>
+                            </div>
+                          </div>
+                        </div>
                       </td>
 
                       <td className="px-4 py-4">
