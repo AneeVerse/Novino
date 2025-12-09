@@ -19,17 +19,18 @@ export default function Footer() {
 
   // Function to toggle sections with the grouped behavior
   const toggleSection = (section: SectionName) => {
-    if (section === 'company' || section === 'help') {
+    if (section === 'company' || section === 'faq') {
+      // QUICK LINKS and FAQ toggle together
       setOpenSections({
         ...openSections,
         company: !openSections.company,
-        help: !openSections.company
+        faq: !openSections.company
       });
-    } else if (section === 'resources' || section === 'faq') {
+    } else if (section === 'help') {
+      // POLICY toggles independently
       setOpenSections({
         ...openSections,
-        resources: !openSections.resources,
-        faq: !openSections.resources
+        help: !openSections.help
       });
     } else {
       setOpenSections({
@@ -192,72 +193,6 @@ export default function Footer() {
                 </div>
               </div>
 
-              {/* Help Column */}
-              <div>
-                {/* Mobile view with collapsible sections */}
-                <div className="sm:hidden">
-                  <div
-                    className="flex items-start cursor-pointer relative"
-                    onClick={() => toggleSection('help')}
-                  >
-                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">POLICY</h3>
-                    <ChevronRight
-                      size={16}
-                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.help ? 'rotate-90' : ''}`}
-                    />
-                  </div>
-                  <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.help ? 'max-h-40' : 'max-h-0'}`}>
-                    <li>
-                      <Link href="/payment-policy" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Payment Policy
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/shipping-policy" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Shipping Policy
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/terms-conditions" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Terms & Conditions
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/privacy-policy" className="text-gray-300 hover:text-white text-xs font-satoshi">
-                        Privacy Policy
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Desktop view with always visible links */}
-                <div className="hidden sm:block">
-                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">POLICY</h3>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link href="/payment-policy" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Payment Policy
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/shipping-policy" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Shipping Policy
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/terms-conditions" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Terms & Conditions
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/privacy-policy" className="text-gray-300 hover:text-white text-sm font-satoshi">
-                        Privacy Policy
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
               {/* FAQ Column */}
               <div>
                 {/* Mobile view with collapsible sections */}
@@ -318,6 +253,72 @@ export default function Footer() {
                     <li>
                       <Link href="/contact" className="text-gray-300 hover:text-white text-sm font-satoshi">
                         Customer Support
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Policy Column */}
+              <div>
+                {/* Mobile view with collapsible sections */}
+                <div className="sm:hidden">
+                  <div
+                    className="flex items-start cursor-pointer relative"
+                    onClick={() => toggleSection('help')}
+                  >
+                    <h3 className="text-white text-base font-medium mb-3 font-satoshi">POLICY</h3>
+                    <ChevronRight
+                      size={16}
+                      className={`text-white transition-transform absolute mt-1 -mr-6 right-10 ${openSections.help ? 'rotate-90' : ''}`}
+                    />
+                  </div>
+                  <ul className={`space-y-1.5 overflow-hidden transition-all duration-300 ${openSections.help ? 'max-h-40' : 'max-h-0'}`}>
+                    <li>
+                      <Link href="/payment-policy" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Payment Policy
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/shipping-policy" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Shipping Policy
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/terms-conditions" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Terms & Conditions
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/privacy-policy" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                        Privacy Policy
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Desktop view with always visible links */}
+                <div className="hidden sm:block">
+                  <h3 className="text-white text-lg font-medium mb-4 font-satoshi">POLICY</h3>
+                  <ul className="space-y-2">
+                    <li>
+                      <Link href="/payment-policy" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Payment Policy
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/shipping-policy" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Shipping Policy
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/terms-conditions" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Terms & Conditions
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/privacy-policy" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                        Privacy Policy
                       </Link>
                     </li>
                   </ul>
