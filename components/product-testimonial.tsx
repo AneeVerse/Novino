@@ -299,7 +299,7 @@ export default function ProductTestimonial({
           </div>
 
           {/* Testimonial Content */}
-          <div className="flex-1 relative text-white h-auto sm:h-[350px] md:h-[400px] flex items-center mt-6 md:mt-0 ml-0 md:ml-6 w-full" style={{ fontFamily: '"Roboto Mono", monospace' }}>
+          <div className="flex-1 relative text-white h-auto sm:h-[350px] md:h-[400px] flex items-center mt-16 sm:mt-0 md:mt-0 ml-0 md:ml-6 w-full" style={{ fontFamily: '"Roboto Mono", monospace' }}>
             <div className="flex w-full items-start">
               {/* Main content */}
               <div className="flex-1 space-y-4 sm:space-y-6 md:space-y-8 pr-1 sm:pr-6 relative min-w-0">
@@ -346,7 +346,7 @@ export default function ProductTestimonial({
                         href={current.link}
                         className="inline-flex items-center gap-2 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-white/80 hover:text-white mt-4 transition-colors"
                       >
-                        View Design
+                        View Product
                         <span className="text-base leading-none">↗</span>
                       </Link>
                     )}
@@ -355,7 +355,7 @@ export default function ProductTestimonial({
               </div>
 
               {/* Navigation Controls - visible on mobile, positioned on right */}
-              <div className="flex flex-col h-[280px] sm:h-[320px] justify-between items-center py-6 w-8 md:w-auto ml-1 sm:ml-0 flex-shrink-0">
+              <div className="flex flex-col h-[280px] sm:h-[320px] justify-between items-center pt-0 sm:pt-6 pb-6 w-8 md:w-auto ml-1 sm:ml-0 flex-shrink-0">
                 {/* Right arrow (for next) */}
                 <button
                   onClick={nextTestimonial}

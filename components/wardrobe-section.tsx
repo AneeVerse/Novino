@@ -7,11 +7,24 @@ export default function WardrobeSection() {
       {/* Full background image */}
       <div className="relative w-full h-[420px] sm:h-[380px] md:h-[300px] overflow-hidden">
         <div className="absolute inset-0 wardrobe-image-wrapper">
+          {/* Mobile background image */}
+          <Image
+            src="https://ik.imagekit.io/gkkczwgam/hero.webp?updatedAt=1764844020664"
+            alt="Wardrobe background"
+            fill
+            className="object-cover wardrobe-bg-image sm:hidden"
+            style={{
+              objectPosition: 'center center',
+              transform: 'scale(1)',
+            }}
+            priority
+          />
+          {/* Desktop/Tablet background image */}
           <Image
             src="/images/wardrobe/b1 (1).png"
             alt="Wardrobe background"
             fill
-            className="object-cover wardrobe-bg-image"
+            className="object-cover wardrobe-bg-image hidden sm:block"
             style={{
               objectPosition: 'left center',
               transform: 'scale(1)',

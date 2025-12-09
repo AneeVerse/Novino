@@ -2370,8 +2370,8 @@ export default function ProductDetail() {
                   </div>
 
                   {/* Quantity and Add to Cart */}
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-8 w-full">
-                    <div className="flex items-center border border-white/20 rounded-sm overflow-hidden backdrop-blur-sm self-center sm:self-auto">
+                  <div className="flex flex-row items-center gap-3 mb-8 w-full">
+                    <div className="flex items-center border border-white/20 rounded-sm overflow-hidden backdrop-blur-sm flex-shrink-0">
                       <button
                         onClick={decreaseQuantity}
                         className="w-10 h-12 flex items-center justify-center hover:bg-white/10 transition-all duration-300 text-lg font-light"
@@ -2391,7 +2391,7 @@ export default function ProductDetail() {
 
                     <button
                       onClick={handleAddToCart}
-                      className="w-full sm:flex-1 h-12 bg-white text-black hover:bg-white/90 hover:shadow-lg hover:shadow-white/20 px-6 uppercase tracking-widest text-xs font-medium transition-all duration-300 rounded-sm transform hover:scale-[1.02] active:scale-[0.98] font-['Roboto_Mono'] flex items-center justify-center"
+                      className="flex-1 h-12 bg-white text-black hover:bg-white/90 hover:shadow-lg hover:shadow-white/20 px-6 uppercase tracking-widest text-xs font-medium transition-all duration-300 rounded-sm transform hover:scale-[1.02] active:scale-[0.98] font-['Roboto_Mono'] flex items-center justify-center"
                     >
                       Add to Cart
                     </button>
