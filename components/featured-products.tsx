@@ -401,29 +401,33 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
           {headingText}
         </h2>
 
-        {/* Mobile & Desktop: Transform-based infinite scroll; desktop shows 3 cards */}
+        {/* Mobile: Native smooth scroll with snap; Desktop: Transform-based infinite scroll */}
         <div
-          className="overflow-hidden relative pb-12 md:pb-16"
+          className={`relative pb-12 md:pb-16 ${isMobile ? 'overflow-x-auto scrollbar-hide scroll-smooth' : 'overflow-hidden'}`}
           style={{
             paddingTop: '4rem',
-            paddingBottom: '2rem'
+            paddingBottom: '2rem',
+            ...(isMobile ? {
+              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: 'touch', // Momentum scrolling on iOS
+            } : {})
           }}
-          onMouseDown={handlePointerDown}
-          onMouseMove={handlePointerMove}
-          onMouseUp={handlePointerUp}
-          onMouseLeave={handlePointerUp}
-          onTouchStart={handlePointerDown}
-          onTouchMove={handlePointerMove}
-          onTouchEnd={handlePointerUp}
-          onWheel={handleWheel}
+          onMouseDown={!isMobile ? handlePointerDown : undefined}
+          onMouseMove={!isMobile ? handlePointerMove : undefined}
+          onMouseUp={!isMobile ? handlePointerUp : undefined}
+          onMouseLeave={!isMobile ? handlePointerUp : undefined}
+          onTouchStart={!isMobile ? handlePointerDown : undefined}
+          onTouchMove={!isMobile ? handlePointerMove : undefined}
+          onTouchEnd={!isMobile ? handlePointerUp : undefined}
+          onWheel={!isMobile ? handleWheel : undefined}
+          ref={isMobile ? scrollContainerRef as React.RefObject<HTMLDivElement> : undefined}
         >
           <div
-            ref={scrollContainerRef}
-            className="flex gap-8 md:gap-12 px-4 md:px-6 items-start w-max will-change-transform cursor-grab active:cursor-grabbing select-none"
-            style={{
+            ref={!isMobile ? scrollContainerRef : undefined}
+            className={`flex gap-8 md:gap-12 px-4 md:px-6 items-start ${isMobile ? '' : 'w-max will-change-transform cursor-grab active:cursor-grabbing'} select-none`}
+            style={isMobile ? {} : {
               transform: `translateX(${translateX.current}px)`,
-              touchAction: 'pan-x', // Only allow horizontal panning on touch devices
-              WebkitOverflowScrolling: 'touch', // Momentum scrolling on iOS
+              touchAction: 'pan-x',
             }}
           >
             {displayProducts.map((product, index) => {
@@ -433,7 +437,7 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
                 <div
                   key={`${product.id}-${index}`}
                   ref={(el) => setCardRef(index, el)}
-                  className={`flex flex-col relative w-[75%] min-w-[75%] md:w-[calc((1440px-96px)/3)] md:min-w-[calc((1440px-96px)/3)] flex-none ${isCentered ? 'z-10' : 'z-0'}`}
+                  className={`flex flex-col relative w-[75%] min-w-[75%] md:w-[calc((1440px-96px)/3)] md:min-w-[calc((1440px-96px)/3)] flex-none ${isMobile ? 'snap-center' : ''} ${isCentered ? 'z-10' : 'z-0'}`}
                   style={{
                     willChange: isCentered ? 'transform, opacity' : 'auto',
                     backfaceVisibility: 'hidden',
@@ -506,6 +510,17 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
           </div>
         </div>
       </div>
+
+      {/* Hide scrollbar for mobile horizontal scroll */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
