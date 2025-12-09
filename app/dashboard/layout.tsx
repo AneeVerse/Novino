@@ -17,10 +17,15 @@ const legacyNavItems: DashboardSidebarNavItem[] = [
   },
   {
     name: "Dashboard",
-    href: "/dashboard",
+    href: "/dashboard?tab=overview",
     icon: LayoutDashboard,
     activeMatcher: ({ pathname, searchParams }) =>
-      pathname === "/dashboard" && !searchParams?.get("tab"),
+      pathname === "/dashboard" && searchParams?.get("tab") === "overview",
+  },
+  {
+    name: "Orders",
+    href: "/dashboard/orders",
+    icon: ShoppingCart,
   },
   {
     name: "Blogs",
@@ -42,11 +47,6 @@ const legacyNavItems: DashboardSidebarNavItem[] = [
     icon: Package,
     activeMatcher: ({ pathname, searchParams }) =>
       pathname === "/dashboard" && searchParams?.get("tab") === "products",
-  },
-  {
-    name: "Orders",
-    href: "/dashboard/orders",
-    icon: ShoppingCart,
   },
   {
     name: "Users",

@@ -48,11 +48,11 @@ export type ShiprocketOrderPayload = {
  */
 function isLikelyTestNumber(digits: string): boolean {
   if (digits.length !== 10) return false;
-  
+
   // Check for repetitive digits (1111111111, 7777777777, etc.)
   const allSame = digits.split('').every(d => d === digits[0]);
   if (allSame) return true;
-  
+
   // Check for sequential numbers (1234567890, 9876543210, etc.)
   const isSequential = digits.split('').every((d, i) => {
     if (i === 0) return true;
@@ -61,13 +61,13 @@ function isLikelyTestNumber(digits: string): boolean {
     return curr === prev + 1 || curr === prev - 1;
   });
   if (isSequential) return true;
-  
+
   // Check for alternating patterns (1212121212, 1010101010, etc.)
-  const isAlternating = digits.length >= 4 && 
+  const isAlternating = digits.length >= 4 &&
     digits.slice(0, 2) === digits.slice(2, 4) &&
     digits.split('').every((d, i) => i % 2 === 0 ? d === digits[0] : d === digits[1]);
   if (isAlternating) return true;
-  
+
   // Common test numbers known to be rejected
   const testNumbers = [
     '1111111111', '2222222222', '3333333333', '4444444444',
@@ -76,7 +76,7 @@ function isLikelyTestNumber(digits: string): boolean {
     '0123456789', '1010101010', '1212121212', '1234123412'
   ];
   if (testNumbers.includes(digits)) return true;
-  
+
   return false;
 }
 
@@ -84,15 +84,15 @@ function normalizePhone(phone?: string): string {
   if (!phone || typeof phone !== 'string') {
     return '';
   }
-  
+
   // Remove all non-digit characters
   let digits = phone.replace(/\D/g, '');
-  
+
   // Handle empty after stripping
   if (!digits) {
     return '';
   }
-  
+
   // Handle international format (+91 or 91 prefix)
   if (digits.length === 12 && digits.startsWith('91')) {
     digits = digits.slice(2);
@@ -100,17 +100,17 @@ function normalizePhone(phone?: string): string {
   if (digits.length === 13 && digits.startsWith('9191')) {
     digits = digits.slice(2);
   }
-  
+
   // Handle leading zero (domestic format)
   if (digits.length === 11 && digits.startsWith('0')) {
     digits = digits.slice(1);
   }
-  
+
   // Take last 10 digits if longer
   if (digits.length > 10) {
     digits = digits.slice(-10);
   }
-  
+
   // Validate: must be exactly 10 digits and not start with 0 or 1
   // Indian mobile numbers start with 6-9, landlines with 2-5
   if (digits.length === 10) {
@@ -124,7 +124,7 @@ function normalizePhone(phone?: string): string {
       return digits;
     }
   }
-  
+
   return '';
 }
 
@@ -175,7 +175,7 @@ async function shiprocketFetch<T>(path: string, init: RequestInit = {}, force = 
   if (!res.ok) {
     const text = await res.text();
     let errorMessage = `Shiprocket request failed (${path}): ${res.status}`;
-    
+
     // Try to parse error response for better error messages
     try {
       const errorData = JSON.parse(text);
@@ -222,7 +222,7 @@ async function shiprocketFetch<T>(path: string, init: RequestInit = {}, force = 
       // If not JSON, use raw text
       errorMessage += ` - ${text.substring(0, 200)}`;
     }
-    
+
     throw new Error(errorMessage);
   }
 
@@ -380,10 +380,10 @@ export async function fetchShiprocketOrdersList(filters: ShiprocketOrderFilters 
   if (filters.sort) query.set("sort", filters.sort);
 
   const path = `/orders${query.toString() ? `?${query.toString()}` : ""}`;
-  
+
   try {
     const response = await shiprocketFetch<ShiprocketOrderListResponse>(path);
-    
+
     // Log response for debugging
     if (filters.page === 1 || !filters.page) {
       console.log('📦 Shiprocket orders API response:', {
@@ -393,7 +393,7 @@ export async function fetchShiprocketOrdersList(filters: ShiprocketOrderFilters 
         filters,
       });
     }
-    
+
     return response;
   } catch (error) {
     console.error('❌ Shiprocket orders API error:', {
@@ -423,6 +423,7 @@ export interface ShiprocketOverviewMetrics {
   prepaidOrders: number;
   todaysOrders: number;
   yesterdaysOrders?: number;
+  newOrders: number; // Orders with NEW status (not yet shipped)
   totalRevenue: number;
   todayRevenue?: number;
   yesterdayRevenue?: number;
@@ -488,17 +489,17 @@ export async function getShiprocketOverviewMetrics(range: { from: string; to: st
   // Get today's date in IST (Indian Standard Time, UTC+5:30)
   // Shiprocket operates in IST, so we need to compare dates in IST
   const now = new Date();
-  
+
   // Get current date in IST format (YYYY-MM-DD)
   // Use Intl.DateTimeFormat to get date in IST timezone
-  const istFormatter = new Intl.DateTimeFormat('en-CA', { 
+  const istFormatter = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Kolkata',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
   });
   const todayISO = istFormatter.format(now);
-  
+
   // Get yesterday's date in IST
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
@@ -515,13 +516,13 @@ export async function getShiprocketOverviewMetrics(range: { from: string; to: st
   // Helper function to parse Shiprocket date format
   const parseShiprocketDate = (dateStr: string | undefined): string => {
     if (!dateStr) return '';
-    
+
     try {
       // Try parsing as Date object - handles formats like "26 Nov 2025, 05:05 PM"
       const parsed = new Date(dateStr);
       if (!isNaN(parsed.getTime())) {
         // Convert to IST and format as YYYY-MM-DD
-        const istFormatter = new Intl.DateTimeFormat('en-CA', { 
+        const istFormatter = new Intl.DateTimeFormat('en-CA', {
           timeZone: 'Asia/Kolkata',
           year: 'numeric',
           month: '2-digit',
@@ -560,6 +561,7 @@ export async function getShiprocketOverviewMetrics(range: { from: string; to: st
     prepaidOrders: number;
     todaysOrders: number;
     yesterdaysOrders: number;
+    newOrders: number;
     todayRevenue: number;
     yesterdayRevenue: number;
   };
@@ -595,6 +597,12 @@ export async function getShiprocketOverviewMetrics(range: { from: string; to: st
         acc.yesterdayRevenue += total;
       }
 
+      // Count orders with NEW status (not yet shipped)
+      const status = (order.status || '').toUpperCase().trim();
+      if (status === 'NEW' || status.includes('NEW') || status === 'PENDING' || !status) {
+        acc.newOrders += 1;
+      }
+
       return acc;
     },
     {
@@ -603,6 +611,7 @@ export async function getShiprocketOverviewMetrics(range: { from: string; to: st
       prepaidOrders: 0,
       todaysOrders: 0,
       yesterdaysOrders: 0,
+      newOrders: 0,
       todayRevenue: 0,
       yesterdayRevenue: 0,
     }
@@ -617,6 +626,7 @@ export async function getShiprocketOverviewMetrics(range: { from: string; to: st
     prepaidOrders: totals.prepaidOrders,
     todaysOrders: totals.todaysOrders,
     yesterdaysOrders: totals.yesterdaysOrders,
+    newOrders: totals.newOrders,
     todayRevenue: totals.todayRevenue,
     yesterdayRevenue: totals.yesterdayRevenue,
     totalRevenue: totals.totalRevenue,
@@ -631,6 +641,7 @@ export async function getShiprocketOverviewMetrics(range: { from: string; to: st
     prepaidOrders: totals.prepaidOrders,
     todaysOrders: totals.todaysOrders,
     yesterdaysOrders: totals.yesterdaysOrders,
+    newOrders: totals.newOrders,
     totalRevenue: Number(totals.totalRevenue.toFixed(2)),
     todayRevenue: Number(totals.todayRevenue.toFixed(2)),
     yesterdayRevenue: Number(totals.yesterdayRevenue.toFixed(2)),
@@ -651,7 +662,7 @@ export async function createShiprocketShipment(payload: ShiprocketOrderPayload) 
   // Validate and normalize phone number
   const originalPhone = payload.deliveryAddress.phone;
   const normalizedPhone = normalizePhone(originalPhone);
-  
+
   if (!normalizedPhone) {
     console.error('Shiprocket: Invalid phone number', {
       original: originalPhone,
@@ -660,7 +671,7 @@ export async function createShiprocketShipment(payload: ShiprocketOrderPayload) 
     });
     throw new Error(`Invalid phone number provided: "${originalPhone}". Phone number must be a valid 10-digit Indian mobile number (starting with 6-9).`);
   }
-  
+
   // Check if phone number appears to be a test/fake number
   // Shiprocket rejects obvious test numbers like 7777777777, 1234567890, etc.
   if (isLikelyTestNumber(normalizedPhone)) {
@@ -672,7 +683,7 @@ export async function createShiprocketShipment(payload: ShiprocketOrderPayload) 
     // We'll still try to send it, but log a warning
     // Shiprocket will reject it if it's truly a test number
   }
-  
+
   console.log('Shiprocket: Phone normalized', {
     original: originalPhone,
     normalized: normalizedPhone,
@@ -721,18 +732,18 @@ export async function createShiprocketShipment(payload: ShiprocketOrderPayload) 
   if (response.message && response.message.includes('Wrong Pickup location') && response.data?.data && Array.isArray(response.data.data) && response.data.data.length > 0) {
     const availableLocation = response.data.data[0];
     const correctPickupLocation = availableLocation.pickup_location;
-    
+
     console.warn(`Shiprocket: Wrong pickup location "${body.pickup_location}". Available location is "${correctPickupLocation}". Retrying with correct location...`);
-    
+
     // Update the body with the correct pickup location
     body.pickup_location = correctPickupLocation;
-    
+
     // Retry with the correct pickup location
     response = await shiprocketFetch<any>('/orders/create/adhoc', {
       method: 'POST',
       body: JSON.stringify(body),
     });
-    
+
     console.log('Shiprocket create order response (retry):', JSON.stringify(response, null, 2));
   }
 

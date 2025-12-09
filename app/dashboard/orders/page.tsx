@@ -112,6 +112,10 @@ export default function OrdersPage() {
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
   const [shippingOrder, setShippingOrder] = useState<string | null>(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   // Courier selection modal state
   const [showCourierModal, setShowCourierModal] = useState(false);
   const [selectedOrderForCourier, setSelectedOrderForCourier] = useState<Order | null>(null);
@@ -141,7 +145,16 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/shiprocket/orders');
+      // Calculate 30-day date range to match dashboard
+      const today = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const toDate = today.toISOString().slice(0, 10);
+      const fromDate = thirtyDaysAgo.toISOString().slice(0, 10);
+
+      // Request up to 200 orders with 30-day date range
+      const response = await fetch(`/api/shiprocket/orders?perPage=200&from=${fromDate}&to=${toDate}`);
       const data = await response.json();
 
       // Debug: Log the first order to see date format
@@ -151,6 +164,7 @@ export default function OrdersPage() {
           order_date: data.data[0].order_date,
           created_at: data.data[0].created_at,
         });
+        console.log(`Fetched ${data.data.length} orders from ${fromDate} to ${toDate}`);
       }
 
       setOrders(data.data || []);
@@ -245,6 +259,18 @@ export default function OrdersPage() {
     return true;
   });
 
+  // Pagination calculations
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / itemsPerPage));
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchTerm]);
+
   return (
     <div className="min-h-screen bg-[#1A1A1A] text-white p-6">
       <div className="max-w-[1600px] mx-auto">
@@ -337,7 +363,7 @@ export default function OrdersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {filteredOrders.map((order) => (
+                  {paginatedOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-white/5">
                       <td className="px-4 py-4">
                         <div className="text-sm font-medium">{order.order_id}</div>
@@ -455,12 +481,20 @@ export default function OrdersPage() {
 
         {/* Pagination */}
         <div className="mt-6 flex items-center justify-between text-sm">
-          <div className="text-white/60">Page 1 of 1</div>
+          <div className="text-white/60">Page {currentPage} of {totalPages} ({filteredOrders.length} orders)</div>
           <div className="flex items-center gap-2">
-            <button className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg disabled:opacity-50" disabled>
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              disabled={currentPage <= 1}
+            >
               Previous
             </button>
-            <button className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg disabled:opacity-50" disabled>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              disabled={currentPage >= totalPages}
+            >
               Next
             </button>
           </div>

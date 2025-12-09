@@ -2,17 +2,22 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Home,
   Users,
   Settings,
   MessageSquare,
   ChevronRight,
+  ChevronUp,
   FileText,
   Package,
   ShoppingCart,
   X,
-  Search
+  Search,
+  LogOut,
+  ExternalLink
 } from "lucide-react";
 import { useState } from "react";
 import type { ElementType } from "react";
@@ -49,7 +54,23 @@ export default function DashboardSidebar({
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { logout } = useAuth();
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  const handleLogout = async () => {
+    // Remove admin token first
+    localStorage.removeItem('adminAuthToken');
+    // Close the dropdown
+    setUserDropdownOpen(false);
+    // The logout function in AuthContext handles the redirect
+    await logout();
+  };
+
+  const handleGoToMainPage = () => {
+    router.push('/');
+  };
 
   const defaultNavItems: DashboardSidebarNavItem[] = [
     {
@@ -282,17 +303,48 @@ export default function DashboardSidebar({
           )}
         </nav>
 
-        {/* User section at bottom */}
-        <div className="border-t border-[#333333] p-4">
-          <div className="flex items-center space-x-3 px-3 py-2 overflow-hidden">
+        {/* User section at bottom with dropdown */}
+        <div className="border-t border-[#333333] p-4 relative">
+          <button
+            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+            className="w-full flex items-center space-x-3 px-3 py-2 overflow-hidden hover:bg-[#222222] rounded-lg transition-colors"
+          >
             <div className="w-8 h-8 bg-[#A47E3B] rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-              A
+              N
             </div>
-            <div className="flex-1 min-w-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <p className="text-sm font-medium text-white truncate">Admin</p>
-              <p className="text-xs text-white/60 truncate">admin@novino.io</p>
+            <div className="flex-1 min-w-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-left">
+              <p className="text-sm font-medium text-white truncate">novino</p>
+              <p className="text-xs text-white/60 truncate">business@novino.io</p>
             </div>
-          </div>
+            <ChevronUp className={cn(
+              "w-4 h-4 text-white/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex-shrink-0",
+              userDropdownOpen && "rotate-180"
+            )} />
+          </button>
+
+          {/* Dropdown menu */}
+          {userDropdownOpen && (
+            <div className="absolute bottom-full left-4 right-4 mb-2 bg-[#222222] border border-[#333333] rounded-lg shadow-lg overflow-hidden z-50">
+              <div className="px-4 py-3 border-b border-[#333333]">
+                <p className="text-xs text-white/50 uppercase tracking-wider">Signed in as</p>
+                <p className="text-sm font-medium text-white mt-1">novino</p>
+              </div>
+              <button
+                onClick={handleGoToMainPage}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:bg-[#333333] hover:text-white transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span className="text-sm">Go to Main Page</span>
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:bg-[#333333] hover:text-white transition-colors border-t border-[#333333]"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="text-sm">Logout</span>
+              </button>
+            </div>
+          )}
         </div>
       </aside>
     </>

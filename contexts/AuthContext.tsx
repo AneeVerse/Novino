@@ -133,11 +133,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Sign out from Supabase
       await supabase.auth.signOut();
 
-      // Redirect to login
+      // Use window.location.href for a clean redirect that resets all React state
+      // This prevents the redirect loop caused by stale auth state
       if (isAdminAuth) {
-        router.push('/admin/login');
+        window.location.href = '/admin/login';
       } else {
-        router.push('/login');
+        window.location.href = '/login';
       }
     } catch (error) {
       console.error('Error during logout:', error);

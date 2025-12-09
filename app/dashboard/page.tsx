@@ -98,6 +98,7 @@ interface ShiprocketOverviewMetrics {
   prepaidOrders: number;
   todaysOrders: number;
   yesterdaysOrders?: number;
+  newOrders?: number;
   totalRevenue: number;
   todayRevenue?: number;
   yesterdayRevenue?: number;
@@ -212,16 +213,17 @@ function DashboardContent() {
   // Get tab from URL parameter
   const searchParams = useSearchParams();
   const tabParam = searchParams ? searchParams.get('tab') : null;
-  const [activeTab, setActiveTab] = useState(tabParam || 'overview');
+  const [activeTab, setActiveTab] = useState(tabParam || 'home');
 
   // Update activeTab when URL parameter changes
   useEffect(() => {
     if (searchParams) {
-      setActiveTab(searchParams.get('tab') || 'overview');
+      setActiveTab(searchParams.get('tab') || 'home');
     }
   }, [searchParams]);
 
   const shiprocketRangePresets = [
+    { label: '1d', days: 1 },
     { label: '7d', days: 7 },
     { label: '14d', days: 14 },
     { label: '30d', days: 30 },
@@ -270,6 +272,21 @@ function DashboardContent() {
       label: `Last 14 days`,
     };
   });
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
+  const [customFromDate, setCustomFromDate] = useState('');
+  const [customToDate, setCustomToDate] = useState('');
+
+  const handleCustomDateApply = () => {
+    if (customFromDate && customToDate) {
+      setShiprocketRange({
+        from: customFromDate,
+        to: customToDate,
+        label: 'Custom range',
+      });
+      setShowCustomDatePicker(false);
+    }
+  };
+
   const [shiprocketMetrics, setShiprocketMetrics] = useState<ShiprocketOverviewMetrics | null>(null);
   const [shiprocketMetricsLoading, setShiprocketMetricsLoading] = useState(true);
   const [shiprocketMetricsError, setShiprocketMetricsError] = useState<string | null>(null);
@@ -494,7 +511,7 @@ function DashboardContent() {
             if (cat.measurement) details.push({ label: 'Measurement', value: cat.measurement });
             if (cat.gsm) details.push({ label: 'GSM', value: cat.gsm });
           }
-          
+
           return {
             ...cat,
             id: cat.id || cat._id,
@@ -546,7 +563,7 @@ function DashboardContent() {
   };
 
   // Create or update artefact category
-  const handleSaveCategory = async (name: string, description: string, details?: Array<{label: string, value: string}>, length?: string, width?: string, breadth?: string, height?: string, weight?: string) => {
+  const handleSaveCategory = async (name: string, description: string, details?: Array<{ label: string, value: string }>, length?: string, width?: string, breadth?: string, height?: string, weight?: string) => {
     try {
       if (categoryModalMode === 'edit' && editingCategory) {
         // Update existing category
@@ -683,9 +700,9 @@ function DashboardContent() {
     if (!selectedCategory || !currentArtefactProduct) return;
 
     // Log to verify testimonialImage is being received
-    console.log('Updating product with data:', { 
+    console.log('Updating product with data:', {
       testimonialImage: productData.testimonialImage,
-      hasTestimonialImage: 'testimonialImage' in productData 
+      hasTestimonialImage: 'testimonialImage' in productData
     });
 
     const updatedProducts = selectedCategory.products.map(p =>
@@ -902,9 +919,79 @@ function DashboardContent() {
               <h1 className="text-3xl font-bold text-white mb-2">Home</h1>
               <p className="text-white/60">Quick overview of your business metrics</p>
             </div>
-            <div className="flex items-center gap-2 text-white/60 text-sm">
-              <Calendar className="w-4 h-4" />
-              <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <div className="relative">
+              <button
+                onClick={() => setShowCustomDatePicker(!showCustomDatePicker)}
+                className="flex items-center gap-2 text-white/60 hover:text-white text-sm cursor-pointer transition-colors px-3 py-2 rounded-lg hover:bg-white/10"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>
+                  {shiprocketRange.label === 'Custom range'
+                    ? `${shiprocketRange.from} to ${shiprocketRange.to}`
+                    : new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </span>
+              </button>
+
+              {/* Date Picker Dropdown */}
+              {showCustomDatePicker && (
+                <div className="absolute right-0 top-full mt-2 bg-[#2A2A2A] border border-white/20 rounded-xl p-4 z-50 shadow-xl min-w-[280px]">
+                  <div className="space-y-4">
+                    <div className="text-sm font-medium text-white/80 mb-2">Select Date Range</div>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {shiprocketRangePresets.map((preset) => (
+                        <button
+                          key={preset.label}
+                          onClick={() => {
+                            handleShiprocketRangeChange(preset.days);
+                            setShowCustomDatePicker(false);
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${shiprocketRange.label === `Last ${preset.days} days`
+                            ? 'bg-white text-black'
+                            : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                            }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-white/60 block mb-1">From</label>
+                        <input
+                          type="date"
+                          value={customFromDate}
+                          onChange={(e) => setCustomFromDate(e.target.value)}
+                          className="w-full bg-[#1A1A1A] border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/40"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-white/60 block mb-1">To</label>
+                        <input
+                          type="date"
+                          value={customToDate}
+                          onChange={(e) => setCustomToDate(e.target.value)}
+                          className="w-full bg-[#1A1A1A] border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/40"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowCustomDatePicker(false)}
+                        className="flex-1 px-3 py-2 text-sm bg-white/10 hover:bg-white/20 rounded-lg text-white/70 hover:text-white transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleCustomDateApply}
+                        disabled={!customFromDate || !customToDate}
+                        className="flex-1 px-3 py-2 text-sm bg-[#A47E3B] hover:bg-[#8d6c58] disabled:bg-white/10 disabled:text-white/40 rounded-lg text-white font-medium transition-colors"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -934,7 +1021,7 @@ function DashboardContent() {
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-white/60">Yesterday</span>
                           <span className="text-xl font-semibold text-white/70">
-                            {shiprocketMetrics?.yesterdaysOrders ?? 
+                            {shiprocketMetrics?.yesterdaysOrders ??
                               (shiprocketSalesSeries.length >= 2
                                 ? shiprocketSalesSeries[shiprocketSalesSeries.length - 2]?.orderCount ?? 0
                                 : 0)}
@@ -1037,7 +1124,7 @@ function DashboardContent() {
                     <div className="flex-1">
                       <h3 className="text-sm font-medium text-white/60 mb-2">New Orders to be Processed</h3>
                       <p className="text-4xl font-bold text-white">
-                        {shiprocketMetrics?.todaysOrders ?? 0}
+                        {shiprocketMetrics?.newOrders ?? 0}
                       </p>
                     </div>
                   </div>
@@ -1064,32 +1151,22 @@ function DashboardContent() {
                 </CardContent>
               </Card>
 
-              {/* COD vs Prepaid */}
+              {/* Prepaid Orders Only */}
               <Card
                 onClick={() => router.push('/dashboard/orders')}
                 className="bg-white/5 border border-white/10 rounded-2xl shadow-lg hover:bg-white/10 transition-all duration-300 cursor-pointer"
               >
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-                      <Package className="w-6 h-6 text-blue-300" />
+                    <div className="p-3 bg-green-500/20 border border-green-500/30 rounded-xl">
+                      <Package className="w-6 h-6 text-green-300" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-sm font-medium text-white/60 mb-2">Payment Methods</h3>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-white/50">COD</p>
-                          <p className="text-2xl font-bold text-white">
-                            {shiprocketMetrics?.codOrders ?? 0}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-white/50">Prepaid</p>
-                          <p className="text-2xl font-bold text-white">
-                            {shiprocketMetrics?.prepaidOrders ?? 0}
-                          </p>
-                        </div>
-                      </div>
+                      <h3 className="text-lg font-semibold text-white mb-3">Prepaid Orders</h3>
+                      <p className="text-3xl font-bold text-white">
+                        {shiprocketMetrics?.prepaidOrders ?? 0}
+                      </p>
+                      <p className="text-sm text-white/50 mt-1">All orders are prepaid</p>
                     </div>
                   </div>
                 </CardContent>
@@ -1143,7 +1220,7 @@ function DashboardContent() {
                   </p>
                 </div>
                 <div className="flex flex-col items-start gap-3">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 relative">
                     {shiprocketRangePresets.map((preset) => {
                       const isActive = shiprocketRange.label === `Last ${preset.days} days`;
                       return (
@@ -1159,17 +1236,63 @@ function DashboardContent() {
                         </button>
                       );
                     })}
-                    <button
-                      onClick={() => {
-                        const from = shiprocketRange.from;
-                        const to = shiprocketRange.to;
-                        handleShiprocketRangeChange(14);
-                      }}
-                      className="p-2 bg-white/10 text-white/70 border border-white/10 hover:text-white hover:bg-white/15 rounded-2xl transition-all duration-200"
-                      title="Refresh"
-                    >
-                      <Clock className="w-4 h-4" />
-                    </button>
+                    {/* Calendar Date Picker Button */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowCustomDatePicker(!showCustomDatePicker)}
+                        className={`p-2 rounded-2xl transition-all duration-200 ${shiprocketRange.label === 'Custom range'
+                          ? 'bg-white text-black shadow-lg shadow-white/30'
+                          : 'bg-white/10 text-white/70 border border-white/10 hover:text-white hover:bg-white/15'
+                          }`}
+                        title="Custom date range"
+                      >
+                        <Calendar className="w-4 h-4" />
+                      </button>
+
+                      {/* Calendar Dropdown */}
+                      {showCustomDatePicker && (
+                        <div className="absolute right-0 top-full mt-2 bg-[#2A2A2A] border border-white/20 rounded-xl p-4 z-50 shadow-xl min-w-[280px]">
+                          <div className="space-y-4">
+                            <div className="text-sm font-medium text-white/80 mb-2">Custom Date Range</div>
+                            <div className="space-y-3">
+                              <div>
+                                <label className="text-xs text-white/60 block mb-1">From</label>
+                                <input
+                                  type="date"
+                                  value={customFromDate}
+                                  onChange={(e) => setCustomFromDate(e.target.value)}
+                                  className="w-full bg-[#1A1A1A] border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/40"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-white/60 block mb-1">To</label>
+                                <input
+                                  type="date"
+                                  value={customToDate}
+                                  onChange={(e) => setCustomToDate(e.target.value)}
+                                  className="w-full bg-[#1A1A1A] border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/40"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setShowCustomDatePicker(false)}
+                                className="flex-1 px-3 py-2 text-sm bg-white/10 hover:bg-white/20 rounded-lg text-white/70 hover:text-white transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleCustomDateApply}
+                                disabled={!customFromDate || !customToDate}
+                                className="flex-1 px-3 py-2 text-sm bg-[#A47E3B] hover:bg-[#8d6c58] disabled:bg-white/10 disabled:text-white/40 rounded-lg text-white font-medium transition-colors"
+                              >
+                                Apply
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
