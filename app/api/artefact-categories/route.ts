@@ -15,7 +15,8 @@ export async function GET() {
         const { data, error } = await supabase
             .from('product_categories')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('order', { ascending: true, nullsFirst: false })
+            .order('created_at', { ascending: true });
 
         if (error) {
             console.error('Fetch error:', error);

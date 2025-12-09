@@ -30,7 +30,7 @@ type CatalogCategory = {
   updatedAt?: string
 }
 
-const CACHE_TTL = 1000 * 60 * 5 // 5 minutes
+const CACHE_TTL = 1000 * 30 // 30 seconds - short TTL to reflect order changes quickly
 
 let cachedCatalog: CatalogCategory[] | null = null
 let cachedAt = 0
@@ -55,8 +55,7 @@ function sortCatalogCategories(categories: CatalogCategory[]) {
 
 async function fetchCatalog(): Promise<CatalogCategory[]> {
   const response = await fetch("/api/artefact-categories", {
-    cache: "force-cache",
-    next: { revalidate: 60 } // Revalidate every 60 seconds
+    cache: "no-store", // Don't cache to ensure fresh order data
   })
 
   if (!response.ok) {
