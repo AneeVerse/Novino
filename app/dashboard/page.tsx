@@ -1014,19 +1014,19 @@ function DashboardContent() {
 
               {/* Quick presets (always visible) */}
               <div className="flex flex-wrap gap-2 justify-end">
-                {shiprocketRangePresets.map((preset) => (
-                  <button
-                    key={preset.label}
+                      {shiprocketRangePresets.map((preset) => (
+                        <button
+                          key={preset.label}
                     onClick={() => handleShiprocketRangeChange(preset.days)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${shiprocketRange.days === preset.days
                       ? 'bg-white text-black shadow-md shadow-white/20'
-                      : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
-                      }`}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
+                            : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                            }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
 
               {/* Date Picker Dropdown */}
               {showCustomDatePicker && (

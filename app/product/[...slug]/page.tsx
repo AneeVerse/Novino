@@ -119,7 +119,7 @@ function PriceReveal({ price }: { price: string }) {
       >
         {/* Card wrapper with 3D flip */}
         <div
-          className={`relative w-full h-full transition-all duration-1000 ease-out`}
+          className="relative w-full h-full transition-all duration-1000 ease-out"
           style={{
             transformStyle: 'preserve-3d',
             transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)'
@@ -281,6 +281,7 @@ export default function ProductDetail() {
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [hoveredVariant, setHoveredVariant] = useState<any>(null); // For preview on hover
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isHoveringZoom, setIsHoveringZoom] = useState(false);
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -341,6 +342,7 @@ export default function ProductDetail() {
 
   // Handle mouse move for zoom
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (isTouchDevice) return;
     if (!imageContainerRef.current) return;
 
     const rect = imageContainerRef.current.getBoundingClientRect();
@@ -383,10 +385,11 @@ export default function ProductDetail() {
     bgY = Math.max(0, Math.min(maxY, bgY));
 
     return { x: -bgX, y: -bgY };
-  }, [mousePosition, imageDimensions]);
+  }, [mousePosition, imageDimensions, isTouchDevice]);
 
   // Handle mouse enter for zoom
   const handleMouseEnter = useCallback(() => {
+    if (isTouchDevice) return;
     setIsHoveringZoom(true);
     setIsAutoScrolling(false);
 
@@ -403,7 +406,7 @@ export default function ProductDetail() {
         left: rect.right + 20
       });
     }
-  }, []);
+  }, [isTouchDevice]);
 
   // Handle mouse leave for zoom
   const handleMouseLeave = useCallback(() => {
@@ -412,6 +415,24 @@ export default function ProductDetail() {
 
   // Minimum swipe distance (in pixels) to trigger navigation
   const minSwipeDistance = 50;
+
+  // Detect touch devices (including tablets) to disable desktop hover zoom
+  useEffect(() => {
+    const detectTouch = () => {
+      if (typeof window === 'undefined') return;
+      const touchCapable =
+        'ontouchstart' in window ||
+        (navigator as any).maxTouchPoints > 0 ||
+        (navigator as any).msMaxTouchPoints > 0;
+      setIsTouchDevice(touchCapable);
+      if (touchCapable) {
+        setIsHoveringZoom(false);
+      }
+    };
+    detectTouch();
+    window.addEventListener('resize', detectTouch);
+    return () => window.removeEventListener('resize', detectTouch);
+  }, []);
 
   // Track image width for mobile swipe
   useEffect(() => {
@@ -2176,15 +2197,9 @@ export default function ProductDetail() {
                   <div
                     ref={imageContainerRef}
                     className="hidden lg:block relative w-full h-[500px] select-none group cursor-pointer overflow-visible"
-                    onMouseEnter={(e) => {
-                      handleMouseEnter();
-                      setIsAutoScrolling(false);
-                    }}
-                    onMouseLeave={(e) => {
-                      handleMouseLeave();
-                      setIsAutoScrolling(false);
-                    }}
-                    onMouseMove={handleMouseMove}
+                    onMouseEnter={!isTouchDevice ? (() => { handleMouseEnter(); setIsAutoScrolling(false); }) : undefined}
+                    onMouseLeave={!isTouchDevice ? (() => { handleMouseLeave(); setIsAutoScrolling(false); }) : undefined}
+                    onMouseMove={!isTouchDevice ? handleMouseMove : undefined}
                     onClick={() => setIsImageModalOpen(true)}
                   >
                     {/* Circular gradient glow that overflows and blends with background */}
@@ -2391,7 +2406,7 @@ export default function ProductDetail() {
 
                     <button
                       onClick={handleAddToCart}
-                      className="flex-1 h-12 bg-white text-black hover:bg-white/90 hover:shadow-lg hover:shadow-white/20 px-6 uppercase tracking-widest text-xs font-medium transition-all duration-300 rounded-sm transform hover:scale-[1.02] active:scale-[0.98] font-['Roboto_Mono'] flex items-center justify-center"
+                      className="flex-1 h-12 min-w-[120px] bg-white text-black hover:bg-white/90 hover:shadow-lg hover:shadow-white/20 px-6 uppercase tracking-[0.18em] text-[11px] leading-none font-medium transition-all duration-300 rounded-sm transform hover:scale-[1.02] active:scale-[0.98] font-['Roboto_Mono'] flex items-center justify-center whitespace-nowrap"
                     >
                       Add to Cart
                     </button>
@@ -2503,7 +2518,7 @@ export default function ProductDetail() {
               </div>
 
               {/* Zoom View Overlay - Desktop only - Positioned to the right */}
-              {isHoveringZoom && displayedImage && imageDimensions.width > 0 && (() => {
+              {!isTouchDevice && isHoveringZoom && displayedImage && imageDimensions.width > 0 && (() => {
                 const bgPos = getZoomBackgroundPosition();
                 const zoomFactor = 3;
                 // Reduce zoom box width to 92% to prevent right-side cutoff

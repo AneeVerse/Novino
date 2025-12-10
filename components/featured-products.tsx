@@ -28,6 +28,8 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
   const [products, setProducts] = useState<FeaturedProduct[]>([]);
   const [centeredCard, setCenteredCard] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const useNativeScroll = isMobile || isTouchDevice;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
 
@@ -51,6 +53,11 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
+      setIsTouchDevice(
+        'ontouchstart' in window ||
+        (navigator as any).maxTouchPoints > 0 ||
+        (navigator as any).msMaxTouchPoints > 0
+      );
     };
 
     checkMobile();
@@ -403,29 +410,29 @@ export default function FeaturedProducts({ initialProducts, title }: FeaturedPro
 
         {/* Mobile: Native smooth scroll with snap; Desktop: Transform-based infinite scroll */}
         <div
-          className={`relative pb-12 md:pb-16 ${isMobile ? 'overflow-x-auto scrollbar-hide scroll-smooth' : 'overflow-hidden'}`}
+          className={`relative pb-12 md:pb-16 ${useNativeScroll ? 'overflow-x-auto scrollbar-hide scroll-smooth' : 'overflow-hidden'}`}
           style={{
             paddingTop: '4rem',
             paddingBottom: '2rem',
-            ...(isMobile ? {
+            ...(useNativeScroll ? {
               scrollSnapType: 'x mandatory',
               WebkitOverflowScrolling: 'touch', // Momentum scrolling on iOS
             } : {})
           }}
-          onMouseDown={!isMobile ? handlePointerDown : undefined}
-          onMouseMove={!isMobile ? handlePointerMove : undefined}
-          onMouseUp={!isMobile ? handlePointerUp : undefined}
-          onMouseLeave={!isMobile ? handlePointerUp : undefined}
-          onTouchStart={!isMobile ? handlePointerDown : undefined}
-          onTouchMove={!isMobile ? handlePointerMove : undefined}
-          onTouchEnd={!isMobile ? handlePointerUp : undefined}
-          onWheel={!isMobile ? handleWheel : undefined}
-          ref={isMobile ? scrollContainerRef as React.RefObject<HTMLDivElement> : undefined}
+          onMouseDown={!useNativeScroll ? handlePointerDown : undefined}
+          onMouseMove={!useNativeScroll ? handlePointerMove : undefined}
+          onMouseUp={!useNativeScroll ? handlePointerUp : undefined}
+          onMouseLeave={!useNativeScroll ? handlePointerUp : undefined}
+          onTouchStart={!useNativeScroll ? handlePointerDown : undefined}
+          onTouchMove={!useNativeScroll ? handlePointerMove : undefined}
+          onTouchEnd={!useNativeScroll ? handlePointerUp : undefined}
+          onWheel={!useNativeScroll ? handleWheel : undefined}
+          ref={useNativeScroll ? scrollContainerRef as React.RefObject<HTMLDivElement> : undefined}
         >
           <div
-            ref={!isMobile ? scrollContainerRef : undefined}
-            className={`flex gap-8 md:gap-12 px-2 md:px-6 items-start ${isMobile ? '' : 'w-max will-change-transform cursor-grab active:cursor-grabbing'} select-none`}
-            style={isMobile ? {} : {
+            ref={!useNativeScroll ? scrollContainerRef : undefined}
+            className={`flex gap-8 md:gap-12 px-2 md:px-6 items-start ${useNativeScroll ? '' : 'w-max will-change-transform cursor-grab active:cursor-grabbing'} select-none`}
+            style={useNativeScroll ? {} : {
               transform: `translateX(${translateX.current}px)`,
               touchAction: 'pan-x',
             }}
