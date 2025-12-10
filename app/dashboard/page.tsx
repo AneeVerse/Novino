@@ -252,29 +252,23 @@ function DashboardContent() {
   const [productType, setProductType] = useState<'painting' | 'artefact'>('painting');
 
   const makeRange = (days: number) => {
+    const safeDays = Math.max(1, Math.floor(days));
     const to = new Date();
     const from = new Date();
-    from.setDate(from.getDate() - days);
+    // Inclusive range: today counts as day 1
+    from.setDate(from.getDate() - (safeDays - 1));
     return {
       from: from.toISOString().slice(0, 10),
       to: to.toISOString().slice(0, 10),
-      label: `Last ${days} days`,
+      label: `Last ${safeDays} day${safeDays === 1 ? '' : 's'}`,
+      days: safeDays,
     };
   };
 
-  const [shiprocketRange, setShiprocketRange] = useState(() => {
-    const today = new Date();
-    const from = new Date();
-    from.setDate(from.getDate() - 14);
-    return {
-      from: from.toISOString().slice(0, 10),
-      to: today.toISOString().slice(0, 10),
-      label: `Last 14 days`,
-    };
-  });
+  const [shiprocketRange, setShiprocketRange] = useState(() => makeRange(1));
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
-  const [customFromDate, setCustomFromDate] = useState('');
-  const [customToDate, setCustomToDate] = useState('');
+  const [customFromDate, setCustomFromDate] = useState(makeRange(1).from);
+  const [customToDate, setCustomToDate] = useState(makeRange(1).to);
 
   const handleCustomDateApply = () => {
     if (customFromDate && customToDate) {
@@ -293,6 +287,14 @@ function DashboardContent() {
   const [shiprocketSalesSeries, setShiprocketSalesSeries] = useState<ShiprocketSalesPoint[]>([]);
   const [shiprocketSalesLoading, setShiprocketSalesLoading] = useState(true);
   const [shiprocketSalesError, setShiprocketSalesError] = useState<string | null>(null);
+
+  // Fixed metrics for Summary cards (always shows today/yesterday, not affected by date range)
+  const [summaryMetrics, setSummaryMetrics] = useState<ShiprocketOverviewMetrics | null>(null);
+  const [summaryMetricsLoading, setSummaryMetricsLoading] = useState(true);
+
+  // Fixed metrics for Total counts (shows all-time totals, not affected by date range)
+  const [totalMetrics, setTotalMetrics] = useState<ShiprocketOverviewMetrics | null>(null);
+  const [totalMetricsLoading, setTotalMetricsLoading] = useState(true);
 
   // Function to fetch data from API
   const fetchData = async () => {
@@ -401,6 +403,82 @@ function DashboardContent() {
     fetchArtefactCategories();
   }, []);
 
+  // Fetch fixed metrics for Summary cards (always today/yesterday) and all-time totals
+  // These are NOT affected by the date range selector
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchFixedMetrics = async () => {
+      setSummaryMetricsLoading(true);
+      setTotalMetricsLoading(true);
+
+      // Calculate date range for last 2 days (to capture today and yesterday)
+      const today = new Date();
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+      // Calculate date range for all-time (use a very early date like 1 year ago)
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+      try {
+        // Fetch summary metrics (last 2 days for today/yesterday values)
+        const summaryParams = new URLSearchParams({
+          from: twoDaysAgo.toISOString().slice(0, 10),
+          to: today.toISOString().slice(0, 10),
+        });
+
+        const summaryResponse = await fetch(`/api/shiprocket/overview?${summaryParams.toString()}`, {
+          cache: 'no-store',
+        });
+
+        if (summaryResponse.ok) {
+          const summaryPayload = await summaryResponse.json();
+          if (isMounted) {
+            setSummaryMetrics(summaryPayload.data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch summary metrics:', err);
+      } finally {
+        if (isMounted) {
+          setSummaryMetricsLoading(false);
+        }
+      }
+
+      try {
+        // Fetch total metrics (all-time values)
+        const totalParams = new URLSearchParams({
+          from: oneYearAgo.toISOString().slice(0, 10),
+          to: today.toISOString().slice(0, 10),
+        });
+
+        const totalResponse = await fetch(`/api/shiprocket/overview?${totalParams.toString()}`, {
+          cache: 'no-store',
+        });
+
+        if (totalResponse.ok) {
+          const totalPayload = await totalResponse.json();
+          if (isMounted) {
+            setTotalMetrics(totalPayload.data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch total metrics:', err);
+      } finally {
+        if (isMounted) {
+          setTotalMetricsLoading(false);
+        }
+      }
+    };
+
+    fetchFixedMetrics();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency - only runs once on mount
+
   useEffect(() => {
     let isMounted = true;
 
@@ -487,6 +565,8 @@ function DashboardContent() {
   const handleShiprocketRangeChange = (days: number) => {
     const next = makeRange(days);
     setShiprocketRange(next);
+    setCustomFromDate(next.from);
+    setCustomToDate(next.to);
   };
 
   // Fetch artefact categories
@@ -919,7 +999,7 @@ function DashboardContent() {
               <h1 className="text-3xl font-bold text-white mb-2">Home</h1>
               <p className="text-white/60">Quick overview of your business metrics</p>
             </div>
-            <div className="relative">
+            <div className="relative flex flex-col items-end gap-2">
               <button
                 onClick={() => setShowCustomDatePicker(!showCustomDatePicker)}
                 className="flex items-center gap-2 text-white/60 hover:text-white text-sm cursor-pointer transition-colors px-3 py-2 rounded-lg hover:bg-white/10"
@@ -928,32 +1008,31 @@ function DashboardContent() {
                 <span>
                   {shiprocketRange.label === 'Custom range'
                     ? `${shiprocketRange.from} to ${shiprocketRange.to}`
-                    : new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    : `${shiprocketRange.label} (${shiprocketRange.from} -> ${shiprocketRange.to})`}
                 </span>
               </button>
+
+              {/* Quick presets (always visible) */}
+              <div className="flex flex-wrap gap-2 justify-end">
+                {shiprocketRangePresets.map((preset) => (
+                  <button
+                    key={preset.label}
+                    onClick={() => handleShiprocketRangeChange(preset.days)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${shiprocketRange.days === preset.days
+                      ? 'bg-white text-black shadow-md shadow-white/20'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                      }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
 
               {/* Date Picker Dropdown */}
               {showCustomDatePicker && (
                 <div className="absolute right-0 top-full mt-2 bg-[#2A2A2A] border border-white/20 rounded-xl p-4 z-50 shadow-xl min-w-[280px]">
                   <div className="space-y-4">
                     <div className="text-sm font-medium text-white/80 mb-2">Select Date Range</div>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {shiprocketRangePresets.map((preset) => (
-                        <button
-                          key={preset.label}
-                          onClick={() => {
-                            handleShiprocketRangeChange(preset.days);
-                            setShowCustomDatePicker(false);
-                          }}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${shiprocketRange.label === `Last ${preset.days} days`
-                            ? 'bg-white text-black'
-                            : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
-                            }`}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
                     <div className="space-y-3">
                       <div>
                         <label className="text-xs text-white/60 block mb-1">From</label>
@@ -1013,20 +1092,23 @@ function DashboardContent() {
                       <h3 className="text-lg font-semibold text-white mb-3">Orders</h3>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-white/60">Today</span>
+                          <span className="text-sm text-white/60">
+                            {shiprocketRange.days === 1 ? 'Today' : 'Range total'}
+                          </span>
                           <span className="text-2xl font-bold text-white">
-                            {shiprocketMetrics?.todaysOrders ?? 0}
+                            {shiprocketRange.days === 1
+                              ? shiprocketMetrics?.todaysOrders ?? shiprocketMetrics?.totalOrders ?? 0
+                              : shiprocketMetrics?.totalOrders ?? 0}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-white/60">Yesterday</span>
-                          <span className="text-xl font-semibold text-white/70">
-                            {shiprocketMetrics?.yesterdaysOrders ??
-                              (shiprocketSalesSeries.length >= 2
-                                ? shiprocketSalesSeries[shiprocketSalesSeries.length - 2]?.orderCount ?? 0
-                                : 0)}
-                          </span>
-                        </div>
+                        {shiprocketRange.days === 1 && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-white/60">Yesterday</span>
+                            <span className="text-xl font-semibold text-white/70">
+                              {shiprocketMetrics?.yesterdaysOrders ?? 0}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1047,27 +1129,25 @@ function DashboardContent() {
                       <h3 className="text-lg font-semibold text-white mb-3">Revenue</h3>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-white/60">Today</span>
+                          <span className="text-sm text-white/60">
+                            {shiprocketRange.days === 1 ? 'Today' : 'Range total'}
+                          </span>
                           <span className="text-2xl font-bold text-white">
                             {formatCurrency(
-                              shiprocketMetrics?.todayRevenue ??
-                              (shiprocketSalesSeries.length > 0
-                                ? shiprocketSalesSeries[shiprocketSalesSeries.length - 1]?.totalRevenue ?? 0
-                                : 0)
+                              shiprocketRange.days === 1
+                                ? shiprocketMetrics?.todayRevenue ?? shiprocketMetrics?.totalRevenue ?? 0
+                                : shiprocketMetrics?.totalRevenue ?? 0
                             )}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-white/60">Yesterday</span>
-                          <span className="text-xl font-semibold text-white/70">
-                            {formatCurrency(
-                              shiprocketMetrics?.yesterdayRevenue ??
-                              (shiprocketSalesSeries.length >= 2
-                                ? shiprocketSalesSeries[shiprocketSalesSeries.length - 2]?.totalRevenue ?? 0
-                                : 0)
-                            )}
-                          </span>
-                        </div>
+                        {shiprocketRange.days === 1 && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-white/60">Yesterday</span>
+                            <span className="text-xl font-semibold text-white/70">
+                              {formatCurrency(shiprocketMetrics?.yesterdayRevenue ?? 0)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1124,7 +1204,7 @@ function DashboardContent() {
                     <div className="flex-1">
                       <h3 className="text-sm font-medium text-white/60 mb-2">New Orders to be Processed</h3>
                       <p className="text-4xl font-bold text-white">
-                        {shiprocketMetrics?.newOrders ?? 0}
+                        {totalMetrics?.newOrders ?? 0}
                       </p>
                     </div>
                   </div>
@@ -1144,7 +1224,7 @@ function DashboardContent() {
                     <div className="flex-1">
                       <h3 className="text-sm font-medium text-white/60 mb-2">Total Orders</h3>
                       <p className="text-4xl font-bold text-white">
-                        {shiprocketMetrics?.totalOrders ?? 0}
+                        {totalMetrics?.totalOrders ?? 0}
                       </p>
                     </div>
                   </div>
@@ -1164,7 +1244,7 @@ function DashboardContent() {
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-white mb-3">Prepaid Orders</h3>
                       <p className="text-3xl font-bold text-white">
-                        {shiprocketMetrics?.prepaidOrders ?? 0}
+                        {totalMetrics?.prepaidOrders ?? 0}
                       </p>
                       <p className="text-sm text-white/50 mt-1">All orders are prepaid</p>
                     </div>
@@ -1186,7 +1266,11 @@ function DashboardContent() {
             </div>
             <div className="flex items-center gap-2 text-white/60 text-sm">
               <Calendar className="w-4 h-4" />
-              <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <span>
+                {shiprocketRange.label === 'Custom range'
+                  ? `${shiprocketRange.from} to ${shiprocketRange.to}`
+                  : `${shiprocketRange.label} (${shiprocketRange.from} -> ${shiprocketRange.to})`}
+              </span>
             </div>
           </div>
 
@@ -1222,7 +1306,7 @@ function DashboardContent() {
                 <div className="flex flex-col items-start gap-3">
                   <div className="flex flex-wrap items-center gap-2 relative">
                     {shiprocketRangePresets.map((preset) => {
-                      const isActive = shiprocketRange.label === `Last ${preset.days} days`;
+                      const isActive = shiprocketRange.days === preset.days;
                       return (
                         <button
                           key={preset.label}

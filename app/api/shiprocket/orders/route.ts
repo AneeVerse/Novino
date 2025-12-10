@@ -9,7 +9,7 @@ import {
 import type { ShiprocketOrder, ShiprocketProduct } from "@/lib/services/shiprocket";
 import { getSupabaseServiceRoleClient } from "@/lib/supabase-server";
 
-const DEFAULT_RANGE_DAYS = 14;
+const DEFAULT_RANGE_DAYS = 1;
 const DEFAULT_PER_PAGE = 25;
 
 const toNumber = (value: unknown) => {

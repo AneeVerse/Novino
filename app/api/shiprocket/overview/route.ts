@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { subDays, formatISO } from "date-fns";
 import { getShiprocketOverviewMetrics } from "@/lib/services/shiprocket";
 
-const DEFAULT_RANGE_DAYS = 14;
+const DEFAULT_RANGE_DAYS = 1;
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);

@@ -168,7 +168,7 @@ export default function DashboardSidebar({
       {/* Sidebar - Collapsible on hover */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-screen bg-[#1A1A1A] border-r border-[#333333] flex flex-col z-50 transition-all duration-300 ease-in-out group",
+          "fixed left-0 top-0 h-screen bg-[#1A1A1A] border-r border-[#333333] flex flex-col pb-4 z-50 transition-all duration-300 ease-in-out group",
           "w-[70px] hover:w-64", // Collapsed by default, expands on hover
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
@@ -307,7 +307,7 @@ export default function DashboardSidebar({
         <div className="border-t border-[#333333] p-4 relative">
           <button
             onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-            className="w-full flex items-center space-x-3 px-3 py-2 overflow-hidden hover:bg-[#222222] rounded-lg transition-colors"
+            className="w-full flex items-center justify-center lg:justify-between space-x-3 px-3 py-2 overflow-visible hover:bg-[#222222] rounded-lg transition-colors"
           >
             <div className="w-8 h-8 bg-[#A47E3B] rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
               N
