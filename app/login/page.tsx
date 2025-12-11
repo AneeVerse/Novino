@@ -5,54 +5,61 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2, Eye, EyeOff } from 'lucide-react'
+import { Loader2, User } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useToast } from '@/hooks/use-toast'
 
-
-// Validation functions
-const validateIdentifier = (identifier: string): string | null => {
-  if (!identifier) return 'Email or username is required'
-  if (identifier.length < 3) return 'Please enter a valid email or username'
+// Validation
+const validateIdentifier = (input: string): string | null => {
+  if (!input) return 'Email or phone number is required'
+  
+  const trimmed = input.trim()
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const isEmail = emailRegex.test(trimmed)
+  
+  if (isEmail) {
+    if (trimmed.length > 254) return 'Email is too long'
+    return null
+  }
+  
+  // Check if it's a valid phone number
+  const cleanedPhone = trimmed.replace(/[\s\-+]/g, '')
+  if (!/^[0-9]{10,12}$/.test(cleanedPhone)) {
+    return 'Please enter a valid email or 10-digit phone number'
+  }
+  
   return null
 }
 
-const validatePassword = (password: string): string | null => {
-  if (!password) return 'Password is required'
-  if (password.length < 6) return 'Password must be at least 6 characters'
+const validateOtp = (otp: string): string | null => {
+  if (!otp) return 'OTP is required'
+  if (!/^[0-9]{4}$/.test(otp)) return 'OTP must be 4 digits'
   return null
 }
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+  const [otp, setOtp] = useState('')
+  const [step, setStep] = useState<'input' | 'otp'>('input')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showForgotPassword, setShowForgotPassword] = useState(false)
-  const [resetEmail, setResetEmail] = useState('')
-  const [errors, setErrors] = useState<{ identifier?: string, password?: string }>({})
+  const [otpType, setOtpType] = useState<'email' | 'phone'>('email')
+  const [errors, setErrors] = useState<{ identifier?: string, otp?: string }>({})
   const router = useRouter()
   const searchParams = useSearchParams()
   const { closeCart } = useCart()
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage('')
 
-    // Validate inputs
     const identifierError = validateIdentifier(identifier)
-    const passwordError = validatePassword(password)
-
-    if (identifierError || passwordError) {
-      setErrors({
-        identifier: identifierError || undefined,
-        password: passwordError || undefined
-      })
+    if (identifierError) {
+      setErrors({ identifier: identifierError })
       setMessage('Please fix the errors below')
       setLoading(false)
       return
@@ -61,99 +68,107 @@ export default function LoginPage() {
     setErrors({})
 
     try {
-      // Normalize identifier by trimming
-      const normalizedIdentifier = identifier.trim()
-
-      // Determine if identifier is email or username
-      const isEmail = normalizedIdentifier.includes('@')
-      let email = normalizedIdentifier
-
-      // If it's a username, look up the email from profiles table (case-insensitive)
-      if (!isEmail) {
-        // Normalize username to lowercase for case-insensitive lookup
-        const usernameLower = normalizedIdentifier.toLowerCase()
-
-        // Use direct query (RLS policy allows public read of username and email)
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('username', usernameLower)
-          .maybeSingle()
-
-        if (profileError) {
-          console.error('Profile lookup error:', profileError)
-          // Log the error for debugging
-          console.error('Error details:', {
-            code: profileError.code,
-            message: profileError.message,
-            details: profileError.details,
-            hint: profileError.hint
-          })
-          setMessage('Invalid username or password')
-          setLoading(false)
-          return
-        }
-
-        if (!profile || !profile.email) {
-          console.error('Profile not found for username:', usernameLower)
-          setMessage('Invalid username or password')
-          setLoading(false)
-          return
-        }
-
-        email = profile.email
-      }
-
-      // Sign in with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase(),
-        password,
+      const response = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: identifier.trim(),
+          purpose: 'login'
+        })
       })
 
-      if (error) {
-        console.error('Login error:', error)
-        setMessage(error.message || 'Invalid credentials')
+      const data = await response.json()
+
+      if (!response.ok) {
+        setErrors({ identifier: data.error })
+        setMessage(data.error || 'Failed to send OTP')
         setLoading(false)
         return
       }
 
-      if (!data.session) {
-        setMessage('Login failed - no session created')
+      setOtpType(data.type || 'email')
+      sessionStorage.setItem('login_identifier', identifier.trim())
+
+      setMessage(`OTP sent to your ${data.type === 'phone' ? 'phone' : 'email'}!`)
+      toast({
+        title: "OTP Sent!",
+        description: `Please check your ${data.type === 'phone' ? 'phone' : 'email'} for the 4-digit code.`,
+      })
+      setStep('otp')
+
+    } catch (err) {
+      console.error(err)
+      setMessage('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setMessage('')
+
+    const otpError = validateOtp(otp)
+    if (otpError) {
+      setErrors({ otp: otpError })
+      setMessage('Please enter a valid OTP')
+      setLoading(false)
+      return
+    }
+
+    setErrors({})
+
+    try {
+      const storedIdentifier = sessionStorage.getItem('login_identifier') || identifier.trim()
+
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: storedIdentifier,
+          otp: otp,
+          purpose: 'login'
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setMessage(data.error || 'Invalid OTP. Please try again.')
         setLoading(false)
         return
       }
 
-      // Check if user is blocked
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_blocked')
-        .eq('id', data.user.id)
-        .single()
+      // Auto-login with token
+      if (data.token_hash) {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: data.token_hash,
+          type: 'magiclink'
+        })
 
-      if (profile?.is_blocked) {
-        await supabase.auth.signOut()
-        setMessage('Your account has been blocked. Please contact support.')
-        setLoading(false)
-        return
+        if (verifyError) {
+          console.error('Session error:', verifyError)
+          setMessage('Login failed. Please try again.')
+          setLoading(false)
+          return
+        }
       }
 
-      setMessage('Login successful! Redirecting...')
+      sessionStorage.removeItem('login_identifier')
 
+      setMessage('Login successful!')
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",
       })
 
-      // Get redirect URL from query params or default to home
       const redirectParam = searchParams?.get('redirect') || '/'
-      // Decode the redirect URL (searchParams.get already decodes, but be safe)
-      const redirectUrl = redirectParam
 
-      // Sync cart and redirect
       setTimeout(() => {
         closeCart()
-        router.push(redirectUrl)
-        router.refresh() // Refresh to update auth state
+        router.push(redirectParam)
+        router.refresh()
       }, 1000)
 
     } catch (err) {
@@ -163,14 +178,45 @@ export default function LoginPage() {
     }
   }
 
+  const handleResendOtp = async () => {
+    setLoading(true)
+    setMessage('')
+
+    try {
+      const storedIdentifier = sessionStorage.getItem('login_identifier') || identifier.trim()
+
+      const response = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: storedIdentifier,
+          purpose: 'login'
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setMessage(data.error || 'Failed to resend OTP')
+      } else {
+        setMessage(`OTP resent to your ${data.type === 'phone' ? 'phone' : 'email'}!`)
+        toast({
+          title: "OTP Resent!",
+          description: "Please check for the new code.",
+        })
+      }
+    } catch (err) {
+      console.error(err)
+      setMessage('Failed to resend OTP')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleGoogleLogin = async () => {
     setLoading(true)
     try {
-      // Get redirect URL from query params
       const redirectUrl = searchParams?.get('redirect') || '/'
-
-      // Store redirect URL in localStorage to retrieve after OAuth callback
       if (redirectUrl !== '/') {
         localStorage.setItem('oauth_redirect', redirectUrl)
       }
@@ -187,177 +233,12 @@ export default function LoginPage() {
         setMessage('Error logging in with Google')
         setLoading(false)
       }
-      // If no error, browser will redirect to Google
     } catch (error) {
       console.error('Google login error:', error)
       setMessage('Error logging in with Google')
       setLoading(false)
     }
   }
-
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      })
-
-      if (error) {
-        setMessage(error.message || 'Error sending reset email')
-      } else {
-        setMessage('Password reset email sent! Please check your inbox.')
-        toast({
-          title: "Email sent",
-          description: "Check your inbox for password reset instructions.",
-        })
-      }
-    } catch (err) {
-      console.error(err)
-      setMessage('Network error. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const renderForgotPasswordForm = () => {
-    return (
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1 text-white/80" htmlFor="resetEmail">
-            Email Address
-          </label>
-          <Input
-            id="resetEmail"
-            type="email"
-            required
-            value={resetEmail}
-            onChange={e => setResetEmail(e.target.value)}
-            className="w-full bg-[#222222] border-[#444444] text-white"
-            disabled={loading}
-            placeholder="Enter your email address"
-          />
-        </div>
-
-        <Button
-          type="submit"
-          className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white"
-          disabled={loading}
-          onClick={handleForgotPassword}
-        >
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Send Reset Link
-        </Button>
-
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => {
-              setShowForgotPassword(false)
-              setMessage('')
-            }}
-            className="text-sm text-[#AE876D] hover:underline"
-          >
-            Back to Login
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const renderLoginForm = () => {
-    return (
-      <div className="space-y-5">
-        <div>
-          <div className="relative flex items-center">
-            <Input
-              id="identifier"
-              type="text"
-              required
-              value={identifier}
-              onChange={e => {
-                setIdentifier(e.target.value)
-                if (errors.identifier) setErrors({ ...errors, identifier: undefined })
-              }}
-              className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.identifier ? 'border-red-500' : ''}`}
-              disabled={loading}
-              placeholder="Username or Email"
-            />
-            <div className="absolute left-4 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            </div>
-          </div>
-          {errors.identifier && <p className="text-red-400 text-xs mt-1 ml-4">{errors.identifier}</p>}
-        </div>
-
-        <div>
-          <div className="relative flex items-center">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              required
-              value={password}
-              onChange={e => {
-                setPassword(e.target.value)
-                if (errors.password) setErrors({ ...errors, password: undefined })
-              }}
-              className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 pr-12 h-12 [&::-ms-reveal]:hidden [&::-ms-clear]:hidden ${errors.password ? 'border-red-500' : ''}`}
-              autoComplete="current-password"
-              disabled={loading}
-              placeholder="Password"
-            />
-            <div className="absolute left-4 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 text-white/70 hover:text-white transition-colors z-10"
-              tabIndex={-1}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
-          {errors.password && <p className="text-red-400 text-xs mt-1 ml-4">{errors.password}</p>}
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="remember"
-              className="w-4 h-4 text-[#AE876D] bg-black/20 border-[#444444] rounded focus:ring-[#AE876D] focus:ring-1"
-            />
-            <label htmlFor="remember" className="ml-2 text-sm text-white">
-              Remember me
-            </label>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setShowForgotPassword(true)
-              setMessage('')
-            }}
-            className="text-sm text-white hover:text-[#AE876D] transition-colors"
-          >
-            Forgot password?
-          </button>
-        </div>
-
-        <Button
-          type="submit"
-          className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium py-2.5 rounded-full"
-          disabled={loading}
-        >
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Login
-        </Button>
-      </div>
-    );
-  };
 
   return (
     <div
@@ -369,24 +250,128 @@ export default function LoginPage() {
         backgroundRepeat: "no-repeat"
       }}
     >
-      {/* Overlay for better contrast */}
       <div className="absolute inset-0 bg-black/40"></div>
 
       <div className="w-full max-w-md relative z-10">
         <div className="backdrop-blur-md bg-black/30 border border-[#444444] rounded-2xl shadow-lg p-8 w-full">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white">Login</h1>
+            {step === 'otp' && (
+              <p className="text-white/70 mt-2 text-sm">
+                Enter the 4-digit code sent to your {otpType === 'phone' ? 'phone' : 'email'}
+              </p>
+            )}
           </div>
 
-          <form onSubmit={handleLogin}>
-            {showForgotPassword ? renderForgotPasswordForm() : renderLoginForm()}
+          {step === 'input' ? (
+            <form onSubmit={handleSendOtp}>
+              <div className="space-y-5">
+                <div>
+                  <div className="relative flex items-center">
+                    <Input
+                      id="identifier"
+                      type="text"
+                      required
+                      value={identifier}
+                      onChange={e => {
+                        setIdentifier(e.target.value)
+                        if (errors.identifier) setErrors({})
+                      }}
+                      className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.identifier ? 'border-red-500' : ''}`}
+                      disabled={loading}
+                      placeholder="Email or Phone Number"
+                    />
+                    <div className="absolute left-4 text-white">
+                      <User size={20} />
+                    </div>
+                  </div>
+                  {errors.identifier && <p className="text-red-400 text-xs mt-1 ml-4">{errors.identifier}</p>}
+                  <p className="text-white/50 text-xs mt-2 ml-4">
+                    Enter your registered email or phone number
+                  </p>
+                </div>
 
-            {message && (
-              <div className={`text-sm text-center mt-4 px-4 py-2 rounded-lg ${message.includes('successful') || message.includes('sent') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
-                {message}
+                <Button
+                  type="submit"
+                  className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium py-2.5 rounded-full"
+                  disabled={loading}
+                >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Send OTP
+                </Button>
+
+                {message && (
+                  <div className={`text-sm text-center mt-2 px-4 py-2 rounded-lg ${message.includes('sent') || message.includes('successful') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
+                    {message}
+                  </div>
+                )}
               </div>
-            )}
-          </form>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyOtp}>
+              <div className="space-y-5">
+                <div>
+                  <div className="relative flex items-center justify-center">
+                    <Input
+                      id="otp"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      required
+                      value={otp}
+                      onChange={e => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        setOtp(value)
+                        if (errors.otp) setErrors({})
+                      }}
+                      className={`w-full bg-black/20 border-[#444444] text-white rounded-full h-14 text-center text-3xl tracking-[0.8em] font-mono ${errors.otp ? 'border-red-500' : ''}`}
+                      disabled={loading}
+                      placeholder="0000"
+                      autoFocus
+                    />
+                  </div>
+                  {errors.otp && <p className="text-red-400 text-xs mt-1 text-center">{errors.otp}</p>}
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium py-2.5 rounded-full"
+                  disabled={loading}
+                >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Verify & Login
+                </Button>
+
+                <div className="flex items-center justify-between text-sm">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep('input')
+                      setOtp('')
+                      setMessage('')
+                    }}
+                    className="text-white/70 hover:text-white transition-colors"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={loading}
+                    className="text-[#AE876D] hover:underline transition-colors"
+                  >
+                    Resend OTP
+                  </button>
+                </div>
+
+                {message && (
+                  <div className={`text-sm text-center mt-2 px-4 py-2 rounded-lg ${message.includes('sent') || message.includes('successful') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
+                    {message}
+                  </div>
+                )}
+              </div>
+            </form>
+          )}
 
           <div className="text-center mt-6">
             <p className="text-sm text-white">
@@ -397,7 +382,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {!showForgotPassword && (
+          {step === 'input' && (
             <>
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
@@ -427,5 +412,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

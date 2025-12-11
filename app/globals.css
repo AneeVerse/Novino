@@ -297,7 +297,6 @@ html {
 
 /* NOVINO Text Scroll Animation */
 .novino-hero-text {
-  position: relative;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;

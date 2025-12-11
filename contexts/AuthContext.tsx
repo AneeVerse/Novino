@@ -2,14 +2,12 @@
 
 import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useSession, useUser, useSupabaseClient, type Session, type User } from '@supabase/auth-helpers-react';
 
 type AuthContextType = {
   isAuthenticated: boolean;
   user: User | null;
   session: Session | null;
-  login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isLoading: boolean;
   isAdminAuth: boolean;
@@ -20,7 +18,6 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   user: null,
   session: null,
-  login: async () => false,
   logout: async () => { },
   isLoading: true,
   isAdminAuth: false,
@@ -74,52 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   };
 
-  // Login function for admin (hardcoded for now)
-  // For regular users, use Supabase client directly in login page
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Admin hardcoded login
-    if (email === 'business@novino.io' && password === 'Dontchangeme@01') {
-      // For admin, we could create a special admin user in Supabase
-      // or keep this localStorage approach for backward compatibility
-      try {
-        const token = btoa(JSON.stringify({
-          userId: 'admin-1',
-          email: email,
-          username: 'Admin',
-          isAdmin: true,
-          createdAt: new Date().toISOString()
-        }));
-
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('adminAuthToken', token);
-          setHasAdminToken(true);
-        }
-        return true;
-      } catch (error) {
-        console.error('Error during admin login:', error);
-        return false;
-      }
-    }
-
-    // Regular user login via Supabase
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error || !data.session) {
-        console.error('Login error:', error);
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    }
-  };
-
   // Logout function
   const logout = async () => {
     try {
@@ -150,7 +101,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated,
       user,
       session,
-      login,
       logout,
       isLoading,
       isAdminAuth,

@@ -15,12 +15,14 @@ NEXTAUTH_URL=http://localhost:3000
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Email Configuration (for OTP)
+# Email Configuration (for Email OTP)
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=465
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-specific-password
-EMAIL_FROM=noreply@yourdomain.com
+
+# Fast2SMS Configuration (for SMS OTP)
+FAST2SMS_API_KEY=your-fast2sms-api-key-here
 
 # Environment
 NODE_ENV=development

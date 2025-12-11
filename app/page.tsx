@@ -242,10 +242,10 @@ export default function Home() {
           }}
         >
           <Image
-            src="https://ik.imagekit.io/gkkczwgam/hero.webp?updatedAt=1764844020664"
+            src="https://ik.imagekit.io/gkkczwgam/herobg.webp"
             alt="Novino hero background"
             fill
-            className="object-cover"
+            className="object-cover object-[37%_center] md:object-center"
             priority
             style={{
               transform: 'translate3d(0, 0, 0)'
@@ -259,21 +259,20 @@ export default function Home() {
           <div
             className="absolute w-full text-center"
             style={{
-              top: '50%',
+              bottom: '0',
               left: '50%',
-              transform: 'translate(-50%, 44%)',
+              transform: 'translate(-50%, 0)',
               height: '270px',
               background: '#E8B08A',
               filter: 'blur(60px)',
               opacity: 0.6,
               width: '100%',
-              zIndex: -1,
-              bottom: 'auto'
+              zIndex: -1
             }}
           ></div>
           {/* Updated NOVINO text with custom class for scroll animation */}
           <h1
-            className={`novino-hero-text text-[161px] sm:text-[161px] md:text-[231px] lg:text-[296px] font-dm-serif-display leading-none absolute w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
+            className={`novino-hero-text text-[145px] sm:text-[160px] md:text-[180px] lg:text-[200px] xl:text-[296px] font-dm-serif-display leading-none absolute left-0 right-0 bottom-0 w-full text-center ${showText ? 'animate-rise-up' : 'invisible opacity-0'}`}
           >
             NOVINO
           </h1>
