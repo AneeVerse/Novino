@@ -4,17 +4,18 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [redirecting, setRedirecting] = useState(false)
   const router = useRouter()
-  const { login, isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -30,12 +31,18 @@ export default function AdminLoginPage() {
     setMessage('')
 
     try {
-      const success = await login(email, password)
+      // Hardcoded admin authentication
+      const hardcodedAdminEmail = 'business@novino.io'
+      const hardcodedAdminPassword = 'Dontchangeme@01'
 
-      if (success) {
+      if (email === hardcodedAdminEmail && password === hardcodedAdminPassword) {
+        // Store a flag in localStorage to remember admin is logged in
+        localStorage.setItem('adminAuthToken', 'admin-authenticated')
+        
         setMessage('Login successful! Redirecting...')
         setRedirecting(true)
-        // Explicitly redirect to dashboard
+        
+        // Redirect to dashboard
         setTimeout(() => {
           router.push('/dashboard')
         }, 1000)
@@ -93,17 +100,29 @@ export default function AdminLoginPage() {
                 <div className="relative flex items-center">
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12"
+                    className="w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 pr-12 h-12"
                     disabled={loading}
                     placeholder="Admin Password"
                   />
                   <div className="absolute left-4 text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 text-white hover:text-[#AE876D] transition-colors"
+                    disabled={loading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
                 </div>
               </div>
 
