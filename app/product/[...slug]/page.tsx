@@ -97,6 +97,7 @@ interface ProductWithDescription {
   additionalImageUrl?: string;
   shortDescription?: string;
   logoUrl?: string;
+  packProduct?: boolean; // For products that show name always visible in variant selector
 }
 
 // Helper type for accordion content
@@ -1129,7 +1130,8 @@ export default function ProductDetail() {
               specifications: data.specifications,
               faqSection: data.faqSection,
               additionalImageUrl: data.additionalImageUrl,
-              slug: data.slug
+              slug: data.slug,
+              packProduct: data.packProduct || false // For variant label visibility
             };
 
             console.log('Using API data for product display:', formattedProduct);
@@ -1411,33 +1413,30 @@ export default function ProductDetail() {
   const testimonialItems = useMemo(() => {
     if (!relatedProducts || relatedProducts.length === 0) return [];
 
-    // Show ALL products with same design (no limit)
-    return relatedProducts.map((relatedProduct) => {
-      const productLink = getProductUrl({
-        id: relatedProduct.id,
-        slug: relatedProduct.slug,
-        category: relatedProduct.categoryName || relatedProduct.category,
-        name: relatedProduct.name,
-        title: relatedProduct.name,
-        type: relatedProduct.type
+    // Filter products that have testimonialImage set, then map to testimonial format
+    return relatedProducts
+      .filter((relatedProduct) => relatedProduct.testimonialImage) // Only show products with testimonialImage
+      .map((relatedProduct) => {
+        const productLink = getProductUrl({
+          id: relatedProduct.id,
+          slug: relatedProduct.slug,
+          category: relatedProduct.categoryName || relatedProduct.category,
+          name: relatedProduct.name,
+          title: relatedProduct.name,
+          type: relatedProduct.type
+        });
+
+        return {
+          image: relatedProduct.testimonialImage,
+          altText: relatedProduct.name || "Novino design",
+          quote: `"${relatedProduct.name || "This piece"} from the ${relatedProduct.categoryName || relatedProduct.category || "Novino"
+            } collection is crafted with layers of narrative and material."`,
+          author: relatedProduct.categoryName || relatedProduct.category || "Novino Design",
+          link: productLink,
+          category: relatedProduct.categoryName || relatedProduct.category || "Design",
+          productName: relatedProduct.name || "Novino Design"
+        };
       });
-
-      // Simple logic: Use testimonialImage if it exists, otherwise use first product image
-      const testimonialImg = relatedProduct.testimonialImage
-        ? relatedProduct.testimonialImage
-        : (relatedProduct.images?.[0] || relatedProduct.image || "/images/placeholder.png");
-
-      return {
-        image: testimonialImg,
-        altText: relatedProduct.name || "Novino design",
-        quote: `${relatedProduct.name || "This piece"} from the ${relatedProduct.categoryName || relatedProduct.category || "Novino"
-          } collection is crafted with layers of narrative and material.`,
-        author: relatedProduct.categoryName || relatedProduct.category || "Novino Design",
-        link: productLink,
-        category: relatedProduct.categoryName || relatedProduct.category || "Design",
-        productName: relatedProduct.name || "Novino Design"
-      };
-    });
   }, [relatedProducts]);
 
   const testimonialCategoryLinks = useMemo(() => {
@@ -1513,7 +1512,8 @@ export default function ProductDetail() {
                   variants: p.variants,
                   designStory: p.designStory || p.design_story || null,
                   slug: p.slug,
-                  type: p.type
+                  type: p.type,
+                  packProduct: p.packProduct || false // Include packProduct field for variant label visibility
                 });
               });
             }
@@ -2310,8 +2310,8 @@ export default function ProductDetail() {
                             className="pointer-events-none"
                             draggable={false}
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                          <div className="absolute bottom-1 left-1 right-1 text-[8px] text-white/90 truncate uppercase font-['Roboto_Mono'] opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className={`absolute inset-0 bg-gradient-to-t from-black/80 to-transparent transition-opacity pointer-events-none ${product.packProduct ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
+                          <div className={`absolute bottom-0 left-0 right-0 truncate uppercase font-['Roboto_Mono'] transition-opacity text-center ${product.packProduct ? 'opacity-100 text-[10px] sm:text-xs bg-black/70 py-1 px-1 text-white font-medium' : 'opacity-0 group-hover:opacity-100 text-[8px] text-white/90 bottom-1 left-1 right-1'}`}>
                             {product.name}
                           </div>
                         </button>
@@ -2361,8 +2361,8 @@ export default function ProductDetail() {
                                 className="pointer-events-none"
                                 draggable={false}
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                              <div className="absolute bottom-1 left-1 right-1 text-[8px] text-white/90 truncate uppercase font-['Roboto_Mono'] opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className={`absolute inset-0 bg-gradient-to-t from-black/80 to-transparent transition-opacity pointer-events-none ${variant.packProduct ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
+                              <div className={`absolute bottom-0 left-0 right-0 truncate uppercase font-['Roboto_Mono'] transition-opacity text-center ${variant.packProduct ? 'opacity-100 text-[10px] sm:text-xs bg-black/70 py-1 px-1 text-white font-medium' : 'opacity-0 group-hover:opacity-100 text-[8px] text-white/90 bottom-1 left-1 right-1'}`}>
                                 {variant.name}
                               </div>
                             </button>
@@ -2842,8 +2842,8 @@ export default function ProductDetail() {
         )}
 
 
-        {/* Design Stories - Product Testimonial - Only show if related products exist */}
-        {relatedProducts.length > 0 && (
+        {/* Design Stories - Product Testimonial - Only show if products with testimonialImage exist */}
+        {testimonialItems.length > 0 && (
           <div className="mt-12 mb-16 mx-auto w-full" style={{ maxWidth: "1440px" }}>
             <div className="px-0 md:px-6">
               <ProductTestimonial

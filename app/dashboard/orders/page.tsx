@@ -357,6 +357,7 @@ export default function OrdersPage() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Product</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Package</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Payment</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Delivery</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Pickup</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Status</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Action</th>
@@ -417,6 +418,33 @@ export default function OrdersPage() {
                           : 'bg-yellow-500/20 text-yellow-300'
                           }`}>
                           {order.payment_method}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <div className="relative group">
+                          <div className="text-xs text-white/70">
+                            {order.billing_city || '—'}, {order.billing_state || '—'}
+                          </div>
+                          <div className="text-xs text-white/50">
+                            {order.billing_pincode || order.shipping_pincode || ''}
+                          </div>
+
+                          {/* Delivery Address Tooltip */}
+                          <div className="absolute left-0 top-full mt-2 z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200">
+                            <div className="bg-white text-black p-3 rounded-lg shadow-xl min-w-[260px] text-xs leading-relaxed border border-white/40">
+                              <div className="font-semibold mb-1">{order.billing_customer_name || 'Customer'}</div>
+                              <div className="text-black/80">
+                                {(order.billing_address || order.customer?.address || '').trim() || 'Address not available'}
+                              </div>
+                              <div className="text-black/80">
+                                {[order.billing_city, order.billing_state, order.billing_pincode]
+                                  .filter(Boolean)
+                                  .join(', ')}
+                              </div>
+                              <div className="mt-1 font-medium">{order.billing_phone || order.customer?.phone || 'N/A'}</div>
+                            </div>
+                          </div>
                         </div>
                       </td>
 

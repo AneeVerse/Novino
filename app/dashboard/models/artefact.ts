@@ -13,6 +13,13 @@ export interface ArtefactProduct {
   testimonialImage?: string; // Separate image for testimonial section
   order: number; // For drag-and-drop ordering
   createdAt: string;
+  // Pack Product fields - for products that need custom dimensions (e.g., pack of 5)
+  packProduct?: boolean; // When true, product name is always visible in variant selector
+  length?: number; // Shipping dimension - overrides category
+  width?: number; // Shipping dimension - overrides category
+  breadth?: number; // Shipping dimension - overrides category
+  height?: number; // Shipping dimension - overrides category
+  weight?: number; // Shipping dimension - overrides category
 }
 
 export interface ArtefactCategory {

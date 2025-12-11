@@ -292,7 +292,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
         }
       }
 
-      // If no shipment dimensions, try to get from category
+      // If no shipment dimensions, try to get from product (packProduct) or category
       if (!(order as any).length || !(order as any).breadth || !(order as any).height || !(order as any).weight) {
         const firstItem = local.items?.[0];
         if (firstItem) {
@@ -307,10 +307,11 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
             categoryId
           });
           
-          // Find category by searching for product
+          // Find category and product by searching
           // Priority: productId > SKU > name (to avoid matching wrong category when same SKU/name exists in multiple categories)
-          if (!categoryId && productId && allCategories) {
+          if (productId && allCategories) {
             let foundCategory: any = null;
+            let foundProduct: any = null;
             const productIdStr = String(productId);
             const itemSkuUpper = itemSku ? itemSku.trim().toUpperCase() : '';
             const itemNameLower = firstItem.name ? firstItem.name.trim().toLowerCase() : '';
@@ -325,6 +326,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
                 });
                 if (product) {
                   foundCategory = cat;
+                  foundProduct = product;
                   console.log('[Orders][Dimensions] Found category by productId:', cat.name, 'productId:', productIdStr);
                   break;
                 }
@@ -341,6 +343,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
                   });
                   if (product) {
                     foundCategory = cat;
+                    foundProduct = product;
                     console.log('[Orders][Dimensions] Found category by SKU:', cat.name, 'SKU:', itemSkuUpper);
                     break;
                   }
@@ -358,6 +361,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
                   });
                   if (product) {
                     foundCategory = cat;
+                    foundProduct = product;
                     console.log('[Orders][Dimensions] Found category by name:', cat.name, 'name:', itemNameLower);
                     break;
                   }
@@ -365,7 +369,21 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
               }
             }
             
-            if (foundCategory && foundCategory.length && Number(foundCategory.length) > 0) {
+            // PRIORITY 1: Check if product has custom dimensions (packProduct)
+            if (foundProduct?.packProduct && foundProduct.length && Number(foundProduct.length) > 0) {
+              (order as any).length = Number(foundProduct.length);
+              (order as any).breadth = Number(foundProduct.breadth || foundProduct.width || 26);
+              (order as any).height = Number(foundProduct.height || 10);
+              (order as any).weight = Number(foundProduct.weight || 0.5);
+              console.log('[Orders][Dimensions] Using PRODUCT dimensions (packProduct):', foundProduct.name, {
+                length: (order as any).length,
+                breadth: (order as any).breadth,
+                height: (order as any).height,
+                weight: (order as any).weight
+              });
+            }
+            // PRIORITY 2: Fall back to category dimensions
+            else if (foundCategory && foundCategory.length && Number(foundCategory.length) > 0) {
               (order as any).length = Number(foundCategory.length);
               (order as any).breadth = Number(foundCategory.breadth || foundCategory.width || 26);
               (order as any).height = Number(foundCategory.height || 10);

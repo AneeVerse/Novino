@@ -599,7 +599,12 @@ export async function getShiprocketOverviewMetrics(range: { from: string; to: st
 
       // Count orders with NEW status (not yet shipped)
       const status = (order.status || '').toUpperCase().trim();
-      if (status === 'NEW' || status.includes('NEW') || status === 'PENDING' || !status) {
+      const isDelivered = status.includes('DELIVER');
+      const isTransit = status.includes('TRANSIT') || status.includes('SHIP');
+      const isOutForDelivery = status.includes('OFD') || status.includes('OUT FOR DELIVERY');
+      const isCanceled = status.includes('CANCEL');
+      const isReturn = status.includes('RTO') || status.includes('RETURN') || status.includes('REFUND');
+      if (!isDelivered && !isTransit && !isOutForDelivery && !isCanceled && !isReturn) {
         acc.newOrders += 1;
       }
 

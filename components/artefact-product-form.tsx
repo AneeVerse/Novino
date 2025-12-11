@@ -20,6 +20,12 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
     images: [] as string[],
     metaDescription: '',
     testimonialImage: '',
+    packProduct: false,
+    length: '',
+    width: '',
+    breadth: '',
+    height: '',
+    weight: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,6 +42,12 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
         images: product.images,
         metaDescription: product.metaDescription || '',
         testimonialImage: product.testimonialImage || '',
+        packProduct: product.packProduct || false,
+        length: product.length?.toString() || '',
+        width: product.width?.toString() || '',
+        breadth: product.breadth?.toString() || '',
+        height: product.height?.toString() || '',
+        weight: product.weight?.toString() || '',
       });
       setTestimonialImageInput(product.testimonialImage || '');
     } else {
@@ -48,6 +60,12 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
         images: [],
         metaDescription: '',
         testimonialImage: '',
+        packProduct: false,
+        length: '',
+        width: '',
+        breadth: '',
+        height: '',
+        weight: '',
       });
       setImageInput('');
       setTestimonialImageInput('');
@@ -69,7 +87,23 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
 
     setIsSubmitting(true);
     try {
-      await onSubmit(formData);
+      // Prepare form data with proper types for dimensions
+      const submitData = {
+        name: formData.name,
+        description: formData.description,
+        basePrice: formData.basePrice,
+        quantity: formData.quantity,
+        images: formData.images,
+        metaDescription: formData.metaDescription,
+        testimonialImage: formData.testimonialImage,
+        packProduct: formData.packProduct,
+        ...(formData.packProduct && formData.length ? { length: parseFloat(formData.length) } : {}),
+        ...(formData.packProduct && formData.width ? { width: parseFloat(formData.width) } : {}),
+        ...(formData.packProduct && formData.breadth ? { breadth: parseFloat(formData.breadth) } : {}),
+        ...(formData.packProduct && formData.height ? { height: parseFloat(formData.height) } : {}),
+        ...(formData.packProduct && formData.weight ? { weight: parseFloat(formData.weight) } : {}),
+      };
+      await onSubmit(submitData);
       
       // Reset form
       setFormData({
@@ -80,6 +114,12 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
         images: [],
         metaDescription: '',
         testimonialImage: '',
+        packProduct: false,
+        length: '',
+        width: '',
+        breadth: '',
+        height: '',
+        weight: '',
       });
       setImageInput('');
       setTestimonialImageInput('');
@@ -190,6 +230,115 @@ export default function ArtefactProductForm({ isOpen, onClose, onSubmit, product
                 />
               </div>
             </div>
+
+            {/* Pack Product Checkbox */}
+            <div className="flex items-center gap-3 py-2">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.packProduct}
+                  onChange={(e) => setFormData({ ...formData, packProduct: e.target.checked })}
+                  className="sr-only peer"
+                  disabled={isSubmitting}
+                />
+                <div className="w-5 h-5 border-2 border-[#444444] rounded bg-[#0A0A0A] peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center">
+                  {formData.packProduct && (
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </label>
+              <span className="text-sm font-medium text-amber-400">Pack Product</span>
+              <span className="text-xs text-white/40">(Name always visible in variant selector)</span>
+            </div>
+
+            {/* Shipping Dimensions - Only shown when Pack Product is checked */}
+            {formData.packProduct && (
+              <div className="space-y-4 p-4 bg-[#0A0A0A] border border-amber-500/30 rounded-lg">
+                <h4 className="text-sm font-medium text-amber-400 flex items-center gap-2">
+                  📦 Shipping Dimensions
+                  <span className="text-xs text-white/40 font-normal">(Overrides category dimensions)</span>
+                </h4>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-white/60 mb-1.5">
+                      Length (cm)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.length}
+                      onChange={(e) => setFormData({ ...formData, length: e.target.value })}
+                      placeholder="30"
+                      step="0.01"
+                      className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all text-sm"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-white/60 mb-1.5">
+                      Width (cm)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.width}
+                      onChange={(e) => setFormData({ ...formData, width: e.target.value })}
+                      placeholder="26"
+                      step="0.01"
+                      className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all text-sm"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-white/60 mb-1.5">
+                      Breadth (cm)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.breadth}
+                      onChange={(e) => setFormData({ ...formData, breadth: e.target.value })}
+                      placeholder="7"
+                      step="0.01"
+                      className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all text-sm"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-white/60 mb-1.5">
+                      Height (cm)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.height}
+                      onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                      placeholder="8"
+                      step="0.01"
+                      className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all text-sm"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-white/60 mb-1.5">
+                      Weight (kg)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.weight}
+                      onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                      placeholder="0.322"
+                      step="0.001"
+                      className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#333333] rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all text-sm"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-white/80 mb-2">

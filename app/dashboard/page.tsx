@@ -265,6 +265,14 @@ function DashboardContent() {
     };
   };
 
+  const calcDaysBetween = (from: string, to: string) => {
+    const start = new Date(`${from}T00:00:00`);
+    const end = new Date(`${to}T00:00:00`);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 1;
+    const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(1, diff + 1);
+  };
+
   const [shiprocketRange, setShiprocketRange] = useState(() => makeRange(1));
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
   const [customFromDate, setCustomFromDate] = useState(makeRange(1).from);
@@ -276,6 +284,7 @@ function DashboardContent() {
         from: customFromDate,
         to: customToDate,
         label: 'Custom range',
+        days: calcDaysBetween(customFromDate, customToDate),
       });
       setShowCustomDatePicker(false);
     }
@@ -287,6 +296,7 @@ function DashboardContent() {
   const [shiprocketSalesSeries, setShiprocketSalesSeries] = useState<ShiprocketSalesPoint[]>([]);
   const [shiprocketSalesLoading, setShiprocketSalesLoading] = useState(true);
   const [shiprocketSalesError, setShiprocketSalesError] = useState<string | null>(null);
+  const [shiprocketOrdersSummary, setShiprocketOrdersSummary] = useState<{ newOrders: number } | null>(null);
 
   // Fixed metrics for Summary cards (always shows today/yesterday, not affected by date range)
   const [summaryMetrics, setSummaryMetrics] = useState<ShiprocketOverviewMetrics | null>(null);
@@ -556,6 +566,31 @@ function DashboardContent() {
 
     fetchShiprocketMetrics();
     fetchShiprocketSales();
+    // Fetch all orders and count only those with exact status = "NEW"
+    const fetchShiprocketOrdersSummary = async () => {
+      try {
+        const params = new URLSearchParams({
+          from: shiprocketRange.from,
+          to: shiprocketRange.to,
+          perPage: '500',
+          page: '1',
+        });
+        const res = await fetch(`/api/shiprocket/orders?${params.toString()}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to load orders summary');
+        const payload = await res.json();
+        // Count only orders with exact status "NEW"
+        // API returns orders in 'data' field, not 'orders'
+        const newOrdersCount = (payload?.data || payload?.orders || []).filter((order: any) => {
+          const status = (order.status || '').toUpperCase().trim();
+          return status === 'NEW';
+        }).length;
+        setShiprocketOrdersSummary({ newOrders: newOrdersCount });
+      } catch (err) {
+        console.error('Failed to fetch orders summary', err);
+        setShiprocketOrdersSummary(null);
+      }
+    };
+    fetchShiprocketOrdersSummary();
 
     return () => {
       isMounted = false;
@@ -1092,20 +1127,24 @@ function DashboardContent() {
                       <h3 className="text-lg font-semibold text-white mb-3">Orders</h3>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-white/60">
-                            {shiprocketRange.days === 1 ? 'Today' : 'Range total'}
-                          </span>
+                          <span className="text-sm text-white/60">Today</span>
                           <span className="text-2xl font-bold text-white">
-                            {shiprocketRange.days === 1
-                              ? shiprocketMetrics?.todaysOrders ?? shiprocketMetrics?.totalOrders ?? 0
-                              : shiprocketMetrics?.totalOrders ?? 0}
+                            {summaryMetrics?.todaysOrders ?? 0}
                           </span>
                         </div>
-                        {shiprocketRange.days === 1 && (
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-white/60">Yesterday</span>
                             <span className="text-xl font-semibold text-white/70">
-                              {shiprocketMetrics?.yesterdaysOrders ?? 0}
+                            {summaryMetrics?.yesterdaysOrders ?? 0}
+                          </span>
+                        </div>
+                        {shiprocketRange.days > 1 && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-white/60">
+                              {shiprocketRange.label}
+                            </span>
+                            <span className="text-lg font-semibold text-white/80">
+                              {shiprocketMetrics?.totalOrders ?? 0}
                             </span>
                           </div>
                         )}
@@ -1129,22 +1168,22 @@ function DashboardContent() {
                       <h3 className="text-lg font-semibold text-white mb-3">Revenue</h3>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-white/60">
-                            {shiprocketRange.days === 1 ? 'Today' : 'Range total'}
-                          </span>
+                          <span className="text-sm text-white/60">Today</span>
                           <span className="text-2xl font-bold text-white">
-                            {formatCurrency(
-                              shiprocketRange.days === 1
-                                ? shiprocketMetrics?.todayRevenue ?? shiprocketMetrics?.totalRevenue ?? 0
-                                : shiprocketMetrics?.totalRevenue ?? 0
-                            )}
+                            {formatCurrency(summaryMetrics?.todayRevenue ?? 0)}
                           </span>
                         </div>
-                        {shiprocketRange.days === 1 && (
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-white/60">Yesterday</span>
                             <span className="text-xl font-semibold text-white/70">
-                              {formatCurrency(shiprocketMetrics?.yesterdayRevenue ?? 0)}
+                            {formatCurrency(summaryMetrics?.yesterdayRevenue ?? 0)}
+                          </span>
+                        </div>
+                        {shiprocketRange.days > 1 && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-white/60">{shiprocketRange.label}</span>
+                            <span className="text-lg font-semibold text-white/80">
+                              {formatCurrency(shiprocketMetrics?.totalRevenue ?? 0)}
                             </span>
                           </div>
                         )}
@@ -1204,7 +1243,11 @@ function DashboardContent() {
                     <div className="flex-1">
                       <h3 className="text-sm font-medium text-white/60 mb-2">New Orders to be Processed</h3>
                       <p className="text-4xl font-bold text-white">
-                        {totalMetrics?.newOrders ?? 0}
+                        {shiprocketOrdersSummary?.newOrders ??
+                          summaryMetrics?.newOrders ??
+                          totalMetrics?.newOrders ??
+                          shiprocketMetrics?.newOrders ??
+                          0}
                       </p>
                     </div>
                   </div>

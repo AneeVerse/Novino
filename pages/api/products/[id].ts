@@ -86,6 +86,7 @@ const toCategoryProduct = (category: any, product: any) => ({
   categoryName: category.name,
   type: 'artefact' as const,
   description: product.description || '',
+  packProduct: product.packProduct || false, // For variant label visibility
 });
 
 // Standalone products table removed - all products are in product_categories

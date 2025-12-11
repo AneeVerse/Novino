@@ -168,8 +168,8 @@ export async function POST(req: NextRequest) {
     console.warn('[RazorpayVerify] Failed to fetch categories:', error);
   }
   
-  // Helper function to resolve category by productId (most reliable) or SKU/name
-  const resolveCategoryForItem = (item: any) => {
+  // Helper function to resolve category and product by productId (most reliable) or SKU/name
+  const resolveCategoryAndProductForItem = (item: any): { category: any; product: any } | null => {
     if (!allCategories || !Array.isArray(allCategories)) return null;
     
     const productId = item.productId || item.id;
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
             return pIdStr === productIdStr || pIdStrAlt === productIdStr;
           });
           if (product) {
-            return cat;
+            return { category: cat, product };
           }
         }
       }
@@ -202,7 +202,7 @@ export async function POST(req: NextRequest) {
             return itemSku && pSku && itemSku === pSku;
           });
           if (product) {
-            return cat;
+            return { category: cat, product };
           }
         }
       }
@@ -217,7 +217,7 @@ export async function POST(req: NextRequest) {
             return itemName && pName && itemName === pName;
           });
           if (product) {
-            return cat;
+            return { category: cat, product };
           }
         }
       }
@@ -226,18 +226,39 @@ export async function POST(req: NextRequest) {
     return null;
   };
   
+  // Helper to get category only (for backward compatibility)
+  const resolveCategoryForItem = (item: any) => {
+    const result = resolveCategoryAndProductForItem(item);
+    return result?.category || null;
+  };
+  
   if (order.items && order.items.length > 0) {
     const firstItem = order.items[0];
-    const foundCategory = resolveCategoryForItem(firstItem);
+    const result = resolveCategoryAndProductForItem(firstItem);
     
-    if (foundCategory && foundCategory.length && Number(foundCategory.length) > 0) {
-      packageDimensions = {
-        length: Number(foundCategory.length),
-        breadth: Number(foundCategory.breadth || foundCategory.width || 26),
-        height: Number(foundCategory.height || 10),
-        weight: Number(foundCategory.weight || 0.5),
-      };
-      console.log('[RazorpayVerify] Using category dimensions:', foundCategory.name, packageDimensions);
+    if (result) {
+      const { category: foundCategory, product: foundProduct } = result;
+      
+      // PRIORITY 1: Check if product has custom dimensions (packProduct)
+      if (foundProduct?.packProduct && foundProduct.length && Number(foundProduct.length) > 0) {
+        packageDimensions = {
+          length: Number(foundProduct.length),
+          breadth: Number(foundProduct.breadth || foundProduct.width || 26),
+          height: Number(foundProduct.height || 10),
+          weight: Number(foundProduct.weight || 0.5),
+        };
+        console.log('[RazorpayVerify] Using PRODUCT dimensions (packProduct):', foundProduct.name, packageDimensions);
+      }
+      // PRIORITY 2: Fall back to category dimensions
+      else if (foundCategory && foundCategory.length && Number(foundCategory.length) > 0) {
+        packageDimensions = {
+          length: Number(foundCategory.length),
+          breadth: Number(foundCategory.breadth || foundCategory.width || 26),
+          height: Number(foundCategory.height || 10),
+          weight: Number(foundCategory.weight || 0.5),
+        };
+        console.log('[RazorpayVerify] Using category dimensions:', foundCategory.name, packageDimensions);
+      }
     }
   }
 
