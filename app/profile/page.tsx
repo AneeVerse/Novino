@@ -100,10 +100,13 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const { user: supabaseUser, isAuthenticated, isLoading: authLoading, logout } = useAuth();
 
+  const [profileData, setProfileData] = useState<{username?: string, email?: string, phone?: string} | null>(null);
+
   const user = supabaseUser ? {
-    username: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
-    email: supabaseUser.email || '',
+    username: profileData?.username || supabaseUser.user_metadata?.username || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+    email: profileData?.email || supabaseUser.email || '',
     name: supabaseUser.user_metadata?.full_name,
+    phone: profileData?.phone || supabaseUser.user_metadata?.phone || '',
     userId: supabaseUser.id
   } : null;
 
@@ -140,12 +143,28 @@ export default function ProfilePage() {
   const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [pincodeMessage, setPincodeMessage] = useState("");
 
+  // Fetch profile data from database
+  const fetchProfile = async () => {
+    if (!supabaseUser?.id) return;
+    
+    try {
+      const res = await fetch(`/api/profile/${supabaseUser.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setProfileData(data.profile);
+      }
+    } catch (error) {
+      console.error('Failed to fetch profile:', error);
+    }
+  };
+
   // Check if user is logged in
   useEffect(() => {
     if (!authLoading) {
       if (isAuthenticated && user) {
         setLoading(false);
-        // Fetch orders and addresses
+        // Fetch profile, orders and addresses
+        fetchProfile();
         fetchOrders();
         fetchAddresses();
       } else {
@@ -798,18 +817,18 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium mb-2 text-white/70">Email</label>
                   <Input
                     type="email"
-                    value={user?.email || ""}
+                    value={user?.email || "Not set"}
                     disabled
                     className="bg-[#222222] border-[#444444] text-white cursor-not-allowed"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-white/70">Name</label>
+                  <label className="block text-sm font-medium mb-2 text-white/70">Phone Number</label>
                   <Input
-                    type="text"
-                    value={user?.name || "Not set"}
+                    type="tel"
+                    value={user?.phone || "Not set"}
                     disabled
-                    className="bg-[#222222] border-[#444444] text-white/60 cursor-not-allowed"
+                    className="bg-[#222222] border-[#444444] text-white cursor-not-allowed"
                   />
                 </div>
               </div>
