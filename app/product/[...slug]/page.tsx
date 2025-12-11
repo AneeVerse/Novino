@@ -2310,10 +2310,16 @@ export default function ProductDetail() {
                             className="pointer-events-none"
                             draggable={false}
                           />
-                          <div className={`absolute inset-0 bg-gradient-to-t from-black/80 to-transparent transition-opacity pointer-events-none ${product.packProduct ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
-                          <div className={`absolute bottom-0 left-0 right-0 truncate uppercase font-['Roboto_Mono'] transition-opacity text-center ${product.packProduct ? 'opacity-100 text-[10px] sm:text-xs bg-black/70 py-1 px-1 text-white font-medium' : 'opacity-0 group-hover:opacity-100 text-[8px] text-white/90 bottom-1 left-1 right-1'}`}>
-                            {product.name}
-                          </div>
+                          {/* Tag-style label for pack products */}
+                          {product.packProduct && (
+                            <div className="absolute bottom-1.5 left-0 right-0 z-10 pointer-events-none px-1">
+                              <div className="px-1.5 py-0.5 rounded bg-gradient-to-br from-[#E8CCAD]/95 via-[#C4B5AA]/90 to-[#A89080]/85 backdrop-blur-sm border border-[#F5E9D7]/30 w-fit mx-auto">
+                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wide text-[#2D2D2D] font-['Roboto_Mono'] whitespace-nowrap">
+                                  {product.name}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </button>
 
                         {/* Other Products in Category (treated as variants) - Hover to preview, Click to select */}
@@ -2361,10 +2367,16 @@ export default function ProductDetail() {
                                 className="pointer-events-none"
                                 draggable={false}
                               />
-                              <div className={`absolute inset-0 bg-gradient-to-t from-black/80 to-transparent transition-opacity pointer-events-none ${variant.packProduct ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
-                              <div className={`absolute bottom-0 left-0 right-0 truncate uppercase font-['Roboto_Mono'] transition-opacity text-center ${variant.packProduct ? 'opacity-100 text-[10px] sm:text-xs bg-black/70 py-1 px-1 text-white font-medium' : 'opacity-0 group-hover:opacity-100 text-[8px] text-white/90 bottom-1 left-1 right-1'}`}>
-                                {variant.name}
-                              </div>
+                              {/* Tag-style label for pack products */}
+                              {variant.packProduct && (
+                                <div className="absolute bottom-1.5 left-0 right-0 z-10 pointer-events-none px-1">
+                                  <div className="px-1.5 py-0.5 rounded bg-gradient-to-br from-[#E8CCAD]/95 via-[#C4B5AA]/90 to-[#A89080]/85 backdrop-blur-sm border border-[#F5E9D7]/30 w-fit mx-auto">
+                                    <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wide text-[#2D2D2D] font-['Roboto_Mono'] whitespace-nowrap">
+                                      {variant.name}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
                             </button>
                           );
                         })}
