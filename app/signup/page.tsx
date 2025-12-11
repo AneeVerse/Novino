@@ -22,10 +22,55 @@ const validateUsername = (username: string): string | null => {
 }
 
 const validateEmail = (email: string): string | null => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  // Required check
   if (!email) return 'Email is required'
-  if (!emailRegex.test(email)) return 'Please enter a valid email address'
-  if (email.length > 254) return 'Email is too long'
+  
+  // Trim and convert to lowercase for validation
+  const trimmed = email.trim().toLowerCase()
+  
+  // Length validation (RFC 5321)
+  if (trimmed.length < 3) return 'Email is too short'
+  if (trimmed.length > 254) return 'Email is too long'
+  
+  // Enhanced email regex with more strict validation
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+  
+  if (!emailRegex.test(trimmed)) {
+    return 'Please enter a valid email address'
+  }
+  
+  // Check for consecutive dots
+  if (trimmed.includes('..')) return 'Email contains invalid consecutive dots'
+  
+  // Check for dots at start or end of local part
+  const [localPart, domain] = trimmed.split('@')
+  if (localPart.startsWith('.') || localPart.endsWith('.')) {
+    return 'Email local part cannot start or end with a dot'
+  }
+  
+  // Validate domain has at least one dot and valid TLD
+  if (!domain || !domain.includes('.')) {
+    return 'Email domain is invalid'
+  }
+  
+  // Check domain TLD length (minimum 2 characters)
+  const domainParts = domain.split('.')
+  const tld = domainParts[domainParts.length - 1]
+  if (tld.length < 2) {
+    return 'Email domain TLD is too short'
+  }
+  
+  // Check for spaces (extra safety)
+  if (trimmed.includes(' ')) return 'Email cannot contain spaces'
+  
+  // Check for dangerous characters that might be used for injection
+  const dangerousChars = ['<', '>', '"', "'", '\\', ';', '--', '/*', '*/', 'script']
+  for (const char of dangerousChars) {
+    if (trimmed.toLowerCase().includes(char)) {
+      return 'Email contains invalid characters'
+    }
+  }
+  
   return null
 }
 
@@ -144,12 +189,13 @@ export default function SignupPage() {
       }
 
 
-      // Send OTP to mobile
+      // Send OTP to both email and mobile
       const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier: cleanedPhone,
+          email: normalizedEmail,
+          phone: cleanedPhone,
           purpose: 'signup'
         })
       })
@@ -167,10 +213,10 @@ export default function SignupPage() {
       sessionStorage.setItem('signup_email', normalizedEmail)
       sessionStorage.setItem('signup_phone', cleanedPhone)
 
-      setMessage('OTP sent to your mobile!')
+      setMessage(data.message || 'OTP sent!')
       toast({
         title: "OTP Sent!",
-        description: "Please check your phone for the 4-digit code.",
+        description: data.message || "Please check your email and phone for the 4-digit code.",
       })
       setStep('otp')
 
@@ -207,11 +253,11 @@ export default function SignupPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier: storedPhone,
           otp: otp,
           purpose: 'signup',
           username: storedUsername,
-          email: storedEmail
+          email: storedEmail,
+          phone: storedPhone
         })
       })
 

@@ -10,16 +10,35 @@ import { useCart } from '@/contexts/CartContext'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useToast } from '@/hooks/use-toast'
 
-// Validation
+// Enhanced validation with security checks
 const validateIdentifier = (input: string): string | null => {
   if (!input) return 'Email or phone number is required'
   
-  const trimmed = input.trim()
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const trimmed = input.trim().toLowerCase()
+  
+  // Check for dangerous characters that might be used for injection
+  const dangerousChars = ['<', '>', '"', "'", '\\', ';', '--', '/*', '*/', 'script']
+  for (const char of dangerousChars) {
+    if (trimmed.toLowerCase().includes(char)) {
+      return 'Input contains invalid characters'
+    }
+  }
+  
+  // Enhanced email regex
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
   const isEmail = emailRegex.test(trimmed)
   
   if (isEmail) {
+    // Email validation
+    if (trimmed.length < 3) return 'Email is too short'
     if (trimmed.length > 254) return 'Email is too long'
+    if (trimmed.includes('..')) return 'Email contains invalid consecutive dots'
+    
+    const [localPart, domain] = trimmed.split('@')
+    if (!domain || !domain.includes('.')) {
+      return 'Email domain is invalid'
+    }
+    
     return null
   }
   
@@ -89,10 +108,10 @@ export default function LoginPage() {
       setOtpType(data.type || 'email')
       sessionStorage.setItem('login_identifier', identifier.trim())
 
-      setMessage(`OTP sent to your ${data.type === 'phone' ? 'phone' : 'email'}!`)
+      setMessage(data.message || 'OTP sent!')
       toast({
         title: "OTP Sent!",
-        description: `Please check your ${data.type === 'phone' ? 'phone' : 'email'} for the 4-digit code.`,
+        description: data.message || "Please check your email and phone for the 4-digit code.",
       })
       setStep('otp')
 

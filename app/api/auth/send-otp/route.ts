@@ -12,10 +12,35 @@ function generateOTP(): string {
   return Math.floor(1000 + Math.random() * 9000).toString()
 }
 
-// Check if input is email or phone
+// Enhanced email validation with security checks
 function isEmail(input: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
   return emailRegex.test(input)
+}
+
+// Sanitize and validate email
+function sanitizeEmail(email: string): string | null {
+  if (!email) return null
+  
+  // Trim and convert to lowercase
+  const sanitized = email.trim().toLowerCase()
+  
+  // Length check
+  if (sanitized.length < 3 || sanitized.length > 254) return null
+  
+  // Check for dangerous characters
+  const dangerousChars = ['<', '>', '"', '\\', ';', '--', '/*', '*/']
+  for (const char of dangerousChars) {
+    if (sanitized.includes(char)) return null
+  }
+  
+  // Check for consecutive dots
+  if (sanitized.includes('..')) return null
+  
+  // Validate format
+  if (!isEmail(sanitized)) return null
+  
+  return sanitized
 }
 
 // Clean phone number (remove spaces, dashes, and country code formatting)
@@ -40,7 +65,7 @@ const transporter = nodemailer.createTransport({
   }
 })
 
-// Send SMS via Fast2SMS
+// Send SMS via Fast2SMS using OTP route (cheaper rate - ₹0.20-0.25/SMS)
 async function sendSMS(phone: string, otp: string): Promise<boolean> {
   try {
     const apiKey = process.env.FAST2SMS_API_KEY
@@ -49,14 +74,15 @@ async function sendSMS(phone: string, otp: string): Promise<boolean> {
       return false
     }
 
-    const message = `Your Novino verification code is: ${otp}. Valid for 10 minutes.`
-    
+    // Using OTP/DLT route for cheaper rates (₹0.20-0.25 per SMS instead of ₹5)
+    // Route 'dlt' is for transactional/OTP messages with lower cost
     const url = new URL('https://www.fast2sms.com/dev/bulkV2')
     url.searchParams.append('authorization', apiKey)
-    url.searchParams.append('route', 'q') // Quick SMS route
-    url.searchParams.append('message', message)
+    url.searchParams.append('route', 'dlt') // DLT/Transactional route (cheaper)
+    url.searchParams.append('sender_id', 'NOVINO') // Your sender ID (register on Fast2SMS)
+    url.searchParams.append('message', '166949') // Your DLT template ID (register on Fast2SMS)
+    url.searchParams.append('variables_values', otp) // OTP value
     url.searchParams.append('numbers', phone)
-    url.searchParams.append('flash', '0')
 
     const response = await fetch(url.toString(), {
       method: 'GET',
@@ -110,73 +136,109 @@ async function sendEmailOTP(email: string, otp: string): Promise<boolean> {
 
 export async function POST(request: Request) {
   try {
-    const { identifier, purpose } = await request.json()
+    const { identifier, email, phone, purpose } = await request.json()
 
-    if (!identifier) {
-      return NextResponse.json({ error: 'Email or phone number is required' }, { status: 400 })
-    }
-
-    const normalizedIdentifier = identifier.trim().toLowerCase()
     const validPurposes = ['signup', 'login', 'reset']
     const otpPurpose = validPurposes.includes(purpose) ? purpose : 'login'
     
-    const isEmailInput = isEmail(normalizedIdentifier)
-    const cleanedPhone = isEmailInput ? null : cleanPhoneNumber(normalizedIdentifier)
+    let userEmail = email
+    let userPhone = phone
 
-    // Validate phone number (should be 10 digits for Indian numbers)
-    if (!isEmailInput && cleanedPhone && cleanedPhone.length !== 10) {
-      return NextResponse.json({ error: 'Please enter a valid 10-digit phone number' }, { status: 400 })
+    // For signup, we expect email and phone separately
+    if (otpPurpose === 'signup') {
+      if (!email || !phone) {
+        return NextResponse.json({ error: 'Email and phone number are required' }, { status: 400 })
+      }
+
+      // Sanitize and validate email
+      const sanitizedEmail = sanitizeEmail(email)
+      if (!sanitizedEmail) {
+        return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
+      }
+      userEmail = sanitizedEmail
+
+      // Clean and validate phone
+      userPhone = cleanPhoneNumber(phone)
+      if (userPhone.length !== 10) {
+        return NextResponse.json({ error: 'Please enter a valid 10-digit phone number' }, { status: 400 })
+      }
+
+      // Check if email already exists
+      const { data: existingEmail } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .maybeSingle()
+
+      if (existingEmail) {
+        return NextResponse.json({ error: 'Email already registered' }, { status: 409 })
+      }
+
+      // Check if phone already exists
+      const { data: existingPhone } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', userPhone)
+        .maybeSingle()
+
+      if (existingPhone) {
+        return NextResponse.json({ error: 'Phone number already registered' }, { status: 409 })
+      }
     }
 
-    // Use email or phone as the lookup key
-    const lookupKey = isEmailInput ? normalizedIdentifier : cleanedPhone
-
-    // For login, check if user exists
+    // For login, identifier can be email or phone
     if (otpPurpose === 'login') {
+      if (!identifier) {
+        return NextResponse.json({ error: 'Email or phone number is required' }, { status: 400 })
+      }
+
+      const normalizedIdentifier = identifier.trim().toLowerCase()
+      const isEmailInput = isEmail(normalizedIdentifier)
+      
+      // Additional validation for email input
+      if (isEmailInput) {
+        const sanitized = sanitizeEmail(normalizedIdentifier)
+        if (!sanitized) {
+          return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
+        }
+      }
+      
+      // Fetch user's email and phone from database
       const { data: existingUser } = await supabase
         .from('profiles')
         .select('email, phone')
-        .or(isEmailInput ? `email.eq.${lookupKey}` : `phone.eq.${lookupKey}`)
+        .or(isEmailInput ? `email.eq.${normalizedIdentifier}` : `phone.eq.${cleanPhoneNumber(normalizedIdentifier)}`)
         .maybeSingle()
 
       if (!existingUser) {
         return NextResponse.json({ 
-          error: isEmailInput ? 'Email not registered' : 'Phone number not registered' 
+          error: 'Account not found. Please sign up first.' 
         }, { status: 404 })
       }
+
+      // Use the user's registered email and phone for OTP sending
+      userEmail = existingUser.email
+      userPhone = existingUser.phone
     }
-
-    // For signup, check if user already exists
-    if (otpPurpose === 'signup') {
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('email, phone')
-        .or(isEmailInput ? `email.eq.${lookupKey}` : `phone.eq.${lookupKey}`)
-        .maybeSingle()
-
-      if (existingUser) {
-        return NextResponse.json({ 
-          error: isEmailInput ? 'Email already registered' : 'Phone number already registered' 
-        }, { status: 409 })
-      }
-    }
-
-    // Delete any existing OTPs for this identifier and purpose
-    await supabase
-      .from('otps')
-      .delete()
-      .eq('email', lookupKey) // Using 'email' column for both email and phone
-      .eq('purpose', otpPurpose)
 
     // Generate new 4-digit OTP
     const otp = generateOTP()
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes expiry
 
-    // Store OTP in database
+    // Store OTP in database (using email as primary key)
+    const lookupKey = userEmail || userPhone
+    
+    // Delete any existing OTPs for this user and purpose
+    await supabase
+      .from('otps')
+      .delete()
+      .eq('email', lookupKey)
+      .eq('purpose', otpPurpose)
+
     const { error: insertError } = await supabase
       .from('otps')
       .insert({
-        email: lookupKey, // Using 'email' column for both email and phone
+        email: lookupKey,
         otp: otp,
         purpose: otpPurpose,
         expires: expiresAt.toISOString()
@@ -187,26 +249,55 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to generate OTP' }, { status: 500 })
     }
 
-    // Send OTP via appropriate channel
-    let sent = false
-    if (isEmailInput) {
-      sent = await sendEmailOTP(lookupKey!, otp)
-    } else {
-      sent = await sendSMS(cleanedPhone!, otp)
+    // Send OTP to both email and phone (if available)
+    let emailSent = false
+    let smsSent = false
+    const sendResults = []
+
+    // Send to email
+    if (userEmail) {
+      emailSent = await sendEmailOTP(userEmail, otp)
+      if (emailSent) {
+        sendResults.push('email')
+      } else {
+        console.error('Failed to send OTP to email:', userEmail)
+      }
     }
 
-    if (!sent) {
-      // Clean up the OTP if sending failed
+    // Send to phone (silently fail if SMS service has issues)
+    if (userPhone) {
+      smsSent = await sendSMS(userPhone, otp)
+      if (smsSent) {
+        sendResults.push('phone')
+      } else {
+        console.warn('Failed to send OTP to phone (likely credit issue):', userPhone)
+        // Don't throw error - SMS is fallback
+      }
+    }
+
+    // At least email should be sent
+    if (!emailSent) {
+      // Clean up the OTP if email sending failed
       await supabase.from('otps').delete().eq('email', lookupKey).eq('otp', otp)
       return NextResponse.json({ 
-        error: isEmailInput ? 'Failed to send email' : 'Failed to send SMS' 
+        error: 'Failed to send OTP. Please try again.' 
       }, { status: 500 })
+    }
+
+    // Success message
+    let message = 'OTP sent successfully'
+    if (emailSent && smsSent) {
+      message = 'OTP sent to your email and phone'
+    } else if (emailSent) {
+      message = 'OTP sent to your email'
+    } else if (smsSent) {
+      message = 'OTP sent to your phone'
     }
 
     return NextResponse.json({ 
       success: true, 
-      message: isEmailInput ? 'OTP sent to your email' : 'OTP sent to your phone',
-      type: isEmailInput ? 'email' : 'phone'
+      message,
+      sentTo: sendResults
     })
 
   } catch (error) {
@@ -214,3 +305,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to send OTP' }, { status: 500 })
   }
 }
+
