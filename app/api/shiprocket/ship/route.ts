@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
         const buildItemName = (item: any, categoryName?: string) => {
             const design = (item?.name || '').toString().trim();
             const category = (categoryName || resolveCategoryName(item)).toString().trim();
-            const combined = [category, design].filter(Boolean).join(' ').trim();
+            const combined = [design, category].filter(Boolean).join(' ').trim();
             return combined || design || category || item?.sku || 'Item';
         };
 

@@ -15,11 +15,14 @@ NEXTAUTH_URL=http://localhost:3000
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Email Configuration (for Email OTP)
+# Email Configuration
+# Used for: Email OTP, Order Notifications, Contact Form
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=465
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-specific-password
+EMAIL_USER=your-email@gmail.com              # Sender email (Gmail account)
+EMAIL_PASS=your-app-specific-password        # Gmail App Password (not regular password - get from Google Account Security)
+EMAIL_FROM=your-email@gmail.com              # From email address (usually same as EMAIL_USER)
+EMAIL_RECEIVER=owner@novino.com              # Email to receive order/contact notifications (optional, defaults to EMAIL_USER)
 
 # Fast2SMS Configuration (for SMS OTP)
 FAST2SMS_API_KEY=your-fast2sms-api-key-here

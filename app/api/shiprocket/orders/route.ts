@@ -111,7 +111,7 @@ const resolveCategoryName = (item: any, allCategories?: any[]) => {
 const buildItemName = (item: any, fallbackProductName?: string, allCategories?: any[]) => {
   const design = (item?.name || fallbackProductName || "").toString().trim();
   const category = resolveCategoryName(item, allCategories).toString().trim();
-  const combined = [category, design].filter(Boolean).join(" ").trim();
+  const combined = [design, category].filter(Boolean).join(" ").trim();
   return combined || design || category || item?.sku || "Item";
 };
 

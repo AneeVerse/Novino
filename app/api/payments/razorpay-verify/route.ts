@@ -295,7 +295,7 @@ export async function POST(req: NextRequest) {
         const categoryName = foundCategory?.name || '';
         
         const design = (item.name || '').toString().trim();
-        const combinedName = [categoryName, design].filter(Boolean).join(' ').trim() || design || item.sku || 'Item';
+        const combinedName = [design, categoryName].filter(Boolean).join(' ').trim() || design || item.sku || 'Item';
         
         console.log('[RazorpayVerify][ItemName] Building name:', {
           productId: item.productId || item.id,
