@@ -321,7 +321,7 @@ export default function Footer() {
 
             {/* Bottom Section */}
             <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 flex flex-col relative z-10">
-              <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-center gap-3 sm:gap-4 text-center">
+              <div className="flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-between gap-3 sm:gap-4 text-center sm:text-left">
                 <div className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">
                   Copyright © 2025 Novino.io.All Rights Reserved
                 </div>
