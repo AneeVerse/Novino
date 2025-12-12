@@ -386,6 +386,11 @@ export default function Home() {
             letter-spacing: 0.04em;
             font-size: 92px !important;
           }
+          
+          /* Mobile hero background zoom */
+          .hero-background-image {
+            transform: scale(1.15) translate3d(0, 0, 0) !important;
+          }
         }
 
         /* Tablet adjustment - fixed to bottom using top */
