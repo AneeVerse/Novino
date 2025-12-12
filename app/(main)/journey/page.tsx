@@ -268,7 +268,7 @@ export default function JourneyPage() {
 
         @media (max-width: 767px) {
           .journey-hero-text {
-            top: 75%;
+            top: 73%;
             letter-spacing: 0.02em;
             font-size: 70px !important;
             width: 95%;

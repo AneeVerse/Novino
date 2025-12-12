@@ -109,20 +109,12 @@ export default function Footer() {
               <div className="col-span-2 sm:col-span-3 md:col-span-1">
                 <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-['Roboto_Mono']">Novino.io</h3>
                 <p className="text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4 font-satoshi">
-                  We have clothes that suits your style and which you're proud to wear. From women to men.
+                  Elevate ordinary walls with extraordinary galleries. Transform your space with unique art pieces and artifacts.
                 </p>
                 <div className="flex gap-3">
-                  <Link href="#" className="text-gray-300 hover:text-white">
-                    <Twitter size={16} className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-                  </Link>
-                  <Link href="#" className="text-gray-300 hover:text-white">
-                    <Facebook size={16} className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-                  </Link>
+                  {/* Keep only Instagram for now */}
                   <Link href="#" className="text-gray-300 hover:text-white">
                     <Instagram size={16} className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-                  </Link>
-                  <Link href="#" className="text-gray-300 hover:text-white">
-                    <Youtube size={16} className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
                   </Link>
                 </div>
               </div>
@@ -329,8 +321,10 @@ export default function Footer() {
 
             {/* Bottom Section */}
             <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 flex flex-col relative z-10">
-              <div className="flex justify-between items-center">
-                <div className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">Copyright © 2025 Novino.io.All Rights Reserved</div>
+              <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-center gap-3 sm:gap-4 text-center">
+                <div className="text-gray-300 text-xs sm:text-sm font-medium font-satoshi">
+                  Copyright © 2025 Novino.io.All Rights Reserved
+                </div>
                 <div className="hidden sm:flex items-center justify-center mx-4">
                   <img src="/images/Frame 53.png" alt="Payment Methods" className="h-6 sm:h-8" />
                 </div>
@@ -346,7 +340,7 @@ export default function Footer() {
                     alt="AneeVerse Logo"
                     width={24}
                     height={24}
-                    className="h-5 w-5 sm:h-6 sm:w-6 opacity-80 group-hover:opacity-100 transition-opacity brightness-0 invert-100"
+                    className="h-5 w-5 sm:h-6 sm:w-6 opacity-100 group-hover:opacity-100 transition-opacity invert brightness-125"
                   />
                 </a>
               </div>

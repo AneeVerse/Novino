@@ -33,8 +33,9 @@ export default function WardrobeSection() {
           />
         </div>
 
-        {/* Refined dark gradient overlay - smoother transition */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/50 via-40% to-transparent z-0 pointer-events-none" />
+        {/* Refined dark gradient overlay */}
+        {/* Mobile: top-to-bottom shadow; Desktop/Tablet: left-to-right */}
+        <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-black/95 via-black/60 to-transparent md:bg-gradient-to-r md:from-black/95 md:via-black/50 md:to-transparent" />
 
         {/* Content overlay */}
         <div className="absolute inset-0 flex flex-col md:flex-row items-center justify-between p-4 sm:p-6 md:p-8 z-10">

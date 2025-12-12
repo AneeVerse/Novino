@@ -59,13 +59,12 @@ interface Courier {
 }
 
 const TABS = [
+  { label: 'All', value: 'ALL' },
   { label: 'New', value: 'NEW' },
-  { label: 'Ready To Ship', value: 'READY TO SHIP' },
   { label: 'Pickups & Manifests', value: 'PICKUP' },
   { label: 'In Transit', value: 'IN TRANSIT' },
   { label: 'Delivered', value: 'DELIVERED' },
   { label: 'RTO', value: 'RTO' },
-  { label: 'All', value: 'ALL' },
 ];
 
 // Helper function to safely format dates from Shiprocket API
@@ -361,7 +360,6 @@ export default function OrdersPage() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Package</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Payment</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Delivery</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Pickup</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Status</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-white/60 uppercase">Action</th>
                   </tr>
@@ -430,7 +428,7 @@ export default function OrdersPage() {
                             {order.billing_city || '—'}, {order.billing_state || '—'}
                           </div>
                           <div className="text-xs text-white/50">
-                            {order.billing_pincode || order.shipping_pincode || ''}
+                            {order.billing_pincode || ''}
                           </div>
 
                           {/* Delivery Address Tooltip */}
@@ -438,34 +436,14 @@ export default function OrdersPage() {
                             <div className="bg-white text-black p-3 rounded-lg shadow-xl min-w-[260px] text-xs leading-relaxed border border-white/40">
                               <div className="font-semibold mb-1">{order.billing_customer_name || 'Customer'}</div>
                               <div className="text-black/80">
-                                {(order.billing_address || order.customer?.address || '').trim() || 'Address not available'}
+                                {(order.billing_address || '').trim() || 'Address not available'}
                               </div>
                               <div className="text-black/80">
                                 {[order.billing_city, order.billing_state, order.billing_pincode]
                                   .filter(Boolean)
                                   .join(', ')}
                               </div>
-                              <div className="mt-1 font-medium">{order.billing_phone || order.customer?.phone || 'N/A'}</div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-4">
-                        <div className="relative group">
-                          <div className="text-xs text-white/60 cursor-pointer hover:text-white/80 transition-colors">
-                            {order.pickup_location || 'N/A'}
-                          </div>
-                          {/* Pickup Address Tooltip */}
-                          <div className="absolute left-0 top-full mt-2 z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200">
-                            <div className="bg-[#FFFDE7] text-black p-3 rounded-lg shadow-xl min-w-[250px] text-xs leading-relaxed border border-yellow-200">
-                              <div className="font-semibold mb-1">{order.pickup_location || 'work'}</div>
-                              <div>NOVINO INK ARTS (OPC) Pvt Ltd,</div>
-                              <div>Office No.807, Mayuresh Cosmos,</div>
-                              <div>Sec - 11, Plot No. 37, CBD Belapur,</div>
-                              <div>Navi Mumbai - 400 614</div>
-                              <div>Maharashtra-400614</div>
-                              <div className="mt-1 font-medium">8655844069</div>
+                              <div className="mt-1 font-medium">{order.billing_phone || 'N/A'}</div>
                             </div>
                           </div>
                         </div>

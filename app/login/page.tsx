@@ -381,7 +381,7 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                <p className="text-white/60 text-[10px] leading-tight px-4 text-center whitespace-nowrap">
+                <p className="text-white/60 text-[10px] leading-tight px-4 text-center whitespace-normal break-words sm:whitespace-nowrap sm:break-normal">
                   By clicking on Continue, I accept the{' '}
                   <Link href="/terms-conditions?from=login" className="text-[#AE876D] hover:underline">
                     Terms & Conditions
