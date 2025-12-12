@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
@@ -10,14 +10,10 @@ import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useToast } from '@/hooks/use-toast'
 
 // Validation
-const validateUsername = (username: string): string | null => {
-  if (!username) return 'Username is required'
-  if (username.length < 3) return 'Username must be at least 3 characters'
-  if (username.length > 30) return 'Username must be less than 30 characters'
-  if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-    return 'Username can only contain letters, numbers, underscores, and hyphens'
-  }
-  if (/^[0-9]/.test(username)) return 'Username cannot start with a number'
+const validateName = (name: string): string | null => {
+  if (!name) return 'Name is required'
+  if (name.length < 2) return 'Name must be at least 2 characters'
+  if (name.length > 50) return 'Name must be less than 50 characters'
   return null
 }
 
@@ -90,11 +86,6 @@ const validateOtp = (otp: string): string | null => {
   return null
 }
 
-// Generate username from email (for internal use)
-const generateUsername = (email: string): string => {
-  return email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '_')
-}
-
 // Clean phone number
 const cleanPhoneNumber = (phone: string): string => {
   let cleaned = phone.replace(/\D/g, '')
@@ -105,18 +96,50 @@ const cleanPhoneNumber = (phone: string): string => {
 }
 
 export default function SignupPage() {
-  const [username, setUsername] = useState('')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [otp, setOtp] = useState('')
+  const [otp, setOtp] = useState(['', '', '', ''])
   const [step, setStep] = useState<'details' | 'otp'>('details')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState<{ username?: string, email?: string, phone?: string, otp?: string }>({})
+  const [errors, setErrors] = useState<{ name?: string, email?: string, phone?: string, otp?: string }>({})
+  const [otpSentToEmail, setOtpSentToEmail] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = useSupabaseClient()
   const { toast } = useToast()
+
+  // Check for redirect from login with error
+  useEffect(() => {
+    const error = searchParams?.get('error')
+    const identifier = searchParams?.get('identifier')
+    const type = searchParams?.get('type')
+
+    if (error === 'not_registered' && identifier) {
+      if (type === 'email') {
+        setEmail(identifier)
+        setErrors({ email: 'Email not registered. Please register.' })
+        setMessage('Email not registered. Please register.')
+      } else if (type === 'phone') {
+        setPhone(identifier)
+        setErrors({ phone: 'Phone number not registered. Please register.' })
+        setMessage('Phone number not registered. Please register.')
+      }
+    }
+
+    // Restore email from sessionStorage if on OTP step
+    if (step === 'otp') {
+      const storedEmail = sessionStorage.getItem('otp_sent_email') || sessionStorage.getItem('signup_email')
+      if (storedEmail) {
+        setOtpSentToEmail(storedEmail)
+        // Update message to success message
+        setMessage(`OTP sent to ${storedEmail}`)
+      }
+      // Clear error messages when on OTP step
+      setErrors({})
+    }
+  }, [searchParams, step])
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -124,13 +147,13 @@ export default function SignupPage() {
     setMessage('')
 
     // Validate all fields
-    const usernameError = validateUsername(username)
+    const nameError = validateName(name)
     const emailError = validateEmail(email)
     const phoneError = validatePhone(phone)
 
-    if (usernameError || emailError || phoneError) {
+    if (nameError || emailError || phoneError) {
       setErrors({
-        username: usernameError || undefined,
+        name: nameError || undefined,
         email: emailError || undefined,
         phone: phoneError || undefined
       })
@@ -144,7 +167,7 @@ export default function SignupPage() {
     try {
       const normalizedEmail = email.trim().toLowerCase()
       const cleanedPhone = cleanPhoneNumber(phone)
-      const normalizedUsername = username.trim().toLowerCase()
+      const trimmedName = name.trim()
 
       // Check if email already exists
       const { data: existingEmail } = await supabase
@@ -174,22 +197,7 @@ export default function SignupPage() {
         return
       }
 
-      // Check if username already exists
-      const { data: existingUsername } = await supabase
-        .from('profiles')
-        .select('username')
-        .ilike('username', normalizedUsername)
-        .maybeSingle()
-
-      if (existingUsername) {
-        setErrors({ username: 'Username already taken' })
-        setMessage('Username already taken. Please choose another.')
-        setLoading(false)
-        return
-      }
-
-
-      // Send OTP to both email and mobile
+      // Send OTP to email only (temporarily)
       const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -208,16 +216,30 @@ export default function SignupPage() {
         return
       }
 
+      // Store the email where OTP was sent
+      const sentEmail = data.sentEmail || normalizedEmail
+      setOtpSentToEmail(sentEmail)
+
+      // Clear any previous errors
+      setErrors({})
+
       // Store data for verification
-      sessionStorage.setItem('signup_username', normalizedUsername)
+      sessionStorage.setItem('signup_name', trimmedName)
       sessionStorage.setItem('signup_email', normalizedEmail)
       sessionStorage.setItem('signup_phone', cleanedPhone)
+      sessionStorage.setItem('otp_sent_email', sentEmail)
 
-      setMessage(data.message || 'OTP sent!')
+      setMessage(`OTP sent to ${sentEmail}`)
       toast({
         title: "OTP Sent!",
-        description: data.message || "Please check your email and phone for the 4-digit code.",
+        description: `Please check ${sentEmail} for the 4-digit code.`,
       })
+      
+      // Clear URL parameters to remove any error indicators
+      if (searchParams?.get('error')) {
+        router.replace('/signup', { scroll: false })
+      }
+      
       setStep('otp')
 
     } catch (err) {
@@ -233,7 +255,8 @@ export default function SignupPage() {
     setLoading(true)
     setMessage('')
 
-    const otpError = validateOtp(otp)
+    const otpString = otp.join('')
+    const otpError = validateOtp(otpString)
     if (otpError) {
       setErrors({ otp: otpError })
       setMessage('Please enter a valid OTP')
@@ -246,16 +269,16 @@ export default function SignupPage() {
     try {
       const storedPhone = sessionStorage.getItem('signup_phone')!
       const storedEmail = sessionStorage.getItem('signup_email')!
-      const storedUsername = sessionStorage.getItem('signup_username')!
+      const storedName = sessionStorage.getItem('signup_name')!
 
       // Verify OTP and create account
       const response = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          otp: otp,
+          otp: otpString,
           purpose: 'signup',
-          username: storedUsername,
+          name: storedName,
           email: storedEmail,
           phone: storedPhone
         })
@@ -278,7 +301,7 @@ export default function SignupPage() {
       }
 
       // Clean up
-      sessionStorage.removeItem('signup_username')
+      sessionStorage.removeItem('signup_name')
       sessionStorage.removeItem('signup_email')
       sessionStorage.removeItem('signup_phone')
 
@@ -307,13 +330,15 @@ export default function SignupPage() {
     setMessage('')
 
     try {
+      const storedEmail = sessionStorage.getItem('signup_email')
       const storedPhone = sessionStorage.getItem('signup_phone')
 
       const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier: storedPhone,
+          email: storedEmail,
+          phone: storedPhone,
           purpose: 'signup'
         })
       })
@@ -323,10 +348,13 @@ export default function SignupPage() {
       if (!response.ok) {
         setMessage(data.error || 'Failed to resend OTP')
       } else {
-        setMessage('OTP resent to your mobile!')
+        const sentEmail = data.sentEmail || storedEmail || email
+        setOtpSentToEmail(sentEmail)
+        sessionStorage.setItem('otp_sent_email', sentEmail)
+        setMessage(`OTP resent to ${sentEmail}`)
         toast({
           title: "OTP Resent!",
-          description: "Please check your phone for the new code.",
+          description: `Please check ${sentEmail} for the new code.`,
         })
       }
     } catch (err) {
@@ -364,6 +392,27 @@ export default function SignupPage() {
     }
   }
 
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) return
+    
+    const newOtp = [...otp]
+    newOtp[index] = value
+    setOtp(newOtp)
+    
+    // Auto-focus next input
+    if (value && index < 3) {
+      const nextInput = document.getElementById(`otp-${index + 1}`)
+      nextInput?.focus()
+    }
+  }
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-${index - 1}`)
+      prevInput?.focus()
+    }
+  }
+
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 relative"
@@ -381,7 +430,10 @@ export default function SignupPage() {
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white">Register</h1>
             {step === 'otp' && (
-              <p className="text-white/70 mt-2 text-sm">Enter the 4-digit code sent to your mobile</p>
+              <p className="text-white/70 mt-2 text-sm">
+                Enter the 4-digit code sent to{' '}
+                <span className="text-[#AE876D] font-medium">{otpSentToEmail || sessionStorage.getItem('otp_sent_email') || email}</span>
+              </p>
             )}
           </div>
 
@@ -391,23 +443,23 @@ export default function SignupPage() {
                 <div>
                   <div className="relative flex items-center">
                     <Input
-                      id="username"
+                      id="name"
                       type="text"
                       required
-                      value={username}
+                      value={name}
                       onChange={e => {
-                        setUsername(e.target.value)
-                        if (errors.username) setErrors({ ...errors, username: undefined })
+                        setName(e.target.value)
+                        if (errors.name) setErrors({ ...errors, name: undefined })
                       }}
-                      className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.username ? 'border-red-500' : ''}`}
+                      className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.name ? 'border-red-500' : ''}`}
                       disabled={loading}
-                      placeholder="Username"
+                      placeholder="Name"
                     />
                     <div className="absolute left-4 text-white">
                       <User size={20} />
                     </div>
                   </div>
-                  {errors.username && <p className="text-red-400 text-xs mt-1 ml-4">{errors.username}</p>}
+                  {errors.name && <p className="text-red-400 text-xs mt-1 ml-4">{errors.name}</p>}
                 </div>
 
                 <div>
@@ -460,7 +512,7 @@ export default function SignupPage() {
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Send OTP
+                  Continue
                 </Button>
 
                 {message && (
@@ -474,26 +526,25 @@ export default function SignupPage() {
             <form onSubmit={handleVerifyOtp}>
               <div className="space-y-5">
                 <div>
-                  <div className="relative flex items-center justify-center">
-                    <Input
-                      id="otp"
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={4}
-                      required
-                      value={otp}
-                      onChange={e => {
-                        const value = e.target.value.replace(/\D/g, '')
-                        setOtp(value)
-                        if (errors.otp) setErrors({ ...errors, otp: undefined })
-                      }}
-                      className={`w-full bg-black/20 border-[#444444] text-white rounded-full h-14 text-center text-3xl tracking-[0.8em] font-mono ${errors.otp ? 'border-red-500' : ''}`}
-                      disabled={loading}
-                      placeholder="0000"
-                      autoFocus
-                    />
+                  <div className="flex justify-center gap-3">
+                    {otp.map((digit, index) => (
+                      <Input
+                        key={index}
+                        id={`otp-${index}`}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        required
+                        value={digit}
+                        onChange={e => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
+                        onKeyDown={e => handleOtpKeyDown(index, e)}
+                        className={`w-14 h-14 bg-black/20 ${errors.otp ? 'border-2 border-red-500' : 'border border-[#444444]'} text-white rounded-lg text-center text-2xl font-mono focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#AE876D] transition-colors`}
+                        disabled={loading}
+                        autoFocus={index === 0}
+                      />
+                    ))}
                   </div>
-                  {errors.otp && <p className="text-red-400 text-xs mt-1 text-center">{errors.otp}</p>}
+                  {errors.otp && <p className="text-red-400 text-xs mt-2 text-center">{errors.otp}</p>}
                 </div>
 
                 <Button
@@ -510,7 +561,7 @@ export default function SignupPage() {
                     type="button"
                     onClick={() => {
                       setStep('details')
-                      setOtp('')
+                      setOtp(['', '', '', ''])
                       setMessage('')
                     }}
                     className="text-white/70 hover:text-white transition-colors"

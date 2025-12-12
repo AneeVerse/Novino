@@ -5,14 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2, User } from 'lucide-react'
+import { Loader2, User, Mail, Phone as PhoneIcon } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useToast } from '@/hooks/use-toast'
 
 // Enhanced validation with security checks
-const validateIdentifier = (input: string): string | null => {
-  if (!input) return 'Email or phone number is required'
+const validateEmail = (input: string): string | null => {
+  if (!input) return 'Email is required'
   
   const trimmed = input.trim().toLowerCase()
   
@@ -28,24 +28,29 @@ const validateIdentifier = (input: string): string | null => {
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
   const isEmail = emailRegex.test(trimmed)
   
-  if (isEmail) {
-    // Email validation
-    if (trimmed.length < 3) return 'Email is too short'
-    if (trimmed.length > 254) return 'Email is too long'
-    if (trimmed.includes('..')) return 'Email contains invalid consecutive dots'
-    
-    const [localPart, domain] = trimmed.split('@')
-    if (!domain || !domain.includes('.')) {
-      return 'Email domain is invalid'
-    }
-    
-    return null
+  if (!isEmail) {
+    return 'Please enter a valid email address'
   }
   
-  // Check if it's a valid phone number
-  const cleanedPhone = trimmed.replace(/[\s\-+]/g, '')
-  if (!/^[0-9]{10,12}$/.test(cleanedPhone)) {
-    return 'Please enter a valid email or 10-digit phone number'
+  // Email validation
+  if (trimmed.length < 3) return 'Email is too short'
+  if (trimmed.length > 254) return 'Email is too long'
+  if (trimmed.includes('..')) return 'Email contains invalid consecutive dots'
+  
+  const [localPart, domain] = trimmed.split('@')
+  if (!domain || !domain.includes('.')) {
+    return 'Email domain is invalid'
+  }
+  
+  return null
+}
+
+const validatePhone = (input: string): string | null => {
+  if (!input) return 'Phone number is required'
+  
+  const cleaned = input.replace(/[\s\-+]/g, '')
+  if (!/^[0-9]{10,12}$/.test(cleaned)) {
+    return 'Please enter a valid 10-digit phone number'
   }
   
   return null
@@ -58,13 +63,15 @@ const validateOtp = (otp: string): string | null => {
 }
 
 export default function LoginPage() {
-  const [identifier, setIdentifier] = useState('')
-  const [otp, setOtp] = useState('')
+  const [loginType, setLoginType] = useState<'email' | 'phone'>('email')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [otp, setOtp] = useState(['', '', '', ''])
   const [step, setStep] = useState<'input' | 'otp'>('input')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
-  const [otpType, setOtpType] = useState<'email' | 'phone'>('email')
-  const [errors, setErrors] = useState<{ identifier?: string, otp?: string }>({})
+  const [errors, setErrors] = useState<{ email?: string, phone?: string, otp?: string }>({})
+  const [otpSentToEmail, setOtpSentToEmail] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
   const { closeCart } = useCart()
@@ -76,9 +83,11 @@ export default function LoginPage() {
     setLoading(true)
     setMessage('')
 
-    const identifierError = validateIdentifier(identifier)
-    if (identifierError) {
-      setErrors({ identifier: identifierError })
+    const identifier = loginType === 'email' ? email : phone
+    const validationError = loginType === 'email' ? validateEmail(email) : validatePhone(phone)
+    
+    if (validationError) {
+      setErrors(loginType === 'email' ? { email: validationError } : { phone: validationError })
       setMessage('Please fix the errors below')
       setLoading(false)
       return
@@ -87,11 +96,12 @@ export default function LoginPage() {
     setErrors({})
 
     try {
+      // For now, temporarily only send OTP to registered email (even for phone login)
       const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier: identifier.trim(),
+          identifier: loginType === 'email' ? email.trim() : phone.trim(),
           purpose: 'login'
         })
       })
@@ -99,19 +109,30 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setErrors({ identifier: data.error })
+        // If user not found, redirect to register with error
+        if (response.status === 404) {
+          const errorIdentifier = loginType === 'email' ? email.trim() : phone.trim()
+          router.push(`/signup?error=not_registered&identifier=${encodeURIComponent(errorIdentifier)}&type=${loginType}`)
+          return
+        }
+        setErrors(loginType === 'email' ? { email: data.error } : { phone: data.error })
         setMessage(data.error || 'Failed to send OTP')
         setLoading(false)
         return
       }
 
-      setOtpType(data.type || 'email')
-      sessionStorage.setItem('login_identifier', identifier.trim())
+      // Store the email where OTP was sent
+      const sentEmail = data.sentEmail || (loginType === 'email' ? email.trim() : '')
+      setOtpSentToEmail(sentEmail)
 
-      setMessage(data.message || 'OTP sent!')
+      sessionStorage.setItem('login_identifier', identifier.trim())
+      sessionStorage.setItem('login_type', loginType)
+      sessionStorage.setItem('otp_sent_email', sentEmail)
+
+      setMessage(`OTP sent to ${sentEmail}`)
       toast({
         title: "OTP Sent!",
-        description: data.message || "Please check your email and phone for the 4-digit code.",
+        description: `Please check ${sentEmail} for the 4-digit code.`,
       })
       setStep('otp')
 
@@ -128,7 +149,8 @@ export default function LoginPage() {
     setLoading(true)
     setMessage('')
 
-    const otpError = validateOtp(otp)
+    const otpString = otp.join('')
+    const otpError = validateOtp(otpString)
     if (otpError) {
       setErrors({ otp: otpError })
       setMessage('Please enter a valid OTP')
@@ -139,14 +161,14 @@ export default function LoginPage() {
     setErrors({})
 
     try {
-      const storedIdentifier = sessionStorage.getItem('login_identifier') || identifier.trim()
+      const storedIdentifier = sessionStorage.getItem('login_identifier') || (loginType === 'email' ? email.trim() : phone.trim())
 
       const response = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           identifier: storedIdentifier,
-          otp: otp,
+          otp: otpString,
           purpose: 'login'
         })
       })
@@ -175,6 +197,7 @@ export default function LoginPage() {
       }
 
       sessionStorage.removeItem('login_identifier')
+      sessionStorage.removeItem('login_type')
 
       setMessage('Login successful!')
       toast({
@@ -202,7 +225,7 @@ export default function LoginPage() {
     setMessage('')
 
     try {
-      const storedIdentifier = sessionStorage.getItem('login_identifier') || identifier.trim()
+      const storedIdentifier = sessionStorage.getItem('login_identifier') || (loginType === 'email' ? email.trim() : phone.trim())
 
       const response = await fetch('/api/auth/send-otp', {
         method: 'POST',
@@ -218,10 +241,10 @@ export default function LoginPage() {
       if (!response.ok) {
         setMessage(data.error || 'Failed to resend OTP')
       } else {
-        setMessage(`OTP resent to your ${data.type === 'phone' ? 'phone' : 'email'}!`)
+        setMessage('OTP resent to your registered email!')
         toast({
           title: "OTP Resent!",
-          description: "Please check for the new code.",
+          description: "Please check your email for the new code.",
         })
       }
     } catch (err) {
@@ -259,6 +282,27 @@ export default function LoginPage() {
     }
   }
 
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) return
+    
+    const newOtp = [...otp]
+    newOtp[index] = value
+    setOtp(newOtp)
+    
+    // Auto-focus next input
+    if (value && index < 3) {
+      const nextInput = document.getElementById(`otp-${index + 1}`)
+      nextInput?.focus()
+    }
+  }
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-${index - 1}`)
+      prevInput?.focus()
+    }
+  }
+
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 relative"
@@ -274,10 +318,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="backdrop-blur-md bg-black/30 border border-[#444444] rounded-2xl shadow-lg p-8 w-full">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white">Login</h1>
+            <h1 className="text-4xl font-bold text-white">
+              {step === 'input' ? 'Login' : `Continue with ${loginType === 'email' ? 'Email' : 'Phone'}`}
+            </h1>
             {step === 'otp' && (
               <p className="text-white/70 mt-2 text-sm">
-                Enter the 4-digit code sent to your {otpType === 'phone' ? 'phone' : 'email'}
+                Enter the 4-digit code sent to{' '}
+                <span className="text-[#AE876D] font-medium">{otpSentToEmail}</span>
               </p>
             )}
           </div>
@@ -285,30 +332,62 @@ export default function LoginPage() {
           {step === 'input' ? (
             <form onSubmit={handleSendOtp}>
               <div className="space-y-5">
-                <div>
-                  <div className="relative flex items-center">
-                    <Input
-                      id="identifier"
-                      type="text"
-                      required
-                      value={identifier}
-                      onChange={e => {
-                        setIdentifier(e.target.value)
-                        if (errors.identifier) setErrors({})
-                      }}
-                      className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.identifier ? 'border-red-500' : ''}`}
-                      disabled={loading}
-                      placeholder="Email or Phone Number"
-                    />
-                    <div className="absolute left-4 text-white">
-                      <User size={20} />
+                {loginType === 'email' ? (
+                  <div>
+                    <div className="relative flex items-center">
+                      <Input
+                        id="email"
+                        type="email"
+                        required
+                        value={email}
+                        onChange={e => {
+                          setEmail(e.target.value)
+                          if (errors.email) setErrors({})
+                        }}
+                        className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.email ? 'border-red-500' : ''}`}
+                        disabled={loading}
+                        placeholder="Email"
+                      />
+                      <div className="absolute left-4 text-white">
+                        <Mail size={20} />
+                      </div>
                     </div>
+                    {errors.email && <p className="text-red-400 text-xs mt-1 ml-4">{errors.email}</p>}
                   </div>
-                  {errors.identifier && <p className="text-red-400 text-xs mt-1 ml-4">{errors.identifier}</p>}
-                  <p className="text-white/50 text-xs mt-2 ml-4">
-                    Enter your registered email or phone number
-                  </p>
-                </div>
+                ) : (
+                  <div>
+                    <div className="relative flex items-center">
+                      <Input
+                        id="phone"
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={e => {
+                          setPhone(e.target.value)
+                          if (errors.phone) setErrors({})
+                        }}
+                        className={`w-full bg-black/20 border-[#444444] text-white rounded-full pl-12 h-12 ${errors.phone ? 'border-red-500' : ''}`}
+                        disabled={loading}
+                        placeholder="Phone Number"
+                      />
+                      <div className="absolute left-4 text-white">
+                        <PhoneIcon size={20} />
+                      </div>
+                    </div>
+                    {errors.phone && <p className="text-red-400 text-xs mt-1 ml-4">{errors.phone}</p>}
+                  </div>
+                )}
+
+                <p className="text-white/50 text-xs px-4">
+                  By clicking on Continue, I accept the{' '}
+                  <Link href="/terms" className="text-[#AE876D] hover:underline">
+                    Terms & Conditions
+                  </Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" className="text-[#AE876D] hover:underline">
+                    Privacy Policy
+                  </Link>.
+                </p>
 
                 <Button
                   type="submit"
@@ -316,7 +395,7 @@ export default function LoginPage() {
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Send OTP
+                  Continue
                 </Button>
 
                 {message && (
@@ -330,26 +409,25 @@ export default function LoginPage() {
             <form onSubmit={handleVerifyOtp}>
               <div className="space-y-5">
                 <div>
-                  <div className="relative flex items-center justify-center">
-                    <Input
-                      id="otp"
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={4}
-                      required
-                      value={otp}
-                      onChange={e => {
-                        const value = e.target.value.replace(/\D/g, '')
-                        setOtp(value)
-                        if (errors.otp) setErrors({})
-                      }}
-                      className={`w-full bg-black/20 border-[#444444] text-white rounded-full h-14 text-center text-3xl tracking-[0.8em] font-mono ${errors.otp ? 'border-red-500' : ''}`}
-                      disabled={loading}
-                      placeholder="0000"
-                      autoFocus
-                    />
+                  <div className="flex justify-center gap-3">
+                    {otp.map((digit, index) => (
+                      <Input
+                        key={index}
+                        id={`otp-${index}`}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        required
+                        value={digit}
+                        onChange={e => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
+                        onKeyDown={e => handleOtpKeyDown(index, e)}
+                        className={`w-14 h-14 bg-black/20 ${errors.otp ? 'border-2 border-red-500' : 'border border-[#444444]'} text-white rounded-lg text-center text-2xl font-mono focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#AE876D] transition-colors`}
+                        disabled={loading}
+                        autoFocus={index === 0}
+                      />
+                    ))}
                   </div>
-                  {errors.otp && <p className="text-red-400 text-xs mt-1 text-center">{errors.otp}</p>}
+                  {errors.otp && <p className="text-red-400 text-xs mt-2 text-center">{errors.otp}</p>}
                 </div>
 
                 <Button
@@ -366,7 +444,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => {
                       setStep('input')
-                      setOtp('')
+                      setOtp(['', '', '', ''])
                       setMessage('')
                     }}
                     className="text-white/70 hover:text-white transition-colors"
@@ -412,20 +490,41 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <Button
-                type="button"
-                onClick={handleGoogleLogin}
-                disabled={loading}
-                className="w-full bg-white hover:bg-gray-100 text-gray-900 font-medium py-2.5 rounded-full flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-                Login with Google
-              </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                  className="bg-white hover:bg-gray-100 text-gray-900 font-medium py-2.5 rounded-full flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  </svg>
+                  Google
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={() => setLoginType(loginType === 'email' ? 'phone' : 'email')}
+                  disabled={loading}
+                  className="bg-[#444444] hover:bg-[#555555] text-white font-medium py-2.5 rounded-full flex items-center justify-center gap-2"
+                >
+                  {loginType === 'email' ? (
+                    <>
+                      <PhoneIcon size={18} />
+                      Phone
+                    </>
+                  ) : (
+                    <>
+                      <Mail size={18} />
+                      Email
+                    </>
+                  )}
+                </Button>
+              </div>
             </>
           )}
         </div>

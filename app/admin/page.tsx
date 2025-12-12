@@ -22,9 +22,8 @@ import {
 
 interface User {
   id: string;
-  username: string;
-  email: string;
   name: string;
+  email: string;
 }
 
 interface OrderItem {
@@ -286,10 +285,11 @@ export default function AdminPage() {
   // Filter orders
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
-      order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.deliveryAddress.name.toLowerCase().includes(searchTerm.toLowerCase());
+      order.orderNumber?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      order.user?.email?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      order.user?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      order.deliveryAddress?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      false;
     
     const matchesStatus = filterStatus === 'all' || order.orderStatus === filterStatus;
     const matchesPayment = filterPayment === 'all' || order.paymentMethod === filterPayment;
@@ -688,7 +688,7 @@ export default function AdminPage() {
                         <React.Fragment key={cart.userId}>
                           <tr className="hover:bg-[#222222] transition-colors">
                             <td className="px-6 py-4">
-                              <div className="text-sm text-white">{cart.user?.name || cart.user?.username || 'Unknown User'}</div>
+                              <div className="text-sm text-white">{cart.user?.name || 'Unknown User'}</div>
                               <div className="text-sm text-gray-400">{cart.user?.email || ''}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">

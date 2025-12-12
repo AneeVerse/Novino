@@ -100,12 +100,11 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const { user: supabaseUser, isAuthenticated, isLoading: authLoading, logout } = useAuth();
 
-  const [profileData, setProfileData] = useState<{username?: string, email?: string, phone?: string} | null>(null);
+  const [profileData, setProfileData] = useState<{name?: string, email?: string, phone?: string} | null>(null);
 
   const user = supabaseUser ? {
-    username: profileData?.username || supabaseUser.user_metadata?.username || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+    name: profileData?.name || supabaseUser.user_metadata?.name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
     email: profileData?.email || supabaseUser.email || '',
-    name: supabaseUser.user_metadata?.full_name,
     phone: profileData?.phone || supabaseUser.user_metadata?.phone || '',
     userId: supabaseUser.id
   } : null;
@@ -127,6 +126,11 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Phone number edit state
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [phoneInput, setPhoneInput] = useState("");
+  const [phoneLoading, setPhoneLoading] = useState(false);
 
   // Address form state
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -739,11 +743,11 @@ export default function ProfilePage() {
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#AE876D] to-[#8d6c58] flex items-center justify-center text-white font-bold text-xl">
-                    {user.username?.charAt(0).toUpperCase()}
+                    {user.name?.charAt(0).toUpperCase()}
                   </div>
                   My Account
                 </h1>
-                <p className="text-white/60">Welcome back, {user.username}!</p>
+                <p className="text-white/60">Welcome back, {user.name}!</p>
               </div>
               <Button
                 onClick={handleLogout}
@@ -805,10 +809,10 @@ export default function ProfilePage() {
               </h2>
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-white/70">Username</label>
+                  <label className="block text-sm font-medium mb-2 text-white/70">Name</label>
                   <Input
                     type="text"
-                    value={user?.username || ""}
+                    value={user?.name || ""}
                     disabled
                     className="bg-[#222222] border-[#444444] text-white cursor-not-allowed"
                   />
@@ -824,12 +828,106 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2 text-white/70">Phone Number</label>
-                  <Input
-                    type="tel"
-                    value={user?.phone || "Not set"}
-                    disabled
-                    className="bg-[#222222] border-[#444444] text-white cursor-not-allowed"
-                  />
+                  {!user?.phone || isEditingPhone ? (
+                    <div className="space-y-2">
+                      <Input
+                        type="tel"
+                        value={phoneInput}
+                        onChange={(e) => setPhoneInput(e.target.value)}
+                        placeholder="Enter your phone number"
+                        className="bg-[#222222] border-[#444444] text-white"
+                        disabled={phoneLoading}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={async () => {
+                            setPhoneLoading(true);
+                            try {
+                              // Validate phone number
+                              const cleaned = phoneInput.replace(/\D/g, '');
+                              if (cleaned.length !== 10) {
+                                toast({
+                                  title: "Invalid Phone Number",
+                                  description: "Please enter a valid 10-digit phone number.",
+                                  variant: "destructive"
+                                });
+                                setPhoneLoading(false);
+                                return;
+                              }
+
+                              // Update phone number via API
+                              const response = await fetch(`/api/profile/${user?.userId}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ phone: cleaned })
+                              });
+
+                              if (response.ok) {
+                                toast({
+                                  title: "Phone Number Updated",
+                                  description: "Your phone number has been saved successfully."
+                                });
+                                setIsEditingPhone(false);
+                                // Refresh profile data
+                                fetchProfile();
+                              } else {
+                                const data = await response.json();
+                                toast({
+                                  title: "Update Failed",
+                                  description: data.error || "Failed to update phone number.",
+                                  variant: "destructive"
+                                });
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "An error occurred while updating phone number.",
+                                variant: "destructive"
+                              });
+                            } finally {
+                              setPhoneLoading(false);
+                            }
+                          }}
+                          disabled={phoneLoading || !phoneInput}
+                          className="bg-[#AE876D] hover:bg-[#8d6c58] text-white"
+                        >
+                          {phoneLoading ? "Saving..." : "Save"}
+                        </Button>
+                        {isEditingPhone && (
+                          <Button
+                            onClick={() => {
+                              setIsEditingPhone(false);
+                              setPhoneInput("");
+                            }}
+                            variant="outline"
+                            className="border-[#444444] text-white hover:bg-[#333333]"
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input
+                        type="tel"
+                        value={user?.phone}
+                        disabled
+                        className="bg-[#222222] border-[#444444] text-white cursor-not-allowed"
+                      />
+                      <Button
+                        onClick={() => {
+                          setIsEditingPhone(true);
+                          setPhoneInput(user?.phone || "");
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-[#444444] text-white hover:bg-[#333333]"
+                      >
+                        Change Phone Number
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

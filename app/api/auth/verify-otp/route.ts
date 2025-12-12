@@ -37,20 +37,14 @@ function sanitizeEmail(email: string): string | null {
   return sanitized
 }
 
-// Sanitize username
-function sanitizeUsername(username: string): string | null {
-  if (!username) return null
+// Sanitize name
+function sanitizeName(name: string): string | null {
+  if (!name) return null
   
-  const sanitized = username.trim().toLowerCase()
+  const sanitized = name.trim()
   
   // Length check
-  if (sanitized.length < 3 || sanitized.length > 30) return null
-  
-  // Only allow alphanumeric, underscore, and hyphen
-  if (!/^[a-z0-9_-]+$/.test(sanitized)) return null
-  
-  // Cannot start with number
-  if (/^[0-9]/.test(sanitized)) return null
+  if (sanitized.length < 2 || sanitized.length > 50) return null
   
   return sanitized
 }
@@ -66,7 +60,7 @@ function cleanPhoneNumber(phone: string): string {
 
 export async function POST(request: Request) {
   try {
-    const { identifier, otp, purpose, username, email, phone } = await request.json()
+    const { identifier, otp, purpose, name, email, phone } = await request.json()
 
     if (!otp) {
       return NextResponse.json({ error: 'OTP is required' }, { status: 400 })
@@ -78,6 +72,7 @@ export async function POST(request: Request) {
     let lookupKey: string
     let userEmail: string
     let userPhone: string
+    let userName: string | null = null
     let isEmailInput = false
 
     // For signup, use email as lookup key
@@ -92,13 +87,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
       }
       
-      // Sanitize and validate username
-      if (username) {
-        const sanitizedUsername = sanitizeUsername(username)
-        if (!sanitizedUsername) {
-          return NextResponse.json({ error: 'Invalid username format' }, { status: 400 })
+      // Sanitize and validate name (optional but recommended)
+      if (name) {
+        const sanitizedName = sanitizeName(name)
+        if (!sanitizedName) {
+          return NextResponse.json({ error: 'Invalid name format' }, { status: 400 })
         }
-        username = sanitizedUsername
+        userName = sanitizedName
       }
       
       lookupKey = sanitizedEmail
@@ -179,7 +174,7 @@ export async function POST(request: Request) {
         password: randomPassword,
         email_confirm: true,
         user_metadata: {
-          username: username || null,
+          name: userName || null,
           phone: userPhone,
           signup_method: 'otp'
         }
@@ -194,12 +189,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
       }
 
-      // Create/update profile with all details
+      // Create/update profile with all details (name instead of username)
       await supabase
         .from('profiles')
         .upsert({
           id: authData.user.id,
-          username: username || null,
+          name: userName || null,
           email: userEmail,
           phone: userPhone,
           updated_at: new Date().toISOString()

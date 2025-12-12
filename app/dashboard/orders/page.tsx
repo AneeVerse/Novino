@@ -251,9 +251,12 @@ export default function OrdersPage() {
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
       return (
-        order.order_id.toLowerCase().includes(search) ||
-        order.billing_customer_name.toLowerCase().includes(search) ||
-        order.billing_email.toLowerCase().includes(search)
+        order.order_id?.toLowerCase()?.includes(search) ||
+        order.channel_order_id?.toLowerCase()?.includes(search) ||
+        order.billing_customer_name?.toLowerCase()?.includes(search) ||
+        order.billing_email?.toLowerCase()?.includes(search) ||
+        order.billing_phone?.toLowerCase()?.includes(search) ||
+        false
       );
     }
     return true;
