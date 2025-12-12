@@ -1,26 +1,27 @@
+'use client'
+
 import React from "react";
 import Link from "next/link";
-import { Metadata } from "next";
+import { useSearchParams } from "next/navigation";
 import { FileText, ArrowLeft } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Terms and Conditions | Novino.io",
-  description:
-    "Read Novino.io's terms and conditions. Understand your rights and obligations when using our website and services.",
-};
-
 export default function TermsConditionsPage() {
+  const searchParams = useSearchParams();
+  const from = searchParams?.get('from');
+  
+  const backHref = from === 'login' ? '/login' : from === 'signup' ? '/signup' : '/#site-footer';
+  const backText = from === 'login' || from === 'signup' ? `Back to ${from === 'login' ? 'Login' : 'Register'}` : 'Back to Home';
 
   return (
     <div className="min-h-screen bg-[#2D2D2D] text-white pt-24 pb-12">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Back Button */}
         <Link
-          href="/#site-footer"
+          href={backHref}
           className="inline-flex items-center text-[#AE876D] hover:text-[#8d6c58] mb-6 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          <span className="font-medium">Back to Home</span>
+          <span className="font-medium">{backText}</span>
         </Link>
 
         <div className="flex items-center mb-8">

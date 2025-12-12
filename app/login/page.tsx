@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
@@ -78,6 +78,12 @@ export default function LoginPage() {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'auto' })
+    }
+  }, [])
+
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -129,7 +135,7 @@ export default function LoginPage() {
       sessionStorage.setItem('login_type', loginType)
       sessionStorage.setItem('otp_sent_email', sentEmail)
 
-      setMessage(`OTP sent to ${sentEmail}`)
+      setMessage(`Enter the 4-digit code sent to ${sentEmail}`)
       toast({
         title: "OTP Sent!",
         description: `Please check ${sentEmail} for the 4-digit code.`,
@@ -241,7 +247,10 @@ export default function LoginPage() {
       if (!response.ok) {
         setMessage(data.error || 'Failed to resend OTP')
       } else {
-        setMessage('OTP resent to your registered email!')
+        const sentEmail = data.sentEmail || storedIdentifier
+        setOtpSentToEmail(sentEmail)
+        sessionStorage.setItem('otp_sent_email', sentEmail)
+        setMessage(`Enter the 4-digit code sent to ${sentEmail}`)
         toast({
           title: "OTP Resent!",
           description: "Please check your email for the new code.",
@@ -305,7 +314,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 relative"
+      className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 pt-10 pb-8 relative"
       style={{
         backgroundImage: "url('https://ik.imagekit.io/gkkczwgam/hero.webp?updatedAt=1764844020664')",
         backgroundSize: "cover",
@@ -318,15 +327,9 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="backdrop-blur-md bg-black/30 border border-[#444444] rounded-2xl shadow-lg p-8 w-full">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white">
+            <h1 className={`font-bold text-white ${step === 'otp' ? 'text-3xl' : 'text-4xl'}`}>
               {step === 'input' ? 'Login' : `Continue with ${loginType === 'email' ? 'Email' : 'Phone'}`}
             </h1>
-            {step === 'otp' && (
-              <p className="text-white/70 mt-2 text-sm">
-                Enter the 4-digit code sent to{' '}
-                <span className="text-[#AE876D] font-medium">{otpSentToEmail}</span>
-              </p>
-            )}
           </div>
 
           {step === 'input' ? (
@@ -378,13 +381,13 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                <p className="text-white/50 text-xs px-4">
+                <p className="text-white/60 text-[10px] leading-tight px-4 text-center whitespace-nowrap">
                   By clicking on Continue, I accept the{' '}
-                  <Link href="/terms" className="text-[#AE876D] hover:underline">
+                  <Link href="/terms-conditions?from=login" className="text-[#AE876D] hover:underline">
                     Terms & Conditions
                   </Link>
                   {' '}and{' '}
-                  <Link href="/privacy" className="text-[#AE876D] hover:underline">
+                  <Link href="/privacy-policy?from=login" className="text-[#AE876D] hover:underline">
                     Privacy Policy
                   </Link>.
                 </p>
@@ -408,6 +411,12 @@ export default function LoginPage() {
           ) : (
             <form onSubmit={handleVerifyOtp}>
               <div className="space-y-5">
+                {message && (
+                  <div className={`text-xs text-center px-4 py-2 rounded-lg whitespace-nowrap ${message.includes('sent') || message.includes('successful') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
+                    {message}
+                  </div>
+                )}
+
                 <div>
                   <div className="flex justify-center gap-3">
                     {otp.map((digit, index) => (
@@ -461,33 +470,16 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                {message && (
-                  <div className={`text-sm text-center mt-2 px-4 py-2 rounded-lg ${message.includes('sent') || message.includes('successful') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
-                    {message}
-                  </div>
-                )}
               </div>
             </form>
           )}
 
-          <div className="text-center mt-6">
-            <p className="text-sm text-white">
-              Don't have an account?{' '}
-              <Link href="/signup" className="text-[#AE876D] font-medium hover:underline transition-colors">
-                Register
-              </Link>
-            </p>
-          </div>
-
           {step === 'input' && (
             <>
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#444444]"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-black/30 text-white/60">Or continue with</span>
-                </div>
+              <div className="flex items-center gap-3 my-6 text-xs text-white/70">
+                <div className="flex-1 h-px bg-[#444444]"></div>
+                <span className="tracking-[0.3em] text-white/80">OR</span>
+                <div className="flex-1 h-px bg-[#444444]"></div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -524,6 +516,15 @@ export default function LoginPage() {
                     </>
                   )}
                 </Button>
+              </div>
+
+              <div className="text-center mt-6">
+                <p className="text-sm text-white">
+                  Don't have an account?{' '}
+                  <Link href="/signup" className="text-[#AE876D] font-medium hover:underline transition-colors">
+                    Register
+                  </Link>
+                </p>
               </div>
             </>
           )}

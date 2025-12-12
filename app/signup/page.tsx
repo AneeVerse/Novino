@@ -110,6 +110,12 @@ export default function SignupPage() {
   const supabase = useSupabaseClient()
   const { toast } = useToast()
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'auto' })
+    }
+  }, [])
+
   // Check for redirect from login with error
   useEffect(() => {
     const error = searchParams?.get('error')
@@ -119,12 +125,12 @@ export default function SignupPage() {
     if (error === 'not_registered' && identifier) {
       if (type === 'email') {
         setEmail(identifier)
-        setErrors({ email: 'Email not registered. Please register.' })
-        setMessage('Email not registered. Please register.')
+        setErrors({ email: 'Email not registered. Please enter your Name & Ph no to Continue.' })
+        setMessage('')
       } else if (type === 'phone') {
         setPhone(identifier)
-        setErrors({ phone: 'Phone number not registered. Please register.' })
-        setMessage('Phone number not registered. Please register.')
+        setErrors({ phone: 'Phone number not registered. Please enter your Name & Email to Continue.' })
+        setMessage('')
       }
     }
 
@@ -134,7 +140,7 @@ export default function SignupPage() {
       if (storedEmail) {
         setOtpSentToEmail(storedEmail)
         // Update message to success message
-        setMessage(`OTP sent to ${storedEmail}`)
+        setMessage(`Enter the 4-digit code sent to ${storedEmail}`)
       }
       // Clear error messages when on OTP step
       setErrors({})
@@ -229,7 +235,7 @@ export default function SignupPage() {
       sessionStorage.setItem('signup_phone', cleanedPhone)
       sessionStorage.setItem('otp_sent_email', sentEmail)
 
-      setMessage(`OTP sent to ${sentEmail}`)
+      setMessage(`Enter the 4-digit code sent to ${sentEmail}`)
       toast({
         title: "OTP Sent!",
         description: `Please check ${sentEmail} for the 4-digit code.`,
@@ -351,7 +357,7 @@ export default function SignupPage() {
         const sentEmail = data.sentEmail || storedEmail || email
         setOtpSentToEmail(sentEmail)
         sessionStorage.setItem('otp_sent_email', sentEmail)
-        setMessage(`OTP resent to ${sentEmail}`)
+        setMessage(`Enter the 4-digit code sent to ${sentEmail}`)
         toast({
           title: "OTP Resent!",
           description: `Please check ${sentEmail} for the new code.`,
@@ -415,7 +421,7 @@ export default function SignupPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 relative"
+      className="min-h-screen flex flex-col items-center justify-center bg-[#2D2D2D] p-4 pt-32 pb-16 relative"
       style={{
         backgroundImage: "url('https://ik.imagekit.io/gkkczwgam/hero.webp?updatedAt=1764844020664')",
         backgroundSize: "cover",
@@ -429,12 +435,6 @@ export default function SignupPage() {
         <div className="backdrop-blur-md bg-black/30 border border-[#444444] rounded-2xl shadow-lg p-8 w-full">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white">Register</h1>
-            {step === 'otp' && (
-              <p className="text-white/70 mt-2 text-sm">
-                Enter the 4-digit code sent to{' '}
-                <span className="text-[#AE876D] font-medium">{otpSentToEmail || sessionStorage.getItem('otp_sent_email') || email}</span>
-              </p>
-            )}
           </div>
 
           {step === 'details' ? (
@@ -481,7 +481,7 @@ export default function SignupPage() {
                       <Mail size={20} />
                     </div>
                   </div>
-                  {errors.email && <p className="text-red-400 text-xs mt-1 ml-4">{errors.email}</p>}
+                  {errors.email && <p className="text-red-400 text-[11px] leading-tight mt-1 ml-4 whitespace-nowrap">{errors.email}</p>}
                 </div>
 
                 <div>
@@ -503,7 +503,7 @@ export default function SignupPage() {
                       <Phone size={20} />
                     </div>
                   </div>
-                  {errors.phone && <p className="text-red-400 text-xs mt-1 ml-4">{errors.phone}</p>}
+                  {errors.phone && <p className="text-red-400 text-[11px] leading-tight mt-1 ml-4 whitespace-nowrap">{errors.phone}</p>}
                 </div>
 
                 <Button
@@ -525,6 +525,12 @@ export default function SignupPage() {
           ) : (
             <form onSubmit={handleVerifyOtp}>
               <div className="space-y-5">
+                {message && (
+                  <div className={`text-xs text-center px-4 py-2 rounded-lg whitespace-nowrap ${message.includes('sent') || message.includes('successful') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
+                    {message}
+                  </div>
+                )}
+
                 <div>
                   <div className="flex justify-center gap-3">
                     {otp.map((digit, index) => (
@@ -578,33 +584,16 @@ export default function SignupPage() {
                   </button>
                 </div>
 
-                {message && (
-                  <div className={`text-sm text-center mt-2 px-4 py-2 rounded-lg ${message.includes('sent') || message.includes('successful') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
-                    {message}
-                  </div>
-                )}
               </div>
             </form>
           )}
 
-          <div className="text-center mt-6">
-            <p className="text-sm text-white">
-              Already have an account?{' '}
-              <Link href="/login" className="text-[#AE876D] font-medium hover:underline transition-colors">
-                Login
-              </Link>
-            </p>
-          </div>
-
           {step === 'details' && (
             <>
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#444444]"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-black/30 text-white/60">Or continue with</span>
-                </div>
+              <div className="flex items-center gap-3 my-6 text-xs text-white/70">
+                <div className="flex-1 h-px bg-[#444444]"></div>
+                <span className="tracking-[0.3em] text-white/80">OR</span>
+                <div className="flex-1 h-px bg-[#444444]"></div>
               </div>
 
               <Button
@@ -621,6 +610,15 @@ export default function SignupPage() {
                 </svg>
                 Sign up with Google
               </Button>
+
+              <div className="text-center mt-6">
+                <p className="text-sm text-white">
+                  Already have an account?{' '}
+                  <Link href="/login" className="text-[#AE876D] font-medium hover:underline transition-colors">
+                    Login
+                  </Link>
+                </p>
+              </div>
             </>
           )}
         </div>

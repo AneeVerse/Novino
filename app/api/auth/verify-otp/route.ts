@@ -223,23 +223,23 @@ export async function POST(request: Request) {
 
     // Handle login
     if (otpPurpose === 'login') {
-      // Get user profile to find auth email
-      const { data: profile } = await supabase
+      // Get user profile using the already-fetched email/phone
+      const { data: loginProfile } = await supabase
         .from('profiles')
         .select('id, email, phone, is_blocked')
-        .or(isEmailInput ? `email.eq.${lookupKey}` : `phone.eq.${lookupKey}`)
+        .eq('email', userEmail)
         .maybeSingle()
 
-      if (!profile) {
+      if (!loginProfile) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
 
-      if (profile.is_blocked) {
+      if (loginProfile.is_blocked) {
         return NextResponse.json({ error: 'Your account has been blocked. Please contact support.' }, { status: 403 })
       }
 
       // Get auth user to find the email used for auth
-      const { data: authUser } = await supabase.auth.admin.getUserById(profile.id)
+      const { data: authUser } = await supabase.auth.admin.getUserById(loginProfile.id)
       
       if (!authUser?.user?.email) {
         return NextResponse.json({ error: 'Authentication failed' }, { status: 500 })
