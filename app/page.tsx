@@ -245,7 +245,7 @@ export default function Home() {
             src="https://ik.imagekit.io/gkkczwgam/New.webp"
             alt="Novino hero background"
             fill
-            className="object-cover object-[37%_center] md:object-center"
+            className="hero-background-image object-cover object-[37%_center] lg:object-center"
             priority
             style={{
               transform: 'translate3d(0, 0, 0)'
@@ -395,6 +395,11 @@ export default function Home() {
             left: 50%;
             letter-spacing: 0.15em;
             font-size: 180px !important; /* Mid-size between mobile and desktop */
+          }
+          
+          /* Tablet image position - more to the left than mobile */
+          .hero-background-image {
+            object-position: 33% center !important;
           }
         }
         
