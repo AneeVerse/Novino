@@ -44,11 +44,11 @@ export default function PaintingsPage() {
       </section>
 
       {/* Video Section - Full width */}
-      <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[730px] bg-[#2D2D2D] mb-16 sm:mb-24 md:mb-32">
+      {/* <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] lg:h-[730px] bg-[#2D2D2D] mb-16 sm:mb-24 md:mb-32">
         <Suspense fallback={<div className="w-full h-full bg-[#2D2D2D]" />}>
           <VideoSection />
         </Suspense>
-      </div>
+      </div> */}
 
       {/* New container for remaining sections */}
       <div className="container mx-auto px-2 sm:px-6 md:px-8 z-10 relative">
