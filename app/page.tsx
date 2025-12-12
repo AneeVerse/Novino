@@ -242,7 +242,7 @@ export default function Home() {
           }}
         >
           <Image
-            src="https://ik.imagekit.io/gkkczwgam/herobg.webp"
+            src="https://ik.imagekit.io/gkkczwgam/New.webp"
             alt="Novino hero background"
             fill
             className="object-cover object-[37%_center] md:object-center"
@@ -389,9 +389,9 @@ export default function Home() {
         }
 
         /* Tablet adjustment - fixed to bottom using top */
-        @media (min-width: 768px) and (max-width: 1023px) { /* Tablet range */
+        @media (min-width: 768px) and (max-width: 1366px) { /* Tablet range including iPad Pro */
           .novino-hero-text {
-            top: calc(var(--vh, 1vh) * 100 - 180px);
+            top: calc(var(--vh, 1vh) * 100 - 155px);
             left: 50%;
             letter-spacing: 0.15em;
             font-size: 180px !important; /* Mid-size between mobile and desktop */
