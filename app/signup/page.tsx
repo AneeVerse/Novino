@@ -481,7 +481,7 @@ export default function SignupPage() {
                       <Mail size={20} />
                     </div>
                   </div>
-                  {errors.email && <p className="text-red-400 text-[11px] leading-tight mt-1 ml-4 whitespace-nowrap">{errors.email}</p>}
+                  {errors.email && <p className="text-red-400 text-[10px] sm:text-[11px] leading-tight mt-1 ml-4 whitespace-normal break-words max-w-full">{errors.email}</p>}
                 </div>
 
                 <div>
@@ -503,7 +503,7 @@ export default function SignupPage() {
                       <Phone size={20} />
                     </div>
                   </div>
-                  {errors.phone && <p className="text-red-400 text-[11px] leading-tight mt-1 ml-4 whitespace-nowrap">{errors.phone}</p>}
+                  {errors.phone && <p className="text-red-400 text-[10px] sm:text-[11px] leading-tight mt-1 ml-4 whitespace-normal break-words max-w-full">{errors.phone}</p>}
                 </div>
 
                 <Button
@@ -526,7 +526,7 @@ export default function SignupPage() {
             <form onSubmit={handleVerifyOtp}>
               <div className="space-y-5">
                 {message && (
-                  <div className={`text-xs text-center px-4 py-2 rounded-lg whitespace-nowrap ${message.includes('sent') || message.includes('successful') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
+                  <div className={`text-[10px] sm:text-xs text-center px-2 sm:px-4 py-2 rounded-lg whitespace-normal break-words sm:whitespace-nowrap sm:break-normal ${message.includes('sent') || message.includes('successful') ? 'text-green-400 bg-green-400/10 border border-green-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20'}`}>
                     {message}
                   </div>
                 )}
