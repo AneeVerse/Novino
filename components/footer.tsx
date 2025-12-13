@@ -206,7 +206,7 @@ export default function Footer() {
                       </Link>
                     </li>
                     <li>
-                      <Link href="/profile" className="text-gray-300 hover:text-white text-xs font-satoshi">
+                      <Link href="/profile?tab=orders" className="text-gray-300 hover:text-white text-xs font-satoshi">
                         My Orders
                       </Link>
                     </li>
@@ -233,7 +233,7 @@ export default function Footer() {
                       </Link>
                     </li>
                     <li>
-                      <Link href="/profile" className="text-gray-300 hover:text-white text-sm font-satoshi">
+                      <Link href="/profile?tab=orders" className="text-gray-300 hover:text-white text-sm font-satoshi">
                         My Orders
                       </Link>
                     </li>

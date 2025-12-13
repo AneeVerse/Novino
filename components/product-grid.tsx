@@ -488,7 +488,7 @@ export default function ProductGrid({
           <div className="mt-12 flex justify-center">
             <Link
               href="/artefacts"
-              className="inline-flex items-center gap-3 px-6 py-3 rounded-full border border-white/20 text-white/80 hover:text-white hover:border-white/40 hover:bg-white/10 transition-all duration-200 text-sm sm:text-base"
+              className="inline-flex items-center gap-3 px-6 py-3 bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium text-lg transition-all duration-300 rounded-full shadow-[0_0_20px_rgba(174,135,109,0.5)] hover:shadow-[0_0_30px_rgba(174,135,109,0.7)]"
             >
               {viewAllText}
               <ArrowRight className="w-4 h-4" />

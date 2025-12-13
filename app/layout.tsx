@@ -15,6 +15,7 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import NavigationLoading from "@/components/navigation-loading"
 import { Toaster } from "@/components/ui/toaster"
 import Analytics from "@/components/analytics"
+import FloatingActionButton from "@/components/FloatingActionButton"
 import { useEffect, useState } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -191,6 +192,7 @@ export default function RootLayout({
                 <NavigationLoading />
                 {children}
                 {!isLinkoPage && !isVCardPage && <CartDrawerWrapper />}
+                {!isAdminRoute && !isLinkoPage && !isVCardPage && <FloatingActionButton />}
                 <Toaster />
                 <Analytics />
               </CartProvider>

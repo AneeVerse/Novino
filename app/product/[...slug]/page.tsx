@@ -2296,10 +2296,15 @@ export default function ProductDetail() {
                           }}
                           onMouseEnter={() => setHoveredVariant(null)}
                           onMouseLeave={() => setHoveredVariant(null)}
-                          className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${!selectedVariant
-                            ? 'border-white shadow-lg shadow-white/20'
-                            : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                            }`}
+                          className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
+                            product.packProduct
+                              ? !selectedVariant
+                                ? 'border-white shadow-lg shadow-white/30 opacity-100'
+                                : 'border-white/40 opacity-100'
+                              : !selectedVariant
+                                ? 'border-white shadow-lg shadow-white/20'
+                                : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                          }`}
                           title={product.name}
                         >
                           <Image
@@ -2312,9 +2317,9 @@ export default function ProductDetail() {
                           />
                           {/* Tag-style label for pack products */}
                           {product.packProduct && (
-                            <div className="absolute bottom-1.5 left-0 right-0 z-10 pointer-events-none px-1">
-                              <div className="px-1.5 py-0.5 rounded bg-gradient-to-br from-[#E8CCAD]/95 via-[#C4B5AA]/90 to-[#A89080]/85 backdrop-blur-sm border border-[#F5E9D7]/30 w-fit mx-auto">
-                                <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wide text-[#2D2D2D] font-['Roboto_Mono'] whitespace-nowrap">
+                            <div className="absolute bottom-1.5 left-0 right-0 z-20 pointer-events-none px-1">
+                              <div className="px-3 py-0.5 rounded-full bg-[#AE876D] w-fit mx-auto shadow-[0_0_25px_rgba(174,135,109,0.8)] brightness-110">
+                                <span className="text-[8px] sm:text-[9px] font-semibold uppercase tracking-wide text-white font-['Roboto_Mono'] whitespace-nowrap drop-shadow-sm">
                                   {product.name}
                                 </span>
                               </div>
@@ -2351,12 +2356,17 @@ export default function ProductDetail() {
                                   }
                                 }
                               }}
-                              className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${isActiveVariant
-                                ? 'border-white shadow-lg shadow-white/20'
-                                : isHoveredVariant
-                                  ? 'border-white/60 opacity-100'
-                                  : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                                }`}
+                              className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
+                                variant.packProduct
+                                  ? isActiveVariant
+                                    ? 'border-white shadow-lg shadow-white/30 opacity-100'
+                                    : 'border-white/40 opacity-100'
+                                  : isActiveVariant
+                                    ? 'border-white shadow-lg shadow-white/20'
+                                    : isHoveredVariant
+                                      ? 'border-white/60 opacity-100'
+                                      : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                              }`}
                               title={variant.name}
                             >
                               <Image
@@ -2369,9 +2379,9 @@ export default function ProductDetail() {
                               />
                               {/* Tag-style label for pack products */}
                               {variant.packProduct && (
-                                <div className="absolute bottom-1.5 left-0 right-0 z-10 pointer-events-none px-1">
-                                  <div className="px-1.5 py-0.5 rounded bg-gradient-to-br from-[#E8CCAD]/95 via-[#C4B5AA]/90 to-[#A89080]/85 backdrop-blur-sm border border-[#F5E9D7]/30 w-fit mx-auto">
-                                    <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wide text-[#2D2D2D] font-['Roboto_Mono'] whitespace-nowrap">
+                                <div className="absolute bottom-1.5 left-0 right-0 z-20 pointer-events-none px-1">
+                                  <div className="px-3 py-0.5 rounded-full bg-[#AE876D] w-fit mx-auto shadow-[0_0_25px_rgba(174,135,109,0.8)] brightness-110">
+                                    <span className="text-[8px] sm:text-[9px] font-semibold uppercase tracking-wide text-white font-['Roboto_Mono'] whitespace-nowrap drop-shadow-sm">
                                       {variant.name}
                                     </span>
                                   </div>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, MapPin, Phone } from "lucide-react";
 import Footer from "@/components/footer";
 
@@ -43,8 +43,9 @@ export default function ContactPage() {
             }
 
             toast({
-                title: "Message Sent",
-                description: "Thank you for contacting us. We will get back to you soon.",
+                title: "Thank You!",
+                description: "Thank you for contacting us. We will contact you soon.",
+                variant: "default",
             });
 
             setFormData({
@@ -100,7 +101,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-medium mb-1">Email</h3>
-                                    <p className="text-gray-400">team.novino@gmail.com</p>
+                                    <p className="text-gray-400">business@novino.io</p>
 
                                 </div>
                             </div>
