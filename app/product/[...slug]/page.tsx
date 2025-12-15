@@ -2296,15 +2296,14 @@ export default function ProductDetail() {
                           }}
                           onMouseEnter={() => setHoveredVariant(null)}
                           onMouseLeave={() => setHoveredVariant(null)}
-                          className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
-                            product.packProduct
-                              ? !selectedVariant
-                                ? 'border-white shadow-lg shadow-white/30 opacity-100'
-                                : 'border-white/40 opacity-100'
-                              : !selectedVariant
-                                ? 'border-white shadow-lg shadow-white/20'
-                                : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                          }`}
+                          className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${product.packProduct
+                            ? !selectedVariant
+                              ? 'border-white shadow-lg shadow-white/30 opacity-100'
+                              : 'border-white/40 opacity-100'
+                            : !selectedVariant
+                              ? 'border-white shadow-lg shadow-white/20'
+                              : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                            }`}
                           title={product.name}
                         >
                           <Image
@@ -2315,14 +2314,20 @@ export default function ProductDetail() {
                             className="pointer-events-none"
                             draggable={false}
                           />
-                          {/* Tag-style label for pack products */}
-                          {product.packProduct && (
+                          {/* Conditional Label: Pack Product (Pill) vs Standard (Simple Text) */}
+                          {product.packProduct ? (
                             <div className="absolute bottom-1.5 left-0 right-0 z-20 pointer-events-none px-1">
-                              <div className="px-3 py-0.5 rounded-full bg-[#AE876D] w-fit mx-auto shadow-[0_0_25px_rgba(174,135,109,0.8)] brightness-110">
-                                <span className="text-[8px] sm:text-[9px] font-semibold uppercase tracking-wide text-white font-['Roboto_Mono'] whitespace-nowrap drop-shadow-sm">
+                              <div className="px-3 py-1 rounded-full bg-gradient-to-r from-[#c09678] to-[#967259] border border-white/20 w-fit mx-auto shadow-[0_4px_15px_rgba(0,0,0,0.3)] backdrop-blur-sm relative overflow-hidden">
+                                <span className="relative z-10 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-white font-['Roboto_Mono'] whitespace-nowrap drop-shadow-md">
                                   {product.name}
                                 </span>
                               </div>
+                            </div>
+                          ) : (
+                            <div className="absolute bottom-1 w-full z-20 pointer-events-none text-center px-0.5">
+                              <span className="text-[8px] uppercase tracking-wider text-white/95 font-['Roboto_Mono'] font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] whitespace-normal leading-tight block">
+                                {product.name}
+                              </span>
                             </div>
                           )}
                         </button>
@@ -2356,17 +2361,16 @@ export default function ProductDetail() {
                                   }
                                 }
                               }}
-                              className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${
-                                variant.packProduct
-                                  ? isActiveVariant
-                                    ? 'border-white shadow-lg shadow-white/30 opacity-100'
-                                    : 'border-white/40 opacity-100'
-                                  : isActiveVariant
-                                    ? 'border-white shadow-lg shadow-white/20'
-                                    : isHoveredVariant
-                                      ? 'border-white/60 opacity-100'
-                                      : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
-                              }`}
+                              className={`relative flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden border-2 transition-all duration-300 rounded-sm group ${variant.packProduct
+                                ? isActiveVariant
+                                  ? 'border-white shadow-lg shadow-white/30 opacity-100'
+                                  : 'border-white/40 opacity-100'
+                                : isActiveVariant
+                                  ? 'border-white shadow-lg shadow-white/20'
+                                  : isHoveredVariant
+                                    ? 'border-white/60 opacity-100'
+                                    : 'border-white/20 hover:border-white/50 opacity-70 hover:opacity-100'
+                                }`}
                               title={variant.name}
                             >
                               <Image
@@ -2377,14 +2381,20 @@ export default function ProductDetail() {
                                 className="pointer-events-none"
                                 draggable={false}
                               />
-                              {/* Tag-style label for pack products */}
-                              {variant.packProduct && (
+                              {/* Conditional Label: Pack Product (Pill) vs Standard (Simple Text) */}
+                              {variant.packProduct ? (
                                 <div className="absolute bottom-1.5 left-0 right-0 z-20 pointer-events-none px-1">
-                                  <div className="px-3 py-0.5 rounded-full bg-[#AE876D] w-fit mx-auto shadow-[0_0_25px_rgba(174,135,109,0.8)] brightness-110">
-                                    <span className="text-[8px] sm:text-[9px] font-semibold uppercase tracking-wide text-white font-['Roboto_Mono'] whitespace-nowrap drop-shadow-sm">
+                                  <div className="px-3 py-1 rounded-full bg-gradient-to-r from-[#c09678] to-[#967259] border border-white/20 w-fit mx-auto shadow-[0_4px_15px_rgba(0,0,0,0.3)] backdrop-blur-sm relative overflow-hidden">
+                                    <span className="relative z-10 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-white font-['Roboto_Mono'] whitespace-nowrap drop-shadow-md">
                                       {variant.name}
                                     </span>
                                   </div>
+                                </div>
+                              ) : (
+                                <div className="absolute bottom-1 w-full z-20 pointer-events-none text-center px-0.5">
+                                  <span className="text-[8px] uppercase tracking-wider text-white/95 font-['Roboto_Mono'] font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] whitespace-normal leading-tight block">
+                                    {variant.name}
+                                  </span>
                                 </div>
                               )}
                             </button>
