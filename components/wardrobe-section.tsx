@@ -5,7 +5,7 @@ export default function WardrobeSection() {
   return (
     <div className="relative max-w-[1440px] mx-auto mb-16 overflow-hidden rounded-3xl border border-white/10">
       {/* Full background image */}
-      <div className="relative w-full h-[420px] sm:h-[380px] md:h-[300px] overflow-hidden">
+      <div className="relative w-full h-[300px] sm:h-[380px] md:h-[300px] overflow-hidden">
         <div className="absolute inset-0 wardrobe-image-wrapper">
           {/* Mobile background image */}
           <Image

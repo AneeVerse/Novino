@@ -217,9 +217,9 @@ export default function JourneyPage() {
             <div className="flex justify-center pt-4">
               <Link
                 href="/artefacts"
-                className="inline-flex items-center gap-3 px-6 py-3 rounded-full border border-white/30 text-white hover:bg-white/10 transition-colors font-['Roboto_Mono']"
+                className="inline-flex items-center gap-3 px-6 py-3 bg-[#AE876D] hover:bg-[#8d6c58] text-white font-medium text-lg transition-all duration-300 rounded-full shadow-[0_0_20px_rgba(174,135,109,0.5)] hover:shadow-[0_0_30px_rgba(174,135,109,0.7)] font-['Roboto_Mono']"
               >
-                Explore the Journey
+                See All Products
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

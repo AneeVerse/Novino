@@ -109,7 +109,7 @@ export default function Footer() {
               <div className="col-span-2 sm:col-span-3 md:col-span-1">
                 <h3 className="text-white text-base sm:text-lg font-medium mb-3 sm:mb-4 font-['Roboto_Mono']">Novino.io</h3>
                 <p className="text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4 font-satoshi">
-                  Elevate ordinary walls with extraordinary galleries. Transform your space with unique art pieces and artifacts.
+                  Nature’s hidden rhythm. We capture the patterns of life from the Sun to the Wild and turn them into exclusive artefacts.
                 </p>
                 <div className="flex gap-3">
                   {/* Keep only Instagram for now */}

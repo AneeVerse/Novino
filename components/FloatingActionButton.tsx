@@ -9,7 +9,6 @@ const FloatingActionButton = () => {
   const [open, setOpen] = useState(false);
   const [showFloatingButtons, setShowFloatingButtons] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const [isInHeroSection, setIsInHeroSection] = useState(true);
   const [shouldShowButton, setShouldShowButton] = useState(true);
 
   const handleCopy = (text: string) => {
@@ -23,40 +22,42 @@ const FloatingActionButton = () => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Handle scroll detection for hero section
+  // Handle scroll and visibility logic
   useEffect(() => {
     const handleScroll = () => {
-      const heroSection = document.querySelector('section[class*="h-screen"]') || 
-                         document.querySelector('section[class*="min-h-[100vh]"]');
-      
-      if (heroSection) {
-        const heroRect = heroSection.getBoundingClientRect();
-        const isInHero = heroRect.bottom > 0;
-        setIsInHeroSection(isInHero);
+      if (window.innerWidth < 768) {
+        // Mobile: Show after scrolling down a bit (100px)
+        const scrollThreshold = 100;
+        if (window.scrollY > scrollThreshold) {
+          setShouldShowButton(true);
+        } else {
+          setShouldShowButton(false);
+        }
+      } else {
+        // Desktop: Always show
+        setShouldShowButton(true);
       }
     };
 
-    handleScroll(); // Check initial state
+    // Initial check
+    handleScroll();
+
     window.addEventListener('scroll', handleScroll);
-    
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll); // Also check on resize
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
   }, []);
 
-  // Update button visibility based on mobile and hero section
-  useEffect(() => {
-    if (isMobile && isInHeroSection) {
-      setShouldShowButton(false);
-    } else {
-      setShouldShowButton(true);
-    }
-  }, [isMobile, isInHeroSection]);
 
   // Force floating buttons to be collapsed on mobile initially
   useEffect(() => {
@@ -75,22 +76,20 @@ const FloatingActionButton = () => {
   const buttonVariants = {
     hidden: { scale: 0.8, opacity: 0 },
     visible: { scale: 1, opacity: 1 },
-    hover: { 
-      scale: 1.1, 
+    hover: {
+      scale: 1.1,
       rotate: 360
     },
     tap: { scale: 0.95 }
   };
 
   return (
-    <div className={`fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-[9999] transition-opacity duration-300 ${
-      shouldShowButton ? 'opacity-100' : 'opacity-0 pointer-events-none'
-    }`}>
+    <div className={`fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-[9999] transition-opacity duration-300 ${shouldShowButton ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
       {showFloatingButtons && (
-        <motion.div 
-          initial="hidden" 
-          animate="visible" 
-          exit="exit" 
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           className="flex flex-col items-center gap-3 mb-4"
         >
           <motion.a
@@ -125,10 +124,10 @@ const FloatingActionButton = () => {
       )}
 
       {open && (
-        <motion.div 
-          initial="hidden" 
-          animate="visible" 
-          exit="exit" 
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[10000]"
         >
           <motion.div
@@ -144,7 +143,7 @@ const FloatingActionButton = () => {
               <IoIosClose className="self-center h-8 w-8" />
             </motion.button>
             <div className="flex flex-col gap-5">
-              <motion.div 
+              <motion.div
                 className="flex items-center justify-between p-4 border border-[#AE876D]/50 rounded-xl hover:border-[#AE876D] transition-colors"
                 whileHover={{ scale: 1.05 }}
               >
@@ -165,8 +164,8 @@ const FloatingActionButton = () => {
                   <MdContentCopy size={20} />
                 </motion.button>
               </motion.div>
-              
-              <motion.div 
+
+              <motion.div
                 className="flex items-center justify-between p-4 border border-[#AE876D]/50 rounded-xl hover:border-[#AE876D] transition-colors"
                 whileHover={{ scale: 1.05 }}
               >
@@ -186,7 +185,7 @@ const FloatingActionButton = () => {
                 </motion.button>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 className="flex items-center justify-between p-4 border border-[#AE876D]/50 rounded-xl hover:border-[#AE876D] transition-colors"
                 whileHover={{ scale: 1.05 }}
               >
@@ -244,7 +243,7 @@ const FloatingActionButton = () => {
           ) : (
             <IoMdChatboxes className="self-center h-8 w-8" />
           )}
-        </div> 
+        </div>
       </motion.button>
     </div>
   );
