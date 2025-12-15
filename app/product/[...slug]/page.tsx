@@ -2317,8 +2317,8 @@ export default function ProductDetail() {
                           {/* Conditional Label: Pack Product (Pill) vs Standard (Simple Text) */}
                           {product.packProduct ? (
                             <div className="absolute bottom-1.5 left-0 right-0 z-20 pointer-events-none px-1">
-                              <div className="px-3 py-1 rounded-full bg-gradient-to-r from-[#c09678] to-[#967259] border border-white/20 w-fit mx-auto shadow-[0_4px_15px_rgba(0,0,0,0.3)] backdrop-blur-sm relative overflow-hidden">
-                                <span className="relative z-10 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-white font-['Roboto_Mono'] whitespace-nowrap drop-shadow-md">
+                              <div className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#c09678] to-[#967259] border border-white/20 w-fit mx-auto shadow-[0_4px_15px_rgba(0,0,0,0.3)] backdrop-blur-sm relative overflow-hidden">
+                                <span className="relative z-10 text-[7px] sm:text-[8px] font-bold uppercase tracking-widest text-white font-['Roboto_Mono'] whitespace-nowrap drop-shadow-md">
                                   {product.name}
                                 </span>
                               </div>
@@ -2384,8 +2384,8 @@ export default function ProductDetail() {
                               {/* Conditional Label: Pack Product (Pill) vs Standard (Simple Text) */}
                               {variant.packProduct ? (
                                 <div className="absolute bottom-1.5 left-0 right-0 z-20 pointer-events-none px-1">
-                                  <div className="px-3 py-1 rounded-full bg-gradient-to-r from-[#c09678] to-[#967259] border border-white/20 w-fit mx-auto shadow-[0_4px_15px_rgba(0,0,0,0.3)] backdrop-blur-sm relative overflow-hidden">
-                                    <span className="relative z-10 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-white font-['Roboto_Mono'] whitespace-nowrap drop-shadow-md">
+                                  <div className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-[#c09678] to-[#967259] border border-white/20 w-fit mx-auto shadow-[0_4px_15px_rgba(0,0,0,0.3)] backdrop-blur-sm relative overflow-hidden">
+                                    <span className="relative z-10 text-[7px] sm:text-[8px] font-bold uppercase tracking-widest text-white font-['Roboto_Mono'] whitespace-nowrap drop-shadow-md">
                                       {variant.name}
                                     </span>
                                   </div>
