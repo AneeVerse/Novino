@@ -5,7 +5,6 @@ import { generateMetadata as generateSEOMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = generateSEOMetadata({
   title: 'Novino.io - Art Gallery',
-  description: 'Elevate ordinary walls with extraordinary galleries. Discover unique art pieces, paintings, and artefacts.',
   type: 'website',
   tags: ['art gallery', 'paintings', 'artefacts', 'art collection', 'contemporary art', 'fine art'],
 })

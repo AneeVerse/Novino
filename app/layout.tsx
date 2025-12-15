@@ -39,6 +39,24 @@ export default function RootLayout({
   const isLinkoPage = pathname?.startsWith('/linko.page/');
   const isVCardPage = pathname?.startsWith('/vcard');
 
+  // Dynamic Meta Descriptions
+  const getMetaDescription = () => {
+    switch (pathname) {
+      case '/':
+        return "See nature differently. Explore 5 unseen patterns on premium artefacts. From the Sun to the Wild, bring art into your daily life. Shop Novino.";
+      case '/paintings':
+        return "Nature is not random. Explore the deep meaning behind 5 exclusive patterns. From the infinite Sun to the Life Cycle. See the stories here.";
+      case '/artefacts':
+        return "Don’t settle for boring. Shop premium diaries & gear featuring 5 unseen nature patterns. Turn your desk into an art gallery. Shop the collection.";
+      case '/journey':
+        return "It started with the Sun. How do childhood sketches turn into complex art? Read the untold story of observing nature’s hidden patterns.";
+      default:
+        return "See nature differently. Explore 5 unseen patterns on premium artefacts. From the Sun to the Wild, bring art into your daily life. Shop Novino.";
+    }
+  };
+
+  const currentDescription = getMetaDescription();
+
   // Create Supabase client
   const [supabaseClient] = useState(() => createClientComponentClient())
 
@@ -74,7 +92,7 @@ export default function RootLayout({
         <link rel="icon" type="image/gif" href="/images/preloader.gif" />
         <link rel="shortcut icon" type="image/gif" href="/images/preloader.gif" />
         <link rel="apple-touch-icon" href="/images/preloader.gif" />
-        <meta name="description" content="Elevate ordinary walls with extraordinary galleries" />
+        <meta name="description" content={currentDescription} />
         <meta name="keywords" content="art gallery, paintings, artefacts, art collection, contemporary art, fine art, decorative art" />
         <meta name="author" content="Novino.io" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -86,7 +104,7 @@ export default function RootLayout({
         <meta property="og:type" content="website" />
         <meta property="og:url" content={process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"} />
         <meta property="og:title" content="Novino.io - Art Gallery" />
-        <meta property="og:description" content="Elevate ordinary walls with extraordinary galleries" />
+        <meta property="og:description" content={currentDescription} />
         <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}/images/og-image.png`} />
         <meta property="og:site_name" content="Novino.io" />
         <meta property="og:locale" content="en_US" />
@@ -95,7 +113,7 @@ export default function RootLayout({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content={process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"} />
         <meta name="twitter:title" content="Novino.io - Art Gallery" />
-        <meta name="twitter:description" content="Elevate ordinary walls with extraordinary galleries" />
+        <meta name="twitter:description" content={currentDescription} />
         <meta name="twitter:image" content={`${process.env.NEXT_PUBLIC_SITE_URL || "https://novino.io"}/images/og-image.png`} />
 
         {/* Performance: Resource Hints */}

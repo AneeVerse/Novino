@@ -4,8 +4,8 @@
  */
 
 export const SITE_NAME = 'Novino.io';
-export const SITE_DESCRIPTION = 'Elevate ordinary walls with extraordinary galleries. Discover unique art pieces, paintings, and artefacts.';
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 
+export const SITE_DESCRIPTION = 'See nature differently. Explore 5 unseen patterns on premium artefacts. From the Sun to the Wild, bring art into your daily life. Shop Novino.';
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ||
   (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'https://novino.io');
 export const SITE_IMAGE = `${SITE_URL}/images/og-image.png`;
 
