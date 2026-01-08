@@ -48,7 +48,9 @@ export default function Home() {
   const {
     products,
     paintingProducts,
+    artefactProducts,
     categoryOptions,
+    artefactCategoryOptions,
     categoryMap,
     loading
   } = useArtefactCatalog()
@@ -305,13 +307,15 @@ export default function Home() {
           key="home-product-grid"
           title="Bring the Patterns Home"
           subtitle="Choose the design that speaks to you."
-          products={products}
-          categories={categories}
+          products={artefactProducts}
+          categories={artefactCategoryOptions.length > 0 ? artefactCategoryOptions : ["All Products"]}
           viewAllText="See All Products"
-          showViewAllButton={true}
+          showViewAllButton={false}
           activeCategory={gridActiveCategory}
           onCategoryChange={setGridActiveCategory}
-          showOnePerCategoryInAll={true}
+          showOnePerCategoryInAll={false}
+          maxAllProducts={0}
+          mobileGridLayout={true}
         />
       </section>
 
