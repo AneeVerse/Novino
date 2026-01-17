@@ -144,15 +144,12 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      // Calculate 30-day date range to match dashboard
+      // Use a fixed start date from 2024 to ensure lifetime orders are always visible
       const today = new Date();
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
       const toDate = today.toISOString().slice(0, 10);
-      const fromDate = thirtyDaysAgo.toISOString().slice(0, 10);
+      const fromDate = "2024-01-01";
 
-      // Request up to 200 orders with 30-day date range
+      // Request up to 200 orders with lifetime date range
       const response = await fetch(`/api/shiprocket/orders?perPage=200&from=${fromDate}&to=${toDate}`);
       const data = await response.json();
 

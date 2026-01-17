@@ -9,7 +9,7 @@ import {
 import type { ShiprocketOrder, ShiprocketProduct } from "@/lib/services/shiprocket";
 import { getSupabaseServiceRoleClient } from "@/lib/supabase-server";
 
-const DEFAULT_RANGE_DAYS = 1;
+const DEFAULT_RANGE_DAYS = 730; // 2 years default for lifetime orders
 const DEFAULT_PER_PAGE = 25;
 
 const toNumber = (value: unknown) => {
@@ -299,14 +299,14 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
           let categoryId = firstItem.categoryId || firstItem.category_id;
           const productId = firstItem.productId || firstItem.id;
           const itemSku = firstItem.sku;
-          
+
           console.log('[Orders][Dimensions] Looking up dimensions for item:', {
             productId,
             itemSku,
             name: firstItem.name,
             categoryId
           });
-          
+
           // Find category and product by searching
           // Priority: productId > SKU > name (to avoid matching wrong category when same SKU/name exists in multiple categories)
           if (productId && allCategories) {
@@ -315,7 +315,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
             const productIdStr = String(productId);
             const itemSkuUpper = itemSku ? itemSku.trim().toUpperCase() : '';
             const itemNameLower = firstItem.name ? firstItem.name.trim().toLowerCase() : '';
-            
+
             // First pass: Try exact productId match (most reliable)
             for (const cat of allCategories) {
               if (Array.isArray(cat.products)) {
@@ -332,7 +332,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
                 }
               }
             }
-            
+
             // Second pass: If no productId match, try SKU match
             if (!foundCategory && itemSkuUpper) {
               for (const cat of allCategories) {
@@ -350,7 +350,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
                 }
               }
             }
-            
+
             // Third pass: If still no match, try name match (least reliable)
             if (!foundCategory && itemNameLower) {
               for (const cat of allCategories) {
@@ -368,7 +368,7 @@ const enrichOrdersWithLocalData = async (orders: ShiprocketOrder[]) => {
                 }
               }
             }
-            
+
             // PRIORITY 1: Check if product has custom dimensions (packProduct)
             if (foundProduct?.packProduct && foundProduct.length && Number(foundProduct.length) > 0) {
               (order as any).length = Number(foundProduct.length);
