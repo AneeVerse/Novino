@@ -137,10 +137,7 @@ export function generateOrganizationSchema() {
     },
     description: SITE_DESCRIPTION,
     sameAs: [
-      // Add social media links here
-      // 'https://www.facebook.com/novino',
-      // 'https://www.instagram.com/novino',
-      // 'https://www.twitter.com/novino',
+      'https://www.instagram.com/novino.io?igsh=MTA5OXdzYW1yMGUycg%3D%3D',
     ],
     contactPoint: {
       '@type': 'ContactPoint',

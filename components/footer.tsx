@@ -113,7 +113,7 @@ export default function Footer() {
                 </p>
                 <div className="flex gap-3">
                   {/* Keep only Instagram for now */}
-                  <Link href="#" className="text-gray-300 hover:text-white">
+                  <Link href="https://www.instagram.com/novino.io?igsh=MTA5OXdzYW1yMGUycg%3D%3D" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">
                     <Instagram size={16} className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
                   </Link>
                 </div>
